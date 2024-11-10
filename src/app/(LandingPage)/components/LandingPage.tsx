@@ -89,7 +89,7 @@ export default function LandingPage() {
               Leading Attendance Management System
             </div>
             <h1 className='text-4xl md:text-6xl font-bold text-white mb-6 leading-tight'>
-              Transform Your Institution's <br />
+              Transform Your Institution&apos;s <br />
               Attendance Management
             </h1>
             <p className='text-xl text-indigo-100 mb-10 max-w-3xl mx-auto'>
