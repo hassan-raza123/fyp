@@ -10,30 +10,35 @@ const teamMembers = [
     role: 'Full Stack Developer',
     github: 'https://github.com/member1',
     linkedin: 'https://linkedin.com/in/member1',
+    picture: '/images/hassan.jpg', // Path to Hassan's picture
   },
   {
     name: 'Muhammad Talha',
     role: 'Frontend Developer',
     github: 'https://github.com/member2',
     linkedin: 'https://linkedin.com/in/member2',
+    picture: '/images/talha.jpg', // Path to Talha's picture
   },
   {
     name: 'Muhammad Ahmar',
     role: 'Backend Developer',
     github: 'https://github.com/member3',
     linkedin: 'https://linkedin.com/in/member3',
+    picture: '/images/ahmar.jpg', // Path to Ahmar's picture
   },
   {
     name: 'Mueez Ahmed',
     role: 'UI/UX Designer',
     github: 'https://github.com/member4',
     linkedin: 'https://linkedin.com/in/member4',
+    picture: '/team/mueez.jpg', // Path to Mueez's picture
   },
   {
     name: 'Muhammad Zohaib Asgar',
     role: 'Database Engineer',
     github: 'https://github.com/member5',
     linkedin: 'https://linkedin.com/in/member5',
+    picture: '/images/zohaib.jpg', // Path to Zohaib's picture
   },
 ];
 
@@ -54,10 +59,12 @@ export default function Footer() {
           {teamMembers.map((member, index) => (
             <div key={index} className='text-center'>
               <div className='mb-4'>
-                <div className='w-24 h-24 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-800 mx-auto flex items-center justify-center'>
-                  <span className='text-2xl font-bold text-white'>
-                    {member.name.charAt(0)}
-                  </span>
+                <div className='w-24 h-24 rounded-full overflow-hidden bg-gray-800 mx-auto'>
+                  <img
+                    src={member.picture}
+                    alt={`${member.name}'s picture`}
+                    className='w-full h-full object-cover'
+                  />
                 </div>
               </div>
               <h3 className='text-lg font-semibold text-white mb-1'>
