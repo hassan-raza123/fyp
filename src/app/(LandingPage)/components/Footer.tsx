@@ -10,7 +10,7 @@ const teamMembers = [
     role: 'Full Stack Developer',
     github: 'https://github.com/member1',
     linkedin: 'https://linkedin.com/in/member1',
-    picture: '/images/hassan.jpg', // Path to Hassan's picture
+    picture: '/team/hassan.jpg', // Path to Hassan's picture
   },
   {
     name: 'Muhammad Talha',
