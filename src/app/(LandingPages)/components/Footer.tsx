@@ -4,96 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { Github, Linkedin, Mail, Twitter } from 'lucide-react';
 
-const teamMembers = [
-  {
-    name: 'Hassan Raza',
-    role: 'Full Stack Developer',
-    github: 'https://github.com/member1',
-    linkedin: 'https://linkedin.com/in/member1',
-    picture: '/team/hassan.jpg', // Path to Hassan's picture
-  },
-  {
-    name: 'Muhammad Talha',
-    role: 'Frontend Developer',
-    github: 'https://github.com/member2',
-    linkedin: 'https://linkedin.com/in/member2',
-    picture: '/images/talha.jpg', // Path to Talha's picture
-  },
-  {
-    name: 'Muhammad Ahmar',
-    role: 'Backend Developer',
-    github: 'https://github.com/member3',
-    linkedin: 'https://linkedin.com/in/member3',
-    picture: '/images/ahmar.jpg', // Path to Ahmar's picture
-  },
-  {
-    name: 'Mueez Ahmed',
-    role: 'UI/UX Designer',
-    github: 'https://github.com/member4',
-    linkedin: 'https://linkedin.com/in/member4',
-    picture: '/team/mueez.jpg', // Path to Mueez's picture
-  },
-  {
-    name: 'Muhammad Zohaib Asgar',
-    role: 'Database Engineer',
-    github: 'https://github.com/member5',
-    linkedin: 'https://linkedin.com/in/member5',
-    picture: '/images/zohaib.jpg', // Path to Zohaib's picture
-  },
-];
-
 export default function Footer() {
   return (
     <footer className='bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300'>
-      {/* Team Section */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20'>
-        <div className='text-center mb-12'>
-          <h2 className='text-3xl font-bold text-white mb-4'>Meet Our Team</h2>
-          <p className='text-gray-400 max-w-2xl mx-auto'>
-            Proud developers and designers behind UniAttend - Building the
-            future of attendance management
-          </p>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-16'>
-          {teamMembers.map((member, index) => (
-            <div key={index} className='text-center'>
-              <div className='mb-4'>
-                <div className='w-24 h-24 rounded-full overflow-hidden bg-gray-800 mx-auto'>
-                  <img
-                    src={member.picture}
-                    alt={`${member.name}'s picture`}
-                    className='w-full h-full object-cover'
-                  />
-                </div>
-              </div>
-              <h3 className='text-lg font-semibold text-white mb-1'>
-                {member.name}
-              </h3>
-              <p className='text-indigo-400 text-sm mb-3'>{member.role}</p>
-              <div className='flex justify-center space-x-3'>
-                <a
-                  href={member.github}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-gray-400 hover:text-white transition-colors'
-                >
-                  <Github className='h-5 w-5' />
-                </a>
-                <a
-                  href={member.linkedin}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-gray-400 hover:text-white transition-colors'
-                >
-                  <Linkedin className='h-5 w-5' />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Main Footer Content */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-800'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>

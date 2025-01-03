@@ -10,8 +10,8 @@ import {
   Book,
   GraduationCap,
 } from 'lucide-react';
-import NavbarClient from './NavbarClient';
-import Footer from './Footer';
+import Footer from './components/Footer';
+import NavbarClient from './components/NavbarClient';
 
 const features = [
   {
