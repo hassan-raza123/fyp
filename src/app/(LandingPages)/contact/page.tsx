@@ -1,6 +1,4 @@
 import React from 'react';
-import Footer from '../components/Footer';
-import NavbarClient from '../components/NavbarClient';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 
 export default function Contact() {
@@ -8,7 +6,6 @@ export default function Contact() {
     <div className='min-h-screen bg-white'>
       {/* Header Section */}
       <div className='relative bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900'>
-        <NavbarClient />
         <div className='absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]' />
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20'>
           <div className='text-center'>
@@ -168,8 +165,6 @@ export default function Contact() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

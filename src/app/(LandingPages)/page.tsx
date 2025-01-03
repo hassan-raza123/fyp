@@ -1,78 +1,60 @@
 import React from 'react';
 import Link from 'next/link';
 import {
+  Clock,
   BarChart3,
   Users,
-  Clock,
-  FileBarChart,
-  ChevronRight,
   CheckCircle,
-  Book,
+  ArrowRight,
   GraduationCap,
+  School,
+  BookOpen,
 } from 'lucide-react';
-import Footer from './components/Footer';
-import NavbarClient from './components/NavbarClient';
 
-const features = [
+const statistics = [
   {
-    icon: <Users className='h-8 w-8' />,
-    title: 'Attendance Tracking',
-    description:
-      'Effortlessly mark and monitor student attendance in real-time',
+    number: '98%',
+    label: 'Attendance Rate',
+    color: 'from-rose-400 to-orange-400',
   },
   {
-    icon: <BarChart3 className='h-8 w-8' />,
-    title: 'Analytics Dashboard',
-    description: 'Comprehensive insights into attendance patterns and trends',
+    number: '2000+',
+    label: 'Students',
+    color: 'from-cyan-400 to-blue-400',
   },
   {
-    icon: <Clock className='h-8 w-8' />,
-    title: 'Quick Reports',
-    description: 'Generate detailed attendance reports with one click',
+    number: '100+',
+    label: 'Faculty',
+    color: 'from-emerald-400 to-teal-400',
   },
   {
-    icon: <FileBarChart className='h-8 w-8' />,
-    title: 'Performance Metrics',
-    description: 'Track attendance impact on academic performance',
+    number: '50+',
+    label: 'Daily Classes',
+    color: 'from-violet-400 to-purple-400',
   },
 ];
 
-const userRoles = [
+const features = [
   {
-    icon: <GraduationCap className='h-12 w-12' />,
-    title: 'For Administrators',
-    features: [
-      'Complete system oversight',
-      'User management control',
-      'Institutional reporting',
-      'Analytics dashboard',
-      'Department management',
-      'Policy enforcement',
-    ],
+    icon: <Clock />,
+    title: 'Real-time Tracking',
+    description: 'Track attendance in real-time with our automated system',
+    color: 'from-rose-500 to-orange-500',
+    metrics: ['Instant Recording', 'Live Updates', 'Quick Reports'],
   },
   {
-    icon: <Book className='h-12 w-12' />,
-    title: 'For Teachers',
-    features: [
-      'Easy attendance marking',
-      'Class performance tracking',
-      'Automated reporting',
-      'Student monitoring',
-      'Absence notifications',
-      'Course management',
-    ],
+    icon: <School />,
+    title: 'Class Management',
+    description: 'Efficiently manage all your classes and student groups',
+    color: 'from-cyan-500 to-blue-500',
+    metrics: ['Course Scheduling', 'Student Lists', 'Class Analytics'],
   },
   {
-    icon: <Users className='h-12 w-12' />,
-    title: 'For Students',
-    features: [
-      'Attendance history',
-      'Performance tracking',
-      'Course schedules',
-      'Mobile check-in',
-      'Absence alerts',
-      'Progress reports',
-    ],
+    icon: <BarChart3 />,
+    title: 'Performance Insights',
+    description: 'Generate detailed attendance reports and analytics',
+    color: 'from-emerald-500 to-teal-500',
+    metrics: ['Attendance Reports', 'Student Stats', 'Department Analytics'],
   },
 ];
 
@@ -80,111 +62,144 @@ export default function LandingPage() {
   return (
     <div className='min-h-screen bg-white'>
       {/* Hero Section */}
-      <div className='relative bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900'>
-        <NavbarClient />
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20'>
-          <div className='text-center'>
-            {/* Badge */}
-            <div className='inline-flex items-center px-4 py-1.5 mb-6 text-sm font-semibold rounded-full bg-indigo-500/20 text-indigo-100 border border-indigo-400/20'>
-              Leading Attendance Management System
+      <div className='relative overflow-hidden bg-gradient-to-br from-[#0F172A] to-[#1E293B]'>
+        <div className='absolute inset-0'>
+          {/* Animated gradient orbs */}
+          <div className='absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-600/30 to-purple-600/30 rounded-full blur-3xl' />
+          <div className='absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-rose-600/30 to-orange-600/30 rounded-full blur-3xl' />
+
+          {/* Grid pattern overlay */}
+          <div
+            className='absolute inset-0'
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.1) 1px, transparent 0)',
+              backgroundSize: '24px 24px',
+            }}
+          />
+        </div>
+
+        <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-16 items-center'>
+            <div>
+              <div className='inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-rose-500/20 to-orange-500/20 border border-rose-500/10 mb-8'>
+                <span className='relative flex h-2 w-2 mr-2'>
+                  <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75'></span>
+                  <span className='relative inline-flex rounded-full h-2 w-2 bg-rose-500'></span>
+                </span>
+                <span className='text-rose-200 text-sm font-medium'>
+                  Smart Attendance System
+                </span>
+              </div>
+
+              <h1 className='text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight'>
+                Modernize Your
+                <span className='block mt-2 bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 bg-clip-text text-transparent'>
+                  Educational Institution
+                </span>
+              </h1>
+
+              <p className='text-lg text-slate-300 mb-10 leading-relaxed max-w-xl'>
+                A comprehensive attendance management system designed
+                specifically for educational institutions. Make attendance
+                tracking efficient, accurate, and hassle-free.
+              </p>
+
+              <div className='flex flex-col sm:flex-row gap-4'>
+                <Link
+                  href='/demo'
+                  className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-semibold hover:from-rose-600 hover:to-orange-600 transition-all duration-200 shadow-lg shadow-orange-500/25 transform hover:-translate-y-0.5'
+                >
+                  Get Started
+                  <ArrowRight className='ml-2 h-5 w-5' />
+                </Link>
+                <Link
+                  href='/contact'
+                  className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-all duration-200 backdrop-blur-sm'
+                >
+                  Contact Admin
+                </Link>
+              </div>
             </div>
-            <h1 className='text-4xl md:text-6xl font-bold text-white mb-6 leading-tight'>
-              Transform Your Institution&apos;s <br />
-              Attendance Management
-            </h1>
-            <p className='text-xl text-indigo-100 mb-10 max-w-3xl mx-auto'>
-              Modernize attendance tracking with our comprehensive digital
-              solution. Designed for universities, built for efficiency.
-            </p>
-            <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-              <Link
-                href='/login'
-                className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-              >
-                Get Started <ChevronRight className='ml-2 h-5 w-5' />
-              </Link>
-              <Link
-                href='/demo'
-                className='inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-white/20 text-white font-semibold hover:bg-white/10 transition-all duration-200'
-              >
-                Watch Demo
-              </Link>
+
+            {/* Stats Cards */}
+            <div className='relative'>
+              <div className='absolute inset-0 bg-gradient-to-br from-rose-500/20 to-orange-500/20 rounded-3xl blur-2xl' />
+              <div className='relative grid grid-cols-2 gap-4'>
+                {statistics.map((stat, index) => (
+                  <div
+                    key={index}
+                    className='bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10'
+                  >
+                    <div
+                      className={`text-3xl font-bold mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}
+                    >
+                      {stat.number}
+                    </div>
+                    <div className='text-slate-300 font-medium'>
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Wave SVG Divider */}
+        {/* Custom wave divider */}
         <div className='absolute bottom-0 left-0 right-0'>
           <svg
-            viewBox='0 0 1440 120'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
+            className='w-full h-24 fill-slate-50'
+            viewBox='0 0 1440 74'
+            preserveAspectRatio='none'
           >
-            <path
-              d='M0 30L48 35C96 40 192 50 288 55C384 60 480 60 576 55C672 50 768 40 864 45C960 50 1056 70 1152 75C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V30Z'
-              fill='white'
-            />
+            <path d='M0,0 C480,100 960,100 1440,0 L1440,74 L0,74 Z' />
           </svg>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className='py-20 -mt-10'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className='bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100'
-              >
-                <div className='text-indigo-600 bg-indigo-50 p-4 rounded-xl inline-block mb-6'>
-                  {feature.icon}
-                </div>
-                <h3 className='text-xl font-bold text-gray-900 mb-3'>
-                  {feature.title}
-                </h3>
-                <p className='text-gray-600 leading-relaxed'>
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* User Roles Section */}
-      <div className='bg-gradient-to-b from-gray-50 to-white py-24'>
+      <div className='py-24 bg-slate-50'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
-            <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-4'>
-              Tailored for Every Role
+            <h2 className='text-3xl lg:text-4xl font-bold text-slate-900 mb-4'>
+              Smart Features for Modern Education
             </h2>
-            <p className='text-xl text-gray-600 max-w-3xl mx-auto'>
-              Our platform provides specialized features for all users
+            <p className='text-lg text-slate-600 max-w-2xl mx-auto'>
+              Everything you need to manage attendance efficiently in one
+              integrated platform
             </p>
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {userRoles.map((role, index) => (
+            {features.map((feature, index) => (
               <div
                 key={index}
-                className='bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100'
+                className='group relative bg-white rounded-2xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl border border-slate-100'
               >
-                <div className='text-indigo-600 mb-6'>{role.icon}</div>
-                <h3 className='text-2xl font-bold text-gray-900 mb-6'>
-                  {role.title}
-                </h3>
-                <ul className='space-y-4'>
-                  {role.features.map((feature, featureIndex) => (
-                    <li
-                      key={featureIndex}
-                      className='flex items-start space-x-3'
-                    >
-                      <CheckCircle className='h-6 w-6 text-green-500 flex-shrink-0' />
-                      <span className='text-gray-600'>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className='absolute inset-0 bg-gradient-to-r from-slate-400/0 to-slate-400/0 group-hover:from-slate-50 group-hover:to-white rounded-2xl transition-colors duration-300' />
+                <div className='relative'>
+                  <div
+                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    {feature.icon}
+                  </div>
+
+                  <h3 className='text-xl font-bold text-slate-900 mb-4'>
+                    {feature.title}
+                  </h3>
+
+                  <p className='text-slate-600 mb-6'>{feature.description}</p>
+
+                  <div className='space-y-3'>
+                    {feature.metrics.map((metric, idx) => (
+                      <div key={idx} className='flex items-center space-x-2'>
+                        <CheckCircle className='h-5 w-5 text-emerald-500' />
+                        <span className='text-slate-600'>{metric}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -192,33 +207,40 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className='bg-indigo-900 py-20'>
+      <div className='py-24 bg-white'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='bg-gradient-to-br from-indigo-800 to-indigo-900 rounded-3xl p-8 md:p-16 shadow-xl relative overflow-hidden'>
-            <div className='absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]'></div>
-            <div className='relative'>
+          <div className='relative rounded-3xl overflow-hidden'>
+            <div className='absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500' />
+
+            <div className='relative px-8 py-16 md:px-16 md:py-20'>
               <div className='text-center max-w-3xl mx-auto'>
-                <h2 className='text-3xl md:text-4xl font-bold text-white mb-6'>
-                  Ready to Modernize Your Institution?
+                <h2 className='text-3xl lg:text-4xl font-bold text-white mb-6'>
+                  Ready to Transform Your Institution?
                 </h2>
-                <p className='text-xl text-indigo-200 mb-8'>
-                  Join leading universities worldwide in transforming their
+                <p className='text-xl text-white/90 mb-10'>
+                  Join leading educational institutions in modernizing their
                   attendance management
                 </p>
-                <Link
-                  href='/login'
-                  className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg'
-                >
-                  Get Started Now <ChevronRight className='ml-2 h-5 w-5' />
-                </Link>
+                <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+                  <Link
+                    href='/signup'
+                    className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-rose-600 font-semibold hover:bg-rose-50 transition-all duration-200 shadow-lg transform hover:-translate-y-0.5'
+                  >
+                    Get Started Now
+                    <ArrowRight className='ml-2 h-5 w-5' />
+                  </Link>
+                  <Link
+                    href='/contact'
+                    className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-rose-600/20 text-white font-semibold hover:bg-rose-600/30 transition-all duration-200 backdrop-blur-sm border border-white/20'
+                  >
+                    Contact Admin
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Footer Section */}
-      <Footer />
     </div>
   );
 }
