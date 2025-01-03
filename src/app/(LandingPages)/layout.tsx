@@ -1,9 +1,5 @@
 import '@/styles/globals.css';
 import type { Metadata } from 'next';
-import Footer from './components/Footer';
-import NavbarClient from './components/NavbarClient';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -15,61 +11,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    // <div className='min-h-screen bg-white'>
-    //   {/* Hero Section */}
-    //   <div className='relative bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900'>
-    //     <NavbarClient />
-    //     <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20'>
-    //       <div className='text-center'>
-    //         {/* Badge */}
-    //         <div className='inline-flex items-center px-4 py-1.5 mb-6 text-sm font-semibold rounded-full bg-indigo-500/20 text-indigo-100 border border-indigo-400/20'>
-    //           Leading Attendance Management System
-    //         </div>
-    //         <h1 className='text-4xl md:text-6xl font-bold text-white mb-6 leading-tight'>
-    //           Transform Your Institution&apos;s <br />
-    //           Attendance Management
-    //         </h1>
-    //         <p className='text-xl text-indigo-100 mb-10 max-w-3xl mx-auto'>
-    //           Modernize attendance tracking with our comprehensive digital
-    //           solution. Designed for universities, built for efficiency.
-    //         </p>
-    //         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-    //           <Link
-    //             href='/login'
-    //             className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-    //           >
-    //             Get Started <ChevronRight className='ml-2 h-5 w-5' />
-    //           </Link>
-    //           <Link
-    //             href='/demo'
-    //             className='inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-white/20 text-white font-semibold hover:bg-white/10 transition-all duration-200'
-    //           >
-    //             Watch Demo
-    //           </Link>
-    //         </div>
-    //       </div>
-    //     </div>
-
-    //     {/* Wave SVG Divider */}
-    //     <div className='absolute bottom-0 left-0 right-0'>
-    //       <svg
-    //         viewBox='0 0 1440 120'
-    //         fill='none'
-    //         xmlns='http://www.w3.org/2000/svg'
-    //       >
-    //         <path
-    //           d='M0 30L48 35C96 40 192 50 288 55C384 60 480 60 576 55C672 50 768 40 864 45C960 50 1056 70 1152 75C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V30Z'
-    //           fill='white'
-    //         />
-    //       </svg>
-    //     </div>
-    //   </div>
-
-    <section>{children}</section>
-
-    //   {/* Footer Section */}
-    //   <Footer />
-    // </div>
-  );
+  return <section>{children}</section>;
 }

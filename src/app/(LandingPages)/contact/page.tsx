@@ -16,7 +16,7 @@ export default function Contact() {
               Get in Touch
             </h1>
             <p className='text-xl text-indigo-100 mb-10 max-w-3xl mx-auto'>
-              Have questions about UniAttend? We're here to help.
+              Have questions about UniAttend? We&apos;re here to help.
             </p>
           </div>
         </div>
