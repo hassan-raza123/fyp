@@ -9,11 +9,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-      },
-      fontFamily: {
-        sans: ['Inter var', 'sans-serif'],
+        // Define your custom color palette
+        primary: {
+          DEFAULT: '#1E3A8A', // Dark blue
+          light: '#3B82F6', // Bright blue
+        },
+        secondary: {
+          DEFAULT: '#EFF6FF', // Light blue background
+        },
+        accent: {
+          DEFAULT: '#FFFFFF', // White
+        },
+        text: {
+          DEFAULT: '#1E3A8A', // Dark blue for text
+          light: '#6B7280', // Gray for secondary text
+        },
       },
     },
   },
