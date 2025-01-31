@@ -1,150 +1,145 @@
 import React from 'react';
 import {
-  Users,
   Clock,
-  Bell,
-  PieChart,
-  FileSpreadsheet,
   Shield,
-  Calendar,
   UserCheck,
   Database,
-  LineChart,
+  ArrowRight,
+  CheckCircle,
 } from 'lucide-react';
+import Link from 'next/link';
 import Footer from '../components/Footer';
 import NavbarClient from '../components/NavbarClient';
 
-const features = [
+const mainFeatures = [
   {
-    icon: <Users className='h-8 w-8' />,
-    title: 'Multi-Role Management',
-    description:
-      'Specialized interfaces for administrators, teachers, and students with role-based access control',
+    icon: <UserCheck className='h-6 w-6' />,
+    title: 'Smart Recognition',
+    description: 'Advanced facial recognition for accurate attendance',
   },
   {
-    icon: <Clock className='h-8 w-8' />,
-    title: 'Real-Time Tracking',
-    description:
-      'Mark and monitor attendance in real-time with instant updates and synchronization',
-  },
-  {
-    icon: <Bell className='h-8 w-8' />,
-    title: 'Smart Notifications',
-    description:
-      'Automated alerts for absences, low attendance, and important updates',
-  },
-  {
-    icon: <PieChart className='h-8 w-8' />,
-    title: 'Advanced Analytics',
-    description:
-      'Comprehensive dashboards with attendance patterns and performance metrics',
-  },
-  {
-    icon: <FileSpreadsheet className='h-8 w-8' />,
-    title: 'Bulk Operations',
-    description:
-      'Efficient tools for handling multiple records with batch processing capabilities',
-  },
-  {
-    icon: <Shield className='h-8 w-8' />,
-    title: 'Secure Access',
-    description:
-      'Enterprise-grade security with role-based permissions and audit trails',
-  },
-  {
-    icon: <Calendar className='h-8 w-8' />,
-    title: 'Schedule Management',
-    description:
-      'Flexible scheduling system with conflict detection and resolution',
-  },
-  {
-    icon: <Database className='h-8 w-8' />,
+    icon: <Database className='h-6 w-6' />,
     title: 'Data Integration',
-    description:
-      'Seamless integration with existing university management systems',
+    description: 'Seamless sync with existing systems',
+  },
+  {
+    icon: <Shield className='h-6 w-6' />,
+    title: 'Enhanced Security',
+    description: 'Role-based access and data protection',
+  },
+  {
+    icon: <Clock className='h-6 w-6' />,
+    title: 'Time Tracking',
+    description: 'Accurate monitoring of attendance hours',
+  },
+];
+
+const additionalFeatures = [
+  {
+    title: 'Mobile Access',
+    description: 'Access from any device, anywhere',
+  },
+  {
+    title: 'Quick Reports',
+    description: 'Generate reports with one click',
+  },
+  {
+    title: 'Smart Analytics',
+    description: 'AI-powered attendance insights',
+  },
+  {
+    title: 'Auto Notifications',
+    description: 'Real-time alerts and updates',
+  },
+  {
+    title: 'Batch Processing',
+    description: 'Handle multiple records efficiently',
+  },
+  {
+    title: 'Custom Rules',
+    description: 'Set your own attendance policies',
   },
 ];
 
 const statistics = [
-  {
-    icon: <UserCheck className='h-8 w-8' />,
-    value: '99.9%',
-    label: 'Accuracy Rate',
-  },
-  {
-    icon: <Clock className='h-8 w-8' />,
-    value: '50%',
-    label: 'Time Saved',
-  },
-  {
-    icon: <LineChart className='h-8 w-8' />,
-    value: '85%',
-    label: 'Improved Tracking',
-  },
+  { value: '99.9%', label: 'System Uptime' },
+  { value: '50%', label: 'Reduced Workload' },
+  { value: '24/7', label: 'Support Available' },
 ];
 
 export default function Features() {
   return (
-    <div className='min-h-screen bg-white'>
-      {/* Header Section */}
-      <div className='relative bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900'>
+    <div className='min-h-screen bg-gradient-to-b from-secondary to-white'>
+      {/* Hero Section */}
+      <div className='relative bg-gradient-to-br from-primary via-primary-light to-primary'>
         <NavbarClient />
-        <div className='absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]' />
-        <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20'>
-          <div className='text-center'>
-            <h1 className='text-4xl md:text-6xl font-bold text-white mb-6'>
-              Powerful Features for Modern
-              <br />
-              Attendance Management
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+
+        <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-32 sm:px-6 lg:px-8'>
+          <div className='max-w-4xl mx-auto text-center'>
+            <div className='inline-flex items-center px-4 py-2 rounded-full bg-accent/10 backdrop-blur-sm border border-accent/20 mb-8'>
+              <span className='text-accent text-sm font-medium'>
+                Advanced Features
+              </span>
+            </div>
+
+            <h1 className='text-5xl font-bold text-accent mb-8 lg:text-7xl'>
+              Power-Packed
+              <span className='block bg-gradient-to-r from-accent via-accent/90 to-accent/80 text-transparent bg-clip-text'>
+                Features
+              </span>
             </h1>
-            <p className='text-xl text-indigo-100 mb-10 max-w-3xl mx-auto'>
-              Discover how our comprehensive suite of features transforms
-              attendance tracking from a daily chore into a strategic asset
+
+            <p className='text-xl text-accent/80 mb-12 max-w-2xl mx-auto leading-relaxed'>
+              Discover how our comprehensive features transform attendance
+              management
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Wave SVG */}
-        <div className='absolute bottom-0 left-0 right-0'>
-          <svg
-            viewBox='0 0 1440 120'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M0 30L48 35C96 40 192 50 288 55C384 60 480 60 576 55C672 50 768 40 864 45C960 50 1056 70 1152 75C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V30Z'
-              fill='white'
-            />
-          </svg>
+      {/* Stats Section */}
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 mb-20 relative z-10'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          {statistics.map((stat, index) => (
+            <div
+              key={index}
+              className='bg-accent rounded-2xl p-8 shadow-xl border border-primary/5 text-center group hover:shadow-2xl transition-all duration-300'
+            >
+              <div className='text-4xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300'>
+                {stat.value}
+              </div>
+              <div className='text-text-light font-medium'>{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className='py-24 bg-gradient-to-b from-gray-50 to-white'>
+      {/* Main Features */}
+      <div className='py-20'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
-            <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-4'>
-              Everything You Need
+            <h2 className='text-4xl font-bold text-primary mb-4'>
+              Core Features
             </h2>
-            <p className='text-xl text-gray-600 max-w-3xl mx-auto'>
-              A complete solution designed to streamline attendance management
-              at every level
+            <p className='text-xl text-text-light max-w-2xl mx-auto'>
+              Advanced tools for modern attendance management
             </p>
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-            {features.map((feature, index) => (
+            {mainFeatures.map((feature, index) => (
               <div
                 key={index}
-                className='bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100'
+                className='group bg-accent rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-primary/5 hover:-translate-y-1'
               >
-                <div className='text-indigo-600 bg-indigo-50 p-4 rounded-xl inline-block mb-6'>
+                <div className='bg-primary/5 p-4 rounded-xl inline-flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300'>
                   {feature.icon}
                 </div>
-                <h3 className='text-xl font-bold text-gray-900 mb-3'>
+                <h3 className='text-xl font-bold text-primary mb-3'>
                   {feature.title}
                 </h3>
-                <p className='text-gray-600 leading-relaxed'>
+                <p className='text-text-light leading-relaxed'>
                   {feature.description}
                 </p>
               </div>
@@ -153,24 +148,54 @@ export default function Features() {
         </div>
       </div>
 
-      {/* Statistics Section */}
-      <div className='bg-indigo-900 py-24'>
+      {/* Additional Features Grid */}
+      <div className='py-20 bg-primary/5'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {statistics.map((stat, index) => (
+          <div className='text-center mb-16'>
+            <h2 className='text-4xl font-bold text-primary mb-4'>
+              More Features
+            </h2>
+            <p className='text-xl text-text-light max-w-2xl mx-auto'>
+              Everything you need for complete attendance management
+            </p>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+            {additionalFeatures.map((feature, index) => (
               <div
                 key={index}
-                className='bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center'
+                className='flex items-start p-6 bg-accent rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-primary/5'
               >
-                <div className='text-indigo-400 mb-4 flex justify-center'>
-                  {stat.icon}
+                <CheckCircle className='h-6 w-6 text-primary-light mt-1 mr-4 flex-shrink-0' />
+                <div>
+                  <h3 className='text-lg font-bold text-primary mb-2'>
+                    {feature.title}
+                  </h3>
+                  <p className='text-text-light'>{feature.description}</p>
                 </div>
-                <div className='text-4xl font-bold text-white mb-2'>
-                  {stat.value}
-                </div>
-                <div className='text-indigo-200'>{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className='bg-gradient-to-br from-primary via-primary-light to-primary py-24'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='bg-accent/10 backdrop-blur-md rounded-3xl p-12 border border-accent/20 text-center'>
+            <h2 className='text-4xl font-bold text-accent mb-6'>
+              Ready to Get Started?
+            </h2>
+            <p className='text-xl text-accent/80 mb-8 max-w-2xl mx-auto'>
+              Join leading institutions using our modern attendance system
+            </p>
+            <Link
+              href='/login'
+              className='inline-flex items-center px-8 py-4 rounded-xl bg-accent text-primary font-semibold hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+            >
+              Get Started Now
+              <ArrowRight className='ml-2 h-5 w-5' />
+            </Link>
           </div>
         </div>
       </div>
