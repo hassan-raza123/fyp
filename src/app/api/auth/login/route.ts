@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { createToken } from '@/lib/jwt';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import jwt from 'jsonwebtoken';
 import {
   AdminRole,
   AllRoles,
@@ -13,7 +13,6 @@ import {
 } from '@/types/auth';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 const loginSchema = z.object({
   email: z
@@ -190,9 +189,7 @@ export async function POST(
       userData,
     };
 
-    const token = jwt.sign(tokenPayload, JWT_SECRET, {
-      expiresIn: '24h',
-    });
+    const token = await createToken(tokenPayload);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -213,7 +210,9 @@ export async function POST(
       { status: 200 }
     );
 
-    response.cookies.set('token', token, {
+    response.cookies.set({
+      name: 'token',
+      value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

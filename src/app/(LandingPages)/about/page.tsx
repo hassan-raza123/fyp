@@ -1,7 +1,7 @@
 import React from 'react';
-import Footer from '../components/Footer';
-import NavbarClient from '../components/NavbarClient';
+import Footer from '@/app/components/landing-page/Footer';
 import { GraduationCap, Github, Linkedin } from 'lucide-react';
+import NavbarClient from '@/app/components/landing-page/NavbarClient';
 
 const supervisor = {
   name: 'Mr. Abdul Basit',

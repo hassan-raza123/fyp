@@ -13,8 +13,8 @@ import {
   Bell,
   PieChart,
 } from 'lucide-react';
-import Footer from './components/Footer';
-import NavbarClient from './components/NavbarClient';
+import Footer from '@/app/components/landing-page/Footer';
+import NavbarClient from '@/app/components/landing-page/NavbarClient';
 
 const features = [
   {

@@ -1,7 +1,17 @@
-import LoginForm from '@/components/LoginForm';
+import '@/styles/globals.css';
+import { Metadata } from 'next';
 import { BookOpen, Clock, School } from 'lucide-react';
 
-export default function LoginPage() {
+export const metadata: Metadata = {
+  title: 'Auth | University Portal',
+  description: 'Login to access your university portal',
+};
+
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className='min-h-screen bg-secondary flex items-center justify-center p-4'>
       <div className='w-full max-w-6xl bg-accent rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row'>
@@ -43,7 +53,7 @@ export default function LoginPage() {
 
         {/* Right Side */}
         <div className='w-full lg:w-1/2 bg-accent flex items-center justify-center p-8'>
-          <LoginForm />
+          {children}
         </div>
       </div>
     </div>

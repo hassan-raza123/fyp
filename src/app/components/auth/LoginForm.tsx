@@ -3,60 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, School, ExternalLink } from 'lucide-react';
-
-// Refined type definitions
-type BaseUserType = 'student' | 'teacher' | 'admin';
-type AdminRole = 'super_admin' | 'department_admin' | 'child_admin';
-type AllRoles = BaseUserType | AdminRole;
-
-// Student specific data
-interface StudentData {
-  rollNumber: string;
-  departmentId: string;
-  programId: string;
-  batch: string;
-}
-
-// Teacher specific data
-interface TeacherData {
-  employeeId: string;
-  departmentId: string;
-  designation: string;
-}
-
-// Base user data
-interface BaseUserData {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: AllRoles;
-}
-
-// Combined user data type
-type UserData = BaseUserData & Partial<StudentData & TeacherData>;
-
-// API response types
-interface LoginSuccess {
-  success: true;
-  message: string;
-  data: {
-    user: UserData;
-    redirectTo: string;
-    token: string;
-    userType: AllRoles;
-  };
-}
-
-interface LoginError {
-  success: false;
-  message: string;
-  errors?: Array<{ field: string; message: string }>;
-}
-
-type LoginResponse = LoginSuccess | LoginError;
-
-type ValidationErrors = { [key: string]: string };
+import {
+  BaseUserType,
+  LoginResponse,
+  ValidationErrors,
+} from '@/app/types/login';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -140,6 +92,7 @@ export default function LoginForm() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Important for cookies
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -159,27 +112,23 @@ export default function LoginForm() {
         } else {
           setServerError(data.message || 'Login failed. Please try again.');
         }
-        setIsLoading(false);
         return;
       }
 
-      // Handle successful login
+      // Store minimal user preferences if remember me is checked
       if (formData.rememberMe) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        localStorage.setItem('userType', data.data.userType);
+        localStorage.setItem(
+          'userPreferences',
+          JSON.stringify({
+            email: formData.email,
+            userType: formData.userType,
+          })
+        );
       }
 
-      // Store session info
-      sessionStorage.setItem('lastLoginTime', new Date().toISOString());
-      sessionStorage.setItem('currentUserRole', data.data.userType);
-
-      // Redirect to the appropriate dashboard using the redirectTo path
-      if (data.data.redirectTo) {
-        router.push(data.data.redirectTo);
-      } else {
-        setServerError('Redirect path not provided.');
-      }
+      // Use Next.js router for navigation
+      router.refresh(); // Refresh the current route
+      router.push(data.data.redirectTo);
     } catch (error) {
       setServerError(
         'Network error. Please check your connection and try again.'
@@ -189,7 +138,7 @@ export default function LoginForm() {
     }
   };
 
-  const getUserTypeDisplay = (type: BaseUserType): string => {
+  const getUserTypeDisplay = (type: BaseUserType | string): string => {
     switch (type) {
       case 'admin':
         return 'Administrator';
@@ -198,7 +147,7 @@ export default function LoginForm() {
       case 'student':
         return 'Student';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return String(type).charAt(0).toUpperCase() + String(type).slice(1);
     }
   };
 
@@ -334,13 +283,13 @@ export default function LoginForm() {
               Remember me
             </span>
           </label>
-          <a
-            href='/auth/reset-password'
+          <Link
+            href='/forgot-password'
             className='text-primary hover:text-primary-light font-medium transition-colors inline-flex items-center group'
           >
-            Reset Password
+            Forgot Password
             <ExternalLink className='w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 transition-opacity' />
-          </a>
+          </Link>
         </div>
 
         {/* Submit Button */}

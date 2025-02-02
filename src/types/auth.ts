@@ -77,7 +77,7 @@ export interface UserData {
 export interface TokenPayload {
   userId: number;
   email: string;
-  role: AllRoles;
+  role: string;
   userData: UserData;
 }
 

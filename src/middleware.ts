@@ -1,62 +1,98 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyToken } from './lib/jwt';
 
+// Dashboard routes based on user roles
+const dashboardRoutes = {
+  student: '/student/dashboard',
+  teacher: '/faculty/dashboard',
+  super_admin: '/admin/dashboard',
+  department_admin: '/department/dashboard',
+  child_admin: '/sub-admin/dashboard',
+};
+
+// Public routes that don't require authentication
+const publicRoutes = [
+  '/',
+  '/dashboard',
+  '/features',
+  '/about',
+  '/forgot-password',
+];
+
 export async function middleware(request: NextRequest) {
-  // Exclude login and public routes
+  const { pathname } = request.nextUrl;
+
+  // Skip middleware for static files and API
   if (
-    request.nextUrl.pathname.startsWith('/api/auth/login') ||
-    request.nextUrl.pathname === '/login'
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.startsWith('/api/auth/login') ||
+    pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
   }
 
-  // Check for token in cookies or Authorization header
-  const token =
-    request.cookies.get('token')?.value ||
-    request.headers.get('Authorization')?.split('Bearer ')[1];
+  // Allow access to public routes
+  if (publicRoutes.some((route) => pathname === route)) {
+    return NextResponse.next();
+  }
 
-  if (!token) {
-    if (request.nextUrl.pathname.startsWith('/api')) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Authentication required',
-        },
-        { status: 401 }
-      );
+  // Get token from cookies
+  const token = request.cookies.get('token')?.value;
+
+  // Handle login page access
+  if (pathname === '/login') {
+    if (!token) {
+      return NextResponse.next();
     }
+
+    try {
+      const decoded = await verifyToken(token);
+      if (decoded?.role) {
+        const redirectTo =
+          dashboardRoutes[decoded.role as keyof typeof dashboardRoutes];
+        if (redirectTo) {
+          return NextResponse.redirect(new URL(redirectTo, request.url));
+        }
+      }
+    } catch {
+      return NextResponse.next();
+    }
+  }
+
+  // For all other routes, check if user is authenticated
+  if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) {
       throw new Error('Invalid token');
     }
 
-    // Add user info to request headers for use in API routes
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-user-id', decoded.userId);
-    requestHeaders.set('x-user-role', decoded.role);
+    const userRole = decoded.role;
+    const userDashboard =
+      dashboardRoutes[userRole as keyof typeof dashboardRoutes];
 
-    return NextResponse.next({
-      headers: requestHeaders,
-    });
-  } catch (error) {
-    if (request.nextUrl.pathname.startsWith('/api')) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid token',
-        },
-        { status: 401 }
-      );
+    // Check if trying to access dashboard routes
+    if (
+      Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))
+    ) {
+      if (!pathname.startsWith(userDashboard)) {
+        return NextResponse.redirect(new URL(userDashboard, request.url));
+      }
     }
-    return NextResponse.redirect(new URL('/login', request.url));
+
+    return NextResponse.next();
+  } catch (error) {
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('token');
+    return response;
   }
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/((?!_next/static|favicon.ico|login).*)'],
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
 };
