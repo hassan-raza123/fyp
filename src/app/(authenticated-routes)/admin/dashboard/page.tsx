@@ -67,6 +67,7 @@ import {
   Settings2,
   Info,
 } from 'lucide-react';
+import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/dashboard';
 
 const ModernDashboard = () => {
   // Core States
@@ -79,28 +80,31 @@ const ModernDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Refs for click outside
-  const notificationRef = useRef(null);
-  const searchRef = useRef(null);
-  const profileRef = useRef(null);
+ 
+  const searchRef = useRef<HTMLDivElement | null>(null);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
+  const profileRef = useRef<HTMLDivElement | null>(null);
 
   // Handle click outside for dropdowns
   useEffect(() => {
-    function handleClickOutside(event) {
+    function handleClickOutside(event: MouseEvent) {
       if (
         notificationRef.current &&
-        !notificationRef.current.contains(event.target)
+        !notificationRef.current.contains(event.target as Node)
       ) {
         setShowNotifications(false);
       }
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+ 
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -159,7 +163,7 @@ const ModernDashboard = () => {
       message: 'New course materials are available',
       time: '15 mins ago',
       icon: BookOpen,
-      color: 'text-blue-500',
+      color: 'text-primary',
       read: false,
     },
   ]);
@@ -193,6 +197,7 @@ const ModernDashboard = () => {
   ];
 
   // Quick Stats
+  
   const quickStats = [
     {
       title: 'Total Students',
@@ -200,7 +205,7 @@ const ModernDashboard = () => {
       change: '+12%',
       trend: [30, 40, 35, 50, 49, 60, 70, 91, 86],
       icon: Users,
-      color: 'from-blue-600 via-blue-500 to-blue-400',
+      color: 'from-blue-500 via-blue-400 to-blue-300',
       detail: '156 new this month',
     },
     {
@@ -209,7 +214,7 @@ const ModernDashboard = () => {
       change: '+4.3%',
       trend: [80, 85, 90, 88, 87, 92, 95, 94, 95],
       icon: UserCheck,
-      color: 'from-green-600 via-green-500 to-green-400',
+      color: 'from-green-500 via-green-400 to-green-300',
       detail: '2.1% above target',
     },
     {
@@ -218,7 +223,7 @@ const ModernDashboard = () => {
       change: '+8',
       trend: [20, 25, 30, 35, 25, 40, 45, 50, 55],
       icon: BookCheck,
-      color: 'from-purple-600 via-purple-500 to-purple-400',
+      color: 'from-purple-500 via-purple-400 to-purple-300',
       detail: '12 courses added',
     },
     {
@@ -227,7 +232,7 @@ const ModernDashboard = () => {
       change: '+2.5%',
       trend: [75, 78, 80, 82, 79, 85, 86, 87, 88],
       icon: Award,
-      color: 'from-orange-600 via-orange-500 to-orange-400',
+      color: 'from-orange-500 via-orange-400 to-orange-300',
       detail: 'Top 10% nationally',
     },
   ];
@@ -338,22 +343,23 @@ const ModernDashboard = () => {
     },
   ];
 
+
   // Components
-  const SidebarNavLink = ({ item, isChild = false }) => (
+  const SidebarNavLink = ({ item, isChild = false }:any) => (
     <button
       onClick={() => setActiveTab(item.id)}
       className={`
-        w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200
+        w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
         ${isSidebarOpen ? 'justify-start' : 'justify-center'}
         ${isChild ? 'ml-4' : ''}
         ${
           activeTab === item.id
             ? isDarkMode
-              ? 'bg-blue-600/20 text-blue-500'
-              : 'bg-blue-50 text-blue-600'
+              ? 'bg-purple-600/20 text-primary'
+              : 'bg-purple-50 text-primary'
             : isDarkMode
             ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            : 'text-gray-600 hover:bg-gray-50'
+            : 'text-text-light hover:bg-gray-50'
         }
         group
       `}
@@ -365,8 +371,8 @@ const ModernDashboard = () => {
           ${
             activeTab === item.id
               ? isDarkMode
-                ? 'bg-blue-600/10 text-blue-500'
-                : 'bg-blue-100 text-blue-600'
+                ? 'bg-purple-600/10 text-primary'
+                : 'bg-purple-100 text-primary'
               : 'text-current'
           }
         `}
@@ -374,7 +380,7 @@ const ModernDashboard = () => {
           <item.icon size={22} />
         </div>
         {item.badge > 0 && (
-          <span className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center'>
+          <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
             {item.badge}
           </span>
         )}
@@ -384,8 +390,8 @@ const ModernDashboard = () => {
       </div>
     </button>
   );
-
-  const MiniStatsCard = ({ stat }) => (
+  
+  const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
     <div
       className={`
       relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.color}
@@ -396,7 +402,7 @@ const ModernDashboard = () => {
       <div className='px-6 py-5 text-white'>
         <div className='flex justify-between items-start'>
           <div className='space-y-2'>
-            <p className='text-white/80 text-sm'>{stat.title}</p>
+            <p className='text-white font-medium text-sm'>{stat.title}</p>
             <h3 className='text-3xl font-bold'>{stat.value}</h3>
             <p className='text-sm text-white/80'>{stat.detail}</p>
           </div>
@@ -424,31 +430,47 @@ const ModernDashboard = () => {
     </div>
   );
 
-  const ProgressBar = ({ current, target, color }) => {
-    const getColorClass = (color) => {
-      const colors = {
-        blue: 'bg-blue-500',
-        green: 'bg-green-500',
-        yellow: 'bg-yellow-500',
-        red: 'bg-red-500',
-        purple: 'bg-purple-500',
+  
+  const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
+    const getColorClasses = (color: ProgressBarProps['color']) => {
+      const backgrounds: Record<ProgressBarProps['color'], { bg: string, bgLight: string }> = {
+        blue: { 
+          bg: 'bg-blue-300', 
+          bgLight: 'bg-blue-100' 
+        },
+        green: { 
+          bg: 'bg-green-300', 
+          bgLight: 'bg-green-100' 
+        },
+        yellow: { 
+          bg: 'bg-yellow-300', 
+          bgLight: 'bg-yellow-100' 
+        },
+        red: { 
+          bg: 'bg-red-300', 
+          bgLight: 'bg-red-100' 
+        },
+        purple: { 
+          bg: 'bg-purple-300', 
+          bgLight: 'bg-purple-100' 
+        }
       };
-      return colors[color] || 'bg-blue-500';
+      return backgrounds[color];
     };
-
+  
+    const { bg, bgLight } = getColorClasses(color);
+    
     return (
-      <div className='w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700'>
+      <div className={`w-full ${bgLight} rounded-full h-2`}>
         <div
-          className={`h-2 rounded-full ${getColorClass(
-            color
-          )} transition-all duration-300`}
-          style={{ width: `${(current / target) * 100}%` }}
+          className={`h-2 rounded-full ${bg} transition-all duration-300`}
+          style={{ width: `${Math.min((current / target) * 100, 100)}%` }}
         />
       </div>
     );
   };
-
-  const Timeline = ({ items }) => (
+  
+    const Timeline: React.FC<TimelineProps> = ({ items }) => (
     <div className='relative'>
       {items.map((item, index) => (
         <div key={index} className='ml-6 mb-6 relative'>
@@ -505,7 +527,7 @@ const ModernDashboard = () => {
             ? 'bg-gray-800/95 backdrop-blur-md border-gray-700'
             : 'bg-white/95 backdrop-blur-md border-gray-200'
         }
-        border-r shadow-lg
+        border-r
         ${isSidebarOpen ? 'w-72' : 'w-20'}
         ${!isSidebarOpen && 'lg:w-20'}
         ${
@@ -523,9 +545,18 @@ const ModernDashboard = () => {
         `}
         >
           <div className='flex items-center space-x-3'>
-            <div className='flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg'>
-              <Shield className='w-7 h-7 text-white' />
-            </div>
+          <div
+  className={`flex-shrink-0 ${
+    isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
+  } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg`}
+>
+  <Shield
+    className={`${
+      isSidebarOpen ? 'w-7 h-7' : 'w-5 h-5'
+    } text-white`}
+  />
+</div>
+
             {isSidebarOpen && (
               <div className='flex flex-col'>
                 <h1
@@ -543,7 +574,7 @@ const ModernDashboard = () => {
                   >
                     v2.0.1
                   </span>
-                  <span className='px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-600 rounded-full'>
+                  <span className='px-1.5 py-0.5 text-[10px]  bg-purple-100 text-primary rounded-full'>
                     Beta
                   </span>
                 </div>
@@ -553,7 +584,7 @@ const ModernDashboard = () => {
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             className={`
-              p-2 rounded-lg transition-all duration-200 hover:scale-110
+              p-1 rounded-lg transition-all duration-200 hover:scale-110
               ${
                 isDarkMode
                   ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
@@ -564,7 +595,7 @@ const ModernDashboard = () => {
             {isSidebarOpen ? (
               <ChevronLeft size={22} />
             ) : (
-              <ChevronRight size={22} />
+              <ChevronRight size={21} />
             )}
           </button>
         </div>
@@ -577,7 +608,7 @@ const ModernDashboard = () => {
                 <h2
                   className={`
                   px-4 mb-3 text-xs font-semibold uppercase tracking-wider
-                  ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
+                  ${isDarkMode ? 'text-gray-400' : 'text-text-light'}
                 `}
                 >
                   {section.title}
@@ -608,7 +639,7 @@ const ModernDashboard = () => {
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`
-              w-full flex items-center space-x-3 p-2 rounded-xl transition-all duration-200
+              w-full flex items-center space-x-4 p-2 rounded-xl transition-all duration-200
               ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}
               ${!isSidebarOpen && 'justify-center'}
             `}
@@ -622,9 +653,9 @@ const ModernDashboard = () => {
               <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800'></span>
             </div>
             {isSidebarOpen && (
-              <div className='flex-1 min-w-0'>
+              <div className='flex-1 text-left min-w-0'>
                 <p
-                  className={`text-sm font-medium truncate ${
+                  className={`text-sm  font-medium truncate ${
                     isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}
                 >
@@ -655,7 +686,7 @@ const ModernDashboard = () => {
           {showProfileMenu && isSidebarOpen && (
             <div
               className={`
-              absolute bottom-full left-0 right-0 mb-2 py-2 rounded-xl shadow-lg
+              absolute bottom-full left-2 right-2 mb-2 py-2 rounded-xl shadow-lg
               ${
                 isDarkMode
                   ? 'bg-gray-800 border-gray-700'
@@ -673,7 +704,7 @@ const ModernDashboard = () => {
                   >
                     Signed in as
                   </span>
-                  <span className='px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-600 rounded-full'>
+                  <span className='px-2 py-0.5 text-xs font-medium bg-purple-100 text-primary rounded-full'>
                     Admin
                   </span>
                 </div>
@@ -741,7 +772,7 @@ const ModernDashboard = () => {
         {/* Enhanced Header */}
         <header
           className={`
-          h-16 flex items-center justify-between px-6 sticky top-0 z-40
+          h-16 flex items-center justify-between px-4 lg:px-12 sticky top-0 z-40
           ${
             isDarkMode
               ? 'bg-gray-800/95 border-gray-700'
@@ -758,53 +789,85 @@ const ModernDashboard = () => {
             <Menu size={22} />
           </button>
 
-          <div className='flex items-center flex-1'>
-            {/* Search Bar */}
-            <div className='relative w-96' ref={searchRef}>
-              <div
-                className={`
-                absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none
-                ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}
-              `}
-              >
-                <Search size={20} />
-              </div>
-              <input
-                type='text'
-                placeholder='Search anything...'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`
-                  w-full pl-10 pr-4 py-2 rounded-xl
-                  ${
-                    isDarkMode
-                      ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'
-                  }
-                  border focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                  transition-all duration-200
-                `}
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className={`
-                    absolute inset-y-0 right-0 pr-3 flex items-center
-                    ${
-                      isDarkMode
-                        ? 'text-gray-400 hover:text-white'
-                        : 'text-gray-400 hover:text-gray-600'
-                    }
-                  `}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
+          <div className='flex items-center flex-1 min-w-0'>
+        {/* Search Bar */}
+        <div className='relative w-full max-w-md mx-auto lg:mx-0 lg:max-w-lg hidden sm:block' ref={searchRef}>
+          <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+            <Search size={20} />
           </div>
+          <input
+            type='text'
+            placeholder='Search anything...'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`
+              w-full pl-10 pr-4 py-2 rounded-xl
+              ${isDarkMode 
+                ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400' 
+                : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'}
+              border focus:outline-none focus:ring-2 focus:ring-blue-500/20
+              transition-all duration-200
+            `}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className={`absolute inset-y-0 right-0 pr-3 flex items-center ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
 
           {/* Header Actions */}
-          <div className='flex items-center space-x-2'>
+          <div className='flex items-center'>
+
+          <button className="sm:hidden p-2 rounded-xl mr-2"  onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}>
+          <Search size={22} />
+        </button>
+
+        {isMobileSearchOpen && (
+        <div 
+          ref={searchRef}
+          className={`
+            fixed top-0 left-0 w-full z-50 p-4 transition-all duration-300 ease-in-out
+            ${isDarkMode 
+              ? 'bg-gray-800 text-white' 
+              : 'bg-white text-gray-900'}
+          `}
+          style={{ 
+            transform: isMobileSearchOpen ? 'translateY(0)' : 'translateY(-100%)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div className='relative'>
+            <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+              <Search size={20} />
+            </div>
+            <input
+              type='text'
+              placeholder='Search anything...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`
+                w-full pl-10 pr-4 py-2 rounded-xl
+                ${isDarkMode 
+                  ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'}
+                border focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                transition-all duration-200
+              `}
+            />
+            <button
+              onClick={() => setIsMobileSearchOpen(false)}
+              className={`absolute inset-y-0 right-0 pr-3 flex items-center ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
             {/* Notifications */}
             <div className='relative' ref={notificationRef}>
               <button
@@ -820,129 +883,120 @@ const ModernDashboard = () => {
               >
                 <Bell size={22} />
                 {notifications.some((n) => !n.read) && (
-                  <span className='absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800'></span>
+                  <span className='absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800'></span>
                 )}
               </button>
 
               {/* Notifications Panel */}
               {showNotifications && (
-                <div
-                  className={`
-                  absolute right-0 mt-2 w-96 rounded-xl shadow-lg
-                  ${
-                    isDarkMode
-                      ? 'bg-gray-800 border-gray-700'
-                      : 'bg-white border-gray-200'
-                  }
-                  border transform origin-top
-                  transition-all duration-200 ease-out
-                `}
+        <div
+          className={`
+            fixed sm:absolute right-0 sm:mt-5 mt-0
+            w-full sm:w-96
+            h-[100vh] sm:h-auto
+            top-0 sm:top-full
+            rounded-none sm:rounded-xl shadow-lg
+            z-50
+            ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+            border transform origin-top
+            transition-all duration-200 ease-out
+          `}
+        >
+          {/* Header */}
+          <div className='sticky top-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-inherit'>
+            <div className='flex justify-between items-center'>
+              <div className='flex items-center space-x-2'>
+                <button 
+                  onClick={() => setShowNotifications(false)}
+                  className='sm:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700'
                 >
-                  <div className='p-4 border-b border-gray-200 dark:border-gray-700'>
-                    <div className='flex justify-between items-center'>
-                      <h3
-                        className={`font-semibold ${
-                          isDarkMode ? 'text-white' : 'text-gray-900'
-                        }`}
-                      >
-                        Notifications
-                      </h3>
-                      <div className='flex space-x-2'>
-                        <button
-                          onClick={() =>
-                            setNotifications((prev) =>
-                              prev.map((n) => ({ ...n, read: true }))
-                            )
-                          }
-                          className='text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400'
-                        >
-                          Mark all as read
-                        </button>
-                        <div
-                          className={`h-4 w-px ${
-                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                          }`}
-                        />
-                        <button
-                          onClick={() => setNotifications([])}
-                          className='text-sm text-red-600 hover:text-red-700 dark:text-red-400'
-                        >
-                          Clear all
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <span className='sr-only'>Close</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Notifications
+                </h3>
+              </div>
+              <div className='flex space-x-2'>
+                <button
+                  onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                  className='text-sm text-primary hover:text-primary-light'
+                >
+                  Mark all as read
+                </button>
+                <div className={`h-4 w-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                <button
+                  onClick={() => setNotifications([])}
+                  className='text-sm text-red-600 hover:text-red-700 dark:text-red-400'
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+          </div>
 
-                  <div className='max-h-[400px] overflow-y-auto'>
-                    {notifications.length === 0 ? (
-                      <div className='p-8 text-center'>
-                        <div className='mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4'>
-                          <Bell
-                            size={24}
-                            className='text-gray-500 dark:text-gray-400'
-                          />
-                        </div>
-                        <p className='text-gray-500 dark:text-gray-400'>
-                          No new notifications
+          {/* Notification List */}
+          <div className='max-h-[calc(100vh-80px)] sm:max-h-[400px] overflow-y-auto'>
+            {notifications.length === 0 ? (
+              <div className='p-8 text-center'>
+                <div className='mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4'>
+                  <Bell size={24} className='text-gray-500 dark:text-gray-400' />
+                </div>
+                <p className='text-gray-500 dark:text-gray-400'>
+                  No new notifications
+                </p>
+              </div>
+            ) : (
+              <div className='p-2'>
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`
+                      p-3 rounded-lg mb-2 cursor-pointer
+                      transition-all duration-200
+                      ${!notification.read && 'bg-purple-50 dark:bg-purple-900/20'}
+                      hover:bg-gray-50 dark:hover:bg-gray-700
+                    `}
+                  >
+                    <div className='flex items-start'>
+                      <div
+                        className={`
+                          p-2 rounded-lg
+                          ${notification.type === 'alert'
+                            ? 'bg-yellow-100'
+                            : notification.type === 'success'
+                            ? 'bg-green-100'
+                            : 'bg-purple-100'
+                          }
+                        `}
+                      >
+                        <notification.icon
+                          size={18}
+                          className={notification.color}
+                        />
+                      </div>
+                      <div className='ml-3 flex-1'>
+                        <p className={`text-sm font-medium mb-0.5 ${isDarkMode ? 'text-text-light' : 'text-gray-900'}`}>
+                          {notification.message}
+                        </p>
+                        <p className='text-xs text-gray-500'>
+                          {notification.time}
                         </p>
                       </div>
-                    ) : (
-                      <div className='p-2'>
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`
-                              p-3 rounded-lg mb-2 cursor-pointer
-                              transition-all duration-200
-                              ${
-                                !notification.read &&
-                                'bg-blue-50 dark:bg-blue-900/20'
-                              }
-                              hover:bg-gray-50 dark:hover:bg-gray-700
-                            `}
-                          >
-                            <div className='flex items-start'>
-                              <div
-                                className={`
-                                p-2 rounded-lg
-                                ${
-                                  notification.type === 'alert'
-                                    ? 'bg-yellow-100'
-                                    : notification.type === 'success'
-                                    ? 'bg-green-100'
-                                    : 'bg-blue-100'
-                                }
-                              `}
-                              >
-                                <notification.icon
-                                  size={18}
-                                  className={notification.color}
-                                />
-                              </div>
-                              <div className='ml-3 flex-1'>
-                                <p
-                                  className={`
-                                  text-sm font-medium mb-0.5
-                                  ${isDarkMode ? 'text-white' : 'text-gray-900'}
-                                `}
-                                >
-                                  {notification.message}
-                                </p>
-                                <p className='text-xs text-gray-500'>
-                                  {notification.time}
-                                </p>
-                              </div>
-                              {!notification.read && (
-                                <div className='w-2 h-2 bg-blue-600 rounded-full mt-2'></div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                      {!notification.read && (
+                        <div className='w-2 h-2 bg-gradient-to-br from-primary via-primary-light to-primary rounded-full mt-2'></div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+            
             </div>
 
             {/* Quick Actions */}
@@ -1000,13 +1054,13 @@ const ModernDashboard = () => {
               <div className='relative'>
                 <button
                   className='
-                  flex items-center space-x-2 px-3 py-2 rounded-xl
-                  bg-blue-600 hover:bg-blue-700 text-white
+                  flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg
+                  bg-gradient-to-br from-purple-500 to-indigo-600 hover:-translate-y-0.5 text-accent
                   transition-all duration-200
                 '
                 >
                   <LogOut size={18} />
-                  <span className='text-sm font-medium'>Logout</span>
+                  <span className='text-sm font-medium hidden sm:block'>Logout</span>
                 </button>
               </div>
             </div>
@@ -1014,10 +1068,10 @@ const ModernDashboard = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className='p-6'>
+        <main className='p-12 sm:space-y-6 space-y-4'>
           {/* Page Header */}
-          <div className='flex justify-between items-center mb-6'>
-            <div>
+          <div className='flex flex-col sm:flex-row justify-between  mb-6 space-y-4'>
+              <div>
               <h1
                 className={`text-2xl font-bold ${
                   isDarkMode ? 'text-white' : 'text-gray-800'
@@ -1035,7 +1089,8 @@ const ModernDashboard = () => {
             </div>
 
             {/* Page Actions */}
-            <div className='flex items-center space-x-4'>
+            
+            <div className='flex items-center flex-wrap w-full md:w-auto gap-2'>
               {/* Period Selector */}
               <div
                 className={`
@@ -1051,12 +1106,8 @@ const ModernDashboard = () => {
                       px-4 py-2 text-sm font-medium transition-colors
                       ${
                         selectedPeriod === period
-                          ? isDarkMode
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-blue-50 text-blue-600'
-                          : isDarkMode
-                          ? 'text-gray-400 hover:bg-gray-700'
-                          : 'text-gray-600 hover:bg-gray-50'
+                          ?  'bg-purple-100 text-primary'
+                          : 'text-text-light hover:bg-gray-100'
                       }
                     `}
                   >
@@ -1078,12 +1129,8 @@ const ModernDashboard = () => {
                     p-2 transition-colors
                     ${
                       activeView === 'grid'
-                        ? isDarkMode
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-blue-50 text-blue-600'
-                        : isDarkMode
-                        ? 'text-gray-400 hover:bg-gray-700'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ?  'bg-purple-100 text-primary'
+                        : 'text-text-light hover:bg-gray-100'
                     }
                   `}
                 >
@@ -1095,12 +1142,9 @@ const ModernDashboard = () => {
                     p-2 transition-colors
                     ${
                       activeView === 'list'
-                        ? isDarkMode
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-blue-50 text-blue-600'
-                        : isDarkMode
-                        ? 'text-gray-400 hover:bg-gray-700'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ? 
+                           'bg-purple-100 text-primary'
+                        : 'text-text-light hover:bg-gray-100'
                     }
                   `}
                 >
@@ -1111,7 +1155,7 @@ const ModernDashboard = () => {
               {/* Quick Actions */}
               <button
                 className='
-                px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                px-4 py-2 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5
                 text-white flex items-center space-x-2 transition-colors
               '
               >
@@ -1122,128 +1166,141 @@ const ModernDashboard = () => {
           </div>
 
           {/* Stats Grid */}
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6'>
             {quickStats.map((stat, index) => (
               <MiniStatsCard key={index} stat={stat} />
             ))}
           </div>
 
           {/* Performance Goals */}
-          <div
-            className={`
-            rounded-xl p-6 mb-6
-            ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
-            shadow-sm
-          `}
-          >
-            <div className='flex justify-between items-center mb-6'>
-              <div>
-                <h3
-                  className={`font-semibold text-lg ${
-                    isDarkMode ? 'text-white' : 'text-gray-800'
-                  }`}
-                >
-                  Performance Goals
-                </h3>
-                <p
-                  className={`text-sm mt-1 ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Track your progress towards targets
-                </p>
-              </div>
-              <button
-                className={`
-                text-sm font-medium
-                ${
-                  isDarkMode
-                    ? 'text-blue-400 hover:text-blue-300'
-                    : 'text-blue-600 hover:text-blue-700'
-                }
-              `}
-              >
-                View All Goals
-              </button>
-            </div>
+        
+    <div className={`
+      rounded-2xl overflow-hidden
+      ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
+      shadow-lg backdrop-blur-sm
+      border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
+      transition-all duration-300
+    `}>
+      {/* Header */}
+      <div className="p-6 pb-0">
+        <div className="flex justify-between items-center mb-6">
+          <div className="space-y-1">
+            <h3 className={`
+              font-bold text-xl
+              ${isDarkMode ? 'text-white' : 'text-gray-800'}
+            `}>
+              Performance Goals
+            </h3>
+            <p className={`
+              text-sm
+              ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
+            `}>
+              Track your progress towards targets
+            </p>
+          </div>
+          
+          <button className="
+            inline-flex items-center px-4 py-2 rounded-lg
+            text-sm font-semibold
+            bg-primary/5 text-primary
+            hover:bg-primary/10 
+            transition-all duration-200
+          ">
+            <span>View All Goals</span>
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </button>
+        </div>
+      </div>
 
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-              {performanceGoals.map((goal, index) => (
-                <div key={index} className='space-y-2'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center space-x-2'>
-                      <div
-                        className={`
-                        p-2 rounded-lg
-                        ${
-                          goal.status === 'On Track'
-                            ? 'bg-green-100'
-                            : 'bg-yellow-100'
-                        }
-                      `}
-                      >
-                        <goal.icon
-                          size={20}
-                          className={
-                            goal.status === 'On Track'
-                              ? 'text-green-600'
-                              : 'text-yellow-600'
-                          }
-                        />
-                      </div>
-                      <span
-                        className={`
-                        font-medium
-                        ${isDarkMode ? 'text-white' : 'text-gray-800'}
-                      `}
-                      >
-                        {goal.title}
+      {/* Goals Grid */}
+      <div className="p-6 grid grid-cols-1  xl:grid-cols-3 gap-6">
+        {performanceGoals.map((goal, index) => (
+          <div key={index} className="group">
+            <div className={`
+              relative p-6 rounded-xl
+              ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}
+              border ${isDarkMode ? 'border-gray-600' : 'border-gray-100'}
+              hover:shadow-md transition-all duration-300
+              transform hover:-translate-y-1
+            `}>
+              {/* Goal Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`
+                    p-2.5 rounded-lg
+                    ${goal.status === 'On Track' 
+                      ? 'bg-green-100 text-green-600' 
+                      : 'bg-yellow-100 text-yellow-600'}
+                    transition-colors duration-200
+                  `}>
+                    <goal.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className={`
+                      font-semibold
+                      ${isDarkMode ? 'text-white' : 'text-gray-800'}
+                    `}>
+                      {goal.title}
+                    </h4>
+                    <div className="flex items-center mt-1 space-x-2">
+                      <span className={`
+                        text-xs font-medium px-2.5 py-1 rounded-full
+                        ${goal.status === 'On Track'
+                          ? 'bg-green-100/80 text-green-600'
+                          : 'bg-yellow-100/80 text-yellow-600'}
+                      `}>
+                        {goal.status}
+                      </span>
+                      <span className={`
+                        text-sm font-medium
+                        ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
+                      `}>
+                        {goal.current}% / {goal.target}%
                       </span>
                     </div>
-                    <span
-                      className={`text-sm ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                      }`}
-                    >
-                      {goal.current}%/{goal.target}%
-                    </span>
-                  </div>
-                  <ProgressBar
-                    current={goal.current}
-                    target={goal.target}
-                    color={goal.color}
-                  />
-                  <div className='flex justify-between items-center mt-2'>
-                    <span
-                      className={`
-                      text-xs px-2 py-1 rounded-full
-                      ${
-                        goal.status === 'On Track'
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-yellow-100 text-yellow-600'
-                      }
-                    `}
-                    >
-                      {goal.status}
-                    </span>
-                    <button className='text-xs text-blue-600 hover:text-blue-700'>
-                      View Details
-                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Progress Bar */}
+              <ProgressBar
+                    current={goal.current}
+                    target={goal.target}
+                    color={goal.color as 'blue' | 'green' | 'yellow' | 'red' | 'purple'} // Type assertion
+
+                  />
+             
+              {/* Action Button */}
+              <button className="
+                w-full px-4 py-2 mt-2 rounded-lg
+                text-sm font-medium
+                bg-white/5 hover:bg-white/10
+                text-primary hover:text-primary-light
+                border border-primary/10 hover:border-primary/20
+                transition-all duration-200
+                flex items-center justify-center space-x-2
+              ">
+                <span>View Details</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
-
+        ))}
+      </div>
+    </div>
+     
           {/* Charts Grid */}
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
             {/* Performance Chart */}
-            <div
-              className={`
-              rounded-xl p-6
-              ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
-              shadow-sm
+            <div 
+            className={`
+              rounded-2xl overflow-hidden p-6
+              ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
+              shadow-lg backdrop-blur-sm
+              border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
+              transition-all duration-300
             `}
+            
             >
               <div className='flex justify-between items-center mb-6'>
                 <div>
@@ -1327,12 +1384,15 @@ const ModernDashboard = () => {
             </div>
 
             {/* Timeline */}
-            <div
-              className={`
-              rounded-xl p-6
-              ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
-              shadow-sm
-            `}
+            <div 
+               className={`
+                rounded-2xl overflow-hidden p-6
+                ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
+                shadow-lg backdrop-blur-sm
+                border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
+                transition-all duration-300
+              `}
+             
             >
               <div className='flex justify-between items-center mb-6'>
                 <div>
@@ -1354,11 +1414,7 @@ const ModernDashboard = () => {
                 <button
                   className={`
                   text-sm font-medium
-                  ${
-                    isDarkMode
-                      ? 'text-blue-400 hover:text-blue-300'
-                      : 'text-blue-600 hover:text-blue-700'
-                  }
+                  text-primary hover:text-primary-light'
                 `}
                 >
                   View All
@@ -1369,12 +1425,15 @@ const ModernDashboard = () => {
           </div>
 
           {/* Activity Table */}
-          <div
-            className={`
-            rounded-xl overflow-hidden
-            ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
-            shadow-sm
+          <div 
+          className={`
+            rounded-2xl overflow-hidden
+            ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
+            shadow-lg backdrop-blur-sm
+            border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
+            transition-all duration-300
           `}
+           
           >
             <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
               <div className='flex justify-between items-center'>
@@ -1421,8 +1480,8 @@ const ModernDashboard = () => {
                   </button>
                   <button
                     className='
-                    p-2 rounded-lg bg-blue-600 text-white
-                    hover:bg-blue-700 transition-colors
+                    p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 hover:-translate-y-0.5
+                    text-accent transform transition-colors
                   '
                   >
                     <Plus size={20} />
@@ -1512,7 +1571,7 @@ const ModernDashboard = () => {
                           <span
                             className={`
                             font-medium
-                            ${isDarkMode ? 'text-white' : 'text-gray-800'}
+                            ${isDarkMode ? 'text-white' : 'text-text-light'}
                           `}
                           >
                             {activity.user}
@@ -1522,7 +1581,7 @@ const ModernDashboard = () => {
                       <td
                         className={`
                         px-6 py-4 whitespace-nowrap
-                        ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}
+                        ${isDarkMode ? 'text-gray-300' : 'text-text-light'}
                       `}
                       >
                         {activity.action}
@@ -1530,7 +1589,7 @@ const ModernDashboard = () => {
                       <td
                         className={`
                         px-6 py-4 whitespace-nowrap
-                        ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}
+                        ${isDarkMode ? 'text-gray-300' : 'text-text-light'}
                       `}
                       >
                         {activity.course}
@@ -1538,7 +1597,7 @@ const ModernDashboard = () => {
                       <td
                         className={`
                         px-6 py-4 whitespace-nowrap text-sm
-                        ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
+                        ${isDarkMode ? 'text-gray-400' : 'text-text-light'}
                       `}
                       >
                         {activity.time}
@@ -1546,12 +1605,12 @@ const ModernDashboard = () => {
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <span
                           className={`
-                          px-3 py-1 text-xs rounded-full
+                          px-3 py-1 text-xs rounded-full font-semibold
                           ${
                             activity.status === 'Completed'
                               ? 'bg-green-100 text-green-800'
                               : activity.status === 'Active'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-purple-100 text-primary'
                               : 'bg-yellow-100 text-yellow-800'
                           }
                           ${isDarkMode && 'opacity-80'}

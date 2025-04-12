@@ -8,8 +8,8 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import Footer from '@/app/components/landing-page/Footer';
-import NavbarClient from '@/app/components/landing-page/NavbarClient';
+import NavbarClient from '@/components/landing-page/NavbarClient';
+import Footer from '@/components/landing-page/Footer';
 
 const mainFeatures = [
   {

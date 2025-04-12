@@ -17,7 +17,6 @@ export default function NavbarClient() {
   }, []);
 
   const navLinks = [
-    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Features', href: '/features' },
     { name: 'About', href: '/about' },
   ];
@@ -50,7 +49,7 @@ export default function NavbarClient() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors ${
                   isScrolled
-                    ? 'text-text-light hover:text-primary'
+                    ? 'text-text-light hover:text-text'
                     : 'text-accent/80 hover:text-accent'
                 }`}
               >
@@ -61,7 +60,7 @@ export default function NavbarClient() {
               href='/login'
               className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 ${
                 isScrolled
-                  ? 'bg-primary text-accent hover:bg-primary-light shadow-md hover:shadow-lg'
+                  ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-accent shadow-md hover:shadow-lg'
                   : 'bg-accent text-primary hover:bg-accent/90'
               }`}
             >

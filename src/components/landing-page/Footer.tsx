@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand Section */}
           <div className='col-span-1 md:col-span-2'>
             <div className='flex items-center space-x-3 mb-6'>
-              <div className='w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center'>
+              <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center'>
                 <span className='text-xl font-bold text-white'>U</span>
               </div>
               <h3 className='text-2xl font-bold text-white'>UniAttend</h3>
@@ -91,7 +91,7 @@ export default function Footer() {
             <h4 className='text-lg font-semibold text-white mb-4'>Contact</h4>
             <ul className='space-y-2'>
               <li className='flex items-center space-x-2'>
-                <Mail className='h-5 w-5 text-indigo-400' />
+                <Mail className='h-5 w-5 text-primary' />
                 <span>support@uniattend.com</span>
               </li>
               <li>

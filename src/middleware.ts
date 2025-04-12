@@ -7,8 +7,19 @@ const dashboardRoutes = {
   student: '/student/dashboard',
   teacher: '/faculty/dashboard',
   super_admin: '/admin/dashboard',
+  sub_admin: '/admin/dashboard', // Sub Admin uses same dashboard as Super Admin
   department_admin: '/department/dashboard',
   child_admin: '/sub-admin/dashboard',
+};
+
+// Role hierarchy and permissions
+const roleHierarchy = {
+  super_admin: ['super_admin', 'sub_admin', 'department_admin', 'child_admin', 'teacher', 'student'],
+  sub_admin: ['department_admin', 'child_admin', 'teacher', 'student'],
+  department_admin: ['child_admin', 'teacher', 'student'],
+  child_admin: ['teacher', 'student'],
+  teacher: ['student'],
+  student: [],
 };
 
 // Public routes that don't require authentication
@@ -81,6 +92,47 @@ export async function middleware(request: NextRequest) {
       Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))
     ) {
       if (!pathname.startsWith(userDashboard)) {
+        return NextResponse.redirect(new URL(userDashboard, request.url));
+      }
+    }
+
+    // Check role-based access for admin routes
+    if (pathname.startsWith('/admin')) {
+      if (userRole === 'super_admin' || userRole === 'sub_admin') {
+        // Special handling for Sub Admin restrictions
+        if (userRole === 'sub_admin') {
+          // Sub Admin cannot access these routes
+          if (
+            pathname.includes('/admin/super-admin') ||
+            pathname.includes('/admin/system-settings')
+          ) {
+            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+          }
+        }
+      } else {
+        return NextResponse.redirect(new URL(userDashboard, request.url));
+      }
+    }
+
+    // Check department admin access
+    if (pathname.startsWith('/department')) {
+      if (
+        userRole !== 'department_admin' &&
+        userRole !== 'super_admin' &&
+        userRole !== 'sub_admin'
+      ) {
+        return NextResponse.redirect(new URL(userDashboard, request.url));
+      }
+    }
+
+    // Check child admin access
+    if (pathname.startsWith('/sub-admin')) {
+      if (
+        userRole !== 'child_admin' &&
+        userRole !== 'department_admin' &&
+        userRole !== 'super_admin' &&
+        userRole !== 'sub_admin'
+      ) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }

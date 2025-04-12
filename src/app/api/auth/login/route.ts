@@ -26,7 +26,7 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'teacher', 'admin', 'sub_admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -99,8 +99,8 @@ export async function POST(
             role: true,
           },
         },
-        student: userType === 'student',
-        faculty: userType === 'teacher',
+        student: true,
+        faculty: true,
       },
     })) as UserWithRoles | null;
 
@@ -114,8 +114,8 @@ export async function POST(
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordValid) {
       return NextResponse.json(
         {
           success: false,
@@ -125,98 +125,74 @@ export async function POST(
       );
     }
 
-    let actualUserType: AllRoles = userType;
-    let redirectPath = '/dashboard';
+    // Check if user has the requested role
+    const userRoles = user.roles.map((ur) => ur.role.name);
+    let actualRole: AllRoles;
 
-    if (userType === 'admin') {
-      const adminRoles: AdminRole[] = [
-        'super_admin',
-        'department_admin',
-        'child_admin',
-      ];
-      const userAdminRole = user.roles.find((userRole) =>
-        adminRoles.includes(userRole.role.name as AdminRole)
-      );
-
+    if (userType === 'admin' || userType === 'sub_admin') {
+      // For admin types, check if user has any admin role
+      const adminRoles = ['super_admin', 'sub_admin', 'department_admin', 'child_admin'];
+      const userAdminRole = userRoles.find((role) => adminRoles.includes(role));
       if (!userAdminRole) {
         return NextResponse.json(
           {
             success: false,
-            message: 'Access denied. You do not have admin privileges.',
+            message: 'User does not have admin privileges',
           },
           { status: 403 }
         );
       }
-
-      actualUserType = userAdminRole.role.name;
-
-      switch (actualUserType) {
-        case 'super_admin':
-          redirectPath = '/admin/dashboard';
-          break;
-        case 'department_admin':
-          redirectPath = '/department/dashboard';
-          break;
-        case 'child_admin':
-          redirectPath = '/sub-admin/dashboard';
-          break;
-      }
+      actualRole = userAdminRole as AdminRole;
     } else {
-      const hasRole = user.roles.some(
-        (userRole) => userRole.role.name === userType
-      );
-
-      if (!hasRole) {
+      // For non-admin types, check exact role match
+      if (!userRoles.includes(userType)) {
         return NextResponse.json(
           {
             success: false,
-            message: 'Access denied. Invalid role.',
+            message: `User does not have ${userType} role`,
           },
           { status: 403 }
         );
       }
-
-      redirectPath =
-        userType === 'student' ? '/student/dashboard' : '/faculty/dashboard';
+      actualRole = userType;
     }
 
-    const userData = createUserData(user, actualUserType);
+    // Create user data based on role
+    const userData = createUserData(user, actualRole);
 
-    const tokenPayload: TokenPayload = {
+    // Create JWT token
+    const token = await createToken({
       userId: user.id,
       email: user.email,
-      role: actualUserType,
+      role: actualRole,
       userData,
-    };
+    });
 
-    const token = await createToken(tokenPayload);
-
+    // Update last login
     await prisma.user.update({
       where: { id: user.id },
       data: { last_login: new Date() },
     });
 
-    const response = NextResponse.json(
-      {
-        success: true,
-        message: 'Login successful',
-        data: {
-          user: userData,
-          redirectTo: redirectPath,
-          token: token,
-          userType: actualUserType,
-        },
-      },
-      { status: 200 }
-    );
+    // Determine redirect path based on role
+    const redirectTo = getDashboardPath(actualRole);
 
-    response.cookies.set({
-      name: 'token',
-      value: token,
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: userData,
+        redirectTo,
+        token,
+        userType: actualRole,
+      },
+    });
+
+    response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
 
@@ -226,11 +202,29 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        message: 'An error occurred during login. Please try again.',
+        message: 'An error occurred during login',
       },
       { status: 500 }
     );
   } finally {
     await prisma.$disconnect();
+  }
+}
+
+function getDashboardPath(role: AllRoles): string {
+  switch (role) {
+    case 'super_admin':
+    case 'sub_admin':
+      return '/admin/dashboard';
+    case 'department_admin':
+      return '/department/dashboard';
+    case 'child_admin':
+      return '/sub-admin/dashboard';
+    case 'teacher':
+      return '/faculty/dashboard';
+    case 'student':
+      return '/student/dashboard';
+    default:
+      return '/dashboard';
   }
 }

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
-import Footer from '@/app/components/landing-page/Footer';
-import NavbarClient from '@/app/components/landing-page/NavbarClient';
+import NavbarClient from '@/components/landing-page/NavbarClient';
+import Footer from '@/components/landing-page/Footer';
 
 export default function Contact() {
   return (
     <div className='min-h-screen bg-white'>
       {/* Header Section */}
-      <div className='relative bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900'>
+      <div className='relative bg-gradient-to-br from-primary via-primary-light to-primary'>
         <NavbarClient />
         <div className='absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]' />
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20'>
@@ -22,18 +22,20 @@ export default function Contact() {
         </div>
 
         {/* Wave SVG */}
-        <div className='absolute bottom-0 left-0 right-0'>
-          <svg
-            viewBox='0 0 1440 120'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M0 30L48 35C96 40 192 50 288 55C384 60 480 60 576 55C672 50 768 40 864 45C960 50 1056 70 1152 75C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V30Z'
-              fill='white'
-            />
-          </svg>
-        </div>
+        <div className="absolute bottom-0 left-0 right-0 -mb-1">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="white"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          className="w-full h-auto"
+        >
+          <path
+            d="M0,0 C480,100 960,100 1440,0 L1440,120 L0,120 Z"
+            fill="white"
+          />
+        </svg>
+      </div>
       </div>
 
       {/* Contact Section */}
@@ -104,7 +106,7 @@ export default function Contact() {
                 </div>
                 <button
                   type='submit'
-                  className='w-full px-8 py-4 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center'
+                  className='w-full px-8 py-4 bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center'
                 >
                   Send Message
                   <Send className='ml-2 h-5 w-5' />
@@ -119,8 +121,8 @@ export default function Contact() {
               </h2>
               <div className='space-y-8'>
                 <div className='flex items-start space-x-4'>
-                  <div className='p-3 bg-indigo-100 rounded-lg'>
-                    <MapPin className='h-6 w-6 text-indigo-600' />
+                  <div className='p-3 bg-purple-100 rounded-lg'>
+                    <MapPin className='h-6 w-6 text-primary' />
                   </div>
                   <div>
                     <h3 className='font-semibold text-gray-900 mb-1'>
@@ -134,8 +136,8 @@ export default function Contact() {
                   </div>
                 </div>
                 <div className='flex items-start space-x-4'>
-                  <div className='p-3 bg-indigo-100 rounded-lg'>
-                    <Mail className='h-6 w-6 text-indigo-600' />
+                  <div className='p-3 bg-purple-100 rounded-lg'>
+                    <Mail className='h-6 w-6 text-primary' />
                   </div>
                   <div>
                     <h3 className='font-semibold text-gray-900 mb-1'>Email</h3>
@@ -143,8 +145,8 @@ export default function Contact() {
                   </div>
                 </div>
                 <div className='flex items-start space-x-4'>
-                  <div className='p-3 bg-indigo-100 rounded-lg'>
-                    <Phone className='h-6 w-6 text-indigo-600' />
+                  <div className='p-3 bg-purple-100 rounded-lg'>
+                    <Phone className='h-6 w-6 text-primary' />
                   </div>
                   <div>
                     <h3 className='font-semibold text-gray-900 mb-1'>Phone</h3>
@@ -154,7 +156,7 @@ export default function Contact() {
               </div>
 
               {/* Map or Additional Information */}
-              <div className='mt-12 bg-indigo-50 rounded-2xl p-8'>
+              <div className='mt-12 bg-purple-50 rounded-2xl p-8'>
                 <h3 className='text-xl font-semibold text-gray-900 mb-4'>
                   Office Hours
                 </h3>
