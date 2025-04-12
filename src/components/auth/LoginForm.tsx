@@ -168,7 +168,7 @@ export default function LoginForm() {
     <div className='max-w-md w-full'>
       {/* Header */}
       <div className='text-center mb-10'>
-        <div className='bg-gradient-to-br from-primary to-primary-light w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+        <div className='bg-gradient-to-br from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
           <School className='w-12 h-12 text-accent group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>Welcome Back!</h2>
@@ -189,7 +189,7 @@ export default function LoginForm() {
             className={`flex-1 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
               formData.userType === type
                 ? 'bg-white text-primary shadow-lg shadow-gray-200'
-                : 'text-text-light hover:text-text'
+                : 'text-text-light hover:text-primary'
             }`}
           >
             {getUserTypeDisplay(type)}
@@ -202,7 +202,7 @@ export default function LoginForm() {
         <div className='space-y-2'>
           <label
             htmlFor='email'
-            className='block text-sm font-semibold text-text'
+            className='block text-sm font-semibold text-primary'
           >
             {getUserTypeDisplay(formData.userType)} Email
           </label>
@@ -217,7 +217,7 @@ export default function LoginForm() {
               onBlur={() => validateEmail(formData.email)}
               className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${
                 errors.email ? 'border-red-500' : 'border-gray-200'
-              } bg-gray-50 text-text placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+              } bg-gray-50 text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
               placeholder={getEmailPlaceholder(formData.userType)}
             />
           </div>
@@ -230,7 +230,7 @@ export default function LoginForm() {
         <div className='space-y-2'>
           <label
             htmlFor='password'
-            className='block text-sm font-semibold text-text'
+            className='block text-sm font-semibold text-primary'
           >
             Password
           </label>
@@ -245,7 +245,7 @@ export default function LoginForm() {
               onBlur={() => validatePassword(formData.password)}
               className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
                 errors.password ? 'border-red-500' : 'border-gray-200'
-              } bg-gray-50 text-text placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+              } bg-gray-50 text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
               placeholder='Enter your password'
             />
             <button
@@ -296,7 +296,7 @@ export default function LoginForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='relative w-full bg-gradient-to-r from-primary to-primary-light text-accent py-4 rounded-xl font-semibold hover:from-primary-light hover:to-primary transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-primary-light/20 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='relative w-full bg-gradient-to-br from-purple-500 to-indigo-600 text-accent py-4 rounded-xl font-semibold hover:from-primary-light hover:to-primary transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-primary-light/20 disabled:opacity-70 disabled:cursor-not-allowed'
         >
           <span
             className={`inline-flex items-center justify-center ${

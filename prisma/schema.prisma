@@ -1,364 +1,309 @@
-// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model attendance {
+  id               Int               @id @default(autoincrement())
+  studentSectionId Int
+  sessionId        Int
+  status           attendance_status
+  markedBy         Int
+  remarks          String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime
+  user             user              @relation(fields: [markedBy], references: [id], map: "Attendance_markedBy_fkey")
+  session          session           @relation(fields: [sessionId], references: [id], map: "Attendance_sessionId_fkey")
+  studentsection   studentsection    @relation(fields: [studentSectionId], references: [id], map: "Attendance_studentSectionId_fkey")
+
+  @@unique([studentSectionId, sessionId], map: "Attendance_studentSectionId_sessionId_key")
+  @@index([markedBy], map: "Attendance_markedBy_idx")
+  @@index([sessionId], map: "Attendance_sessionId_idx")
+  @@index([studentSectionId], map: "Attendance_studentSectionId_idx")
 }
 
-// Base User Model
-model User {
-  id                Int           @id @default(autoincrement())
-  username          String?       @unique
-  email             String        @unique
-  password_hash     String
-  first_name        String?
-  last_name         String?
-  phone_number      String?
-  profile_image     String?
-  status            Status        @default(active)
-  last_login        DateTime?
-  email_verified    Boolean       @default(false)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // Relations
-  student           Student?
-  faculty           Faculty?
-  managedDepartments Department[]
-  roles             UserRole[]
-  markedAttendance  Attendance[]  // For tracking who marked attendance
-  notifications     Notification[]
-  auditLogs         AuditLog[]
-  passwordResets    PasswordReset[]
-}
-
-// Role Management
-model Role {
-  id          Int       @id @default(autoincrement())
-  name        RoleType  @unique
-  description String?
-  permissions Permission[]
-  users       UserRole[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model UserRole {
+model auditlog {
   id        Int      @id @default(autoincrement())
   userId    Int
-  roleId    Int
+  action    String
+  details   Json
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      user     @relation(fields: [userId], references: [id], map: "AuditLog_userId_fkey")
 
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roleId])
-  @@index([userId])
-  @@index([roleId])
+  @@index([createdAt], map: "AuditLog_createdAt_idx")
+  @@index([userId], map: "AuditLog_userId_idx")
 }
 
-model Permission {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  description String?
-  roles       Role[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-// Academic Structure
-model Department {
-  id          Int       @id @default(autoincrement())
-  name        String
-  code        String    @unique
-  description String?
-  adminId     Int?
-  parentDepartmentId Int?
-  status      Status    @default(active)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  admin       User?     @relation(fields: [adminId], references: [id])
-  parentDepartment Department? @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
-  childDepartments Department[] @relation("DepartmentHierarchy")
-  programs    Program[]
-  students    Student[]
-  faculties   Faculty[]
-
-  @@index([adminId])
-  @@index([parentDepartmentId])
-}
-
-model Program {
-  id          Int       @id @default(autoincrement())
-  name        String
-  code        String    @unique
-  description String?
-  duration    Int       // Duration in semesters
-  totalCredit Int
-  departmentId Int
-  status      Status    @default(active)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  department  Department @relation(fields: [departmentId], references: [id])
-  students    Student[]
-  courses     Course[]
-
-  @@index([departmentId])
-}
-
-model Course {
-  id          Int       @id @default(autoincrement())
-  code        String    @unique
+model course {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique(map: "Course_code_key")
   name        String
   description String?
   creditHours Int
   programId   Int
   semester    Int
-  status      Status    @default(active)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  status      course_status @default(active)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  program     program       @relation(fields: [programId], references: [id], map: "Course_programId_fkey")
+  section     section[]
+  course_A    course[]      @relation("courseprerequisites")
+  course_B    course[]      @relation("courseprerequisites")
 
-  // Relations
-  program     Program   @relation(fields: [programId], references: [id])
-  sections    Section[]
-  prerequisites Course[] @relation("CoursePrerequisites")
-  isPrerequisiteFor Course[] @relation("CoursePrerequisites")
-
-  @@index([programId])
+  @@index([programId], map: "Course_programId_idx")
 }
 
-// User Types
-model Student {
-  id             Int        @id @default(autoincrement())
-  userId         Int        @unique
-  rollNumber     String     @unique
+model department {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  code               String            @unique(map: "Department_code_key")
+  description        String?
+  adminId            Int?
+  parentDepartmentId Int?
+  status             department_status @default(active)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime
+  user               user?             @relation(fields: [adminId], references: [id], map: "Department_adminId_fkey")
+  department         department?       @relation("departmentTodepartment", fields: [parentDepartmentId], references: [id], map: "Department_parentDepartmentId_fkey")
+  other_department   department[]      @relation("departmentTodepartment")
+  faculty            faculty[]
+  program            program[]
+  student            student[]
+
+  @@index([adminId], map: "Department_adminId_idx")
+  @@index([parentDepartmentId], map: "Department_parentDepartmentId_idx")
+}
+
+model faculty {
+  id           Int            @id @default(autoincrement())
+  userId       Int            @unique(map: "Faculty_userId_key")
+  employeeId   String         @unique(map: "Faculty_employeeId_key")
+  departmentId Int?
+  designation  String
+  joiningDate  DateTime
+  status       faculty_status @default(active)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  department   department?    @relation(fields: [departmentId], references: [id], map: "Faculty_departmentId_fkey")
+  user         user           @relation(fields: [userId], references: [id], map: "Faculty_userId_fkey")
+  section      section[]
+
+  @@index([departmentId], map: "Faculty_departmentId_idx")
+  @@index([userId], map: "Faculty_userId_idx")
+}
+
+model notification {
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  isRead    Boolean           @default(false)
+  type      notification_type
+  createdAt DateTime          @default(now())
+  updatedAt DateTime
+  user      user              @relation(fields: [userId], references: [id], map: "Notification_userId_fkey")
+
+  @@index([userId], map: "Notification_userId_idx")
+}
+
+model passwordreset {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique(map: "PasswordReset_token_key")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  user      user     @relation(fields: [userId], references: [id], map: "PasswordReset_userId_fkey")
+
+  @@index([token], map: "PasswordReset_token_idx")
+  @@index([userId], map: "PasswordReset_userId_idx")
+}
+
+model permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique(map: "Permission_name_key")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  role        role[]   @relation("permissiontorole")
+}
+
+model program {
+  id           Int            @id @default(autoincrement())
+  name         String
+  code         String         @unique(map: "Program_code_key")
+  description  String?
+  duration     Int
+  totalCredit  Int
+  departmentId Int
+  status       program_status @default(active)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  course       course[]
+  department   department     @relation(fields: [departmentId], references: [id], map: "Program_departmentId_fkey")
+  student      student[]
+
+  @@index([departmentId], map: "Program_departmentId_idx")
+}
+
+model role {
+  id          Int          @id @default(autoincrement())
+  name        role_name    @unique(map: "Role_name_key")
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  userrole    userrole[]
+  permission  permission[] @relation("permissiontorole")
+}
+
+model section {
+  id             Int              @id @default(autoincrement())
+  name           String
+  courseId       Int
+  facultyId      Int?
+  semester       Int
+  maxStudents    Int
+  status         section_status   @default(active)
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  course         course           @relation(fields: [courseId], references: [id], map: "Section_courseId_fkey")
+  faculty        faculty?         @relation(fields: [facultyId], references: [id], map: "Section_facultyId_fkey")
+  session        session[]
+  studentsection studentsection[]
+  timetableslot  timetableslot[]
+
+  @@index([courseId], map: "Section_courseId_idx")
+  @@index([facultyId], map: "Section_facultyId_idx")
+}
+
+model session {
+  id         Int            @id @default(autoincrement())
+  sectionId  Int
+  date       DateTime
+  startTime  DateTime
+  endTime    DateTime
+  topic      String?
+  remarks    String?
+  status     session_status @default(scheduled)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime
+  attendance attendance[]
+  section    section        @relation(fields: [sectionId], references: [id], map: "Session_sectionId_fkey")
+
+  @@index([sectionId], map: "Session_sectionId_idx")
+}
+
+model student {
+  id             Int              @id @default(autoincrement())
+  userId         Int              @unique(map: "Student_userId_key")
+  rollNumber     String           @unique(map: "Student_rollNumber_key")
   batch          String
   admissionDate  DateTime
   graduationDate DateTime?
   cgpa           Float?
   departmentId   Int?
   programId      Int?
-  status         Status     @default(active)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  status         student_status   @default(active)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  department     department?      @relation(fields: [departmentId], references: [id], map: "Student_departmentId_fkey")
+  program        program?         @relation(fields: [programId], references: [id], map: "Student_programId_fkey")
+  user           user             @relation(fields: [userId], references: [id], map: "Student_userId_fkey")
+  studentsection studentsection[]
 
-  // Relations
-  user           User       @relation(fields: [userId], references: [id])
-  department     Department? @relation(fields: [departmentId], references: [id])
-  program        Program?    @relation(fields: [programId], references: [id])
-  sections       StudentSection[]
-  
-  @@index([userId])
-  @@index([departmentId])
-  @@index([programId])
+  @@index([departmentId], map: "Student_departmentId_idx")
+  @@index([programId], map: "Student_programId_idx")
+  @@index([userId], map: "Student_userId_idx")
 }
 
-model Faculty {
-  id             Int        @id @default(autoincrement())
-  userId         Int        @unique
-  employeeId     String     @unique
-  departmentId   Int?
-  designation    String
-  joiningDate    DateTime
-  status         Status     @default(active)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+model studentsection {
+  id             Int                   @id @default(autoincrement())
+  studentId      Int
+  sectionId      Int
+  enrollmentDate DateTime              @default(now())
+  status         studentsection_status @default(active)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime
+  attendance     attendance[]
+  section        section               @relation(fields: [sectionId], references: [id], map: "StudentSection_sectionId_fkey")
+  student        student               @relation(fields: [studentId], references: [id], map: "StudentSection_studentId_fkey")
 
-  // Relations
-  user           User       @relation(fields: [userId], references: [id])
-  department     Department? @relation(fields: [departmentId], references: [id])
-  sections       Section[]
-
-  @@index([userId])
-  @@index([departmentId])
+  @@unique([studentId, sectionId], map: "StudentSection_studentId_sectionId_key")
+  @@index([sectionId], map: "StudentSection_sectionId_idx")
+  @@index([studentId], map: "StudentSection_studentId_idx")
 }
 
-// Class Management
-model Section {
-  id          Int       @id @default(autoincrement())
-  name        String    // e.g., "A", "B", "Morning", "Evening"
-  courseId    Int
-  facultyId   Int?
-  semester    Int
-  maxStudents Int
-  status      Status    @default(active)
-  startDate   DateTime
-  endDate     DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model timetableslot {
+  id         Int                  @id @default(autoincrement())
+  sectionId  Int
+  dayOfWeek  Int
+  startTime  DateTime             @db.Time(0)
+  endTime    DateTime             @db.Time(0)
+  roomNumber String?
+  status     timetableslot_status @default(active)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime
+  section    section              @relation(fields: [sectionId], references: [id], map: "TimetableSlot_sectionId_fkey")
 
-  // Relations
-  course      Course    @relation(fields: [courseId], references: [id])
-  faculty     Faculty?  @relation(fields: [facultyId], references: [id])
-  students    StudentSection[]
-  sessions    Session[]
-  timetableSlots TimetableSlot[]
-
-  @@index([courseId])
-  @@index([facultyId])
+  @@index([sectionId], map: "TimetableSlot_sectionId_idx")
 }
 
-model StudentSection {
-  id          Int       @id @default(autoincrement())
-  studentId   Int
-  sectionId   Int
-  enrollmentDate DateTime @default(now())
-  status      Status    @default(active)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  student     Student   @relation(fields: [studentId], references: [id])
-  section     Section   @relation(fields: [sectionId], references: [id])
-  attendance  Attendance[]
-
-  @@unique([studentId, sectionId])
-  @@index([studentId])
-  @@index([sectionId])
+model user {
+  id             Int             @id @default(autoincrement())
+  username       String?         @unique(map: "User_username_key")
+  email          String          @unique(map: "User_email_key")
+  password_hash  String
+  first_name     String?
+  last_name      String?
+  phone_number   String?
+  profile_image  String?
+  status         user_status     @default(active)
+  last_login     DateTime?
+  email_verified Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  attendance     attendance[]
+  auditlog       auditlog[]
+  department     department[]
+  faculty        faculty?
+  notification   notification[]
+  passwordreset  passwordreset[]
+  student        student?
+  userrole       userrole[]
 }
 
-// Attendance Management
-model Session {
-  id          Int           @id @default(autoincrement())
-  sectionId   Int
-  date        DateTime
-  startTime   DateTime
-  endTime     DateTime
-  topic       String?
-  remarks     String?
-  status      SessionStatus @default(scheduled)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+model userrole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  role      role     @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "UserRole_roleId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserRole_userId_fkey")
 
-  // Relations
-  section     Section       @relation(fields: [sectionId], references: [id])
-  attendance  Attendance[]
-
-  @@index([sectionId])
+  @@unique([userId, roleId], map: "UserRole_userId_roleId_key")
+  @@index([roleId], map: "UserRole_roleId_idx")
+  @@index([userId], map: "UserRole_userId_idx")
 }
 
-model Attendance {
-  id                Int              @id @default(autoincrement())
-  studentSectionId  Int
-  sessionId         Int
-  status           AttendanceStatus
-  markedBy         Int
-  remarks          String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  // Relations
-  studentSection    StudentSection   @relation(fields: [studentSectionId], references: [id])
-  session          Session          @relation(fields: [sessionId], references: [id])
-  marker           User             @relation(fields: [markedBy], references: [id])
-
-  @@unique([studentSectionId, sessionId])
-  @@index([studentSectionId])
-  @@index([sessionId])
-  @@index([markedBy])
-}
-
-// Timetable Management
-model TimetableSlot {
-  id          Int       @id @default(autoincrement())
-  sectionId   Int
-  dayOfWeek   Int       // 1 = Monday, 7 = Sunday
-  startTime   DateTime  @db.Time
-  endTime     DateTime  @db.Time
-  roomNumber  String?
-  status      Status    @default(active)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  section     Section   @relation(fields: [sectionId], references: [id])
-
-  @@index([sectionId])
-}
-
-// Notification System
-model Notification {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  title       String
-  message     String
-  isRead      Boolean   @default(false)
-  type        NotificationType
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  user        User      @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-// System Management
-model AuditLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  action      String
-  details     Json
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-
-  // Relations
-  user        User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model PasswordReset {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  token       String   @unique
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  user        User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([token])
-}
-
-// Enums
-enum RoleType {
+enum role_name {
   super_admin
+  sub_admin
   department_admin
   child_admin
   teacher
   student
 }
 
-enum Status {
-  active
-  inactive
-  suspended
-  deleted
-}
-
-enum SessionStatus {
-  scheduled
-  in_progress
-  completed
-  cancelled
-  postponed
-}
-
-enum AttendanceStatus {
+enum attendance_status {
   present
   absent
   late
@@ -366,10 +311,81 @@ enum AttendanceStatus {
   excused
 }
 
-enum NotificationType {
+enum studentsection_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum notification_type {
   system
   attendance
   course
   announcement
   alert
+}
+
+enum department_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum faculty_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum section_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum timetableslot_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum course_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum program_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum session_status {
+  scheduled
+  in_progress
+  completed
+  cancelled
+  postponed
+}
+
+enum user_status {
+  active
+  inactive
+  suspended
+  deleted
+}
+
+enum student_status {
+  active
+  inactive
+  suspended
+  deleted
 }

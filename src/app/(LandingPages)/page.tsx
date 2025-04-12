@@ -13,8 +13,8 @@ import {
   Bell,
   PieChart,
 } from 'lucide-react';
-import Footer from '@/app/components/landing-page/Footer';
-import NavbarClient from '@/app/components/landing-page/NavbarClient';
+import Footer from '@/components/landing-page/Footer';
+import NavbarClient from '@/components/landing-page/NavbarClient';
 
 const features = [
   {
@@ -189,7 +189,7 @@ export default function LandingPage() {
                   {role.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
-                      className='flex items-center text-text-light'
+                      className='flex items-center text-text'
                     >
                       <CheckCircle className='h-5 w-5 text-primary-light mr-2' />
                       {feature}

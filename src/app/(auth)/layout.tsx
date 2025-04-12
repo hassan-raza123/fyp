@@ -16,7 +16,7 @@ export default function AuthLayout({
     <div className='min-h-screen bg-secondary flex items-center justify-center p-4'>
       <div className='w-full max-w-6xl bg-accent rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row'>
         {/* Left Side */}
-        <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-primary-light items-center justify-center p-12'>
+        <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-500 to-indigo-600 items-center justify-center p-12'>
           <div className='max-w-lg text-center'>
             <div className='mb-8'>
               <School className='w-20 h-20 text-accent mx-auto mb-4' />

@@ -16,6 +16,16 @@ async function main() {
         create: {
           name: 'super_admin',
           description: 'Super Administrator with full access',
+          updatedAt: new Date(),
+        },
+      }),
+      prisma.role.upsert({
+        where: { name: 'sub_admin' },
+        update: {},
+        create: {
+          name: 'sub_admin',
+          description: 'Sub Administrator with restricted access',
+          updatedAt: new Date(),
         },
       }),
       prisma.role.upsert({
@@ -24,6 +34,7 @@ async function main() {
         create: {
           name: 'department_admin',
           description: 'Department Administrator',
+          updatedAt: new Date(),
         },
       }),
       prisma.role.upsert({
@@ -32,6 +43,7 @@ async function main() {
         create: {
           name: 'child_admin',
           description: 'Sub-Department Administrator',
+          updatedAt: new Date(),
         },
       }),
       prisma.role.upsert({
@@ -40,6 +52,7 @@ async function main() {
         create: {
           name: 'teacher',
           description: 'Faculty Member',
+          updatedAt: new Date(),
         },
       }),
       prisma.role.upsert({
@@ -48,6 +61,7 @@ async function main() {
         create: {
           name: 'student',
           description: 'Student',
+          updatedAt: new Date(),
         },
       }),
     ]);
@@ -64,9 +78,35 @@ async function main() {
         last_name: 'Admin',
         phone_number: '0300-1234567',
         email_verified: true,
-        roles: {
+        status: 'active',
+        updatedAt: new Date(),
+        userrole: {
           create: {
             roleId: roles[0].id,
+            updatedAt: new Date(),
+          },
+        },
+      },
+    });
+
+    // Create Sub Admin
+    const subAdmin = await prisma.user.upsert({
+      where: { email: 'sub.admin@university.edu' },
+      update: {},
+      create: {
+        email: 'sub.admin@university.edu',
+        username: 'subadmin',
+        password_hash: defaultPassword,
+        first_name: 'Sub',
+        last_name: 'Admin',
+        phone_number: '0300-1234568',
+        email_verified: true,
+        status: 'active',
+        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: roles[1].id,
+            updatedAt: new Date(),
           },
         },
       },
@@ -84,6 +124,7 @@ async function main() {
         description: 'Department of Computer Science',
         adminId: superAdmin.id,
         status: 'active',
+        updatedAt: new Date(),
       },
     });
 
@@ -99,9 +140,12 @@ async function main() {
         last_name: 'Admin',
         phone_number: '0300-2345678',
         email_verified: true,
-        roles: {
+        status: 'active',
+        updatedAt: new Date(),
+        userrole: {
           create: {
-            roleId: roles[1].id,
+            roleId: roles[2].id,
+            updatedAt: new Date(),
           },
         },
       },
@@ -119,6 +163,7 @@ async function main() {
         totalCredit: 136,
         departmentId: csDepartment.id,
         status: 'active',
+        updatedAt: new Date(),
       },
     });
 
@@ -134,6 +179,7 @@ async function main() {
         programId: bscsProgram.id,
         semester: 1,
         status: 'active',
+        updatedAt: new Date(),
       },
     });
 
@@ -149,9 +195,35 @@ async function main() {
         last_name: 'Doe',
         phone_number: '0300-3456789',
         email_verified: true,
-        roles: {
+        status: 'active',
+        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: roles[4].id,
+            updatedAt: new Date(),
+          },
+        },
+      },
+    });
+
+    // Create Child Admin
+    const childAdmin = await prisma.user.upsert({
+      where: { email: 'child.admin@university.edu' },
+      update: {},
+      create: {
+        email: 'child.admin@university.edu',
+        username: 'childadmin',
+        password_hash: defaultPassword,
+        first_name: 'Child',
+        last_name: 'Admin',
+        phone_number: '0300-4567890',
+        email_verified: true,
+        status: 'active',
+        updatedAt: new Date(),
+        userrole: {
           create: {
             roleId: roles[3].id,
+            updatedAt: new Date(),
           },
         },
       },
@@ -168,6 +240,7 @@ async function main() {
         designation: 'Assistant Professor',
         joiningDate: new Date(),
         status: 'active',
+        updatedAt: new Date(),
       },
     });
 
@@ -190,6 +263,7 @@ async function main() {
         status: 'active',
         startDate: new Date(),
         endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+        updatedAt: new Date(),
       },
     });
 
@@ -207,9 +281,12 @@ async function main() {
           last_name: 'Doe',
           phone_number: `0300-${1000000 + i}`,
           email_verified: true,
-          roles: {
+          status: 'active',
+          updatedAt: new Date(),
+          userrole: {
             create: {
-              roleId: roles[4].id,
+              roleId: roles[5].id,
+              updatedAt: new Date(),
             },
           },
         },
@@ -228,11 +305,12 @@ async function main() {
           departmentId: csDepartment.id,
           programId: bscsProgram.id,
           status: 'active',
+          updatedAt: new Date(),
         },
       });
 
       // Delete existing enrollment if any
-      await prisma.studentSection.deleteMany({
+      await prisma.studentsection.deleteMany({
         where: {
           studentId: student.id,
           sectionId: section.id,
@@ -240,18 +318,19 @@ async function main() {
       });
 
       // Create new enrollment
-      await prisma.studentSection.create({
+      await prisma.studentsection.create({
         data: {
           studentId: student.id,
           sectionId: section.id,
           status: 'active',
+          updatedAt: new Date(),
         },
       });
     }
 
     // Clear existing sessions and attendance
-    await prisma.attendance.deleteMany({});
-    await prisma.session.deleteMany({});
+    await prisma.attendance.deleteMany();
+    await prisma.session.deleteMany();
 
     // Create Sessions for the last week
     const today = new Date();
@@ -269,11 +348,12 @@ async function main() {
             endTime: new Date(sessionDate.setHours(10, 30, 0)),
             topic: `Lecture ${i + 1}`,
             status: 'completed',
+            updatedAt: new Date(),
           },
         });
 
         // Get all students in the section
-        const enrollments = await prisma.studentSection.findMany({
+        const enrollments = await prisma.studentsection.findMany({
           where: { sectionId: section.id },
         });
 
@@ -286,6 +366,7 @@ async function main() {
               status: Math.random() > 0.2 ? 'present' : 'absent',
               markedBy: teacherUser.id,
               remarks: 'Regular class',
+              updatedAt: new Date(),
             },
           });
         }
@@ -293,7 +374,7 @@ async function main() {
     }
 
     // Clear existing timetable slots
-    await prisma.timetableSlot.deleteMany({});
+    await prisma.timetableslot.deleteMany();
 
     // Create Timetable Slots
     const slots = [
@@ -309,7 +390,7 @@ async function main() {
       const endTime = new Date();
       endTime.setHours(slot.endHour, slot.endMin, 0);
 
-      await prisma.timetableSlot.create({
+      await prisma.timetableslot.create({
         data: {
           sectionId: section.id,
           dayOfWeek: slot.day,
@@ -317,6 +398,7 @@ async function main() {
           endTime,
           roomNumber: 'CS-01',
           status: 'active',
+          updatedAt: new Date(),
         },
       });
     }
