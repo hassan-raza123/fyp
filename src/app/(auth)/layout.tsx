@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { BookOpen, Clock, School } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Auth | University Portal',
-  description: 'Login to access your university portal',
+  title: 'Login | UniTrack360',
+  description: 'Login to access your UniTrack360 portal',
 };
 
 export default function AuthLayout({
@@ -13,46 +13,40 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className='min-h-screen bg-secondary flex items-center justify-center p-4'>
-      <div className='w-full max-w-6xl bg-accent rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row'>
+    <div className='min-h-screen bg-white flex items-center justify-center p-4'>
+      <div className='w-full max-w-6xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row'>
         {/* Left Side */}
-        <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-500 to-indigo-600 items-center justify-center p-12'>
+        <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 items-center justify-center p-12'>
           <div className='max-w-lg text-center'>
             <div className='mb-8'>
-              <School className='w-20 h-20 text-accent mx-auto mb-4' />
-              <h1 className='text-5xl font-bold text-accent mb-6'>
-                University Portal
+              <div className='w-20 h-20 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 mx-auto mb-6 flex items-center justify-center'>
+                <School className='w-12 h-12 text-white' />
+              </div>
+              <h1 className='text-5xl font-bold text-white mb-6'>
+                UniTrack360
               </h1>
-              <p className='text-accent/80 text-xl leading-relaxed'>
-                Your gateway to academic excellence
+              <p className='text-white/80 text-xl leading-relaxed'>
+                Your comprehensive OBE-based educational management system
               </p>
             </div>
 
-            <div className='mt-12 grid grid-cols-2 gap-6'>
-              <div className='bg-accent/10 p-6 rounded-2xl backdrop-blur-lg border border-accent/20 hover:border-primary-light/50 transition-colors'>
-                <div className='bg-accent w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto'>
-                  <BookOpen className='w-6 h-6 text-primary' />
+            <div className='space-y-4'>
+              <div className='flex items-center justify-center space-x-4 text-white/80'>
+                <div className='flex items-center space-x-2'>
+                  <BookOpen className='w-5 h-5' />
+                  <span>Attendance Tracking</span>
                 </div>
-                <h3 className='text-accent font-semibold mb-2'>Courses</h3>
-                <p className='text-accent/80 text-sm'>
-                  Access all your enrolled courses
-                </p>
-              </div>
-              <div className='bg-accent/10 p-6 rounded-2xl backdrop-blur-lg border border-accent/20 hover:border-primary-light/50 transition-colors'>
-                <div className='bg-accent w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto'>
-                  <Clock className='w-6 h-6 text-primary' />
+                <div className='flex items-center space-x-2'>
+                  <Clock className='w-5 h-5' />
+                  <span>Real-time Updates</span>
                 </div>
-                <h3 className='text-accent font-semibold mb-2'>Schedule</h3>
-                <p className='text-accent/80 text-sm'>
-                  Stay updated with your class timings
-                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side */}
-        <div className='w-full lg:w-1/2 bg-accent flex items-center justify-center p-8'>
+        {/* Right Side - Login Form */}
+        <div className='w-full lg:w-1/2 p-8 lg:p-12'>
           {children}
         </div>
       </div>

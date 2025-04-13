@@ -29,6 +29,7 @@ const publicRoutes = [
   '/features',
   '/about',
   '/forgot-password',
+  '/contact',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -38,6 +39,8 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
+    pathname.startsWith('/team') ||
+    pathname.startsWith('/images') ||
     pathname.startsWith('/api/auth/login') ||
     pathname === '/favicon.ico'
   ) {
@@ -146,5 +149,15 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|public|about|features|contact).*)',
+  ],
 };
