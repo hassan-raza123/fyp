@@ -15,8 +15,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Area,
-  AreaChart,
 } from 'recharts';
 import {
   Menu,
@@ -67,8 +65,45 @@ import {
   Settings2,
   Info,
 } from 'lucide-react';
-import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/dashboard';
 import LogoutButton from '@/components/auth/LogoutButton';
+import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/student-dashboard';
+
+// Simple chart component
+const SimpleChart = ({ data, color }: { data: number[]; color: string }) => {
+  const maxValue = Math.max(...data);
+  return (
+    <div className="h-8 w-full flex items-end">
+      {data.map((value, index) => (
+        <div
+          key={index}
+          className="flex-1 mx-0.5"
+          style={{
+            height: `${(value / maxValue) * 100}%`,
+            backgroundColor: color,
+            opacity: 0.7,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{stat.title}</p>
+        <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
+      </div>
+      <div className={`p-2 rounded-full ${stat.iconBgColor}`}>
+        <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
+      </div>
+    </div>
+    <div className="mt-4">
+      <SimpleChart data={stat.trend} color={stat.iconColor} />
+    </div>
+  </div>
+);
 
 const ModernDashboard = () => {
   // Core States
@@ -198,40 +233,37 @@ const ModernDashboard = () => {
   // Quick Stats
   const quickStats = [
     {
-      title: 'Total Students',
-      value: '3,845',
+      title: 'Total Courses',
+      value: '12',
+      detail: 'Active Courses',
+      icon: BookOpen,
+      trend: [30, 40, 35, 50, 49, 60, 70, 91, 125],
       change: '+12%',
-      trend: [30, 40, 35, 50, 49, 60, 70, 91, 86],
-      icon: Users,
-      color: 'from-blue-500 via-blue-400 to-blue-300',
-      detail: '156 new this month',
+      color: 'from-blue-500 to-blue-600',
+      iconBgColor: 'bg-blue-100 dark:bg-blue-900',
+      iconColor: 'text-blue-500 dark:text-blue-400',
     },
     {
-      title: 'Attendance Rate',
-      value: '95.2%',
-      change: '+4.3%',
-      trend: [80, 85, 90, 88, 87, 92, 95, 94, 95],
+      title: 'Attendance',
+      value: '95%',
+      detail: 'This Month',
       icon: UserCheck,
-      color: 'from-green-500 via-green-400 to-green-300',
-      detail: '2.1% above target',
+      trend: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+      change: '+5%',
+      color: 'from-green-500 to-green-600',
+      iconBgColor: 'bg-green-100 dark:bg-green-900',
+      iconColor: 'text-green-500 dark:text-green-400',
     },
     {
-      title: 'Course Completion',
-      value: '142',
-      change: '+8',
-      trend: [20, 25, 30, 35, 25, 40, 45, 50, 55],
-      icon: BookCheck,
-      color: 'from-purple-500 via-purple-400 to-purple-300',
-      detail: '12 courses added',
-    },
-    {
-      title: 'Overall Performance',
-      value: '88%',
-      change: '+2.5%',
-      trend: [75, 78, 80, 82, 79, 85, 86, 87, 88],
+      title: 'GPA',
+      value: '3.8',
+      detail: 'Current Semester',
       icon: Award,
-      color: 'from-orange-500 via-orange-400 to-orange-300',
-      detail: 'Top 10% nationally',
+      trend: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+      change: '+0.2',
+      color: 'from-purple-500 to-purple-600',
+      iconBgColor: 'bg-purple-100 dark:bg-purple-900',
+      iconColor: 'text-purple-500 dark:text-purple-400',
     },
   ];
 
@@ -387,46 +419,6 @@ const ModernDashboard = () => {
       </div>
     </button>
   );
-  
-  const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
-    <div
-      className={`
-      relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.color}
-      transition-all duration-200 hover:transform hover:scale-[1.02]
-      hover:shadow-lg cursor-pointer
-    `}
-    >
-      <div className='px-6 py-5 text-white'>
-        <div className='flex justify-between items-start'>
-          <div className='space-y-2'>
-            <p className='text-white font-medium text-sm'>{stat.title}</p>
-            <h3 className='text-3xl font-bold'>{stat.value}</h3>
-            <p className='text-sm text-white/80'>{stat.detail}</p>
-          </div>
-          <div className='bg-white/10 p-2 rounded-lg'>
-            <stat.icon size={24} className='text-white' />
-          </div>
-        </div>
-        <div className='mt-4'>
-          <ResponsiveContainer width='100%' height={32}>
-            <AreaChart data={stat.trend.map((value, i) => ({ value }))}>
-              <Area
-                type='monotone'
-                dataKey='value'
-                stroke='rgba(255,255,255,0.8)'
-                fill='rgba(255,255,255,0.2)'
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className='flex items-center mt-2 text-sm'>
-          <TrendingUp size={14} className='mr-1' />
-          <span>{stat.change} from last month</span>
-        </div>
-      </div>
-    </div>
-  );
-
   
   const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
     const getColorClasses = (color: ProgressBarProps['color']) => {

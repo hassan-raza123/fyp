@@ -16,6 +16,14 @@
     "@types/nodemailer": "^6.4.17",
     "@types/recharts": "^1.8.29",
     "bcryptjs": "^2.4.3",
+    "d3-array": "^3.2.4",
+    "d3-color": "^3.1.0",
+    "d3-format": "^3.1.0",
+    "d3-interpolate": "^3.0.1",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
+    "d3-time": "^3.1.0",
+    "d3-time-format": "^4.1.0",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.456.0",
@@ -23,8 +31,7 @@
     "nodemailer": "^6.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "recharts": "^2.15.1",
-
+    "recharts": "^2.15.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {

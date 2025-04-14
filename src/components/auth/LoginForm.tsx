@@ -7,16 +7,24 @@ import {
   BaseUserType,
   LoginResponse,
   ValidationErrors,
+  AdminRole,
 } from '@/app/types/login';
 import Link from 'next/link';
+
+interface FormData {
+  email: string;
+  password: string;
+  userType: BaseUserType | AdminRole;
+  rememberMe: boolean;
+}
 
 export default function LoginForm() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    userType: 'student' as BaseUserType,
+    userType: 'student',
     rememberMe: false,
   });
 
@@ -24,6 +32,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [serverError, setServerError] = useState('');
+  const [selectedAdminRole, setSelectedAdminRole] = useState<AdminRole | null>(null);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,7 +78,21 @@ export default function LoginForm() {
   };
 
   const handleUserTypeChange = (type: BaseUserType) => {
-    setFormData((prev) => ({ ...prev, userType: type }));
+    setFormData((prev) => ({
+      ...prev,
+      userType: type,
+    }));
+    setSelectedAdminRole(null);
+    setErrors({});
+    setServerError('');
+  };
+
+  const handleAdminRoleChange = (role: AdminRole) => {
+    setSelectedAdminRole(role);
+    setFormData((prev) => ({
+      ...prev,
+      userType: role,
+    }));
     setErrors({});
     setServerError('');
   };
@@ -80,10 +103,22 @@ export default function LoginForm() {
     setErrors({});
     setServerError('');
 
-    const isEmailValid = validateEmail(formData.email);
-    const isPasswordValid = validatePassword(formData.password);
+    // Validate form data
+    const validationErrors: ValidationErrors = {};
+    if (!formData.email) {
+      validationErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      validationErrors.email = 'Please enter a valid email address';
+    }
+    if (!formData.password) {
+      validationErrors.password = 'Password is required';
+    }
+    if (formData.userType === 'admin' && !selectedAdminRole) {
+      validationErrors.adminRole = 'Please select an admin role';
+    }
 
-    if (!isEmailValid || !isPasswordValid) {
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       setIsLoading(false);
       return;
     }
@@ -92,11 +127,11 @@ export default function LoginForm() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          userType: formData.userType,
+          userType: formData.userType === 'admin' ? selectedAdminRole : formData.userType,
         }),
       });
 
@@ -121,24 +156,22 @@ export default function LoginForm() {
           'userPreferences',
           JSON.stringify({
             email: formData.email,
-            userType: formData.userType,
+            userType: formData.userType === 'admin' ? selectedAdminRole : formData.userType,
           })
         );
       }
 
       // Use Next.js router for navigation
-      router.refresh(); // Refresh the current route
+      router.refresh();
       router.push(data.data.redirectTo);
     } catch (error) {
-      setServerError(
-        'Network error. Please check your connection and try again.'
-      );
+      setServerError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getUserTypeDisplay = (type: BaseUserType | string): string => {
+  const getUserTypeDisplay = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
         return 'Administrator';
@@ -146,14 +179,26 @@ export default function LoginForm() {
         return 'Faculty';
       case 'student':
         return 'Student';
+      case 'super_admin':
+        return 'Super Admin';
+      case 'sub_admin':
+        return 'Sub Admin';
+      case 'department_admin':
+        return 'Department Admin';
+      case 'child_admin':
+        return 'Child Admin';
       default:
         return String(type).charAt(0).toUpperCase() + String(type).slice(1);
     }
   };
 
-  const getEmailPlaceholder = (type: BaseUserType): string => {
+  const getEmailPlaceholder = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
+      case 'super_admin':
+      case 'sub_admin':
+      case 'department_admin':
+      case 'child_admin':
         return 'admin@university.edu';
       case 'teacher':
         return 'faculty@university.edu';
@@ -196,6 +241,34 @@ export default function LoginForm() {
           </button>
         ))}
       </div>
+
+      {/* Admin Role Selector */}
+      {formData.userType === 'admin' && (
+        <div className='mb-8'>
+          <label className='block text-sm font-medium text-text mb-2'>
+            Select Admin Role
+          </label>
+          <div className='grid grid-cols-2 gap-3'>
+            {(['super_admin', 'sub_admin', 'department_admin', 'child_admin'] as const).map((role) => (
+              <button
+                key={role}
+                type='button'
+                onClick={() => handleAdminRoleChange(role)}
+                className={`py-3 px-4 text-sm font-medium rounded-xl transition-all duration-300 ${
+                  selectedAdminRole === role
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-gray-100 text-text-light hover:bg-gray-200'
+                }`}
+              >
+                {role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              </button>
+            ))}
+          </div>
+          {errors.adminRole && (
+            <p className='mt-1 text-sm text-red-500'>{errors.adminRole}</p>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className='space-y-6'>
         {/* Email Field */}
