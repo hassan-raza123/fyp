@@ -94,7 +94,7 @@ export default function ForgotPasswordForm() {
       {!isEmailSent ? (
         <>
           {/* Information Card */}
-          <div className='bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3'>
+          <div className='bg-blue-50 border border-blue-100 rounded-xl p-6'>
             <h3 className='font-semibold text-blue-800 flex items-center gap-2'>
               <AlertCircle className='w-5 h-5' />
               Before You Begin
