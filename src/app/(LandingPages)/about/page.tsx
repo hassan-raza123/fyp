@@ -1,10 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Users,
   Target,
   Lightbulb,
-  Heart,
   ArrowRight,
   GraduationCap,
   BookOpen,
@@ -15,6 +13,7 @@ import {
 } from 'lucide-react';
 import NavbarClient from '@/components/landing-page/NavbarClient';
 import Footer from '@/components/landing-page/Footer';
+import Image from 'next/image';
 
 const supervisor = {
   name: 'Mr. Abdul Basit',
@@ -176,10 +175,12 @@ export default function AboutPage() {
             <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
               <div className='p-6 flex flex-col items-center'>
                 <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
-                  <img
+                  <Image
                     src={teamMembers[0].picture}
                     alt={teamMembers[0].name}
-                    className='w-full h-full object-cover'
+                    width={200}
+                    height={200}
+                    className="rounded-full"
                   />
                 </div>
                 <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[0].name}</h3>
@@ -202,10 +203,12 @@ export default function AboutPage() {
             <div className='relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100'>
               <div className='p-6 flex flex-col items-center'>
                 <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
-                  <img
+                  <Image
                     src={supervisor.picture}
-                    alt={`${supervisor.name}'s picture`}
-                    className='w-full h-full object-cover'
+                    alt={supervisor.name}
+                    width={200}
+                    height={200}
+                    className="rounded-full"
                   />
                 </div>
                 <div className='text-center'>
@@ -236,10 +239,12 @@ export default function AboutPage() {
             <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
               <div className='p-6 flex flex-col items-center'>
                 <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
-                  <img
+                  <Image
                     src={teamMembers[1].picture}
                     alt={teamMembers[1].name}
-                    className='w-full h-full object-cover'
+                    width={200}
+                    height={200}
+                    className="rounded-full"
                   />
                 </div>
                 <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[1].name}</h3>
@@ -268,10 +273,12 @@ export default function AboutPage() {
               <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
                 <div className='p-6 flex flex-col items-center'>
                   <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
-                    <img
+                    <Image
                       src={member.picture}
                       alt={member.name}
-                      className='w-full h-full object-cover'
+                      width={200}
+                      height={200}
+                      className="rounded-full"
                     />
                   </div>
                   <h3 className='text-xl font-bold text-gray-900 mb-1'>{member.name}</h3>

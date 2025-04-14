@@ -4,17 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Area,
   AreaChart,
 } from 'recharts';
@@ -40,40 +35,98 @@ import {
   Shield,
   Sun,
   Moon,
-  MessagesSquare,
   Layers,
   GraduationCap,
-  BellRing,
   UserCheck,
-  Zap,
-  Clock,
   AlertCircle,
   Check,
   X,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
   Plus,
   ArrowRight,
-  Star,
-  Goal,
-  Target,
-  Award,
-  BookCheck,
+ 
   List,
   Grid,
   HelpCircle,
-  Settings2,
-  Info,
+
 } from 'lucide-react';
 import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/dashboard';
+import { LucideProps } from 'lucide-react';
+import Image from 'next/image';
+
+interface SidebarNavLinkProps {
+  item: {
+    id: string;
+    label: string;
+    icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+    badge?: number;
+  };
+  isChild?: boolean;
+  activeTab: string;
+  isSidebarOpen: boolean;
+  isDarkMode: boolean;
+  setActiveTab: (id: string) => void;
+}
+
+const SidebarNavLink = ({ 
+  item, 
+  isChild = false, 
+  activeTab, 
+  isSidebarOpen, 
+  isDarkMode, 
+  setActiveTab 
+}: SidebarNavLinkProps) => (
+  <button
+    onClick={() => setActiveTab(item.id)}
+    className={`
+      w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
+      ${isSidebarOpen ? 'justify-start' : 'justify-center'}
+      ${isChild ? 'ml-4' : ''}
+      ${
+        activeTab === item.id
+          ? isDarkMode
+            ? 'bg-purple-600/20 text-primary'
+            : 'bg-purple-50 text-primary'
+          : isDarkMode
+          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+          : 'text-text-light hover:bg-gray-50'
+      }
+      group
+    `}
+  >
+    <div className='relative flex items-center'>
+      <div
+        className={`
+        p-2 rounded-lg transition-all duration-200 group-hover:scale-110
+        ${
+          activeTab === item.id
+            ? isDarkMode
+              ? 'bg-purple-600/10 text-primary'
+              : 'bg-purple-100 text-primary'
+            : 'text-current'
+        }
+      `}
+      >
+        <item.icon size={22} />
+      </div>
+      {item.badge && item.badge > 0 && (
+        <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
+          {item.badge}
+        </span>
+      )}
+      {isSidebarOpen && (
+        <span className='ml-3 font-medium text-sm'>{item.label}</span>
+      )}
+    </div>
+  </button>
+);
 
 const ModernDashboard = () => {
   // Core States
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isDarkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
   const [activeView, setActiveView] = useState('grid');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -83,7 +136,6 @@ const ModernDashboard = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Refs for click outside
- 
   const searchRef = useRef<HTMLDivElement | null>(null);
   const notificationRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
@@ -104,7 +156,6 @@ const ModernDashboard = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
- 
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -191,13 +242,12 @@ const ModernDashboard = () => {
       items: [
         { id: 'analytics', icon: BarChart2, label: 'Analytics', badge: 0 },
         { id: 'reports', icon: FileText, label: 'Reports', badge: 5 },
-        { id: 'settings', icon: Settings2, label: 'Settings', badge: 0 },
+        { id: 'settings', icon: Settings, label: 'Settings', badge: 0 },
       ],
     },
   ];
 
   // Quick Stats
-  
   const quickStats = [
     {
       title: 'Total Students',
@@ -222,7 +272,7 @@ const ModernDashboard = () => {
       value: '142',
       change: '+8',
       trend: [20, 25, 30, 35, 25, 40, 45, 50, 55],
-      icon: BookCheck,
+      icon: BookOpen,
       color: 'from-purple-500 via-purple-400 to-purple-300',
       detail: '12 courses added',
     },
@@ -231,7 +281,7 @@ const ModernDashboard = () => {
       value: '88%',
       change: '+2.5%',
       trend: [75, 78, 80, 82, 79, 85, 86, 87, 88],
-      icon: Award,
+      icon: GraduationCap,
       color: 'from-orange-500 via-orange-400 to-orange-300',
       detail: 'Top 10% nationally',
     },
@@ -243,7 +293,7 @@ const ModernDashboard = () => {
       title: 'Attendance Target',
       current: 95,
       target: 98,
-      icon: Target,
+      icon: GraduationCap,
       color: 'blue',
       status: 'On Track',
     },
@@ -251,7 +301,7 @@ const ModernDashboard = () => {
       title: 'Course Completion Rate',
       current: 88,
       target: 95,
-      icon: Goal,
+      icon: GraduationCap,
       color: 'green',
       status: 'Behind',
     },
@@ -259,7 +309,7 @@ const ModernDashboard = () => {
       title: 'Student Satisfaction',
       current: 92,
       target: 95,
-      icon: Star,
+      icon: GraduationCap,
       color: 'yellow',
       status: 'On Track',
     },
@@ -343,54 +393,7 @@ const ModernDashboard = () => {
     },
   ];
 
-
   // Components
-  const SidebarNavLink = ({ item, isChild = false }:any) => (
-    <button
-      onClick={() => setActiveTab(item.id)}
-      className={`
-        w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
-        ${isSidebarOpen ? 'justify-start' : 'justify-center'}
-        ${isChild ? 'ml-4' : ''}
-        ${
-          activeTab === item.id
-            ? isDarkMode
-              ? 'bg-purple-600/20 text-primary'
-              : 'bg-purple-50 text-primary'
-            : isDarkMode
-            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            : 'text-text-light hover:bg-gray-50'
-        }
-        group
-      `}
-    >
-      <div className='relative flex items-center'>
-        <div
-          className={`
-          p-2 rounded-lg transition-all duration-200 group-hover:scale-110
-          ${
-            activeTab === item.id
-              ? isDarkMode
-                ? 'bg-purple-600/10 text-primary'
-                : 'bg-purple-100 text-primary'
-              : 'text-current'
-          }
-        `}
-        >
-          <item.icon size={22} />
-        </div>
-        {item.badge > 0 && (
-          <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
-            {item.badge}
-          </span>
-        )}
-        {isSidebarOpen && (
-          <span className='ml-3 font-medium text-sm'>{item.label}</span>
-        )}
-      </div>
-    </button>
-  );
-  
   const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
     <div
       className={`
@@ -412,7 +415,7 @@ const ModernDashboard = () => {
         </div>
         <div className='mt-4'>
           <ResponsiveContainer width='100%' height={32}>
-            <AreaChart data={stat.trend.map((value, i) => ({ value }))}>
+            <AreaChart data={stat.trend.map((value) => ({ value }))}>
               <Area
                 type='monotone'
                 dataKey='value'
@@ -429,7 +432,6 @@ const ModernDashboard = () => {
       </div>
     </div>
   );
-
   
   const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
     const getColorClasses = (color: ProgressBarProps['color']) => {
@@ -645,10 +647,12 @@ const ModernDashboard = () => {
             `}
           >
             <div className='relative flex-shrink-0'>
-              <img
-                src='/api/placeholder/40/40'
-                alt='Profile'
-                className='w-10 h-10 rounded-xl object-cover ring-2 ring-white dark:ring-gray-800'
+              <Image
+                src="/images/avatar.png"
+                alt="User avatar"
+                width={40}
+                height={40}
+                className="rounded-full"
               />
               <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800'></span>
             </div>
@@ -1084,7 +1088,7 @@ const ModernDashboard = () => {
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}
               >
-                Welcome back, here's what's happening today
+                Welcome back, here&apos;s what&apos;s happening today
               </p>
             </div>
 
@@ -1563,10 +1567,12 @@ const ModernDashboard = () => {
                     >
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
-                          <img
+                          <Image
                             src={activity.avatar}
                             alt=''
-                            className='w-8 h-8 rounded-lg mr-3'
+                            width={40}
+                            height={40}
+                            className="rounded-full mr-3"
                           />
                           <span
                             className={`

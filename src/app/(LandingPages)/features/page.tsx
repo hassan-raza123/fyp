@@ -146,7 +146,7 @@ export default function FeaturesPage() {
               </span>
             </h1>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
-              Discover how UniTrack360's comprehensive features can transform your institution's management and educational processes.
+              Discover how UniTrack360&apos;s comprehensive features can transform your institution&apos;s management and educational processes.
             </p>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function FeaturesPage() {
               Ready to Transform Your Institution?
             </h2>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto'>
-              Experience the power of UniTrack360's comprehensive features and take your institution to the next level.
+              Experience the power of UniTrack360&apos;s comprehensive features and take your institution to the next level.
             </p>
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
               <Link

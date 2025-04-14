@@ -4,17 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Area,
   AreaChart,
 } from 'recharts';
@@ -40,17 +35,12 @@ import {
   Shield,
   Sun,
   Moon,
-  MessagesSquare,
   Layers,
   GraduationCap,
-  BellRing,
   UserCheck,
-  Zap,
-  Clock,
   AlertCircle,
   Check,
   X,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
@@ -65,9 +55,77 @@ import {
   Grid,
   HelpCircle,
   Settings2,
-  Info,
 } from 'lucide-react';
 import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/dashboard';
+import { LucideProps } from 'lucide-react';
+import Image from 'next/image';
+
+interface SidebarNavLinkProps {
+  item: {
+    id: string;
+    label: string;
+    icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+    badge?: number;
+  };
+  isChild?: boolean;
+  activeTab: string;
+  isSidebarOpen: boolean;
+  isDarkMode: boolean;
+  setActiveTab: (id: string) => void;
+}
+
+const SidebarNavLink = ({ 
+  item, 
+  isChild = false, 
+  activeTab, 
+  isSidebarOpen, 
+  isDarkMode, 
+  setActiveTab 
+}: SidebarNavLinkProps) => (
+  <button
+    onClick={() => setActiveTab(item.id)}
+    className={`
+      w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
+      ${isSidebarOpen ? 'justify-start' : 'justify-center'}
+      ${isChild ? 'ml-4' : ''}
+      ${
+        activeTab === item.id
+          ? isDarkMode
+            ? 'bg-purple-600/20 text-primary'
+            : 'bg-purple-50 text-primary'
+          : isDarkMode
+          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+          : 'text-text-light hover:bg-gray-50'
+      }
+      group
+    `}
+  >
+    <div className='relative flex items-center'>
+      <div
+        className={`
+        p-2 rounded-lg transition-all duration-200 group-hover:scale-110
+        ${
+          activeTab === item.id
+            ? isDarkMode
+              ? 'bg-purple-600/10 text-primary'
+              : 'bg-purple-100 text-primary'
+            : 'text-current'
+        }
+      `}
+      >
+        <item.icon size={22} />
+      </div>
+      {item.badge && item.badge > 0 && (
+        <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
+          {item.badge}
+        </span>
+      )}
+      {isSidebarOpen && (
+        <span className='ml-3 font-medium text-sm'>{item.label}</span>
+      )}
+    </div>
+  </button>
+);
 
 const ModernDashboard = () => {
   // Core States
@@ -341,52 +399,6 @@ const ModernDashboard = () => {
   ];
 
   // Components
-  const SidebarNavLink = ({ item, isChild = false }:any) => (
-    <button
-      onClick={() => setActiveTab(item.id)}
-      className={`
-        w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
-        ${isSidebarOpen ? 'justify-start' : 'justify-center'}
-        ${isChild ? 'ml-4' : ''}
-        ${
-          activeTab === item.id
-            ? isDarkMode
-              ? 'bg-purple-600/20 text-primary'
-              : 'bg-purple-50 text-primary'
-            : isDarkMode
-            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            : 'text-text-light hover:bg-gray-50'
-        }
-        group
-      `}
-    >
-      <div className='relative flex items-center'>
-        <div
-          className={`
-          p-2 rounded-lg transition-all duration-200 group-hover:scale-110
-          ${
-            activeTab === item.id
-              ? isDarkMode
-                ? 'bg-purple-600/10 text-primary'
-                : 'bg-purple-100 text-primary'
-              : 'text-current'
-          }
-        `}
-        >
-          <item.icon size={22} />
-        </div>
-        {item.badge > 0 && (
-          <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
-            {item.badge}
-          </span>
-        )}
-        {isSidebarOpen && (
-          <span className='ml-3 font-medium text-sm'>{item.label}</span>
-        )}
-      </div>
-    </button>
-  );
-  
   const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
     <div
       className={`
@@ -408,7 +420,7 @@ const ModernDashboard = () => {
         </div>
         <div className='mt-4'>
           <ResponsiveContainer width='100%' height={32}>
-            <AreaChart data={stat.trend.map((value, i) => ({ value }))}>
+            <AreaChart data={stat.trend.map((value) => ({ value }))}>
               <Area
                 type='monotone'
                 dataKey='value'
@@ -425,7 +437,6 @@ const ModernDashboard = () => {
       </div>
     </div>
   );
-
   
   const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
     const getColorClasses = (color: ProgressBarProps['color']) => {
@@ -499,20 +510,20 @@ const ModernDashboard = () => {
     </div>
   );
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+  // const handleLogout = async () => {
+  //   try {
+  //     const response = await fetch('/api/auth/logout', {
+  //       method: 'POST',
+  //       credentials: 'include',
+  //     });
 
-      if (response.ok) {
-        window.location.href = '/login';
-      }
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
+  //     if (response.ok) {
+  //       window.location.href = '/login';
+  //     }
+  //   } catch (error) {
+  //     console.error('Logout failed:', error);
+  //   }
+  // };
 
   return (
     <div
@@ -627,7 +638,7 @@ const ModernDashboard = () => {
               )}
               <div className='space-y-1'>
                 {section.items.map((item) => (
-                  <SidebarNavLink key={item.id} item={item} />
+                  <SidebarNavLink key={item.id} item={item} activeTab={activeTab} isSidebarOpen={isSidebarOpen} isDarkMode={isDarkMode} setActiveTab={setActiveTab} />
                 ))}
               </div>
             </div>
@@ -656,10 +667,12 @@ const ModernDashboard = () => {
             `}
           >
             <div className='relative flex-shrink-0'>
-              <img
-                src='/api/placeholder/40/40'
-                alt='Profile'
-                className='w-10 h-10 rounded-xl object-cover ring-2 ring-white dark:ring-gray-800'
+              <Image
+                src="/images/avatar.png"
+                alt="User avatar"
+                width={40}
+                height={40}
+                className="rounded-full"
               />
               <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800'></span>
             </div>
@@ -1095,7 +1108,7 @@ const ModernDashboard = () => {
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}
               >
-                Welcome back, here's what's happening today
+                Welcome back, here&apos;s what&apos;s happening today
               </p>
             </div>
 
@@ -1574,9 +1587,11 @@ const ModernDashboard = () => {
                     >
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
-                          <img
+                          <Image
                             src={activity.avatar}
                             alt=''
+                            width={32}
+                            height={32}
                             className='w-8 h-8 rounded-lg mr-3'
                           />
                           <span

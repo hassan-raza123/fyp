@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 
 interface LogoutButtonProps {
@@ -9,7 +8,6 @@ interface LogoutButtonProps {
 }
 
 export default function LogoutButton({ variant = 'header' }: LogoutButtonProps) {
-  const router = useRouter();
 
   const handleLogout = async () => {
     try {

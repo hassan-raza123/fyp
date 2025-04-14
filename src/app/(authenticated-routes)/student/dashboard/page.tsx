@@ -4,25 +4,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+
 } from 'recharts';
 import {
   Menu,
   Bell,
   Search,
-  LogOut,
   Settings,
-  User,
   ChevronRight,
   ChevronLeft,
   Home,
@@ -34,21 +28,15 @@ import {
   PlusCircle,
   Filter,
   Download,
-  TrendingUp,
   Shield,
   Sun,
   Moon,
-  MessagesSquare,
   Layers,
   GraduationCap,
-  BellRing,
   UserCheck,
-  Zap,
-  Clock,
   AlertCircle,
   Check,
   X,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
@@ -58,15 +46,15 @@ import {
   Goal,
   Target,
   Award,
-  BookCheck,
   List,
   Grid,
   HelpCircle,
   Settings2,
-  Info,
 } from 'lucide-react';
 import LogoutButton from '@/components/auth/LogoutButton';
-import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/student-dashboard';
+import { MiniStatsCardProps, ProgressBarProps } from '@/app/types/student-dashboard';
+import { LucideProps } from 'lucide-react';
+import Image from 'next/image';
 
 // Simple chart component
 const SimpleChart = ({ data, color }: { data: number[]; color: string }) => {
@@ -104,6 +92,161 @@ const MiniStatsCard: React.FC<MiniStatsCardProps> = ({ stat }) => (
     </div>
   </div>
 );
+
+interface SidebarNavLinkProps {
+  item: {
+    id: string;
+    label: string;
+    icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+    badge?: number;
+  };
+  isChild?: boolean;
+  activeTab: string;
+  isSidebarOpen: boolean;
+  isDarkMode: boolean;
+  setActiveTab: (id: string) => void;
+}
+
+const SidebarNavLink = ({ 
+  item, 
+  isChild = false, 
+  activeTab, 
+  isSidebarOpen, 
+  isDarkMode, 
+  setActiveTab 
+}: SidebarNavLinkProps) => (
+  <button
+    onClick={() => setActiveTab(item.id)}
+    className={`
+      w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
+      ${isSidebarOpen ? 'justify-start' : 'justify-center'}
+      ${isChild ? 'ml-4' : ''}
+      ${
+        activeTab === item.id
+          ? isDarkMode
+            ? 'bg-purple-600/20 text-primary'
+            : 'bg-purple-50 text-primary'
+          : isDarkMode
+          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+          : 'text-text-light hover:bg-gray-50'
+      }
+      group
+    `}
+  >
+    <div className='relative flex items-center'>
+      <div
+        className={`
+        p-2 rounded-lg transition-all duration-200 group-hover:scale-110
+        ${
+          activeTab === item.id
+            ? isDarkMode
+              ? 'bg-purple-600/10 text-primary'
+              : 'bg-purple-100 text-primary'
+            : 'text-current'
+        }
+      `}
+      >
+        <item.icon size={22} />
+      </div>
+      {item.badge && item.badge > 0 && (
+        <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
+          {item.badge}
+        </span>
+      )}
+      {isSidebarOpen && (
+        <span className='ml-3 font-medium text-sm'>{item.label}</span>
+      )}
+    </div>
+  </button>
+);
+
+interface TimelineItem {
+  title: string;
+  time: string;
+  description: string;
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+  color: string;
+  date: string;
+}
+
+interface StudentTimelineProps {
+  items: TimelineItem[];
+  isDarkMode: boolean;
+}
+
+const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
+  const getColorClasses = (color: ProgressBarProps['color']) => {
+    const backgrounds: Record<ProgressBarProps['color'], { bg: string, bgLight: string }> = {
+      blue: { 
+        bg: 'bg-blue-300', 
+        bgLight: 'bg-blue-100' 
+      },
+      green: { 
+        bg: 'bg-green-300', 
+        bgLight: 'bg-green-100' 
+      },
+      yellow: { 
+        bg: 'bg-yellow-300', 
+        bgLight: 'bg-yellow-100' 
+      },
+      red: { 
+        bg: 'bg-red-300', 
+        bgLight: 'bg-red-100' 
+      },
+      purple: { 
+        bg: 'bg-purple-300', 
+        bgLight: 'bg-purple-100' 
+      }
+    };
+    return backgrounds[color];
+  };
+
+  const { bg, bgLight } = getColorClasses(color);
+  
+  return (
+    <div className={`w-full ${bgLight} rounded-full h-2`}>
+      <div
+        className={`h-2 rounded-full ${bg} transition-all duration-300`}
+        style={{ width: `${Math.min((current / target) * 100, 100)}%` }}
+      />
+    </div>
+  );
+};
+
+const Timeline: React.FC<StudentTimelineProps> = ({ items, isDarkMode }) => {
+  return (
+    <div className='relative'>
+      {items.map((item, index) => (
+        <div key={index} className='ml-6 mb-6 relative'>
+          <div
+            className={`
+            absolute -left-9 mt-1.5 w-5 h-5 rounded-full border-4
+            ${isDarkMode ? 'border-gray-800' : 'border-white'}
+            ${item.color} flex items-center justify-center
+          `}
+          >
+            <item.icon size={12} className='text-white' />
+          </div>
+          <div className='flex flex-col'>
+            <span className='text-sm text-gray-500 dark:text-gray-400'>
+              {item.date} - {item.time}
+            </span>
+            <h4
+              className={`text-md font-medium mt-1 ${
+                isDarkMode ? 'text-white' : 'text-gray-800'
+              }`}
+            >
+              {item.title}
+            </h4>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+              {item.description}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const ModernDashboard = () => {
   // Core States
@@ -373,144 +516,25 @@ const ModernDashboard = () => {
     },
   ];
 
-  // Components
-  const SidebarNavLink = ({ item, isChild = false }:any) => (
-    <button
-      onClick={() => setActiveTab(item.id)}
-      className={`
-        w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
-        ${isSidebarOpen ? 'justify-start' : 'justify-center'}
-        ${isChild ? 'ml-4' : ''}
-        ${
-          activeTab === item.id
-            ? isDarkMode
-              ? 'bg-purple-600/20 text-primary'
-              : 'bg-purple-50 text-primary'
-            : isDarkMode
-            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            : 'text-text-light hover:bg-gray-50'
-        }
-        group
-      `}
-    >
-      <div className='relative flex items-center'>
-        <div
-          className={`
-          p-2 rounded-lg transition-all duration-200 group-hover:scale-110
-          ${
-            activeTab === item.id
-              ? isDarkMode
-                ? 'bg-purple-600/10 text-primary'
-                : 'bg-purple-100 text-primary'
-              : 'text-current'
-          }
-        `}
-        >
-          <item.icon size={22} />
-        </div>
-        {item.badge > 0 && (
-          <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
-            {item.badge}
-          </span>
-        )}
-        {isSidebarOpen && (
-          <span className='ml-3 font-medium text-sm'>{item.label}</span>
-        )}
-      </div>
-    </button>
-  );
-  
-  const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
-    const getColorClasses = (color: ProgressBarProps['color']) => {
-      const backgrounds: Record<ProgressBarProps['color'], { bg: string, bgLight: string }> = {
-        blue: { 
-          bg: 'bg-blue-300', 
-          bgLight: 'bg-blue-100' 
-        },
-        green: { 
-          bg: 'bg-green-300', 
-          bgLight: 'bg-green-100' 
-        },
-        yellow: { 
-          bg: 'bg-yellow-300', 
-          bgLight: 'bg-yellow-100' 
-        },
-        red: { 
-          bg: 'bg-red-300', 
-          bgLight: 'bg-red-100' 
-        },
-        purple: { 
-          bg: 'bg-purple-300', 
-          bgLight: 'bg-purple-100' 
-        }
-      };
-      return backgrounds[color];
-    };
-  
-    const { bg, bgLight } = getColorClasses(color);
-    
-    return (
-      <div className={`w-full ${bgLight} rounded-full h-2`}>
-        <div
-          className={`h-2 rounded-full ${bg} transition-all duration-300`}
-          style={{ width: `${Math.min((current / target) * 100, 100)}%` }}
-        />
-      </div>
-    );
-  };
-  
-    const Timeline: React.FC<TimelineProps> = ({ items }) => (
-    <div className='relative'>
-      {items.map((item, index) => (
-        <div key={index} className='ml-6 mb-6 relative'>
-          <div
-            className={`
-            absolute -left-9 mt-1.5 w-5 h-5 rounded-full border-4
-            ${isDarkMode ? 'border-gray-800' : 'border-white'}
-            ${item.color} flex items-center justify-center
-          `}
-          >
-            <item.icon size={12} className='text-white' />
-          </div>
-          <div className='flex flex-col'>
-            <span className='text-sm text-gray-500 dark:text-gray-400'>
-              {item.date} - {item.time}
-            </span>
-            <h4
-              className={`text-md font-medium mt-1 ${
-                isDarkMode ? 'text-white' : 'text-gray-800'
-              }`}
-            >
-              {item.title}
-            </h4>
-            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-              {item.description}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  // const handleLogout = async () => {
+  //   console.log('Logging out...');
+  //   try {
+  //     const response = await fetch('/api/auth/logout', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
 
-  const handleLogout = async () => {
-    console.log('Logging out...');
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        window.location.href = '/login';
-      } else {
-        console.error('Logout failed');
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  };
+  //     if (response.ok) {
+  //       window.location.href = '/login';
+  //     } else {
+  //       console.error('Logout failed');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error during logout:', error);
+  //   }
+  // };
 
   return (
     <div
@@ -625,7 +649,7 @@ const ModernDashboard = () => {
               )}
               <div className='space-y-1'>
                 {section.items.map((item) => (
-                  <SidebarNavLink key={item.id} item={item} />
+                  <SidebarNavLink key={item.id} item={item} activeTab={activeTab} isSidebarOpen={isSidebarOpen} isDarkMode={isDarkMode} setActiveTab={setActiveTab} />
                 ))}
               </div>
             </div>
@@ -654,10 +678,12 @@ const ModernDashboard = () => {
             `}
           >
             <div className='relative flex-shrink-0'>
-              <img
-                src='/api/placeholder/40/40'
-                alt='Profile'
-                className='w-10 h-10 rounded-xl object-cover ring-2 ring-white dark:ring-gray-800'
+              <Image
+                src="/images/avatar.png"
+                alt="User avatar"
+                width={40}
+                height={40}
+                className="rounded-full"
               />
               <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800'></span>
             </div>
@@ -1050,7 +1076,7 @@ const ModernDashboard = () => {
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}
               >
-                Welcome back, here's what's happening today
+                Welcome back, here&apos;s what&apos;s happening today
               </p>
             </div>
 
@@ -1386,7 +1412,7 @@ const ModernDashboard = () => {
                   View All
                 </button>
               </div>
-              <Timeline items={timelineItems} />
+              <Timeline items={timelineItems} isDarkMode={isDarkMode} />
             </div>
           </div>
 
@@ -1529,10 +1555,12 @@ const ModernDashboard = () => {
                     >
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
-                          <img
+                          <Image
                             src={activity.avatar}
                             alt=''
-                            className='w-8 h-8 rounded-lg mr-3'
+                            width={40}
+                            height={40}
+                            className="rounded-full mr-3"
                           />
                           <span
                             className={`

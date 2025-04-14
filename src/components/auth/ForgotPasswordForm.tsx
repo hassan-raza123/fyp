@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Mail,
   ArrowLeft,
@@ -15,7 +14,6 @@ import Link from 'next/link';
 type ValidationErrors = { [key: string]: string };
 
 export default function ForgotPasswordForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -69,7 +67,7 @@ export default function ForgotPasswordForm() {
       }
 
       setIsEmailSent(true);
-    } catch (error) {
+    } catch {
       setServerError(
         'Network error. Please check your connection and try again.'
       );
@@ -105,7 +103,7 @@ export default function ForgotPasswordForm() {
               <li className='flex items-start gap-2'>
                 <div className='w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5'></div>
                 <span>
-                  Make sure to check your spam folder if you don't receive the
+                  Make sure to check your spam folder if you don&apos;t receive the
                   email
                 </span>
               </li>
@@ -117,7 +115,7 @@ export default function ForgotPasswordForm() {
               </li>
               <li className='flex items-start gap-2'>
                 <div className='w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5'></div>
-                <span>You'll need access to your registered email address</span>
+                <span>You&apos;ll need access to your registered email address</span>
               </li>
             </ul>
           </div>
@@ -189,10 +187,10 @@ export default function ForgotPasswordForm() {
               Check Your Email
             </h3>
             <p className='text-green-700 text-sm mb-4'>
-              We've sent password reset instructions to {email}
+              We&apos;ve sent password reset instructions to {email}
             </p>
             <div className='text-xs text-green-600 space-y-2'>
-              <p>Didn't receive the email? Check your spam folder.</p>
+              <p>Didn&apos;t receive the email? Check your spam folder.</p>
               <p>The reset link will expire in 30 minutes.</p>
             </div>
           </div>

@@ -13,14 +13,14 @@ const dashboardRoutes = {
 };
 
 // Role hierarchy and permissions
-const roleHierarchy = {
-  super_admin: ['super_admin', 'sub_admin', 'department_admin', 'child_admin', 'teacher', 'student'],
-  sub_admin: ['department_admin', 'child_admin', 'teacher', 'student'],
-  department_admin: ['child_admin', 'teacher', 'student'],
-  child_admin: ['teacher', 'student'],
-  teacher: ['student'],
-  student: [],
-};
+// const roleHierarchy = {
+//   super_admin: ['super_admin', 'sub_admin', 'department_admin', 'child_admin', 'teacher', 'student'],
+//   sub_admin: ['department_admin', 'child_admin', 'teacher', 'student'],
+//   department_admin: ['child_admin', 'teacher', 'student'],
+//   child_admin: ['teacher', 'student'],
+//   teacher: ['student'],
+//   student: [],
+// };
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -34,30 +34,30 @@ const publicRoutes = [
 ];
 
 // Admin routes that require specific admin roles
-const adminRoutes = {
-  super_admin: [
-    '/admin/dashboard',
-    '/admin/system-settings',
-    '/admin/manage-users',
-    '/admin/manage-roles',
-  ],
-  sub_admin: [
-    '/admin/dashboard',
-    '/admin/manage-users',
-    '/admin/manage-departments',
-  ],
-  department_admin: [
-    '/department/dashboard',
-    '/department/manage-faculty',
-    '/department/manage-students',
-    '/department/manage-courses',
-  ],
-  child_admin: [
-    '/sub-admin/dashboard',
-    '/sub-admin/manage-attendance',
-    '/sub-admin/manage-schedules',
-  ],
-};
+// const adminRoutes = {
+//   super_admin: [
+//     '/admin/dashboard',
+//     '/admin/system-settings',
+//     '/admin/manage-users',
+//     '/admin/manage-roles',
+//   ],
+//   sub_admin: [
+//     '/admin/dashboard',
+//     '/admin/manage-users',
+//     '/admin/manage-departments',
+//   ],
+//   department_admin: [
+//     '/department/dashboard',
+//     '/department/manage-faculty',
+//     '/department/manage-students',
+//     '/department/manage-courses',
+//   ],
+//   child_admin: [
+//     '/sub-admin/dashboard',
+//     '/sub-admin/manage-attendance',
+//     '/sub-admin/manage-schedules',
+//   ],
+// };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -149,7 +149,7 @@ export default function LoginForm() {
       // Use Next.js router for navigation
       router.refresh();
       router.push(data.data.redirectTo);
-    } catch (error) {
+    } catch {
       setServerError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);

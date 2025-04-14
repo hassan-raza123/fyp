@@ -4,7 +4,7 @@ export async function verifyAuth(token: string) {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET!);
     return verified;
-  } catch (error) {
+  } catch {
     throw new Error('Invalid token');
   }
 }
