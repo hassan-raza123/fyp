@@ -32,7 +32,6 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [serverError, setServerError] = useState('');
-  const [selectedAdminRole, setSelectedAdminRole] = useState<AdminRole | null>(null);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -82,17 +81,6 @@ export default function LoginForm() {
       ...prev,
       userType: type,
     }));
-    setSelectedAdminRole(null);
-    setErrors({});
-    setServerError('');
-  };
-
-  const handleAdminRoleChange = (role: AdminRole) => {
-    setSelectedAdminRole(role);
-    setFormData((prev) => ({
-      ...prev,
-      userType: role,
-    }));
     setErrors({});
     setServerError('');
   };
@@ -113,9 +101,6 @@ export default function LoginForm() {
     if (!formData.password) {
       validationErrors.password = 'Password is required';
     }
-    if (formData.userType === 'admin' && !selectedAdminRole) {
-      validationErrors.adminRole = 'Please select an admin role';
-    }
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -131,7 +116,7 @@ export default function LoginForm() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          userType: formData.userType === 'admin' ? selectedAdminRole : formData.userType,
+          userType: formData.userType,
         }),
       });
 
@@ -156,7 +141,7 @@ export default function LoginForm() {
           'userPreferences',
           JSON.stringify({
             email: formData.email,
-            userType: formData.userType === 'admin' ? selectedAdminRole : formData.userType,
+            userType: formData.userType,
           })
         );
       }
@@ -241,34 +226,6 @@ export default function LoginForm() {
           </button>
         ))}
       </div>
-
-      {/* Admin Role Selector */}
-      {formData.userType === 'admin' && (
-        <div className='mb-8'>
-          <label className='block text-sm font-medium text-text mb-2'>
-            Select Admin Role
-          </label>
-          <div className='grid grid-cols-2 gap-3'>
-            {(['super_admin', 'sub_admin', 'department_admin', 'child_admin'] as const).map((role) => (
-              <button
-                key={role}
-                type='button'
-                onClick={() => handleAdminRoleChange(role)}
-                className={`py-3 px-4 text-sm font-medium rounded-xl transition-all duration-300 ${
-                  selectedAdminRole === role
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'bg-gray-100 text-text-light hover:bg-gray-200'
-                }`}
-              >
-                {role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-              </button>
-            ))}
-          </div>
-          {errors.adminRole && (
-            <p className='mt-1 text-sm text-red-500'>{errors.adminRole}</p>
-          )}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className='space-y-6'>
         {/* Email Field */}

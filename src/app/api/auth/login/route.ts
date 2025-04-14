@@ -26,7 +26,7 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'super_admin', 'sub_admin', 'department_admin', 'child_admin'] as const, {
+  userType: z.enum(['student', 'teacher', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -125,13 +125,13 @@ export async function POST(
       );
     }
 
-    // Check if user has the requested role
+    // Get user roles from database
     const userRoles = user.userrole.map((ur) => ur.role.name);
     let actualRole: AllRoles;
 
-    // Handle admin roles
-    if (['super_admin', 'sub_admin', 'department_admin', 'child_admin'].includes(userType)) {
-      // For admin types, check if user has any admin role
+    // If user is trying to login as admin, check their admin role
+    if (userType === 'admin') {
+      // Check if user has any admin role
       const adminRoles = ['super_admin', 'sub_admin', 'department_admin', 'child_admin'];
       const userAdminRole = userRoles.find((role) => adminRoles.includes(role));
       
@@ -140,17 +140,6 @@ export async function POST(
           {
             success: false,
             message: 'User does not have admin privileges',
-          },
-          { status: 403 }
-        );
-      }
-      
-      // Special handling for sub_admin
-      if (userType === 'sub_admin' && userAdminRole !== 'sub_admin') {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'User does not have sub-admin privileges',
           },
           { status: 403 }
         );
@@ -193,26 +182,24 @@ export async function POST(
     // Determine redirect path based on role
     const redirectTo = getDashboardPath(actualRole);
 
-    const response = NextResponse.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        user: userData,
-        redirectTo,
-        token,
-        userType: actualRole,
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: userData,
+          redirectTo,
+          token,
+          userType: actualRole,
+        },
       },
-    });
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    return response;
+      {
+        status: 200,
+        headers: {
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
+        },
+      }
+    );
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
