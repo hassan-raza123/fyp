@@ -122,7 +122,7 @@ export default function ResetPasswordForm() {
       setTimeout(() => {
         router.push('/login');
       }, 3000);
-    } catch (error) {
+    } catch {
       setServerError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);

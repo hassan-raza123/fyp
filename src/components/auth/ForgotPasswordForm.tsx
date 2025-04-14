@@ -67,7 +67,7 @@ export default function ForgotPasswordForm() {
       }
 
       setIsEmailSent(true);
-    } catch (error) {
+    } catch {
       setServerError(
         'Network error. Please check your connection and try again.'
       );
