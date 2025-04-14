@@ -1,4 +1,4 @@
-export type BaseUserRole = 'student' | 'teacher' | 'admin';
+export type BaseUserRole = 'student' | 'teacher';
 export type AdminRole = 'super_admin' | 'sub_admin' | 'department_admin' | 'child_admin';
 export type AllRoles = BaseUserRole | AdminRole;
 
@@ -49,7 +49,7 @@ export interface IUserRole {
 }
 
 export interface UserWithRoles extends IUser {
-  roles: IUserRole[];
+  userrole: IUserRole[];
   student?: IStudent | null;
   faculty?: IFaculty | null;
 }
@@ -57,7 +57,7 @@ export interface UserWithRoles extends IUser {
 export interface LoginRequest {
   email: string;
   password: string;
-  userType: BaseUserRole;
+  userType: AllRoles;
 }
 
 export interface UserData {

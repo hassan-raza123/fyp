@@ -7,7 +7,7 @@ const dashboardRoutes = {
   student: '/student/dashboard',
   teacher: '/faculty/dashboard',
   super_admin: '/admin/dashboard',
-  sub_admin: '/admin/dashboard', // Sub Admin uses same dashboard as Super Admin
+  sub_admin: '/admin/dashboard',
   department_admin: '/department/dashboard',
   child_admin: '/sub-admin/dashboard',
 };
@@ -25,90 +25,77 @@ const roleHierarchy = {
 // Public routes that don't require authentication
 const publicRoutes = [
   '/',
-  '/dashboard',
+  '/login',
+  '/forgot-password',
+  '/reset-password',
   '/features',
   '/about',
-  '/forgot-password',
   '/contact',
 ];
+
+// Admin routes that require specific admin roles
+const adminRoutes = {
+  super_admin: [
+    '/admin/dashboard',
+    '/admin/system-settings',
+    '/admin/manage-users',
+    '/admin/manage-roles',
+  ],
+  sub_admin: [
+    '/admin/dashboard',
+    '/admin/manage-users',
+    '/admin/manage-departments',
+  ],
+  department_admin: [
+    '/department/dashboard',
+    '/department/manage-faculty',
+    '/department/manage-students',
+    '/department/manage-courses',
+  ],
+  child_admin: [
+    '/sub-admin/dashboard',
+    '/sub-admin/manage-attendance',
+    '/sub-admin/manage-schedules',
+  ],
+};
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for static files and API
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/static') ||
-    pathname.startsWith('/team') ||
-    pathname.startsWith('/images') ||
-    pathname.startsWith('/api/auth/login') ||
-    pathname === '/favicon.ico'
-  ) {
+  // Allow public routes
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Allow access to public routes
-  if (publicRoutes.some((route) => pathname === route)) {
-    return NextResponse.next();
-  }
-
-  // Get token from cookies
+  // Check for authentication
   const token = request.cookies.get('token')?.value;
-
-  // Handle login page access
-  if (pathname === '/login') {
-    if (!token) {
-      return NextResponse.next();
-    }
-
-    try {
-      const decoded = await verifyToken(token);
-      if (decoded?.role) {
-        const redirectTo =
-          dashboardRoutes[decoded.role as keyof typeof dashboardRoutes];
-        if (redirectTo) {
-          return NextResponse.redirect(new URL(redirectTo, request.url));
-        }
-      }
-    } catch {
-      return NextResponse.next();
-    }
-  }
-
-  // For all other routes, check if user is authenticated
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
     const decoded = await verifyToken(token);
-    if (!decoded) {
+    if (!decoded || !decoded.role) {
       throw new Error('Invalid token');
     }
 
     const userRole = decoded.role;
-    const userDashboard =
-      dashboardRoutes[userRole as keyof typeof dashboardRoutes];
+    const userDashboard = dashboardRoutes[userRole as keyof typeof dashboardRoutes];
 
     // Check if trying to access dashboard routes
-    if (
-      Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))
-    ) {
+    if (Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))) {
       if (!pathname.startsWith(userDashboard)) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
 
-    // Check role-based access for admin routes
+    // Check admin routes access
     if (pathname.startsWith('/admin')) {
       if (userRole === 'super_admin' || userRole === 'sub_admin') {
         // Special handling for Sub Admin restrictions
         if (userRole === 'sub_admin') {
           // Sub Admin cannot access these routes
-          if (
-            pathname.includes('/admin/super-admin') ||
-            pathname.includes('/admin/system-settings')
-          ) {
+          if (pathname.startsWith('/admin/system-settings') || pathname.startsWith('/admin/manage-roles')) {
             return NextResponse.redirect(new URL('/admin/dashboard', request.url));
           }
         }
@@ -117,34 +104,24 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Check department admin access
+    // Check department admin routes
     if (pathname.startsWith('/department')) {
-      if (
-        userRole !== 'department_admin' &&
-        userRole !== 'super_admin' &&
-        userRole !== 'sub_admin'
-      ) {
+      if (userRole !== 'department_admin' && userRole !== 'super_admin' && userRole !== 'sub_admin') {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
 
-    // Check child admin access
+    // Check child admin routes
     if (pathname.startsWith('/sub-admin')) {
-      if (
-        userRole !== 'child_admin' &&
-        userRole !== 'department_admin' &&
-        userRole !== 'super_admin' &&
-        userRole !== 'sub_admin'
-      ) {
+      if (userRole !== 'child_admin' && userRole !== 'department_admin' && userRole !== 'super_admin' && userRole !== 'sub_admin') {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
 
     return NextResponse.next();
   } catch (error) {
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('token');
-    return response;
+    console.error('Middleware error:', error);
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 }
 
@@ -157,7 +134,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - images folder
+     * - team folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public|about|features|contact).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public|images|team|about|features|contact).*)',
   ],
 };

@@ -7,16 +7,24 @@ import {
   BaseUserType,
   LoginResponse,
   ValidationErrors,
+  AdminRole,
 } from '@/app/types/login';
 import Link from 'next/link';
+
+interface FormData {
+  email: string;
+  password: string;
+  userType: BaseUserType | AdminRole;
+  rememberMe: boolean;
+}
 
 export default function LoginForm() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    userType: 'student' as BaseUserType,
+    userType: 'student',
     rememberMe: false,
   });
 
@@ -69,7 +77,10 @@ export default function LoginForm() {
   };
 
   const handleUserTypeChange = (type: BaseUserType) => {
-    setFormData((prev) => ({ ...prev, userType: type }));
+    setFormData((prev) => ({
+      ...prev,
+      userType: type,
+    }));
     setErrors({});
     setServerError('');
   };
@@ -80,10 +91,19 @@ export default function LoginForm() {
     setErrors({});
     setServerError('');
 
-    const isEmailValid = validateEmail(formData.email);
-    const isPasswordValid = validatePassword(formData.password);
+    // Validate form data
+    const validationErrors: ValidationErrors = {};
+    if (!formData.email) {
+      validationErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      validationErrors.email = 'Please enter a valid email address';
+    }
+    if (!formData.password) {
+      validationErrors.password = 'Password is required';
+    }
 
-    if (!isEmailValid || !isPasswordValid) {
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       setIsLoading(false);
       return;
     }
@@ -92,7 +112,7 @@ export default function LoginForm() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -127,18 +147,16 @@ export default function LoginForm() {
       }
 
       // Use Next.js router for navigation
-      router.refresh(); // Refresh the current route
+      router.refresh();
       router.push(data.data.redirectTo);
     } catch (error) {
-      setServerError(
-        'Network error. Please check your connection and try again.'
-      );
+      setServerError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getUserTypeDisplay = (type: BaseUserType | string): string => {
+  const getUserTypeDisplay = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
         return 'Administrator';
@@ -146,14 +164,26 @@ export default function LoginForm() {
         return 'Faculty';
       case 'student':
         return 'Student';
+      case 'super_admin':
+        return 'Super Admin';
+      case 'sub_admin':
+        return 'Sub Admin';
+      case 'department_admin':
+        return 'Department Admin';
+      case 'child_admin':
+        return 'Child Admin';
       default:
         return String(type).charAt(0).toUpperCase() + String(type).slice(1);
     }
   };
 
-  const getEmailPlaceholder = (type: BaseUserType): string => {
+  const getEmailPlaceholder = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
+      case 'super_admin':
+      case 'sub_admin':
+      case 'department_admin':
+      case 'child_admin':
         return 'admin@university.edu';
       case 'teacher':
         return 'faculty@university.edu';

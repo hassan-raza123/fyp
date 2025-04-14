@@ -26,7 +26,7 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'admin', 'sub_admin'] as const, {
+  userType: z.enum(['student', 'teacher', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -94,7 +94,7 @@ export async function POST(
         status: 'active',
       },
       include: {
-        roles: {
+        userrole: {
           include: {
             role: true,
           },
@@ -125,14 +125,16 @@ export async function POST(
       );
     }
 
-    // Check if user has the requested role
-    const userRoles = user.roles.map((ur) => ur.role.name);
+    // Get user roles from database
+    const userRoles = user.userrole.map((ur) => ur.role.name);
     let actualRole: AllRoles;
 
-    if (userType === 'admin' || userType === 'sub_admin') {
-      // For admin types, check if user has any admin role
+    // If user is trying to login as admin, check their admin role
+    if (userType === 'admin') {
+      // Check if user has any admin role
       const adminRoles = ['super_admin', 'sub_admin', 'department_admin', 'child_admin'];
       const userAdminRole = userRoles.find((role) => adminRoles.includes(role));
+      
       if (!userAdminRole) {
         return NextResponse.json(
           {
@@ -142,9 +144,10 @@ export async function POST(
           { status: 403 }
         );
       }
+      
       actualRole = userAdminRole as AdminRole;
     } else {
-      // For non-admin types, check exact role match
+      // For non-admin types (student, teacher), check exact role match
       if (!userRoles.includes(userType)) {
         return NextResponse.json(
           {
@@ -161,12 +164,14 @@ export async function POST(
     const userData = createUserData(user, actualRole);
 
     // Create JWT token
-    const token = await createToken({
+    const tokenPayload: TokenPayload = {
       userId: user.id,
       email: user.email,
       role: actualRole,
       userData,
-    });
+    };
+
+    const token = await createToken(tokenPayload);
 
     // Update last login
     await prisma.user.update({
@@ -177,26 +182,24 @@ export async function POST(
     // Determine redirect path based on role
     const redirectTo = getDashboardPath(actualRole);
 
-    const response = NextResponse.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        user: userData,
-        redirectTo,
-        token,
-        userType: actualRole,
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: userData,
+          redirectTo,
+          token,
+          userType: actualRole,
+        },
       },
-    });
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    return response;
+      {
+        status: 200,
+        headers: {
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
+        },
+      }
+    );
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
@@ -214,6 +217,7 @@ export async function POST(
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'super_admin':
+      return '/admin/dashboard';
     case 'sub_admin':
       return '/admin/dashboard';
     case 'department_admin':
