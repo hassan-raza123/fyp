@@ -18,10 +18,10 @@ import Image from 'next/image';
 const supervisor = {
   name: 'Mr. Abdul Basit',
   role: 'Project Supervisor',
-  designation: 'Associate Professor',
+  designation: 'Lecturer',
   department: 'Computer Science Department',
   linkedin: 'https://linkedin.com/in/supervisor',
-  picture: '/team/supervisor.png',
+  picture: '/team/supervisor.jpg',
 };
 
 const teamMembers = [
@@ -58,7 +58,7 @@ const teamMembers = [
     role: 'Database Engineer',
     github: 'https://github.com/member5',
     linkedin: 'https://linkedin.com/in/member5',
-    picture: '/images/zohaib.jpg',
+    picture: '/team/zohaib.jpg',
   },
 ];
 
@@ -174,13 +174,13 @@ export default function AboutPage() {
             <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300'></div>
             <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
               <div className='p-6 flex flex-col items-center'>
-                <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
+                <div className='w-64 h-64 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl relative'>
                   <Image
                     src={teamMembers[0].picture}
                     alt={teamMembers[0].name}
-                    width={200}
-                    height={200}
-                    className="rounded-full"
+                    width={256}
+                    height={256}
+                    className="object-cover w-full h-full"
                   />
                 </div>
                 <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[0].name}</h3>
@@ -202,13 +202,13 @@ export default function AboutPage() {
             <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300'></div>
             <div className='relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100'>
               <div className='p-6 flex flex-col items-center'>
-                <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
+                <div className='w-64 h-64 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl relative'>
                   <Image
                     src={supervisor.picture}
                     alt={supervisor.name}
-                    width={200}
-                    height={200}
-                    className="rounded-full"
+                    width={256}
+                    height={256}
+                    className="object-cover w-full h-full"
                   />
                 </div>
                 <div className='text-center'>
@@ -238,13 +238,13 @@ export default function AboutPage() {
             <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300'></div>
             <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
               <div className='p-6 flex flex-col items-center'>
-                <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
+                <div className='w-64 h-64 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl relative'>
                   <Image
                     src={teamMembers[1].picture}
                     alt={teamMembers[1].name}
-                    width={200}
-                    height={200}
-                    className="rounded-full"
+                    width={256}
+                    height={256}
+                    className="object-cover w-full h-full"
                   />
                 </div>
                 <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[1].name}</h3>
@@ -272,13 +272,13 @@ export default function AboutPage() {
               <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300'></div>
               <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
                 <div className='p-6 flex flex-col items-center'>
-                  <div className='w-64 h-72 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl'>
+                  <div className='w-64 h-64 overflow-hidden bg-white ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300 shadow-lg mb-6 rounded-xl relative'>
                     <Image
                       src={member.picture}
                       alt={member.name}
-                      width={200}
-                      height={200}
-                      className="rounded-full"
+                      width={256}
+                      height={256}
+                      className="object-cover w-full h-full"
                     />
                   </div>
                   <h3 className='text-xl font-bold text-gray-900 mb-1'>{member.name}</h3>
