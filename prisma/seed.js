@@ -80,12 +80,15 @@ async function main() {
         email_verified: true,
         status: 'active',
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roles[0].id,
-            updatedAt: new Date(),
-          },
-        },
+      },
+    });
+
+    // Create user role for super admin
+    await prisma.userrole.create({
+      data: {
+        userId: superAdmin.id,
+        roleId: roles[2].id,
+        updatedAt: new Date(),
       },
     });
 
@@ -103,12 +106,15 @@ async function main() {
         email_verified: true,
         status: 'active',
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roles[1].id,
-            updatedAt: new Date(),
-          },
-        },
+      },
+    });
+
+    // Create user role for sub admin
+    await prisma.userrole.create({
+      data: {
+        userId: subAdmin.id,
+        roleId: roles[1].id,
+        updatedAt: new Date(),
       },
     });
 
@@ -142,12 +148,15 @@ async function main() {
         email_verified: true,
         status: 'active',
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roles[2].id,
-            updatedAt: new Date(),
-          },
-        },
+      },
+    });
+
+    // Create user role for department admin
+    await prisma.userrole.create({
+      data: {
+        userId: deptAdmin.id,
+        roleId: roles[2].id,
+        updatedAt: new Date(),
       },
     });
 
@@ -197,12 +206,15 @@ async function main() {
         email_verified: true,
         status: 'active',
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roles[4].id,
-            updatedAt: new Date(),
-          },
-        },
+      },
+    });
+
+    // Create user role for teacher
+    await prisma.userrole.create({
+      data: {
+        userId: teacherUser.id,
+        roleId: roles[4].id,
+        updatedAt: new Date(),
       },
     });
 
@@ -220,12 +232,15 @@ async function main() {
         email_verified: true,
         status: 'active',
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roles[3].id,
-            updatedAt: new Date(),
-          },
-        },
+      },
+    });
+
+    // Create user role for child admin
+    await prisma.userrole.create({
+      data: {
+        userId: childAdmin.id,
+        roleId: roles[3].id,
+        updatedAt: new Date(),
       },
     });
 
@@ -283,12 +298,15 @@ async function main() {
           email_verified: true,
           status: 'active',
           updatedAt: new Date(),
-          userrole: {
-            create: {
-              roleId: roles[5].id,
-              updatedAt: new Date(),
-            },
-          },
+        },
+      });
+
+      // Create user role for student
+      await prisma.userrole.create({
+        data: {
+          userId: studentUser.id,
+          roleId: roles[5].id,
+          updatedAt: new Date(),
         },
       });
 
