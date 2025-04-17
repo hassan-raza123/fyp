@@ -85,34 +85,29 @@ export default function LoginForm() {
     setServerError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setServerError('');
 
-    // Validate form data
-    const validationErrors: ValidationErrors = {};
-    if (!formData.email) {
-      validationErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      validationErrors.email = 'Please enter a valid email address';
-    }
-    if (!formData.password) {
-      validationErrors.password = 'Password is required';
-    }
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      // Validate form data
+      if (!formData.email || !formData.password) {
+        setErrors((prev) => ({
+          ...prev,
+          email: 'Email is required',
+          password: 'Password is required',
+        }));
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -120,37 +115,34 @@ export default function LoginForm() {
         }),
       });
 
-      const data: LoginResponse = await response.json();
+      const data = await response.json();
 
-      if (!data.success) {
-        if (data.errors) {
-          const newErrors: ValidationErrors = {};
-          data.errors.forEach((error) => {
-            newErrors[error.field] = error.message;
-          });
-          setErrors(newErrors);
-        } else {
-          setServerError(data.message || 'Login failed. Please try again.');
-        }
+      if (!response.ok) {
+        setServerError(data.message || 'Login failed');
+        setIsLoading(false);
         return;
       }
 
-      // Store minimal user preferences if remember me is checked
-      if (formData.rememberMe) {
-        localStorage.setItem(
-          'userPreferences',
-          JSON.stringify({
-            email: formData.email,
-            userType: formData.userType,
-          })
-        );
+      // If user is verified and should be redirected directly
+      if (data.data.shouldRedirect) {
+        // Store user preferences in localStorage if remember me is checked
+        if (formData.rememberMe) {
+          localStorage.setItem('userEmail', formData.email);
+          localStorage.setItem('userType', formData.userType);
+        }
+
+        // Redirect to dashboard
+        window.location.href = data.data.redirectTo;
+        return;
       }
 
-      // Use Next.js router for navigation
-      router.refresh();
-      router.push(data.data.redirectTo);
-    } catch {
-      setServerError('Network error. Please check your connection and try again.');
+      // For OTP verification required
+      window.location.href = `/verify-otp?email=${encodeURIComponent(
+        formData.email
+      )}&userType=${encodeURIComponent(formData.userType)}`;
+    } catch (error) {
+      setServerError('An error occurred during login');
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }

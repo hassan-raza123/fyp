@@ -294,6 +294,19 @@ model userrole {
   @@index([userId], map: "UserRole_userId_idx")
 }
 
+model OTP {
+  id        Int      @id @default(autoincrement())
+  email     String
+  userType  String
+  code      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email, userType])
+}
+
 enum role_name {
   super_admin
   sub_admin

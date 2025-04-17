@@ -31,6 +31,7 @@ const publicRoutes = [
   '/features',
   '/about',
   '/contact',
+  '/verify-otp',
 ];
 
 // Admin routes that require specific admin roles
@@ -80,10 +81,13 @@ export async function middleware(request: NextRequest) {
     }
 
     const userRole = decoded.role;
-    const userDashboard = dashboardRoutes[userRole as keyof typeof dashboardRoutes];
+    const userDashboard =
+      dashboardRoutes[userRole as keyof typeof dashboardRoutes];
 
     // Check if trying to access dashboard routes
-    if (Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))) {
+    if (
+      Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))
+    ) {
       if (!pathname.startsWith(userDashboard)) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
@@ -95,8 +99,13 @@ export async function middleware(request: NextRequest) {
         // Special handling for Sub Admin restrictions
         if (userRole === 'sub_admin') {
           // Sub Admin cannot access these routes
-          if (pathname.startsWith('/admin/system-settings') || pathname.startsWith('/admin/manage-roles')) {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+          if (
+            pathname.startsWith('/admin/system-settings') ||
+            pathname.startsWith('/admin/manage-roles')
+          ) {
+            return NextResponse.redirect(
+              new URL('/admin/dashboard', request.url)
+            );
           }
         }
       } else {
@@ -106,14 +115,23 @@ export async function middleware(request: NextRequest) {
 
     // Check department admin routes
     if (pathname.startsWith('/department')) {
-      if (userRole !== 'department_admin' && userRole !== 'super_admin' && userRole !== 'sub_admin') {
+      if (
+        userRole !== 'department_admin' &&
+        userRole !== 'super_admin' &&
+        userRole !== 'sub_admin'
+      ) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
 
     // Check child admin routes
     if (pathname.startsWith('/sub-admin')) {
-      if (userRole !== 'child_admin' && userRole !== 'department_admin' && userRole !== 'super_admin' && userRole !== 'sub_admin') {
+      if (
+        userRole !== 'child_admin' &&
+        userRole !== 'department_admin' &&
+        userRole !== 'super_admin' &&
+        userRole !== 'sub_admin'
+      ) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
