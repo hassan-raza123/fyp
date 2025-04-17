@@ -8,7 +8,7 @@ async function main() {
   try {
     const defaultPassword = await bcrypt.hash('11223344', 10);
 
-    // Create Roles using upsert
+    // Create Roles
     const roles = await Promise.all([
       prisma.role.upsert({
         where: { name: 'super_admin' },
@@ -66,7 +66,7 @@ async function main() {
       }),
     ]);
 
-    // Create Super Admin
+    // Create Super Admin User
     const superAdmin = await prisma.user.upsert({
       where: { email: 'super.admin@university.edu' },
       update: {},
@@ -83,16 +83,23 @@ async function main() {
       },
     });
 
-    // Create user role for super admin
-    await prisma.userrole.create({
-      data: {
+    // Assign Super Admin Role
+    await prisma.userrole.upsert({
+      where: {
+        userId_roleId: {
+          userId: superAdmin.id,
+          roleId: roles[0].id, // super_admin role
+        },
+      },
+      update: {},
+      create: {
         userId: superAdmin.id,
-        roleId: roles[2].id,
+        roleId: roles[0].id,
         updatedAt: new Date(),
       },
     });
 
-    // Create Sub Admin
+    // Create Sub Admin User
     const subAdmin = await prisma.user.upsert({
       where: { email: 'sub.admin@university.edu' },
       update: {},
@@ -109,38 +116,29 @@ async function main() {
       },
     });
 
-    // Create user role for sub admin
-    await prisma.userrole.create({
-      data: {
+    // Assign Sub Admin Role
+    await prisma.userrole.upsert({
+      where: {
+        userId_roleId: {
+          userId: subAdmin.id,
+          roleId: roles[1].id, // sub_admin role
+        },
+      },
+      update: {},
+      create: {
         userId: subAdmin.id,
         roleId: roles[1].id,
         updatedAt: new Date(),
       },
     });
 
-    // Create CS Department
-    const csDepartment = await prisma.department.upsert({
-      where: { code: 'CS' },
-      update: {
-        adminId: superAdmin.id,
-      },
-      create: {
-        name: 'Computer Science',
-        code: 'CS',
-        description: 'Department of Computer Science',
-        adminId: superAdmin.id,
-        status: 'active',
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Department Admin
+    // Create Department Admin User
     const deptAdmin = await prisma.user.upsert({
-      where: { email: 'cs.admin@university.edu' },
+      where: { email: 'dept.admin@university.edu' },
       update: {},
       create: {
-        email: 'cs.admin@university.edu',
-        username: 'csadmin',
+        email: 'dept.admin@university.edu',
+        username: 'deptadmin',
         password_hash: defaultPassword,
         first_name: 'Department',
         last_name: 'Admin',
@@ -151,74 +149,23 @@ async function main() {
       },
     });
 
-    // Create user role for department admin
-    await prisma.userrole.create({
-      data: {
+    // Assign Department Admin Role
+    await prisma.userrole.upsert({
+      where: {
+        userId_roleId: {
+          userId: deptAdmin.id,
+          roleId: roles[2].id, // department_admin role
+        },
+      },
+      update: {},
+      create: {
         userId: deptAdmin.id,
         roleId: roles[2].id,
         updatedAt: new Date(),
       },
     });
 
-    // Create BSCS Program
-    const bscsProgram = await prisma.program.upsert({
-      where: { code: 'BSCS' },
-      update: {},
-      create: {
-        name: 'Bachelor of Science in Computer Science',
-        code: 'BSCS',
-        description: '4 Years BS Computer Science Program',
-        duration: 8,
-        totalCredit: 136,
-        departmentId: csDepartment.id,
-        status: 'active',
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create a Course
-    const programmingCourse = await prisma.course.upsert({
-      where: { code: 'CS101' },
-      update: {},
-      create: {
-        code: 'CS101',
-        name: 'Programming Fundamentals',
-        description: 'Introduction to Programming',
-        creditHours: 3,
-        programId: bscsProgram.id,
-        semester: 1,
-        status: 'active',
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Teacher
-    const teacherUser = await prisma.user.upsert({
-      where: { email: 'teacher@university.edu' },
-      update: {},
-      create: {
-        email: 'teacher@university.edu',
-        username: 'teacher1',
-        password_hash: defaultPassword,
-        first_name: 'John',
-        last_name: 'Doe',
-        phone_number: '0300-3456789',
-        email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create user role for teacher
-    await prisma.userrole.create({
-      data: {
-        userId: teacherUser.id,
-        roleId: roles[4].id,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Child Admin
+    // Create Child Admin User
     const childAdmin = await prisma.user.upsert({
       where: { email: 'child.admin@university.edu' },
       update: {},
@@ -228,6 +175,39 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Child',
         last_name: 'Admin',
+        phone_number: '0300-3456789',
+        email_verified: true,
+        status: 'active',
+        updatedAt: new Date(),
+      },
+    });
+
+    // Assign Child Admin Role
+    await prisma.userrole.upsert({
+      where: {
+        userId_roleId: {
+          userId: childAdmin.id,
+          roleId: roles[3].id, // child_admin role
+        },
+      },
+      update: {},
+      create: {
+        userId: childAdmin.id,
+        roleId: roles[3].id,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Create Teacher User
+    const teacher = await prisma.user.upsert({
+      where: { email: 'teacher@university.edu' },
+      update: {},
+      create: {
+        email: 'teacher@university.edu',
+        username: 'teacher1',
+        password_hash: defaultPassword,
+        first_name: 'John',
+        last_name: 'Doe',
         phone_number: '0300-4567890',
         email_verified: true,
         status: 'active',
@@ -235,191 +215,54 @@ async function main() {
       },
     });
 
-    // Create user role for child admin
-    await prisma.userrole.create({
-      data: {
-        userId: childAdmin.id,
-        roleId: roles[3].id,
-        updatedAt: new Date(),
+    // Assign Teacher Role
+    await prisma.userrole.upsert({
+      where: {
+        userId_roleId: {
+          userId: teacher.id,
+          roleId: roles[4].id, // teacher role
+        },
       },
-    });
-
-    // Create Faculty Member
-    const facultyMember = await prisma.faculty.upsert({
-      where: { userId: teacherUser.id },
       update: {},
       create: {
-        userId: teacherUser.id,
-        employeeId: 'EMP001',
-        departmentId: csDepartment.id,
-        designation: 'Assistant Professor',
-        joiningDate: new Date(),
+        userId: teacher.id,
+        roleId: roles[4].id,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Create Student User
+    const student = await prisma.user.upsert({
+      where: { email: 'student@university.edu' },
+      update: {},
+      create: {
+        email: 'student@university.edu',
+        username: 'student1',
+        password_hash: defaultPassword,
+        first_name: 'Student',
+        last_name: 'One',
+        phone_number: '0300-5678901',
+        email_verified: true,
         status: 'active',
         updatedAt: new Date(),
       },
     });
 
-    // Create Section
-    // Since section might not have a unique constraint, we'll use create after deleting existing
-    await prisma.section.deleteMany({
+    // Assign Student Role
+    await prisma.userrole.upsert({
       where: {
-        courseId: programmingCourse.id,
-        name: 'A',
+        userId_roleId: {
+          userId: student.id,
+          roleId: roles[5].id, // student role
+        },
       },
-    });
-
-    const section = await prisma.section.create({
-      data: {
-        name: 'A',
-        courseId: programmingCourse.id,
-        facultyId: facultyMember.id,
-        semester: 1,
-        maxStudents: 50,
-        status: 'active',
-        startDate: new Date(),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+      update: {},
+      create: {
+        userId: student.id,
+        roleId: roles[5].id,
         updatedAt: new Date(),
       },
     });
-
-    // Create 5 Students
-    for (let i = 0; i < 5; i++) {
-      const email = `student${i + 1}@university.edu`;
-      const studentUser = await prisma.user.upsert({
-        where: { email },
-        update: {},
-        create: {
-          email,
-          username: `student${i + 1}`,
-          password_hash: defaultPassword,
-          first_name: `Student${i + 1}`,
-          last_name: 'Doe',
-          phone_number: `0300-${1000000 + i}`,
-          email_verified: true,
-          status: 'active',
-          updatedAt: new Date(),
-        },
-      });
-
-      // Create user role for student
-      await prisma.userrole.create({
-        data: {
-          userId: studentUser.id,
-          roleId: roles[5].id,
-          updatedAt: new Date(),
-        },
-      });
-
-      // Create Student
-      const rollNumber = `CS-2024-${(i + 1).toString().padStart(3, '0')}`;
-      const student = await prisma.student.upsert({
-        where: { rollNumber },
-        update: {},
-        create: {
-          userId: studentUser.id,
-          rollNumber,
-          batch: '2024',
-          admissionDate: new Date(),
-          departmentId: csDepartment.id,
-          programId: bscsProgram.id,
-          status: 'active',
-          updatedAt: new Date(),
-        },
-      });
-
-      // Delete existing enrollment if any
-      await prisma.studentsection.deleteMany({
-        where: {
-          studentId: student.id,
-          sectionId: section.id,
-        },
-      });
-
-      // Create new enrollment
-      await prisma.studentsection.create({
-        data: {
-          studentId: student.id,
-          sectionId: section.id,
-          status: 'active',
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    // Clear existing sessions and attendance
-    await prisma.attendance.deleteMany();
-    await prisma.session.deleteMany();
-
-    // Create Sessions for the last week
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const sessionDate = new Date(today);
-      sessionDate.setDate(today.getDate() - i);
-
-      if (sessionDate.getDay() !== 0 && sessionDate.getDay() !== 6) {
-        // Skip weekends
-        const session = await prisma.session.create({
-          data: {
-            sectionId: section.id,
-            date: sessionDate,
-            startTime: new Date(sessionDate.setHours(9, 0, 0)),
-            endTime: new Date(sessionDate.setHours(10, 30, 0)),
-            topic: `Lecture ${i + 1}`,
-            status: 'completed',
-            updatedAt: new Date(),
-          },
-        });
-
-        // Get all students in the section
-        const enrollments = await prisma.studentsection.findMany({
-          where: { sectionId: section.id },
-        });
-
-        // Create attendance for each student
-        for (const enrollment of enrollments) {
-          await prisma.attendance.create({
-            data: {
-              studentSectionId: enrollment.id,
-              sessionId: session.id,
-              status: Math.random() > 0.2 ? 'present' : 'absent',
-              markedBy: teacherUser.id,
-              remarks: 'Regular class',
-              updatedAt: new Date(),
-            },
-          });
-        }
-      }
-    }
-
-    // Clear existing timetable slots
-    await prisma.timetableslot.deleteMany();
-
-    // Create Timetable Slots
-    const slots = [
-      { day: 1, startHour: 9, startMin: 0, endHour: 10, endMin: 30 }, // Monday
-      { day: 3, startHour: 9, startMin: 0, endHour: 10, endMin: 30 }, // Wednesday
-      { day: 5, startHour: 9, startMin: 0, endHour: 10, endMin: 30 }, // Friday
-    ];
-
-    for (const slot of slots) {
-      const startTime = new Date();
-      startTime.setHours(slot.startHour, slot.startMin, 0);
-
-      const endTime = new Date();
-      endTime.setHours(slot.endHour, slot.endMin, 0);
-
-      await prisma.timetableslot.create({
-        data: {
-          sectionId: section.id,
-          dayOfWeek: slot.day,
-          startTime,
-          endTime,
-          roomNumber: 'CS-01',
-          status: 'active',
-          updatedAt: new Date(),
-        },
-      });
-    }
 
     console.log('Seeding completed successfully!');
   } catch (error) {

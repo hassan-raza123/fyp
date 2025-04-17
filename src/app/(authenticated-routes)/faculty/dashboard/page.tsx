@@ -33,7 +33,9 @@ import {
   Download,
   TrendingUp,
   Shield,
- 
+  Sun,
+  Moon,
+  Layers,
   GraduationCap,
   UserCheck,
   AlertCircle,
@@ -51,9 +53,14 @@ import {
   BookCheck,
   List,
   Grid,
+  HelpCircle,
   Settings2,
 } from 'lucide-react';
-import { MiniStatsCardProps, ProgressBarProps, TimelineProps } from '@/app/types/dashboard';
+import {
+  MiniStatsCardProps,
+  ProgressBarProps,
+  TimelineProps,
+} from '@/app/types/dashboard';
 import { LucideProps } from 'lucide-react';
 import Image from 'next/image';
 
@@ -61,7 +68,9 @@ interface SidebarNavLinkProps {
   item: {
     id: string;
     label: string;
-    icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+    icon: React.ForwardRefExoticComponent<
+      Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
+    >;
     badge?: number;
   };
   isChild?: boolean;
@@ -71,13 +80,13 @@ interface SidebarNavLinkProps {
   setActiveTab: (id: string) => void;
 }
 
-const SidebarNavLink = ({ 
-  item, 
-  isChild = false, 
-  activeTab, 
-  isSidebarOpen, 
-  isDarkMode, 
-  setActiveTab 
+const SidebarNavLink = ({
+  item,
+  isChild = false,
+  activeTab,
+  isSidebarOpen,
+  isDarkMode,
+  setActiveTab,
 }: SidebarNavLinkProps) => (
   <button
     onClick={() => setActiveTab(item.id)}
@@ -113,7 +122,11 @@ const SidebarNavLink = ({
         <item.icon size={22} />
       </div>
       {item.badge && item.badge > 0 && (
-        <span className={`absolute -top-1 ${isSidebarOpen ? 'left-5' : '-right-1'} w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}>
+        <span
+          className={`absolute -top-1 ${
+            isSidebarOpen ? 'left-5' : '-right-1'
+          } w-5 h-5 bg-red-500 text-accent text-[11px] rounded-full flex items-center justify-center`}
+        >
           {item.badge}
         </span>
       )}
@@ -127,6 +140,7 @@ const SidebarNavLink = ({
 const ModernDashboard = () => {
   // Core States
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isDarkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeView, setActiveView] = useState('grid');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -150,7 +164,10 @@ const ModernDashboard = () => {
       ) {
         setShowNotifications(false);
       }
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setShowProfileMenu(false);
       }
     }
@@ -433,36 +450,43 @@ const ModernDashboard = () => {
       </div>
     </div>
   );
-  
-  const ProgressBar: React.FC<ProgressBarProps> = ({ current, target, color }) => {
+
+  const ProgressBar: React.FC<ProgressBarProps> = ({
+    current,
+    target,
+    color,
+  }) => {
     const getColorClasses = (color: ProgressBarProps['color']) => {
-      const backgrounds: Record<ProgressBarProps['color'], { bg: string, bgLight: string }> = {
-        blue: { 
-          bg: 'bg-blue-300', 
-          bgLight: 'bg-blue-100' 
+      const backgrounds: Record<
+        ProgressBarProps['color'],
+        { bg: string; bgLight: string }
+      > = {
+        blue: {
+          bg: 'bg-blue-300',
+          bgLight: 'bg-blue-100',
         },
-        green: { 
-          bg: 'bg-green-300', 
-          bgLight: 'bg-green-100' 
+        green: {
+          bg: 'bg-green-300',
+          bgLight: 'bg-green-100',
         },
-        yellow: { 
-          bg: 'bg-yellow-300', 
-          bgLight: 'bg-yellow-100' 
+        yellow: {
+          bg: 'bg-yellow-300',
+          bgLight: 'bg-yellow-100',
         },
-        red: { 
-          bg: 'bg-red-300', 
-          bgLight: 'bg-red-100' 
+        red: {
+          bg: 'bg-red-300',
+          bgLight: 'bg-red-100',
         },
-        purple: { 
-          bg: 'bg-purple-300', 
-          bgLight: 'bg-purple-100' 
-        }
+        purple: {
+          bg: 'bg-purple-300',
+          bgLight: 'bg-purple-100',
+        },
       };
       return backgrounds[color];
     };
-  
+
     const { bg, bgLight } = getColorClasses(color);
-    
+
     return (
       <div className={`w-full ${bgLight} rounded-full h-2`}>
         <div
@@ -472,8 +496,8 @@ const ModernDashboard = () => {
       </div>
     );
   };
-  
-    const Timeline: React.FC<TimelineProps> = ({ items }) => (
+
+  const Timeline: React.FC<TimelineProps> = ({ items }) => (
     <div className='relative'>
       {items.map((item, index) => (
         <div key={index} className='ml-6 mb-6 relative'>
@@ -505,6 +529,21 @@ const ModernDashboard = () => {
       ))}
     </div>
   );
+
+  // const handleLogout = async () => {
+  //   try {
+  //     const response = await fetch('/api/auth/logout', {
+  //       method: 'POST',
+  //       credentials: 'include',
+  //     });
+
+  //     if (response.ok) {
+  //       window.location.href = '/login';
+  //     }
+  //   } catch (error) {
+  //     console.error('Logout failed:', error);
+  //   }
+  // };
 
   return (
     <div
@@ -619,7 +658,14 @@ const ModernDashboard = () => {
               )}
               <div className='space-y-1'>
                 {section.items.map((item) => (
-                  <SidebarNavLink key={item.id} item={item} activeTab={activeTab} isSidebarOpen={isSidebarOpen} isDarkMode={isDarkMode} setActiveTab={setActiveTab} />
+                  <SidebarNavLink
+                    key={item.id}
+                    item={item}
+                    activeTab={activeTab}
+                    isSidebarOpen={isSidebarOpen}
+                    isDarkMode={isDarkMode}
+                    setActiveTab={setActiveTab}
+                  />
                 ))}
               </div>
             </div>
@@ -649,11 +695,11 @@ const ModernDashboard = () => {
           >
             <div className='relative flex-shrink-0'>
               <Image
-                src="/images/avatar.png"
-                alt="User avatar"
+                src='/images/avatar.png'
+                alt='User avatar'
                 width={40}
                 height={40}
-                className="rounded-full"
+                className='rounded-full'
               />
               <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800'></span>
             </div>
@@ -796,8 +842,15 @@ const ModernDashboard = () => {
 
           <div className='flex items-center flex-1 min-w-0'>
             {/* Search Bar */}
-            <div className='relative w-full max-w-md mx-auto lg:mx-0 lg:max-w-lg hidden sm:block' ref={searchRef}>
-              <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+            <div
+              className='relative w-full max-w-md mx-auto lg:mx-0 lg:max-w-lg hidden sm:block'
+              ref={searchRef}
+            >
+              <div
+                className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                }`}
+              >
                 <Search size={20} />
               </div>
               <input
@@ -806,18 +859,24 @@ const ModernDashboard = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`
-                  w-full pl-10 pr-4 py-2 rounded-xl
-                  ${isDarkMode 
-                    ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400' 
-                    : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'}
-                  border focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                  transition-all duration-200
-                `}
+              w-full pl-10 pr-4 py-2 rounded-xl
+              ${
+                isDarkMode
+                  ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400'
+                  : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'
+              }
+              border focus:outline-none focus:ring-2 focus:ring-blue-500/20
+              transition-all duration-200
+            `}
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className={`absolute inset-y-0 right-0 pr-3 flex items-center ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`absolute inset-y-0 right-0 pr-3 flex items-center ${
+                    isDarkMode
+                      ? 'text-gray-400 hover:text-white'
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}
                 >
                   <X size={16} />
                 </button>
@@ -827,27 +886,33 @@ const ModernDashboard = () => {
 
           {/* Header Actions */}
           <div className='flex items-center'>
-
-            <button className="sm:hidden p-2 rounded-xl mr-2"  onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}>
+            <button
+              className='sm:hidden p-2 rounded-xl mr-2'
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+            >
               <Search size={22} />
             </button>
 
             {isMobileSearchOpen && (
-              <div 
+              <div
                 ref={searchRef}
                 className={`
-                  fixed top-0 left-0 w-full z-50 p-4 transition-all duration-300 ease-in-out
-                  ${isDarkMode 
-                    ? 'bg-gray-800 text-white' 
-                    : 'bg-white text-gray-900'}
-                `}
-                style={{ 
-                  transform: isMobileSearchOpen ? 'translateY(0)' : 'translateY(-100%)',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            fixed top-0 left-0 w-full z-50 p-4 transition-all duration-300 ease-in-out
+            ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}
+          `}
+                style={{
+                  transform: isMobileSearchOpen
+                    ? 'translateY(0)'
+                    : 'translateY(-100%)',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 }}
               >
                 <div className='relative'>
-                  <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+                  <div
+                    className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                    }`}
+                  >
                     <Search size={20} />
                   </div>
                   <input
@@ -856,24 +921,29 @@ const ModernDashboard = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`
-                      w-full pl-10 pr-4 py-2 rounded-xl
-                      ${isDarkMode 
-                        ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400' 
-                        : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'}
-                      border focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                      transition-all duration-200
-                    `}
+                w-full pl-10 pr-4 py-2 rounded-xl
+                ${
+                  isDarkMode
+                    ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-500'
+                }
+                border focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                transition-all duration-200
+              `}
                   />
                   <button
                     onClick={() => setIsMobileSearchOpen(false)}
-                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${
+                      isDarkMode
+                        ? 'text-gray-400 hover:text-white'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
                   >
                     <X size={16} />
                   </button>
                 </div>
               </div>
             )}
-
             {/* Notifications */}
             <div className='relative' ref={notificationRef}>
               <button
@@ -897,42 +967,68 @@ const ModernDashboard = () => {
               {showNotifications && (
                 <div
                   className={`
-                    fixed sm:absolute right-0 sm:mt-5 mt-0
-                    w-full sm:w-96
-                    h-[100vh] sm:h-auto
-                    top-0 sm:top-full
-                    rounded-none sm:rounded-xl shadow-lg
-                    z-50
-                    ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
-                    border transform origin-top
-                    transition-all duration-200 ease-out
-                  `}
+            fixed sm:absolute right-0 sm:mt-5 mt-0
+            w-full sm:w-96
+            h-[100vh] sm:h-auto
+            top-0 sm:top-full
+            rounded-none sm:rounded-xl shadow-lg
+            z-50
+            ${
+              isDarkMode
+                ? 'bg-gray-800 border-gray-700'
+                : 'bg-white border-gray-200'
+            }
+            border transform origin-top
+            transition-all duration-200 ease-out
+          `}
                 >
                   {/* Header */}
                   <div className='sticky top-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-inherit'>
                     <div className='flex justify-between items-center'>
                       <div className='flex items-center space-x-2'>
-                        <button 
+                        <button
                           onClick={() => setShowNotifications(false)}
                           className='sm:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700'
                         >
                           <span className='sr-only'>Close</span>
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className='w-6 h-6'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M6 18L18 6M6 6l12 12'
+                            />
                           </svg>
                         </button>
-                        <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <h3
+                          className={`font-semibold ${
+                            isDarkMode ? 'text-white' : 'text-gray-900'
+                          }`}
+                        >
                           Notifications
                         </h3>
                       </div>
                       <div className='flex space-x-2'>
                         <button
-                          onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                          onClick={() =>
+                            setNotifications((prev) =>
+                              prev.map((n) => ({ ...n, read: true }))
+                            )
+                          }
                           className='text-sm text-primary hover:text-primary-light'
                         >
                           Mark all as read
                         </button>
-                        <div className={`h-4 w-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                        <div
+                          className={`h-4 w-px ${
+                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                          }`}
+                        />
                         <button
                           onClick={() => setNotifications([])}
                           className='text-sm text-red-600 hover:text-red-700 dark:text-red-400'
@@ -948,7 +1044,10 @@ const ModernDashboard = () => {
                     {notifications.length === 0 ? (
                       <div className='p-8 text-center'>
                         <div className='mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4'>
-                          <Bell size={24} className='text-gray-500 dark:text-gray-400' />
+                          <Bell
+                            size={24}
+                            className='text-gray-500 dark:text-gray-400'
+                          />
                         </div>
                         <p className='text-gray-500 dark:text-gray-400'>
                           No new notifications
@@ -960,23 +1059,27 @@ const ModernDashboard = () => {
                           <div
                             key={notification.id}
                             className={`
-                              p-3 rounded-lg mb-2 cursor-pointer
-                              transition-all duration-200
-                              ${!notification.read && 'bg-purple-50 dark:bg-purple-900/20'}
-                              hover:bg-gray-50 dark:hover:bg-gray-700
-                            `}
+                      p-3 rounded-lg mb-2 cursor-pointer
+                      transition-all duration-200
+                      ${
+                        !notification.read &&
+                        'bg-purple-50 dark:bg-purple-900/20'
+                      }
+                      hover:bg-gray-50 dark:hover:bg-gray-700
+                    `}
                           >
                             <div className='flex items-start'>
                               <div
                                 className={`
-                                  p-2 rounded-lg
-                                  ${notification.type === 'alert'
-                                    ? 'bg-yellow-100'
-                                    : notification.type === 'success'
-                                    ? 'bg-green-100'
-                                    : 'bg-purple-100'
-                                  }
-                                `}
+                          p-2 rounded-lg
+                          ${
+                            notification.type === 'alert'
+                              ? 'bg-yellow-100'
+                              : notification.type === 'success'
+                              ? 'bg-green-100'
+                              : 'bg-purple-100'
+                          }
+                        `}
                               >
                                 <notification.icon
                                   size={18}
@@ -984,7 +1087,13 @@ const ModernDashboard = () => {
                                 />
                               </div>
                               <div className='ml-3 flex-1'>
-                                <p className={`text-sm font-medium mb-0.5 ${isDarkMode ? 'text-text-light' : 'text-gray-900'}`}>
+                                <p
+                                  className={`text-sm font-medium mb-0.5 ${
+                                    isDarkMode
+                                      ? 'text-text-light'
+                                      : 'text-gray-900'
+                                  }`}
+                                >
                                   {notification.message}
                                 </p>
                                 <p className='text-xs text-gray-500'>
@@ -1003,6 +1112,74 @@ const ModernDashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Quick Actions */}
+            <div className='flex items-center space-x-2'>
+              {/* Theme Toggle */}
+              <button
+                onClick={() => setDarkMode(!isDarkMode)}
+                className={`
+                  p-2 rounded-xl transition-all duration-200 hover:scale-110
+                  ${
+                    isDarkMode
+                      ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                  }
+                `}
+              >
+                {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
+              </button>
+
+              {/* Help */}
+              <button
+                className={`
+                p-2 rounded-xl transition-all duration-200 hover:scale-110
+                ${
+                  isDarkMode
+                    ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                }
+              `}
+              >
+                <HelpCircle size={22} />
+              </button>
+
+              {/* Settings */}
+              <button
+                className={`
+                p-2 rounded-xl transition-all duration-200 hover:scale-110
+                ${
+                  isDarkMode
+                    ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                }
+              `}
+              >
+                <Settings size={22} />
+              </button>
+
+              <div
+                className={`h-8 w-px mx-2 ${
+                  isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                }`}
+              />
+
+              {/* Profile Menu */}
+              <div className='relative'>
+                <button
+                  className='
+                  flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg
+                  bg-gradient-to-br from-purple-500 to-indigo-600 hover:-translate-y-0.5 text-accent
+                  transition-all duration-200
+                '
+                >
+                  <LogOut size={18} />
+                  <span className='text-sm font-medium hidden sm:block'>
+                    Logout
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -1010,7 +1187,7 @@ const ModernDashboard = () => {
         <main className='p-12 sm:space-y-6 space-y-4'>
           {/* Page Header */}
           <div className='flex flex-col sm:flex-row justify-between  mb-6 space-y-4'>
-              <div>
+            <div>
               <h1
                 className={`text-2xl font-bold ${
                   isDarkMode ? 'text-white' : 'text-gray-800'
@@ -1028,7 +1205,7 @@ const ModernDashboard = () => {
             </div>
 
             {/* Page Actions */}
-            
+
             <div className='flex items-center flex-wrap w-full md:w-auto gap-2'>
               {/* Period Selector */}
               <div
@@ -1045,7 +1222,7 @@ const ModernDashboard = () => {
                       px-4 py-2 text-sm font-medium transition-colors
                       ${
                         selectedPeriod === period
-                          ?  'bg-purple-100 text-primary'
+                          ? 'bg-purple-100 text-primary'
                           : 'text-text-light hover:bg-gray-100'
                       }
                     `}
@@ -1068,7 +1245,7 @@ const ModernDashboard = () => {
                     p-2 transition-colors
                     ${
                       activeView === 'grid'
-                        ?  'bg-purple-100 text-primary'
+                        ? 'bg-purple-100 text-primary'
                         : 'text-text-light hover:bg-gray-100'
                     }
                   `}
@@ -1081,8 +1258,7 @@ const ModernDashboard = () => {
                     p-2 transition-colors
                     ${
                       activeView === 'list'
-                        ? 
-                           'bg-purple-100 text-primary'
+                        ? 'bg-purple-100 text-primary'
                         : 'text-text-light hover:bg-gray-100'
                     }
                   `}
@@ -1112,105 +1288,134 @@ const ModernDashboard = () => {
           </div>
 
           {/* Performance Goals */}
-        
-    <div className={`
+
+          <div
+            className={`
       rounded-2xl overflow-hidden
       ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
       shadow-lg backdrop-blur-sm
       border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
       transition-all duration-300
-    `}>
-      {/* Header */}
-      <div className="p-6 pb-0">
-        <div className="flex justify-between items-center mb-6">
-          <div className="space-y-1">
-            <h3 className={`
+    `}
+          >
+            {/* Header */}
+            <div className='p-6 pb-0'>
+              <div className='flex justify-between items-center mb-6'>
+                <div className='space-y-1'>
+                  <h3
+                    className={`
               font-bold text-xl
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
-            `}>
-              Performance Goals
-            </h3>
-            <p className={`
+            `}
+                  >
+                    Performance Goals
+                  </h3>
+                  <p
+                    className={`
               text-sm
               ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
-            `}>
-              Track your progress towards targets
-            </p>
-          </div>
-          
-          <button className="
+            `}
+                  >
+                    Track your progress towards targets
+                  </p>
+                </div>
+
+                <button
+                  className='
             inline-flex items-center px-4 py-2 rounded-lg
             text-sm font-semibold
             bg-primary/5 text-primary
             hover:bg-primary/10 
             transition-all duration-200
-          ">
-            <span>View All Goals</span>
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </button>
-        </div>
-      </div>
+          '
+                >
+                  <span>View All Goals</span>
+                  <ArrowRight className='w-4 h-4 ml-2' />
+                </button>
+              </div>
+            </div>
 
-      {/* Goals Grid */}
-      <div className="p-6 grid grid-cols-1  xl:grid-cols-3 gap-6">
-        {performanceGoals.map((goal, index) => (
-          <div key={index} className="group">
-            <div className={`
+            {/* Goals Grid */}
+            <div className='p-6 grid grid-cols-1  xl:grid-cols-3 gap-6'>
+              {performanceGoals.map((goal, index) => (
+                <div key={index} className='group'>
+                  <div
+                    className={`
               relative p-6 rounded-xl
               ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}
               border ${isDarkMode ? 'border-gray-600' : 'border-gray-100'}
               hover:shadow-md transition-all duration-300
               transform hover:-translate-y-1
-            `}>
-              {/* Goal Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className={`
+            `}
+                  >
+                    {/* Goal Header */}
+                    <div className='flex items-start justify-between mb-4'>
+                      <div className='flex items-center space-x-3'>
+                        <div
+                          className={`
                     p-2.5 rounded-lg
-                    ${goal.status === 'On Track' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-yellow-100 text-yellow-600'}
+                    ${
+                      goal.status === 'On Track'
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-yellow-100 text-yellow-600'
+                    }
                     transition-colors duration-200
-                  `}>
-                    <goal.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className={`
+                  `}
+                        >
+                          <goal.icon className='w-5 h-5' />
+                        </div>
+                        <div>
+                          <h4
+                            className={`
                       font-semibold
                       ${isDarkMode ? 'text-white' : 'text-gray-800'}
-                    `}>
-                      {goal.title}
-                    </h4>
-                    <div className="flex items-center mt-1 space-x-2">
-                      <span className={`
+                    `}
+                          >
+                            {goal.title}
+                          </h4>
+                          <div className='flex items-center mt-1 space-x-2'>
+                            <span
+                              className={`
                         text-xs font-medium px-2.5 py-1 rounded-full
-                        ${goal.status === 'On Track'
-                          ? 'bg-green-100/80 text-green-600'
-                          : 'bg-yellow-100/80 text-yellow-600'}
-                      `}>
-                        {goal.status}
-                      </span>
-                      <span className={`
+                        ${
+                          goal.status === 'On Track'
+                            ? 'bg-green-100/80 text-green-600'
+                            : 'bg-yellow-100/80 text-yellow-600'
+                        }
+                      `}
+                            >
+                              {goal.status}
+                            </span>
+                            <span
+                              className={`
                         text-sm font-medium
                         ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
-                      `}>
-                        {goal.current}% / {goal.target}%
-                      </span>
+                      `}
+                            >
+                              {goal.current}% / {goal.target}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Progress Bar */}
-              <ProgressBar
-                    current={goal.current}
-                    target={goal.target}
-                    color={goal.color as 'blue' | 'green' | 'yellow' | 'red' | 'purple'} // Type assertion
+                    {/* Progress Bar */}
+                    <ProgressBar
+                      current={goal.current}
+                      target={goal.target}
+                      color={
+                        goal.color as
+                          | 'blue'
+                          | 'green'
+                          | 'yellow'
+                          | 'red'
+                          | 'purple'
+                      } // Type assertion
+                    />
 
-                  />
-             
-              {/* Action Button */}
-              <button className="
+                    {/* Action Button */}
+                    <button
+                      className='
                 w-full px-4 py-2 mt-2 rounded-lg
                 text-sm font-medium
                 bg-white/5 hover:bg-white/10
@@ -1218,28 +1423,28 @@ const ModernDashboard = () => {
                 border border-primary/10 hover:border-primary/20
                 transition-all duration-200
                 flex items-center justify-center space-x-2
-              ">
-                <span>View Details</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              '
+                    >
+                      <span>View Details</span>
+                      <ChevronRight className='w-4 h-4' />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-     
+
           {/* Charts Grid */}
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
             {/* Performance Chart */}
-            <div 
-            className={`
+            <div
+              className={`
               rounded-2xl overflow-hidden p-6
               ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
               shadow-lg backdrop-blur-sm
               border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
               transition-all duration-300
             `}
-            
             >
               <div className='flex justify-between items-center mb-6'>
                 <div>
@@ -1323,15 +1528,14 @@ const ModernDashboard = () => {
             </div>
 
             {/* Timeline */}
-            <div 
-               className={`
+            <div
+              className={`
                 rounded-2xl overflow-hidden p-6
                 ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
                 shadow-lg backdrop-blur-sm
                 border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
                 transition-all duration-300
               `}
-             
             >
               <div className='flex justify-between items-center mb-6'>
                 <div>
@@ -1364,15 +1568,14 @@ const ModernDashboard = () => {
           </div>
 
           {/* Activity Table */}
-          <div 
-          className={`
+          <div
+            className={`
             rounded-2xl overflow-hidden
             ${isDarkMode ? 'bg-gray-800/95' : 'bg-white'}
             shadow-lg backdrop-blur-sm
             border ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}
             transition-all duration-300
           `}
-           
           >
             <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
               <div className='flex justify-between items-center'>
@@ -1507,7 +1710,7 @@ const ModernDashboard = () => {
                             alt=''
                             width={32}
                             height={32}
-                            className="rounded-lg mr-3"
+                            className='w-8 h-8 rounded-lg mr-3'
                           />
                           <span
                             className={`
