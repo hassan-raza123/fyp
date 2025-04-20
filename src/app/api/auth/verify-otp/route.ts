@@ -10,7 +10,7 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
-import bcrypt from 'bcrypt';
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 

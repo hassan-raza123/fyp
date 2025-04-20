@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, role_name } from '@prisma/client';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
-import bcrypt from 'bcrypt';
+const bcrypt = require('bcryptjs');
 import { createToken } from '@/lib/jwt';
 import {
   AdminRole,
