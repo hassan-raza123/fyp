@@ -1,6 +1,6 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { verifyToken } from './lib/jwt';
+import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
 // Dashboard routes based on user roles
 const dashboardRoutes = {
@@ -11,16 +11,6 @@ const dashboardRoutes = {
   department_admin: '/department/dashboard',
   child_admin: '/sub-admin/dashboard',
 };
-
-// Role hierarchy and permissions
-// const roleHierarchy = {
-//   super_admin: ['super_admin', 'sub_admin', 'department_admin', 'child_admin', 'teacher', 'student'],
-//   sub_admin: ['department_admin', 'child_admin', 'teacher', 'student'],
-//   department_admin: ['child_admin', 'teacher', 'student'],
-//   child_admin: ['teacher', 'student'],
-//   teacher: ['student'],
-//   student: [],
-// };
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -34,74 +24,78 @@ const publicRoutes = [
   '/verify-otp',
 ];
 
-// Admin routes that require specific admin roles
-// const adminRoutes = {
-//   super_admin: [
-//     '/admin/dashboard',
-//     '/admin/system-settings',
-//     '/admin/manage-users',
-//     '/admin/manage-roles',
-//   ],
-//   sub_admin: [
-//     '/admin/dashboard',
-//     '/admin/manage-users',
-//     '/admin/manage-departments',
-//   ],
-//   department_admin: [
-//     '/department/dashboard',
-//     '/department/manage-faculty',
-//     '/department/manage-students',
-//     '/department/manage-courses',
-//   ],
-//   child_admin: [
-//     '/sub-admin/dashboard',
-//     '/sub-admin/manage-attendance',
-//     '/sub-admin/manage-schedules',
-//   ],
-// };
-
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const path = request.nextUrl.pathname;
 
-  // Allow public routes
-  if (publicRoutes.includes(pathname)) {
+  // Handle API routes
+  if (path.startsWith('/api/')) {
+    try {
+      // Get the token from cookies
+      const token = request.cookies.get('auth-token')?.value;
+
+      if (!token) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Verify the token
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      const { payload } = await jwtVerify(token, secret);
+
+      // Add user info to request headers for API routes
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-user-id', payload.userId as string);
+      requestHeaders.set('x-user-email', payload.email as string);
+      requestHeaders.set('x-user-role', payload.role as string);
+
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+  }
+
+  // Handle page routes
+  // Check if the route is public
+  if (publicRoutes.some((route) => path.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // Check for authentication
-  const token = request.cookies.get('token')?.value;
+  // Get the token from cookies
+  const token = request.cookies.get('auth-token')?.value;
+
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
-    const decoded = await verifyToken(token);
-    if (!decoded || !decoded.role) {
-      throw new Error('Invalid token');
-    }
+    // Verify the token
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
 
-    const userRole = decoded.role;
+    const userRole = payload.role as string;
     const userDashboard =
       dashboardRoutes[userRole as keyof typeof dashboardRoutes];
 
     // Check if trying to access dashboard routes
     if (
-      Object.values(dashboardRoutes).some((route) => pathname.startsWith(route))
+      Object.values(dashboardRoutes).some((route) => path.startsWith(route))
     ) {
-      if (!pathname.startsWith(userDashboard)) {
+      if (!path.startsWith(userDashboard)) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
     }
 
     // Check admin routes access
-    if (pathname.startsWith('/admin')) {
+    if (path.startsWith('/admin')) {
       if (userRole === 'super_admin' || userRole === 'sub_admin') {
         // Special handling for Sub Admin restrictions
         if (userRole === 'sub_admin') {
-          // Sub Admin cannot access these routes
           if (
-            pathname.startsWith('/admin/system-settings') ||
-            pathname.startsWith('/admin/manage-roles')
+            path.startsWith('/admin/system-settings') ||
+            path.startsWith('/admin/manage-roles')
           ) {
             return NextResponse.redirect(
               new URL('/admin/dashboard', request.url)
@@ -114,7 +108,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check department admin routes
-    if (pathname.startsWith('/department')) {
+    if (path.startsWith('/department')) {
       if (
         userRole !== 'department_admin' &&
         userRole !== 'super_admin' &&
@@ -125,7 +119,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check child admin routes
-    if (pathname.startsWith('/sub-admin')) {
+    if (path.startsWith('/sub-admin')) {
       if (
         userRole !== 'child_admin' &&
         userRole !== 'department_admin' &&
@@ -138,11 +132,11 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch (error) {
-    console.error('Middleware error:', error);
     return NextResponse.redirect(new URL('/login', request.url));
   }
 }
 
+// Configure which routes to run middleware on
 export const config = {
   matcher: [
     /*
@@ -152,9 +146,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
-     * - images folder
-     * - team folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public|images|team|about|features|contact).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };

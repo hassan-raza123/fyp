@@ -345,26 +345,27 @@ export async function POST(request: NextRequest) {
         // Determine redirect path based on role
         const redirectTo = getDashboardPath(userType);
 
-        return NextResponse.json(
-          {
-            success: true,
-            message: 'Login successful',
-            data: {
-              user: userData,
-              redirectTo,
-              token,
-              userType,
-              verified: true,
-              shouldRedirect: true,
-            },
+        // Create response with token in cookie
+        const response = NextResponse.json({
+          success: true,
+          message: 'Login successful',
+          data: {
+            user: userData,
+            shouldRedirect: true,
+            redirectTo,
           },
-          {
-            status: 200,
-            headers: {
-              'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
-            },
-          }
-        );
+        });
+
+        // Set the token in cookie
+        response.cookies.set('auth-token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+        });
+
+        return response;
       }
     }
 
@@ -388,25 +389,27 @@ export async function POST(request: NextRequest) {
     // Determine redirect path based on role
     const redirectTo = getDashboardPath(userType);
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Login successful',
-        data: {
-          user: userData,
-          redirectTo,
-          token,
-          userType,
-          verified: true,
-        },
+    // Create response with token in cookie
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: userData,
+        shouldRedirect: true,
+        redirectTo,
       },
-      {
-        status: 200,
-        headers: {
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
-        },
-      }
-    );
+    });
+
+    // Set the token in cookie
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    return response;
   } catch (error) {
     console.error(
       'Login error:',

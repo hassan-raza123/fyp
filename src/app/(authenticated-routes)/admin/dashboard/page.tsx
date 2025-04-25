@@ -63,6 +63,7 @@ import {
 } from '@/app/types/dashboard';
 import { LucideProps } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface SidebarNavLinkProps {
   item: {
@@ -88,8 +89,8 @@ const SidebarNavLink = ({
   isDarkMode,
   setActiveTab,
 }: SidebarNavLinkProps) => (
-  <button
-    onClick={() => setActiveTab(item.id)}
+  <Link
+    href={`/admin/${item.id}`}
     className={`
       w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-200
       ${isSidebarOpen ? 'justify-start' : 'justify-center'}
@@ -134,7 +135,7 @@ const SidebarNavLink = ({
         <span className='ml-3 font-medium text-sm'>{item.label}</span>
       )}
     </div>
-  </button>
+  </Link>
 );
 
 const ModernDashboard = () => {
@@ -258,6 +259,7 @@ const ModernDashboard = () => {
     {
       title: 'Management',
       items: [
+        { id: 'users', icon: Users, label: 'Users', badge: 0 },
         { id: 'analytics', icon: BarChart2, label: 'Analytics', badge: 0 },
         { id: 'reports', icon: FileText, label: 'Reports', badge: 5 },
         { id: 'settings', icon: Settings2, label: 'Settings', badge: 0 },
