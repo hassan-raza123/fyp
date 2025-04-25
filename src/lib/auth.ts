@@ -6,6 +6,7 @@ import { compare } from 'bcryptjs';
 import { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import { TokenPayload } from '@/types/auth';
+import { randomBytes } from 'crypto';
 
 declare module 'next-auth' {
   interface User {
@@ -141,7 +142,7 @@ export async function verifyToken(request: NextRequest): Promise<{
 
     return {
       success: true,
-      user: payload as TokenPayload,
+      user: parseJwtPayload(payload),
     };
   } catch (error) {
     return {
@@ -151,7 +152,19 @@ export async function verifyToken(request: NextRequest): Promise<{
   }
 }
 
-export function checkUserRole(user: TokenPayload, allowedRoles: string[]): boolean {
+function parseJwtPayload(payload: any): TokenPayload {
+  return {
+    userId: payload.userId,
+    email: payload.email,
+    role: payload.role,
+    userData: payload.userData,
+  };
+}
+
+export function checkUserRole(
+  user: TokenPayload,
+  allowedRoles: string[]
+): boolean {
   return allowedRoles.includes(user.role);
 }
 
@@ -166,4 +179,24 @@ export function getUserRoleFromToken(request: NextRequest): string | null {
 
 export function getUserEmailFromToken(request: NextRequest): string | null {
   return request.headers.get('x-user-email');
+}
+
+export async function generatePasswordResetToken(userId: number) {
+  // Generate a random token
+  const token = randomBytes(32).toString('hex');
+
+  // Set expiration to 1 hour from now
+  const expiresAt = new Date(Date.now() + 3600000);
+
+  // Create or update the password reset token
+  const resetToken = await prisma.passwordreset.create({
+    data: {
+      userId,
+      token,
+      expiresAt,
+      updatedAt: new Date(),
+    },
+  });
+
+  return resetToken.token;
 }

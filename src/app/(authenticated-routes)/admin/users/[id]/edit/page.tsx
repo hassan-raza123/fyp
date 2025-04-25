@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,10 +28,24 @@ interface User {
       name: string;
     };
   }[];
+  faculty?: {
+    employeeId: string;
+    departmentId: number;
+  } | null;
+  student?: {
+    rollNumber: string;
+    departmentId: number;
+    programId: number;
+  } | null;
 }
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default function EditUserPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
+  const resolvedParams = use(params);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,17 +55,21 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     email: '',
     role: '',
     status: '',
+    employeeId: '',
+    rollNumber: '',
+    departmentId: '',
+    programId: '',
   });
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`/api/users/${params.id}`, {
+        const response = await fetch(`/api/users/${resolvedParams.id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-          credentials: 'include',
         });
+
         if (!response.ok) {
           if (response.status === 401) {
             toast.error('You are not authorized to view this user');
@@ -59,6 +78,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           }
           throw new Error('Failed to fetch user');
         }
+
         const data = await response.json();
         setUser(data);
         setFormData({
@@ -67,6 +87,11 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           email: data.email || '',
           role: data.userrole?.[0]?.role?.name || '',
           status: data.status || 'inactive',
+          employeeId: data.faculty?.employeeId || '',
+          rollNumber: data.student?.rollNumber || '',
+          departmentId:
+            data.faculty?.departmentId || data.student?.departmentId || '',
+          programId: data.student?.programId || '',
         });
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -77,21 +102,37 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     };
 
     fetchUser();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/users/${params.id}`, {
-        method: 'PATCH',
+      const updateData = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        role: formData.role,
+        status: formData.status,
+        ...(formData.role === 'teacher' && {
+          employeeId: formData.employeeId,
+          departmentId: parseInt(formData.departmentId),
+        }),
+        ...(formData.role === 'student' && {
+          rollNumber: formData.rollNumber,
+          departmentId: parseInt(formData.departmentId),
+          programId: parseInt(formData.programId),
+        }),
+      };
+
+      const response = await fetch(`/api/users/${resolvedParams.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -211,11 +252,80 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                   <SelectContent>
                     <SelectItem value='active'>Active</SelectItem>
                     <SelectItem value='inactive'>Inactive</SelectItem>
-                    <SelectItem value='pending'>Pending</SelectItem>
+                    <SelectItem value='suspended'>Suspended</SelectItem>
+                    <SelectItem value='deleted'>Deleted</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
+            {formData.role === 'teacher' && (
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='space-y-2'>
+                  <Label htmlFor='employeeId'>Employee ID</Label>
+                  <Input
+                    id='employeeId'
+                    value={formData.employeeId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, employeeId: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='departmentId'>Department ID</Label>
+                  <Input
+                    id='departmentId'
+                    type='number'
+                    value={formData.departmentId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, departmentId: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.role === 'student' && (
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <div className='space-y-2'>
+                  <Label htmlFor='rollNumber'>Roll Number</Label>
+                  <Input
+                    id='rollNumber'
+                    value={formData.rollNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, rollNumber: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='departmentId'>Department ID</Label>
+                  <Input
+                    id='departmentId'
+                    type='number'
+                    value={formData.departmentId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, departmentId: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='programId'>Program ID</Label>
+                  <Input
+                    id='programId'
+                    type='number'
+                    value={formData.programId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, programId: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <div className='flex justify-end gap-4'>
               <Button

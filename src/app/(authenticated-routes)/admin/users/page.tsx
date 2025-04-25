@@ -145,30 +145,29 @@ export default function UserManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
         if (response.status === 401) {
           toast.error('You are not authorized to perform this action');
           router.push('/login');
           return;
         }
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update user status');
+        throw new Error(errorData.error || 'Failed to update user status');
       }
 
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, status: newStatus } : user
+      const updatedUser = await response.json();
+
+      // Update the users state with the new status
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: updatedUser.status } : user
         )
       );
-      toast.success(
-        `User ${
-          newStatus === 'active' ? 'activated' : 'deactivated'
-        } successfully`
-      );
+
+      toast.success(`User status updated to ${updatedUser.status}`);
     } catch (error) {
       console.error('Error updating user status:', error);
       toast.error(
@@ -340,9 +339,9 @@ export default function UserManagement() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant='ghost' className='h-8 w-8 p-0'>
+                          <div className='inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0'>
                             <MoreVertical className='h-4 w-4' />
-                          </Button>
+                          </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
                           <DropdownMenuItem
@@ -441,6 +440,7 @@ export default function UserManagement() {
                     userToUpdate.id,
                     userToUpdate.status === 'active' ? 'inactive' : 'active'
                   );
+                  setIsStatusDialogOpen(false);
                 }
               }}
             >

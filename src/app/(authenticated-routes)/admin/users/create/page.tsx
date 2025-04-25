@@ -17,23 +17,63 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 
-const formSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  first_name: z.string().min(2, 'First name must be at least 2 characters'),
-  last_name: z.string().min(2, 'Last name must be at least 2 characters'),
-  role: z.enum([
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-    'teacher',
-    'student',
-  ]),
-  departmentId: z.string().optional(),
-  programId: z.string().optional(),
-  employeeId: z.string().optional(),
-  rollNumber: z.string().optional(),
-});
+const formSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    first_name: z.string().min(2, 'First name must be at least 2 characters'),
+    last_name: z.string().min(2, 'Last name must be at least 2 characters'),
+    role: z.enum([
+      'sub_admin',
+      'department_admin',
+      'child_admin',
+      'teacher',
+      'student',
+    ]),
+    departmentId: z.string().optional(),
+    programId: z.string().optional(),
+    employeeId: z.string().optional(),
+    rollNumber: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // Validate departmentId
+    if (
+      ['teacher', 'student', 'department_admin'].includes(data.role) &&
+      !data.departmentId
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Department is required for this role',
+        path: ['departmentId'],
+      });
+    }
+
+    // Validate programId
+    if (['student', 'child_admin'].includes(data.role) && !data.programId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Program is required for this role',
+        path: ['programId'],
+      });
+    }
+
+    // Validate employeeId
+    if (data.role === 'teacher' && !data.employeeId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Employee ID is required for teachers',
+        path: ['employeeId'],
+      });
+    }
+
+    // Validate rollNumber
+    if (data.role === 'student' && !data.rollNumber) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Roll Number is required for students',
+        path: ['rollNumber'],
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -145,7 +185,6 @@ export default function CreateUser() {
                         className='w-full p-2 border rounded-md'
                         {...field}
                       >
-                        <option value='super_admin'>Super Admin</option>
                         <option value='sub_admin'>Sub Admin</option>
                         <option value='department_admin'>
                           Department Admin

@@ -1,14 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-utils';
 import { parse } from 'csv-parse/sync';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check authentication and get user data
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json({ error }, { status: 401 });
+    }
+
+    // Check if user has admin role
+    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -53,11 +58,13 @@ export async function POST(request: Request) {
             last_name: record.lastName,
             email: record.email,
             password_hash: record.password || 'defaultPassword', // In production, generate a secure password
+            updatedAt: new Date(),
             userrole: {
               create: {
                 role: {
                   connect: { name: record.role },
                 },
+                updatedAt: new Date(),
               },
             },
             ...(record.role === 'teacher' && {
@@ -65,6 +72,9 @@ export async function POST(request: Request) {
                 create: {
                   employeeId: record.employeeId,
                   departmentId: parseInt(record.departmentId),
+                  designation: record.designation || 'Teacher',
+                  joiningDate: new Date(),
+                  updatedAt: new Date(),
                 },
               },
             }),
@@ -74,6 +84,9 @@ export async function POST(request: Request) {
                   rollNumber: record.rollNumber,
                   departmentId: parseInt(record.departmentId),
                   programId: parseInt(record.programId),
+                  batch: record.batch || new Date().getFullYear().toString(),
+                  admissionDate: new Date(),
+                  updatedAt: new Date(),
                 },
               },
             }),
