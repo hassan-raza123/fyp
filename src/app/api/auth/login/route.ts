@@ -4,6 +4,7 @@ import { z } from 'zod';
 import nodemailer from 'nodemailer';
 const bcrypt = require('bcryptjs');
 import { createToken } from '@/lib/jwt';
+import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
   AdminRole,
   AllRoles,
@@ -351,19 +352,14 @@ export async function POST(request: NextRequest) {
           message: 'Login successful',
           data: {
             user: userData,
-            shouldRedirect: true,
-            redirectTo,
+            redirectTo: redirectTo,
+            token,
+            userType,
           },
         });
 
-        // Set the token in cookie
-        response.cookies.set('auth-token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-        });
+        // Set cookie with constant name and options
+        response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
 
         return response;
       }
@@ -395,19 +391,14 @@ export async function POST(request: NextRequest) {
       message: 'Login successful',
       data: {
         user: userData,
-        shouldRedirect: true,
-        redirectTo,
+        redirectTo: redirectTo,
+        token,
+        userType,
       },
     });
 
-    // Set the token in cookie
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+    // Set cookie with constant name and options
+    response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
 
     return response;
   } catch (error) {
