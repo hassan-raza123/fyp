@@ -3,6 +3,9 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from './prisma';
 import { compare } from 'bcryptjs';
+import { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
+import { TokenPayload } from '@/types/auth';
 
 declare module 'next-auth' {
   interface User {
@@ -117,3 +120,50 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export async function verifyToken(request: NextRequest): Promise<{
+  success: boolean;
+  user?: TokenPayload;
+  error?: string;
+}> {
+  try {
+    const token = request.cookies.get('auth-token')?.value;
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'No token provided',
+      };
+    }
+
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+
+    return {
+      success: true,
+      user: payload as TokenPayload,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: 'Invalid token',
+    };
+  }
+}
+
+export function checkUserRole(user: TokenPayload, allowedRoles: string[]): boolean {
+  return allowedRoles.includes(user.role);
+}
+
+export function getUserIdFromToken(request: NextRequest): number | null {
+  const userId = request.headers.get('x-user-id');
+  return userId ? parseInt(userId, 10) : null;
+}
+
+export function getUserRoleFromToken(request: NextRequest): string | null {
+  return request.headers.get('x-user-role');
+}
+
+export function getUserEmailFromToken(request: NextRequest): string | null {
+  return request.headers.get('x-user-email');
+}

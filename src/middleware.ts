@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 
 // Dashboard routes based on user roles
 const dashboardRoutes = {
@@ -12,8 +13,8 @@ const dashboardRoutes = {
   child_admin: '/sub-admin/dashboard',
 };
 
-// Public routes that don't require authentication
-const publicRoutes = [
+// Public web routes that don't require authentication
+const publicWebRoutes = [
   '/',
   '/login',
   '/forgot-password',
@@ -24,17 +25,34 @@ const publicRoutes = [
   '/verify-otp',
 ];
 
+// Public API routes that don't require authentication
+const publicApiRoutes = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/auth/verify-otp',
+];
+
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Handle API routes
   if (path.startsWith('/api/')) {
+    // Check if it's a public API route
+    if (publicApiRoutes.includes(path)) {
+      return NextResponse.next();
+    }
+
     try {
       // Get the token from cookies
-      const token = request.cookies.get('auth-token')?.value;
+      const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
 
       if (!token) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json(
+          { error: 'Authentication token is required' },
+          { status: 401 }
+        );
       }
 
       // Verify the token
@@ -46,6 +64,7 @@ export async function middleware(request: NextRequest) {
       requestHeaders.set('x-user-id', payload.userId as string);
       requestHeaders.set('x-user-email', payload.email as string);
       requestHeaders.set('x-user-role', payload.role as string);
+      requestHeaders.set('x-user-data', JSON.stringify(payload.userData));
 
       return NextResponse.next({
         request: {
@@ -53,18 +72,21 @@ export async function middleware(request: NextRequest) {
         },
       });
     } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Invalid or expired authentication token' },
+        { status: 401 }
+      );
     }
   }
 
-  // Handle page routes
+  // Handle web routes
   // Check if the route is public
-  if (publicRoutes.some((route) => path.startsWith(route))) {
+  if (publicWebRoutes.some((route) => path.startsWith(route))) {
     return NextResponse.next();
   }
 
   // Get the token from cookies
-  const token = request.cookies.get('auth-token')?.value;
+  const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
 
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -141,12 +163,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
