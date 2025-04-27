@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.first_name + ' ' + user.last_name,
           status: user.status,
-          role: user.userrole[0]?.role.name || 'user',
+          role: user.userrole.map((ur) => ur.role.name).join(','),
         };
       },
     }),

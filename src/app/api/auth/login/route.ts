@@ -19,7 +19,7 @@ const prisma = new PrismaClient();
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
 const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
-const MAX_OTP_REQUESTS = 3;
+const MAX_OTP_REQUESTS = 10;
 
 const loginSchema = z.object({
   email: z
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     recentRequests.push(now);
     rateLimit.set(email, recentRequests);
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         email,
         status: 'active',
@@ -200,8 +200,6 @@ export async function POST(request: NextRequest) {
             role: true,
           },
         },
-        student: true,
-        faculty: true,
       },
     });
 
@@ -210,24 +208,39 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           message: 'Invalid credentials',
+          error: 'Invalid email or password',
         },
         { status: 401 }
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    if (!isPasswordValid) {
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
+    if (!isValidPassword) {
       return NextResponse.json(
         {
           success: false,
           message: 'Invalid credentials',
+          error: 'Invalid email or password',
         },
         { status: 401 }
       );
     }
 
-    // Get user roles from database
-    const userRoles = user.userrole.map((ur) => ur.role.name as role_name);
+    // Get user roles
+    const userRoles = user.userrole?.map((ur) => ur.role.name) || [];
+
+    if (userRoles.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'User has no roles assigned',
+          error: 'Please contact administrator to assign roles',
+        },
+        { status: 403 }
+      );
+    }
 
     // Handle admin users
     if (userType === 'admin') {

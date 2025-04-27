@@ -98,8 +98,12 @@ export async function middleware(request: NextRequest) {
     const { payload } = await jwtVerify(token, secret);
 
     const userRole = payload.role as string;
-    const userDashboard =
-      dashboardRoutes[userRole as keyof typeof dashboardRoutes];
+    const userRoles = userRole.split(',');
+    const userDashboard = userRoles.reduce((dashboard, role) => {
+      const roleDashboard =
+        dashboardRoutes[role as keyof typeof dashboardRoutes];
+      return roleDashboard || dashboard;
+    }, '/dashboard');
 
     // Check if trying to access dashboard routes
     if (
@@ -112,9 +116,15 @@ export async function middleware(request: NextRequest) {
 
     // Check admin routes access
     if (path.startsWith('/admin')) {
-      if (userRole === 'super_admin' || userRole === 'sub_admin') {
+      if (
+        userRoles.includes('super_admin') ||
+        userRoles.includes('sub_admin')
+      ) {
         // Special handling for Sub Admin restrictions
-        if (userRole === 'sub_admin') {
+        if (
+          userRoles.includes('sub_admin') &&
+          !userRoles.includes('super_admin')
+        ) {
           if (
             path.startsWith('/admin/system-settings') ||
             path.startsWith('/admin/manage-roles')
@@ -132,9 +142,9 @@ export async function middleware(request: NextRequest) {
     // Check department admin routes
     if (path.startsWith('/department')) {
       if (
-        userRole !== 'department_admin' &&
-        userRole !== 'super_admin' &&
-        userRole !== 'sub_admin'
+        !userRoles.includes('department_admin') &&
+        !userRoles.includes('super_admin') &&
+        !userRoles.includes('sub_admin')
       ) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
@@ -143,10 +153,10 @@ export async function middleware(request: NextRequest) {
     // Check child admin routes
     if (path.startsWith('/sub-admin')) {
       if (
-        userRole !== 'child_admin' &&
-        userRole !== 'department_admin' &&
-        userRole !== 'super_admin' &&
-        userRole !== 'sub_admin'
+        !userRoles.includes('child_admin') &&
+        !userRoles.includes('department_admin') &&
+        !userRoles.includes('super_admin') &&
+        !userRoles.includes('sub_admin')
       ) {
         return NextResponse.redirect(new URL(userDashboard, request.url));
       }
