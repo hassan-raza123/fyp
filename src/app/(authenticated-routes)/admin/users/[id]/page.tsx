@@ -335,7 +335,7 @@ const UserProfile = ({ params }: { params: Promise<{ id: string }> }) => {
                 {user.faculty && (
                   <div className='flex items-center gap-2'>
                     <Building2 className='h-4 w-4 text-muted-foreground' />
-                    <span>Employee ID: {user.faculty.employeeId}</span>
+                    <span>Department: {user.faculty.departmentId}</span>
                   </div>
                 )}
                 {user.student && (

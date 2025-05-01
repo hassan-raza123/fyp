@@ -1,8 +1,24 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-
+import { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
-import { ButtonProps, buttonVariants } from '@/components/ui/button';
+
+const buttonVariants = ({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'ghost' | 'outline';
+} = {}) => {
+  const baseClasses =
+    'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background h-9 px-4';
+
+  const variants = {
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    ghost: 'hover:bg-accent hover:text-accent-foreground',
+    outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
+  };
+
+  return cn(baseClasses, variants[variant]);
+};
 
 const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav
@@ -34,23 +50,18 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = 'PaginationItem';
 
-type PaginationLinkProps = {
-  isActive?: boolean;
-} & Pick<ButtonProps, 'size'> &
-  React.ComponentProps<'button'>;
-
 const PaginationLink = ({
   className,
   isActive,
-  size = 'default',
   ...props
-}: PaginationLinkProps) => (
-  <button
+}: ComponentProps<'a'> & {
+  isActive?: boolean;
+}) => (
+  <a
     aria-current={isActive ? 'page' : undefined}
     className={cn(
       buttonVariants({
         variant: isActive ? 'outline' : 'ghost',
-        size,
       }),
       className
     )}
@@ -61,12 +72,16 @@ PaginationLink.displayName = 'PaginationLink';
 
 const PaginationPrevious = ({
   className,
+  disabled,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
+}: ComponentProps<typeof PaginationLink> & { disabled?: boolean }) => (
   <PaginationLink
     aria-label='Go to previous page'
-    size='default'
-    className={cn('gap-1 pl-2.5', className)}
+    className={cn(
+      'gap-1',
+      disabled && 'pointer-events-none opacity-50',
+      className
+    )}
     {...props}
   >
     <ChevronLeft className='h-4 w-4' />
@@ -77,12 +92,16 @@ PaginationPrevious.displayName = 'PaginationPrevious';
 
 const PaginationNext = ({
   className,
+  disabled,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
+}: ComponentProps<typeof PaginationLink> & { disabled?: boolean }) => (
   <PaginationLink
     aria-label='Go to next page'
-    size='default'
-    className={cn('gap-1 pr-2.5', className)}
+    className={cn(
+      'gap-1',
+      disabled && 'pointer-events-none opacity-50',
+      className
+    )}
     {...props}
   >
     <span>Next</span>
@@ -94,7 +113,7 @@ PaginationNext.displayName = 'PaginationNext';
 const PaginationEllipsis = ({
   className,
   ...props
-}: React.ComponentProps<'span'>) => (
+}: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     aria-hidden
     className={cn('flex h-9 w-9 items-center justify-center', className)}

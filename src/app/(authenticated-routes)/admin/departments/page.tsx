@@ -50,7 +50,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '../../../../components/ui/pagination';
+} from '@/components/ui/pagination';
 import { AssignAdminModal } from './components/AssignAdminModal';
 
 interface Department {

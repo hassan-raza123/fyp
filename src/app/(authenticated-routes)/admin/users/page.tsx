@@ -371,6 +371,14 @@ export default function UserManagement() {
                             <Trash2 className='w-4 h-4 mr-2' />
                             Delete
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              router.push(`/admin/users/${user.id}/roles`)
+                            }
+                          >
+                            <Edit2 className='w-4 h-4 mr-2' />
+                            Assign Roles
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

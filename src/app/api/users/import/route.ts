@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
             first_name: record.firstName,
             last_name: record.lastName,
             email: record.email,
+            username: record.email.split('@')[0], // Generate username from email
             password_hash: record.password || 'defaultPassword', // In production, generate a secure password
+            status: 'active',
+            email_verified: false,
             updatedAt: new Date(),
             userrole: {
               create: {
@@ -70,10 +73,9 @@ export async function POST(request: NextRequest) {
             ...(record.role === 'teacher' && {
               faculty: {
                 create: {
-                  employeeId: record.employeeId,
-                  departmentId: parseInt(record.departmentId),
+                  departmentId: Number(record.departmentId),
                   designation: record.designation || 'Teacher',
-                  joiningDate: new Date(),
+                  status: 'active',
                   updatedAt: new Date(),
                 },
               },
@@ -82,10 +84,9 @@ export async function POST(request: NextRequest) {
               student: {
                 create: {
                   rollNumber: record.rollNumber,
-                  departmentId: parseInt(record.departmentId),
-                  programId: parseInt(record.programId),
-                  batch: record.batch || new Date().getFullYear().toString(),
-                  admissionDate: new Date(),
+                  departmentId: Number(record.departmentId),
+                  programId: Number(record.programId),
+                  status: 'active',
                   updatedAt: new Date(),
                 },
               },

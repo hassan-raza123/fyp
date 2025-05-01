@@ -39,6 +39,18 @@ interface User {
   } | null;
 }
 
+interface FormData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  status: string;
+  rollNumber: string;
+  departmentId: string;
+  programId: string;
+  designation: string;
+}
+
 export default function EditUserPage({
   params,
 }: {
@@ -59,6 +71,7 @@ export default function EditUserPage({
     rollNumber: '',
     departmentId: '',
     programId: '',
+    designation: '',
   });
 
   useEffect(() => {
@@ -92,6 +105,7 @@ export default function EditUserPage({
           departmentId:
             data.faculty?.departmentId || data.student?.departmentId || '',
           programId: data.student?.programId || '',
+          designation: '',
         });
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -116,13 +130,19 @@ export default function EditUserPage({
         role: formData.role,
         status: formData.status,
         ...(formData.role === 'teacher' && {
-          employeeId: formData.employeeId,
-          departmentId: parseInt(formData.departmentId),
+          faculty: {
+            departmentId: Number(formData.departmentId),
+            designation: formData.designation,
+            status: 'active',
+          },
         }),
         ...(formData.role === 'student' && {
-          rollNumber: formData.rollNumber,
-          departmentId: parseInt(formData.departmentId),
-          programId: parseInt(formData.programId),
+          student: {
+            rollNumber: formData.rollNumber,
+            departmentId: Number(formData.departmentId),
+            programId: Number(formData.programId),
+            status: 'active',
+          },
         }),
       };
 
@@ -261,17 +281,6 @@ export default function EditUserPage({
 
             {formData.role === 'teacher' && (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='space-y-2'>
-                  <Label htmlFor='employeeId'>Employee ID</Label>
-                  <Input
-                    id='employeeId'
-                    value={formData.employeeId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, employeeId: e.target.value })
-                    }
-                    required
-                  />
-                </div>
                 <div className='space-y-2'>
                   <Label htmlFor='departmentId'>Department ID</Label>
                   <Input

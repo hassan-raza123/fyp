@@ -17,16 +17,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const users = await prisma.user.findMany({
-      where: {
-        userrole: {
-          none: {
-            role: {
-              name: 'super_admin',
-            },
+    // Build the where clause based on user role
+    const whereClause: any = {
+      NOT: {
+        id: user.userId, // Exclude current user
+      },
+    };
+
+    // If user is sub_admin, exclude super_admin users
+    if (user.role === 'sub_admin') {
+      whereClause.userrole = {
+        none: {
+          role: {
+            name: 'super_admin',
           },
         },
-      },
+      };
+    }
+
+    const users = await prisma.user.findMany({
+      where: whereClause,
       select: {
         id: true,
         email: true,
@@ -46,8 +56,9 @@ export async function GET(request: NextRequest) {
         },
         faculty: {
           select: {
-            employeeId: true,
             departmentId: true,
+            designation: true,
+            status: true,
           },
         },
         student: {
@@ -55,15 +66,46 @@ export async function GET(request: NextRequest) {
             rollNumber: true,
             departmentId: true,
             programId: true,
+            status: true,
           },
         },
       },
     });
 
-    return NextResponse.json(users);
+    // Format the response
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      status: user.status,
+      role: user.userrole[0]?.role.name || 'No Role',
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      ...(user.faculty && {
+        faculty: {
+          departmentId: user.faculty.departmentId,
+          designation: user.faculty.designation,
+          status: user.faculty.status,
+        },
+      }),
+      ...(user.student && {
+        student: {
+          rollNumber: user.student.rollNumber,
+          departmentId: user.student.departmentId,
+          programId: user.student.programId,
+          status: user.student.status,
+        },
+      }),
+    }));
+
+    return NextResponse.json(formattedUsers);
   } catch (error) {
     console.error('Error fetching users:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -82,66 +124,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      email,
-      first_name,
-      last_name,
-      role,
-      departmentId,
-      programId,
-      employeeId,
-      rollNumber,
-    } = body;
+    const { email, password, first_name, last_name, phone_number } = body;
 
-    if (!email || !role) {
-      return NextResponse.json(
-        { error: 'Email and role are required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if trying to create super admin
-    if (role === 'super_admin') {
-      return NextResponse.json(
-        { error: 'Super admin role cannot be assigned to new users' },
-        { status: 400 }
-      );
-    }
-
-    // Validate role
-    const validRoles = ['sub_admin', 'department_admin', 'teacher', 'student'];
-    if (!validRoles.includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role specified' },
-        { status: 400 }
-      );
-    }
-
-    // Validate role-specific fields
-    if (role === 'student' && (!rollNumber || !departmentId || !programId)) {
+    // Validate required fields
+    if (!email || !first_name || !last_name) {
       return NextResponse.json(
         {
-          error:
-            'Roll number, department, and program are required for students',
+          error: 'Required fields missing: email, first name, and last name',
         },
         { status: 400 }
       );
     }
 
-    if (role === 'teacher' && (!employeeId || !departmentId)) {
-      return NextResponse.json(
-        { error: 'Employee ID and department are required for teachers' },
-        { status: 400 }
-      );
-    }
-
-    if (role === 'department_admin' && !departmentId) {
-      return NextResponse.json(
-        { error: 'Department is required for department admin' },
-        { status: 400 }
-      );
-    }
-
+    // Check if email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -153,92 +148,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Set default password and hash it
+    // Hash password (use provided password or default)
     const defaultPassword = '11223344';
-    const hashedPassword = await hash(defaultPassword, 12);
+    const hashedPassword = await hash(password || defaultPassword, 12);
 
-    // Get the role ID
-    const roleRecord = await prisma.role.findUnique({
-      where: { name: role },
-    });
+    // Generate username from email
+    const username = email.split('@')[0];
 
-    if (!roleRecord) {
-      return NextResponse.json(
-        { error: 'Invalid role specified' },
-        { status: 400 }
-      );
-    }
-
-    // Create user with role and related data
+    // Create user with basic information only
     const newUser = await prisma.user.create({
       data: {
         email,
+        username,
         password_hash: hashedPassword,
-        first_name: first_name || null,
-        last_name: last_name || null,
+        first_name,
+        last_name,
+        phone_number: phone_number || null,
         status: 'active',
+        email_verified: false,
+        profile_image: null,
+        last_login: null,
         updatedAt: new Date(),
-        userrole: {
-          create: {
-            roleId: roleRecord.id,
-            updatedAt: new Date(),
-          },
-        },
-        ...(role === 'student' && {
-          student: {
-            create: {
-              rollNumber,
-              departmentId: parseInt(departmentId),
-              programId: parseInt(programId),
-              batch: new Date().getFullYear().toString(),
-              admissionDate: new Date(),
-              updatedAt: new Date(),
-            },
-          },
-        }),
-        ...(role === 'teacher' && {
-          faculty: {
-            create: {
-              employeeId,
-              departmentId: parseInt(departmentId),
-              designation: 'Teacher',
-              joiningDate: new Date(),
-              updatedAt: new Date(),
-            },
-          },
-        }),
-      },
-      include: {
-        student: role === 'student',
-        faculty: role === 'teacher',
       },
     });
 
+    // Send welcome email with credentials
+    try {
+      // Implement email sending logic here
+      console.log('Welcome email would be sent here');
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+    }
+
     return NextResponse.json({
-      id: newUser.id,
-      email: newUser.email,
-      first_name: newUser.first_name,
-      last_name: newUser.last_name,
-      status: newUser.status,
-      role,
-      ...(role === 'student' && {
-        student: {
-          rollNumber: newUser.student?.rollNumber,
-          departmentId: newUser.student?.departmentId,
-          programId: newUser.student?.programId,
-        },
-      }),
-      ...(role === 'teacher' && {
-        faculty: {
-          employeeId: newUser.faculty?.employeeId,
-          departmentId: newUser.faculty?.departmentId,
-        },
-      }),
+      success: true,
+      data: {
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        status: newUser.status,
+      },
     });
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create user',
+      },
       { status: 500 }
     );
   }

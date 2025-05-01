@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
+import { hash } from 'bcryptjs';
 
 // GET /api/users/[id] - Get a specific user
 export async function GET(
@@ -82,170 +83,149 @@ export async function GET(
 // PUT /api/users/[id] - Update a user
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const userId = parseInt(context.params.id);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    // Check authentication and get user data
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json({ error }, { status: 401 });
     }
 
-    const authResult = await requireAuth(request);
-    if (!authResult.success || !authResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has admin role
+    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const body = await request.json();
     const {
+      email,
       first_name,
       last_name,
-      email,
+      phone_number,
       status,
       role,
-      employeeId,
-      rollNumber,
-      departmentId,
-      programId,
+      password,
+      faculty,
+      student,
     } = body;
 
-    // Check if trying to set super_admin role
-    if (role === 'super_admin') {
-      // Check if there's already a super admin
-      const existingSuperAdmin = await prisma.userrole.findFirst({
-        where: {
-          role: {
-            name: 'super_admin',
-          },
-        },
-      });
+    // Validate required fields
+    if (!email || !first_name || !last_name || !role) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
 
-      if (existingSuperAdmin) {
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id: Number(params.id) },
+      include: {
+        userrole: true,
+        faculty: true,
+        student: true,
+      },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if email is already taken by another user
+    if (email !== existingUser.email) {
+      const emailExists = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (emailExists) {
         return NextResponse.json(
-          { error: 'Only one super admin can exist in the system' },
+          { error: 'Email already taken' },
           { status: 400 }
         );
       }
     }
 
-    // First, update the user's basic information
+    // Update user data
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: Number(params.id) },
       data: {
+        email,
         first_name,
         last_name,
-        email,
+        phone_number,
         status,
-        updatedAt: new Date(),
-      },
-    });
-
-    // If role is provided, update the user's role
-    if (role) {
-      // First delete existing roles
-      await prisma.userrole.deleteMany({
-        where: { userId },
-      });
-
-      // Then create new role
-      await prisma.userrole.create({
-        data: {
-          userId,
-          roleId:
-            role === 'super_admin'
-              ? 1
-              : role === 'sub_admin'
-              ? 2
-              : role === 'department_admin'
-              ? 3
-              : role === 'teacher'
-              ? 4
-              : 5, // student
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    // Handle teacher data
-    if (role === 'teacher' && employeeId && departmentId) {
-      await prisma.faculty.upsert({
-        where: { userId },
-        update: {
-          employeeId,
-          departmentId: parseInt(departmentId),
-          updatedAt: new Date(),
-        },
-        create: {
-          userId,
-          employeeId,
-          departmentId: parseInt(departmentId),
-          designation: 'Teacher',
-          joiningDate: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    // Handle student data
-    if (role === 'student' && rollNumber && departmentId && programId) {
-      await prisma.student.upsert({
-        where: { userId },
-        update: {
-          rollNumber,
-          departmentId: parseInt(departmentId),
-          programId: parseInt(programId),
-          updatedAt: new Date(),
-        },
-        create: {
-          userId,
-          rollNumber,
-          departmentId: parseInt(departmentId),
-          programId: parseInt(programId),
-          batch: new Date().getFullYear().toString(),
-          admissionDate: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    // Fetch the updated user with all related data
-    const finalUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        first_name: true,
-        last_name: true,
-        status: true,
+        ...(password && {
+          password_hash: await hash(password, 12),
+        }),
         userrole: {
-          select: {
+          deleteMany: {},
+          create: {
             role: {
-              select: {
-                name: true,
+              connect: {
+                name: role,
               },
             },
           },
         },
-        faculty: {
-          select: {
-            employeeId: true,
-            departmentId: true,
+        ...(role === 'teacher' &&
+          faculty && {
+            faculty: {
+              upsert: {
+                where: {
+                  userId: Number(params.id),
+                },
+                create: {
+                  departmentId: Number(faculty.departmentId),
+                  designation: faculty.designation,
+                  status: faculty.status || 'active',
+                },
+                update: {
+                  departmentId: Number(faculty.departmentId),
+                  designation: faculty.designation,
+                  status: faculty.status || 'active',
+                },
+              },
+            },
+          }),
+        ...(role === 'student' &&
+          student && {
+            student: {
+              upsert: {
+                where: {
+                  userId: Number(params.id),
+                },
+                create: {
+                  rollNumber: student.rollNumber,
+                  departmentId: Number(student.departmentId),
+                  programId: Number(student.programId),
+                  status: student.status || 'active',
+                },
+                update: {
+                  rollNumber: student.rollNumber,
+                  departmentId: Number(student.departmentId),
+                  programId: Number(student.programId),
+                  status: student.status || 'active',
+                },
+              },
+            },
+          }),
+      },
+      include: {
+        userrole: {
+          include: {
+            role: true,
           },
         },
-        student: {
-          select: {
-            rollNumber: true,
-            departmentId: true,
-            programId: true,
-          },
-        },
+        faculty: true,
+        student: true,
       },
     });
 
-    return NextResponse.json(finalUser);
+    return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }

@@ -24,18 +24,14 @@ export interface IStudent {
   rollNumber: string;
   departmentId: number;
   programId: number;
-  batch: string;
-  admissionDate: Date;
   status: 'active' | 'inactive';
 }
 
 export interface IFaculty {
   id: number;
   userId: number;
-  employeeId: string;
   departmentId: number;
   designation: string;
-  joiningDate: Date;
   status: 'active' | 'inactive';
 }
 
@@ -73,8 +69,6 @@ export interface UserData {
   rollNumber?: string;
   departmentId?: number;
   programId?: number;
-  batch?: string;
-  employeeId?: string;
   designation?: string;
 }
 

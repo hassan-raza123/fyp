@@ -81,14 +81,12 @@ function createUserData(user: any, userType: AllRoles): UserData {
       rollNumber: user.student.rollNumber,
       departmentId: user.student.departmentId,
       programId: user.student.programId,
-      batch: user.student.batch,
     };
   }
 
   if (userType === 'teacher' && user.faculty) {
     return {
       ...baseData,
-      employeeId: user.faculty.employeeId,
       departmentId: user.faculty.departmentId,
       designation: user.faculty.designation,
     };

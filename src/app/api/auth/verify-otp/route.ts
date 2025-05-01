@@ -93,14 +93,12 @@ function createUserData(user: any, userType: AllRoles): UserData {
       rollNumber: user.student.rollNumber,
       departmentId: user.student.departmentId || 0, // Handle null case
       programId: user.student.programId || 0, // Handle null case
-      batch: user.student.batch,
     };
   }
 
   if (userType === 'teacher' && user.faculty) {
     return {
       ...baseData,
-      employeeId: user.faculty.employeeId,
       departmentId: user.faculty.departmentId || 0, // Handle null case
       designation: user.faculty.designation,
     };

@@ -1,18 +1,32 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-utils';
+
+interface UserWithRole {
+  id: number;
+  userrole: {
+    role: {
+      name: string;
+    };
+  }[];
+}
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Check authentication and get user data
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json({ success: false, error }, { status: 401 });
+    }
+
+    // Check if user has admin role
+    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
       );
     }
 
@@ -25,6 +39,18 @@ export async function PUT(
     }
 
     const { adminId } = await request.json();
+
+    // Check if department exists
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+    });
+
+    if (!department) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found' },
+        { status: 404 }
+      );
+    }
 
     // Validate adminId if provided
     if (adminId !== null) {

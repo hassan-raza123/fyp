@@ -31,8 +31,10 @@ interface FormErrors {
   password?: string;
   confirmPassword?: string;
   role?: string;
-  employeeId?: string;
+  departmentId?: string;
+  programId?: string;
   rollNumber?: string;
+  designation?: string;
   general?: string;
 }
 
@@ -49,8 +51,8 @@ export default function UserCreationForm() {
     confirmPassword: '',
     departmentId: '',
     programId: '',
-    employeeId: '',
     rollNumber: '',
+    designation: '',
   });
 
   const validateForm = (): boolean => {
@@ -84,12 +86,20 @@ export default function UserCreationForm() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.role === role_name.teacher && !formData.employeeId) {
-      newErrors.employeeId = 'Employee ID is required for teachers';
+    if (formData.role === role_name.teacher && !formData.departmentId) {
+      newErrors.departmentId = 'Department is required for teachers';
     }
 
     if (formData.role === role_name.student && !formData.rollNumber) {
       newErrors.rollNumber = 'Roll Number is required for students';
+    }
+
+    if (formData.role === role_name.student && !formData.departmentId) {
+      newErrors.departmentId = 'Department is required for students';
+    }
+
+    if (formData.role === role_name.student && !formData.programId) {
+      newErrors.programId = 'Program is required for students';
     }
 
     setErrors(newErrors);
@@ -117,16 +127,16 @@ export default function UserCreationForm() {
           email: formData.email,
           role: formData.role,
           password: formData.password,
-          employeeId:
-            formData.role === role_name.teacher
-              ? formData.employeeId
-              : undefined,
+          departmentId: formData.departmentId || undefined,
+          programId: formData.programId || undefined,
           rollNumber:
             formData.role === role_name.student
               ? formData.rollNumber
               : undefined,
-          departmentId: formData.departmentId || undefined,
-          programId: formData.programId || undefined,
+          designation:
+            formData.role === role_name.teacher
+              ? formData.designation
+              : undefined,
         }),
       });
 
@@ -282,17 +292,17 @@ export default function UserCreationForm() {
         {/* Role-specific Fields */}
         {formData.role === role_name.teacher && (
           <div className='space-y-2'>
-            <Label htmlFor='employeeId'>Employee ID</Label>
+            <Label htmlFor='departmentId'>Department</Label>
             <Input
-              id='employeeId'
-              name='employeeId'
-              value={formData.employeeId}
+              id='departmentId'
+              name='departmentId'
+              value={formData.departmentId}
               onChange={handleChange}
               required
-              className={errors.employeeId ? 'border-red-500' : ''}
+              className={errors.departmentId ? 'border-red-500' : ''}
             />
-            {errors.employeeId && (
-              <p className='text-red-500 text-sm mt-1'>{errors.employeeId}</p>
+            {errors.departmentId && (
+              <p className='text-red-500 text-sm mt-1'>{errors.departmentId}</p>
             )}
           </div>
         )}
