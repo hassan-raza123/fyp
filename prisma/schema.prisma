@@ -51,49 +51,47 @@ model course {
   status      course_status @default(active)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime
-  program     program       @relation(fields: [programId], references: [id], map: "Course_programId_fkey")
+  program     program       @relation("CourseToProgram", fields: [programId], references: [id], map: "Course_programId_fkey")
   section     section[]
   course_A    course[]      @relation("courseprerequisites")
   course_B    course[]      @relation("courseprerequisites")
-  faculty     faculty[]     @relation("FacultyCourses")
+  faculty     faculty[]     @relation("facultycourses")
 
   @@index([programId], map: "Course_programId_idx")
 }
 
 model department {
-  id                 Int               @id @default(autoincrement())
-  name               String
-  code               String            @unique
-  description        String?
-  status             department_status @default(active)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  adminId            Int?
+  id          Int               @id @default(autoincrement())
+  name        String
+  code        String            @unique
+  description String?
+  status      department_status @default(active)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  adminId     Int?
+  admin       user?             @relation("DepartmentAdmin", fields: [adminId], references: [id])
+  faculty     faculty[]
+  programs    program[]
+  students    student[]
 
-  // Relations
-  admin            user?        @relation("DepartmentAdmin", fields: [adminId], references: [id])
-  programs         program[]
-  faculty          faculty[]
-  students         student[]
-
+  @@index([adminId], map: "departments_adminId_fkey")
   @@map("departments")
 }
 
 model faculty {
   id           Int            @id @default(autoincrement())
+  userId       Int            @unique
+  departmentId Int
   designation  String
   status       faculty_status @default(active)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  userId       Int            @unique
-  departmentId Int
+  department   department     @relation(fields: [departmentId], references: [id])
+  user         user           @relation(fields: [userId], references: [id])
+  sections     section[]
+  course       course[]       @relation("facultycourses")
 
-  // Relations
-  user       user       @relation(fields: [userId], references: [id])
-  department department @relation(fields: [departmentId], references: [id])
-  courses    course[]   @relation("FacultyCourses")
-  sections   section[]
-
+  @@index([departmentId], map: "faculty_departmentId_fkey")
   @@map("faculty")
 }
 
@@ -139,27 +137,25 @@ model program {
   code         String         @unique
   description  String?
   duration     Int
+  totalCreditHours Int        @default(0)
   status       program_status @default(active)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   departmentId Int
+  courses      course[]       @relation("CourseToProgram")
+  department   department     @relation(fields: [departmentId], references: [id])
+  students     student[]
 
-  // Relations
-  department department @relation(fields: [departmentId], references: [id])
-  courses    course[]
-  students   student[]
-
+  @@index([departmentId], map: "programs_departmentId_fkey")
   @@map("programs")
 }
 
 model role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   userRoles   userrole[]
   permissions permission[] @relation("permissiontorole")
 
@@ -206,21 +202,21 @@ model session {
 }
 
 model student {
-  id           Int            @id @default(autoincrement())
-  rollNumber   String         @unique
-  status       student_status @default(active)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  userId       Int            @unique
-  departmentId Int
-  programId    Int
-
-  // Relations
-  user           user             @relation(fields: [userId], references: [id])
+  id             Int              @id @default(autoincrement())
+  rollNumber     String           @unique
+  status         student_status   @default(active)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  userId         Int              @unique
+  departmentId   Int
+  programId      Int
   department     department       @relation(fields: [departmentId], references: [id])
   program        program          @relation(fields: [programId], references: [id])
+  user           user             @relation(fields: [userId], references: [id])
   studentsection studentsection[]
 
+  @@index([departmentId], map: "students_departmentId_fkey")
+  @@index([programId], map: "students_programId_fkey")
   @@map("students")
 }
 
@@ -257,30 +253,28 @@ model timetableslot {
 }
 
 model user {
-  id             Int         @id @default(autoincrement())
-  username       String?     @unique(map: "User_username_key")
-  email          String      @unique(map: "User_email_key")
-  password_hash  String
-  first_name     String
-  last_name      String
-  phone_number   String?
-  profile_image  String?
-  status         user_status @default(active)
-  last_login     DateTime?
-  email_verified Boolean     @default(false)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-
-  // Relations
-  attendance          attendance[]
-  auditlog            auditlog[]
-  departmentAdmin     department[]         @relation("DepartmentAdmin")
-  faculty             faculty[]
-  notification        notification[]
-  passwordreset       passwordreset[]
-  student             student[]
-  userrole            userrole[]
-  passwordResetTokens PasswordResetToken[]
+  id                 Int                  @id @default(autoincrement())
+  username           String?              @unique(map: "User_username_key")
+  email              String               @unique(map: "User_email_key")
+  password_hash      String
+  first_name         String
+  last_name          String
+  phone_number       String?
+  profile_image      String?
+  status             user_status          @default(active)
+  last_login         DateTime?
+  email_verified     Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  attendance         attendance[]
+  auditlog           auditlog[]
+  departmentAdmin    department[]         @relation("DepartmentAdmin")
+  faculty            faculty?
+  notification       notification[]
+  passwordreset      passwordreset[]
+  passwordresettoken passwordresettoken[]
+  student            student?
+  userrole           userrole[]
 
   @@map("users")
 }
@@ -291,15 +285,15 @@ model userrole {
   roleId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  role      role     @relation(fields: [roleId], references: [id])
+  user      user     @relation(fields: [userId], references: [id])
 
-  // Relations
-  user user @relation(fields: [userId], references: [id])
-  role role @relation(fields: [roleId], references: [id])
-
+  @@index([roleId], map: "user_roles_roleId_fkey")
+  @@index([userId], map: "user_roles_userId_fkey")
   @@map("user_roles")
 }
 
-model OTP {
+model otp {
   id        Int      @id @default(autoincrement())
   email     String
   userType  String
@@ -307,30 +301,21 @@ model OTP {
   expiresAt DateTime
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
 
-  @@index([email, userType])
+  @@index([email, userType], map: "OTP_email_userType_idx")
 }
 
-model PasswordResetToken {
+model passwordresettoken {
   id        Int      @id @default(autoincrement())
   userId    Int
-  token     String   @unique
+  token     String   @unique(map: "PasswordResetToken_token_key")
   expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime
+  users     user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "PasswordResetToken_userId_fkey")
 
-  @@index([userId])
-}
-
-enum role_name {
-  super_admin
-  sub_admin
-  department_admin
-  child_admin
-  teacher
-  student
+  @@index([userId], map: "PasswordResetToken_userId_idx")
 }
 
 enum attendance_status {
@@ -404,11 +389,6 @@ enum user_status {
 }
 
 enum student_status {
-  active
-  inactive
-}
-
-enum enrollment_status {
   active
   inactive
 }

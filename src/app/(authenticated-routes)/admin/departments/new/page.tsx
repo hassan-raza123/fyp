@@ -186,7 +186,7 @@ export default function CreateDepartmentPage() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value=''>None</SelectItem>
+                    <SelectItem value='none'>None</SelectItem>
                     {departmentAdmins.map((admin) => (
                       <SelectItem key={admin.id} value={admin.id.toString()}>
                         {admin.name} ({admin.email})

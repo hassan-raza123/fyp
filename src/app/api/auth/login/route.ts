@@ -198,6 +198,8 @@ export async function POST(request: NextRequest) {
             role: true,
           },
         },
+        student: true,
+        faculty: true,
       },
     });
 

@@ -1,89 +1,94 @@
 // prisma/seed.js
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient, user_status } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function main() {
   try {
-    // Clear existing data
+    // Clear existing data in correct order
     await prisma.userrole.deleteMany();
+    await prisma.faculty.deleteMany();
+    await prisma.student.deleteMany();
+    await prisma.program.deleteMany();
+    await prisma.department.deleteMany();
     await prisma.user.deleteMany();
     await prisma.role.deleteMany();
 
     const defaultPassword = await bcrypt.hash('11223344', 10);
 
-    // Create Roles
-    const roles = await Promise.all([
-      prisma.role.create({
-        data: {
-          name: 'super_admin',
-          description: 'Super Administrator with full access',
-          updatedAt: new Date(),
-        },
-      }),
-      prisma.role.create({
-        data: {
-          name: 'sub_admin',
-          description: 'Sub Administrator with restricted access',
-          updatedAt: new Date(),
-        },
-      }),
-      prisma.role.create({
-        data: {
-          name: 'department_admin',
-          description: 'Department Administrator',
-          updatedAt: new Date(),
-        },
-      }),
-      prisma.role.create({
-        data: {
-          name: 'child_admin',
-          description: 'Sub-Department Administrator',
-          updatedAt: new Date(),
-        },
-      }),
-      prisma.role.create({
-        data: {
-          name: 'teacher',
-          description: 'Faculty Member',
-          updatedAt: new Date(),
-        },
-      }),
-      prisma.role.create({
-        data: {
-          name: 'student',
-          description: 'Student',
-          updatedAt: new Date(),
-        },
-      }),
-    ]);
-
-    // Create Super Admin User
-    const superAdmin = await prisma.user.create({
+    // Create roles
+    const superAdminRole = await prisma.role.create({
       data: {
-        email: 'super.admin@university.edu',
-        username: 'superadmin',
-        password_hash: defaultPassword,
-        first_name: 'Super',
-        last_name: 'Admin',
-        phone_number: '0300-1234567',
-        email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        name: 'super_admin',
+        description: 'Super Admin Role',
       },
     });
 
-    // Assign Super Admin Role
-    await prisma.userrole.create({
+    const subAdminRole = await prisma.role.create({
       data: {
-        userId: superAdmin.id,
-        roleId: roles[0].id,
-        updatedAt: new Date(),
+        name: 'sub_admin',
+        description: 'Sub Admin Role',
       },
     });
 
-    // Create Sub Admin User
+    const departmentAdminRole = await prisma.role.create({
+      data: {
+        name: 'department_admin',
+        description: 'Department Admin Role',
+      },
+    });
+
+    const childAdminRole = await prisma.role.create({
+      data: {
+        name: 'child_admin',
+        description: 'Child Admin Role',
+      },
+    });
+
+    const teacherRole = await prisma.role.create({
+      data: {
+        name: 'teacher',
+        description: 'Teacher Role',
+      },
+    });
+
+    const studentRole = await prisma.role.create({
+      data: {
+        name: 'student',
+        description: 'Student Role',
+      },
+    });
+
+    // Create super admin users with incrementing numbers
+    const adminEmails = [
+      'itzhassanraza276@gmail.com',
+      'itzhassanraza276+1@gmail.com',
+      'itzhassanraza276+2@gmail.com',
+      'itzhassanraza276+3@gmail.com',
+      'itzhassanraza276+4@gmail.com',
+    ];
+
+    for (let i = 0; i < adminEmails.length; i++) {
+      const admin = await prisma.user.create({
+        data: {
+          email: adminEmails[i],
+          username: `admin${i + 1}`,
+          password_hash: defaultPassword,
+          first_name: 'Super',
+          last_name: `Admin ${i + 1}`,
+          status: user_status.active,
+          email_verified: true,
+          userrole: {
+            create: {
+              roleId: superAdminRole.id,
+            },
+          },
+        },
+      });
+    }
+
+    // Create sub admin
     const subAdmin = await prisma.user.create({
       data: {
         email: 'sub.admin@university.edu',
@@ -91,23 +96,17 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Sub',
         last_name: 'Admin',
-        phone_number: '0300-1234568',
+        status: user_status.active,
         email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: subAdminRole.id,
+          },
+        },
       },
     });
 
-    // Assign Sub Admin Role
-    await prisma.userrole.create({
-      data: {
-        userId: subAdmin.id,
-        roleId: roles[1].id,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Department Admin User
+    // Create department admin
     const deptAdmin = await prisma.user.create({
       data: {
         email: 'dept.admin@university.edu',
@@ -115,23 +114,17 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Department',
         last_name: 'Admin',
-        phone_number: '0300-2345678',
+        status: user_status.active,
         email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: departmentAdminRole.id,
+          },
+        },
       },
     });
 
-    // Assign Department Admin Role
-    await prisma.userrole.create({
-      data: {
-        userId: deptAdmin.id,
-        roleId: roles[2].id,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Child Admin User
+    // Create child admin
     const childAdmin = await prisma.user.create({
       data: {
         email: 'child.admin@university.edu',
@@ -139,23 +132,17 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Child',
         last_name: 'Admin',
-        phone_number: '0300-3456789',
+        status: user_status.active,
         email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: childAdminRole.id,
+          },
+        },
       },
     });
 
-    // Assign Child Admin Role
-    await prisma.userrole.create({
-      data: {
-        userId: childAdmin.id,
-        roleId: roles[3].id,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Teacher User
+    // Create teacher
     const teacher = await prisma.user.create({
       data: {
         email: 'teacher@university.edu',
@@ -163,23 +150,17 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'John',
         last_name: 'Doe',
-        phone_number: '0300-4567890',
+        status: user_status.active,
         email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: teacherRole.id,
+          },
+        },
       },
     });
 
-    // Assign Teacher Role
-    await prisma.userrole.create({
-      data: {
-        userId: teacher.id,
-        roleId: roles[4].id,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create Student User
+    // Create student
     const student = await prisma.user.create({
       data: {
         email: 'student@university.edu',
@@ -187,19 +168,35 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Jane',
         last_name: 'Smith',
-        phone_number: '0300-5678901',
+        status: user_status.active,
         email_verified: true,
-        status: 'active',
-        updatedAt: new Date(),
+        userrole: {
+          create: {
+            roleId: studentRole.id,
+          },
+        },
       },
     });
 
-    // Assign Student Role
-    await prisma.userrole.create({
+    // Create a department
+    const department = await prisma.department.create({
       data: {
-        userId: student.id,
-        roleId: roles[5].id,
-        updatedAt: new Date(),
+        name: 'Computer Science',
+        code: 'CS',
+        status: 'active',
+        adminId: subAdmin.id,
+      },
+    });
+
+    // Create a program
+    const program = await prisma.program.create({
+      data: {
+        name: 'BS Computer Science',
+        code: 'BSCS',
+        departmentId: department.id,
+        duration: 4,
+        description: 'Bachelor of Science in Computer Science',
+        status: 'active',
       },
     });
 

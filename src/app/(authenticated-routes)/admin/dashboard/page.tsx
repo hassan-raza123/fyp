@@ -251,6 +251,7 @@ const ModernDashboard = () => {
     {
       title: 'Academic',
       items: [
+        { id: 'programs', icon: GraduationCap, label: 'Programs', badge: 0 },
         { id: 'courses', icon: BookOpen, label: 'Courses', badge: 2 },
         { id: 'grades', icon: GraduationCap, label: 'Grades', badge: 0 },
         { id: 'departments', icon: Layers, label: 'Departments', badge: 0 },
