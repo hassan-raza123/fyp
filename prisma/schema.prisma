@@ -41,23 +41,26 @@ model auditlog {
 }
 
 model course {
-  id          Int           @id @default(autoincrement())
-  code        String        @unique(map: "Course_code_key")
-  name        String
-  description String?
-  creditHours Int
-  programId   Int
-  semester    Int
-  status      course_status @default(active)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime
-  program     program       @relation("CourseToProgram", fields: [programId], references: [id], map: "Course_programId_fkey")
-  section     section[]
-  course_A    course[]      @relation("courseprerequisites")
-  course_B    course[]      @relation("courseprerequisites")
-  faculty     faculty[]     @relation("facultycourses")
+  id           Int           @id @default(autoincrement())
+  code         String        @unique(map: "Course_code_key")
+  name         String
+  description  String?
+  creditHours  Int
+  status       course_status @default(active)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  departmentId Int
+  labHours     Int
+  theoryHours  Int
+  type         course_type
+  department   department    @relation("DepartmentToCourse", fields: [departmentId], references: [id])
+  sections     section[]
+  course_A     course[]      @relation("courseprerequisites")
+  course_B     course[]      @relation("courseprerequisites")
+  faculty      faculty[]     @relation("facultycourses")
+  programs     program[]     @relation("programtocourse")
 
-  @@index([programId], map: "Course_programId_idx")
+  @@index([departmentId], map: "Course_departmentId_idx")
 }
 
 model department {
@@ -69,6 +72,7 @@ model department {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   adminId     Int?
+  courses     course[]          @relation("DepartmentToCourse")
   admin       user?             @relation("DepartmentAdmin", fields: [adminId], references: [id])
   faculty     faculty[]
   programs    program[]
@@ -132,19 +136,19 @@ model permission {
 }
 
 model program {
-  id           Int            @id @default(autoincrement())
-  name         String
-  code         String         @unique
-  description  String?
-  duration     Int
-  totalCreditHours Int        @default(0)
-  status       program_status @default(active)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  departmentId Int
-  courses      course[]       @relation("CourseToProgram")
-  department   department     @relation(fields: [departmentId], references: [id])
-  students     student[]
+  id               Int            @id @default(autoincrement())
+  name             String
+  code             String         @unique
+  description      String?
+  duration         Int
+  status           program_status @default(active)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  departmentId     Int
+  totalCreditHours Int            @default(0)
+  department       department     @relation(fields: [departmentId], references: [id])
+  students         student[]
+  course           course[]       @relation("programtocourse")
 
   @@index([departmentId], map: "programs_departmentId_fkey")
   @@map("programs")
@@ -368,6 +372,7 @@ enum timetableslot_status {
 enum course_status {
   active
   inactive
+  archived
 }
 
 enum program_status {
@@ -391,4 +396,11 @@ enum user_status {
 enum student_status {
   active
   inactive
+}
+
+enum course_type {
+  THEORY
+  LAB
+  PROJECT
+  THESIS
 }

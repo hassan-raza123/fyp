@@ -54,8 +54,8 @@ export default function ProgramsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [departmentId, setDepartmentId] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
+  const [departmentId, setDepartmentId] = useState<string>('all');
+  const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -178,8 +178,8 @@ export default function ProgramsPage() {
           </div>
           <div className='flex gap-4'>
             <Select value={departmentId} onValueChange={setDepartmentId}>
-              <SelectTrigger className='w-[200px]'>
-                <SelectValue placeholder='Filter by department' />
+              <SelectTrigger className='w-[180px]'>
+                <SelectValue placeholder='Department' />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Departments</SelectItem>
@@ -191,8 +191,8 @@ export default function ProgramsPage() {
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className='w-[150px]'>
-                <SelectValue placeholder='Filter by status' />
+              <SelectTrigger className='w-[180px]'>
+                <SelectValue placeholder='Status' />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Status</SelectItem>
