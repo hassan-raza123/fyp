@@ -6,23 +6,25 @@ async function runMigrations() {
     console.log('Starting migration process...');
     console.log('Initializing data source...');
 
-    // Initialize the data source
-    await AppDataSource.initialize();
-    console.log('Data Source has been initialized successfully!');
+    // Initialize the data source with synchronize option
+    const dataSource = new DataSource({
+      ...AppDataSource.options,
+      synchronize: false,
+      migrationsRun: true,
+      migrations: AppDataSource.options.migrations,
+    });
 
-    // Drop all tables to start fresh
-    console.log('Dropping existing tables...');
-    await AppDataSource.synchronize(true);
-    console.log('All tables dropped');
+    await dataSource.initialize();
+    console.log('Data Source has been initialized successfully!');
 
     // Run migrations
     console.log('Running migrations...');
-    const migrations = await AppDataSource.runMigrations();
+    const migrations = await dataSource.runMigrations();
     console.log('Migrations completed!');
     console.log('Executed migrations:', migrations);
 
     // Close the connection
-    await AppDataSource.destroy();
+    await dataSource.destroy();
     console.log('Data Source has been closed.');
   } catch (error) {
     console.error('Error during migration:', error);

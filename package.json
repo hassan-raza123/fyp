@@ -13,7 +13,9 @@
     "migration:run": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/migrate.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/lib/database/dataSource.ts",
     "migration:create": "npm run typeorm -- migration:create",
-    "migration:show": "npm run typeorm -- migration:show -d src/lib/database/dataSource.ts"
+    "migration:show": "npm run typeorm -- migration:show -d src/lib/database/dataSource.ts",
+    "db:drop": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/drop-tables.ts",
+    "db:drop-all": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/dropAllTables.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

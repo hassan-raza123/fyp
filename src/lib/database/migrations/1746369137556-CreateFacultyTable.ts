@@ -5,7 +5,7 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateFacultyTable1746369137553 implements MigrationInterface {
+export class CreateFacultyTable1746369137556 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -51,28 +51,22 @@ export class CreateFacultyTable1746369137553 implements MigrationInterface {
             onUpdate: 'CURRENT_TIMESTAMP',
           },
         ],
+        foreignKeys: [
+          {
+            columnNames: ['user_id'],
+            referencedColumnNames: ['id'],
+            referencedTableName: 'users',
+            onDelete: 'CASCADE',
+          },
+          {
+            columnNames: ['department_id'],
+            referencedColumnNames: ['id'],
+            referencedTableName: 'departments',
+            onDelete: 'SET NULL',
+          },
+        ],
       }),
       true
-    );
-
-    await queryRunner.createForeignKey(
-      'faculty',
-      new TableForeignKey({
-        columnNames: ['user_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'users',
-        onDelete: 'CASCADE',
-      })
-    );
-
-    await queryRunner.createForeignKey(
-      'faculty',
-      new TableForeignKey({
-        columnNames: ['department_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'departments',
-        onDelete: 'SET NULL',
-      })
     );
   }
 
