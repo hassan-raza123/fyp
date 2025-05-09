@@ -7,7 +7,6 @@ import {
   ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinTable,
 } from 'typeorm';
 import { Department } from './Department';
 import { Student } from './Student';
@@ -32,8 +31,8 @@ export class Program {
   @Column({ nullable: true })
   description: string;
 
-  @Column('int')
-  duration: number; // in years
+  @Column()
+  duration: number;
 
   @Column({
     type: 'enum',
@@ -48,6 +47,12 @@ export class Program {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column()
+  departmentId: number;
+
+  @Column({ default: 0 })
+  totalCreditHours: number;
+
   @ManyToOne(() => Department, (department) => department.programs)
   department: Department;
 
@@ -55,6 +60,5 @@ export class Program {
   students: Student[];
 
   @ManyToMany(() => Course, (course) => course.programs)
-  @JoinTable()
-  courses: Course[];
+  course: Course[];
 }

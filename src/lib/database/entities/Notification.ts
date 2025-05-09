@@ -54,6 +54,6 @@ export class Notification {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.notifications)
+  @ManyToOne(() => User, (user) => user.notification)
   user: User;
 }

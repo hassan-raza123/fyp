@@ -2,34 +2,44 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
 } from 'typeorm';
-import { Student } from './Student';
+import { User } from './User';
 import { Session } from './Session';
+import { StudentSection } from './StudentSection';
 
 export enum AttendanceStatus {
   PRESENT = 'present',
   ABSENT = 'absent',
   LATE = 'late',
+  LEAVE = 'leave',
   EXCUSED = 'excused',
 }
 
-@Entity('attendances')
+@Entity('attendance')
 export class Attendance {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  studentSectionId: number;
+
+  @Column()
+  sessionId: number;
+
   @Column({
     type: 'enum',
     enum: AttendanceStatus,
-    default: AttendanceStatus.ABSENT,
   })
   status: AttendanceStatus;
 
-  @Column({ type: 'text', nullable: true })
-  remarks?: string;
+  @Column()
+  markedBy: number;
+
+  @Column({ nullable: true })
+  remarks: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -37,9 +47,15 @@ export class Attendance {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Student, (student) => student.attendances)
-  student: Student;
+  @ManyToOne(() => User, (user) => user.attendance)
+  user: User;
 
-  @ManyToOne(() => Session, (session) => session.attendances)
+  @ManyToOne(() => Session, (session) => session.attendance)
   session: Session;
+
+  @ManyToOne(
+    () => StudentSection,
+    (studentSection) => studentSection.attendance
+  )
+  studentSection: StudentSection;
 }

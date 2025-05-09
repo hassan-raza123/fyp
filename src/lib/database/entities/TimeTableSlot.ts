@@ -2,43 +2,52 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Section } from './Section';
 
-export enum DayOfWeek {
-  MONDAY = 'monday',
-  TUESDAY = 'tuesday',
-  WEDNESDAY = 'wednesday',
-  THURSDAY = 'thursday',
-  FRIDAY = 'friday',
-  SATURDAY = 'saturday',
-  SUNDAY = 'sunday',
+export enum TimeTableSlotStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+  DELETED = 'deleted',
 }
 
-@Entity('timetable_slots')
+@Entity('timetableslot')
 export class TimeTableSlot {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  sectionId: number;
+
+  @Column()
+  dayOfWeek: number;
+
+  @Column({ type: 'time' })
+  startTime: Date;
+
+  @Column({ type: 'time' })
+  endTime: Date;
+
+  @Column({ nullable: true })
+  roomNumber: string;
+
   @Column({
     type: 'enum',
-    enum: DayOfWeek,
+    enum: TimeTableSlotStatus,
+    default: TimeTableSlotStatus.ACTIVE,
   })
-  dayOfWeek: DayOfWeek;
-
-  @Column({ type: 'time' })
-  startTime: string;
-
-  @Column({ type: 'time' })
-  endTime: string;
-
-  @Column({ default: true })
-  isActive: boolean;
+  status: TimeTableSlotStatus;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => Section, (section) => section.timetableslot)
+  section: Section;
 }

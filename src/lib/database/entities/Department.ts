@@ -2,15 +2,15 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   ManyToOne,
+  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './User';
 import { Course } from './Course';
-import { Program } from './Program';
 import { Faculty } from './Faculty';
+import { Program } from './Program';
 import { Student } from './Student';
 
 export enum DepartmentStatus {
@@ -45,17 +45,20 @@ export class Department {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.departments)
-  admin: User;
+  @Column({ nullable: true })
+  adminId: number;
 
   @OneToMany(() => Course, (course) => course.department)
   courses: Course[];
 
-  @OneToMany(() => Program, (program) => program.department)
-  programs: Program[];
+  @ManyToOne(() => User, (user) => user.departmentAdmin)
+  admin: User;
 
   @OneToMany(() => Faculty, (faculty) => faculty.department)
   faculty: Faculty[];
+
+  @OneToMany(() => Program, (program) => program.department)
+  programs: Program[];
 
   @OneToMany(() => Student, (student) => student.department)
   students: Student[];

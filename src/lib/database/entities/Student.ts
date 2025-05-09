@@ -2,24 +2,20 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToOne,
   ManyToOne,
   OneToMany,
-  JoinColumn,
+  OneToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { User } from './User';
 import { Department } from './Department';
 import { Program } from './Program';
+import { User } from './User';
 import { StudentSection } from './StudentSection';
-import { Attendance } from './Attendance';
 
 export enum StudentStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
-  GRADUATED = 'graduated',
-  DROPPED = 'dropped',
 }
 
 @Entity('students')
@@ -43,9 +39,14 @@ export class Student {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.student)
-  @JoinColumn()
-  user: User;
+  @Column()
+  userId: number;
+
+  @Column()
+  departmentId: number;
+
+  @Column()
+  programId: number;
 
   @ManyToOne(() => Department, (department) => department.students)
   department: Department;
@@ -53,9 +54,9 @@ export class Student {
   @ManyToOne(() => Program, (program) => program.students)
   program: Program;
 
-  @OneToMany(() => StudentSection, (studentSection) => studentSection.student)
-  studentSections: StudentSection[];
+  @OneToOne(() => User, (user) => user.student)
+  user: User;
 
-  @OneToMany(() => Attendance, (attendance) => attendance.student)
-  attendances: Attendance[];
+  @OneToMany(() => StudentSection, (studentSection) => studentSection.student)
+  studentsection: StudentSection[];
 }

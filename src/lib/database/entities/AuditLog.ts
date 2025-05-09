@@ -39,6 +39,6 @@ export class AuditLog {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.auditLogs)
+  @ManyToOne(() => User, (user) => user.auditlog)
   user: User;
 }

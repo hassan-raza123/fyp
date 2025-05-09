@@ -2,10 +2,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Section } from './Section';
 import { Attendance } from './Attendance';
@@ -15,18 +15,31 @@ export enum SessionStatus {
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
+  POSTPONED = 'postponed',
 }
 
-@Entity('sessions')
+@Entity('session')
 export class Session {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'datetime' })
+  @Column()
+  sectionId: number;
+
+  @Column()
+  date: Date;
+
+  @Column()
   startTime: Date;
 
-  @Column({ type: 'datetime' })
+  @Column()
   endTime: Date;
+
+  @Column({ nullable: true })
+  topic: string;
+
+  @Column({ nullable: true })
+  remarks: string;
 
   @Column({
     type: 'enum',
@@ -35,21 +48,15 @@ export class Session {
   })
   status: SessionStatus;
 
-  @Column({ type: 'text', nullable: true })
-  description?: string;
-
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Section, (section) => section.sessions)
-  section: Section;
-
   @OneToMany(() => Attendance, (attendance) => attendance.session)
-  attendances: Attendance[];
+  attendance: Attendance[];
+
+  @ManyToOne(() => Section, (section) => section.session)
+  section: Section;
 }

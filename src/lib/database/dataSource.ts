@@ -16,6 +16,8 @@ import { StudentSection } from './entities/StudentSection';
 import { TimeTableSlot } from './entities/TimeTableSlot';
 import { Permission } from './entities/Permission';
 import { Session } from './entities/Session';
+import { PasswordReset } from './entities/PasswordReset';
+import { PasswordResetToken } from './entities/PasswordResetToken';
 
 // Default database configuration
 const defaultConfig = {
@@ -62,6 +64,8 @@ export const AppDataSource = new DataSource({
     TimeTableSlot,
     Permission,
     Session,
+    PasswordReset,
+    PasswordResetToken,
   ],
   migrations: ['src/lib/database/migrations/*.ts'],
   migrationsTableName: 'migrations',

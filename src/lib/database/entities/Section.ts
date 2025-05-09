@@ -9,15 +9,18 @@ import {
 } from 'typeorm';
 import { Course } from './Course';
 import { Faculty } from './Faculty';
-import { StudentSection } from './StudentSection';
 import { Session } from './Session';
+import { StudentSection } from './StudentSection';
+import { TimeTableSlot } from './TimeTableSlot';
 
 export enum SectionStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+  DELETED = 'deleted',
 }
 
-@Entity('sections')
+@Entity('section')
 export class Section {
   @PrimaryGeneratedColumn()
   id: number;
@@ -25,8 +28,17 @@ export class Section {
   @Column()
   name: string;
 
-  @Column({ unique: true })
-  code: string;
+  @Column()
+  courseId: number;
+
+  @Column({ nullable: true })
+  facultyId: number;
+
+  @Column()
+  semester: number;
+
+  @Column()
+  maxStudents: number;
 
   @Column({
     type: 'enum',
@@ -35,11 +47,11 @@ export class Section {
   })
   status: SectionStatus;
 
-  @Column({ type: 'int' })
-  capacity: number;
+  @Column()
+  startDate: Date;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column()
+  endDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -53,9 +65,12 @@ export class Section {
   @ManyToOne(() => Faculty, (faculty) => faculty.sections)
   faculty: Faculty;
 
-  @OneToMany(() => StudentSection, (studentSection) => studentSection.section)
-  studentSections: StudentSection[];
-
   @OneToMany(() => Session, (session) => session.section)
-  sessions: Session[];
+  session: Session[];
+
+  @OneToMany(() => StudentSection, (studentSection) => studentSection.section)
+  studentsection: StudentSection[];
+
+  @OneToMany(() => TimeTableSlot, (timeTableSlot) => timeTableSlot.section)
+  timetableslot: TimeTableSlot[];
 }

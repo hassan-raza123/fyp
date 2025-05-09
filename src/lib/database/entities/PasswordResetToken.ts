@@ -7,12 +7,20 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './User';
-import { Role } from './Role';
 
-@Entity('user_roles')
-export class UserRole {
+@Entity('passwordresettoken')
+export class PasswordResetToken {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column()
+  userId: number;
+
+  @Column({ unique: true })
+  token: string;
+
+  @Column()
+  expiresAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -20,9 +28,8 @@ export class UserRole {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.userrole)
-  user: User;
-
-  @ManyToOne(() => Role, (role) => role.userRoles)
-  role: Role;
+  @ManyToOne(() => User, (user) => user.passwordresettoken, {
+    onDelete: 'CASCADE',
+  })
+  users: User;
 }
