@@ -23,7 +23,7 @@ const defaultConfig = {
   port: 3306,
   username: 'root',
   password: 'root',
-  database: 'unitrack365',
+  database: 'fyp_db',
 };
 
 // Get environment variables with fallbacks
@@ -63,6 +63,8 @@ export const AppDataSource = new DataSource({
     Permission,
     Session,
   ],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['src/lib/database/migrations/*.ts'],
+  migrationsTableName: 'migrations',
+  migrationsRun: true,
   subscribers: ['src/subscribers/*.ts'],
 });

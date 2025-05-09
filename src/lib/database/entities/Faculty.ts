@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import { User } from './User';
 import { Department } from './Department';
@@ -36,16 +37,24 @@ export class Faculty {
   })
   status: FacultyStatus;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ name: 'user_id' })
+  userId: number;
+
   @OneToOne(() => User, (user) => user.faculty)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ name: 'department_id', nullable: true })
+  departmentId: number;
+
   @ManyToOne(() => Department, (department) => department.faculty)
+  @JoinColumn({ name: 'department_id' })
   department: Department;
 
   @OneToMany(() => Section, (section) => section.faculty)

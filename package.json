@@ -10,7 +10,7 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate -d src/lib/database/dataSource.ts",
     "build:db": "tsc src/lib/database/config.ts --outDir dist/lib/database --esModuleInterop true --module ESNext",
-    "migration:run": "ts-node src/scripts/run-migrations.ts",
+    "migration:run": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/migrate.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/lib/database/dataSource.ts",
     "migration:create": "npm run typeorm -- migration:create",
     "migration:show": "npm run typeorm -- migration:show -d src/lib/database/dataSource.ts"
@@ -47,7 +47,6 @@
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.456.0",
-    "mysql2": "^3.9.1",
     "next": "15.0.3",
     "next-auth": "^4.24.5",
     "next-themes": "^0.4.6",
@@ -56,11 +55,9 @@
     "react-dom": "^18",
     "react-hook-form": "^7.56.1",
     "recharts": "^2.15.2",
-    "reflect-metadata": "^0.2.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
-    "typeorm": "^0.3.20",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -74,10 +71,13 @@
     "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
+    "mysql2": "^3.14.1",
     "postcss": "^8",
+    "reflect-metadata": "^0.2.2",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typeorm": "^0.3.23",
     "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5"
   }
