@@ -20,6 +20,164 @@ type ProgramWithCounts = Prisma.programGetPayload<{
   duration: number;
 };
 
+/**
+ * @swagger
+ * /api/programs:
+ *   get:
+ *     summary: Get all programs
+ *     description: Retrieve a list of programs with optional filtering and pagination
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for program code or name
+ *       - in: query
+ *         name: departmentId
+ *         schema:
+ *           type: string
+ *         description: Filter by department ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, archived]
+ *         description: Filter by program status
+ *     responses:
+ *       200:
+ *         description: List of programs retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 programs:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       code:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       totalCreditHours:
+ *                         type: number
+ *                       duration:
+ *                         type: number
+ *                       department:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                           code:
+ *                             type: string
+ *                       status:
+ *                         type: string
+ *                         enum: [active, inactive, archived]
+ *                       _count:
+ *                         type: object
+ *                         properties:
+ *                           students:
+ *                             type: integer
+ *                           courses:
+ *                             type: integer
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new program
+ *     description: Create a new program with the provided information
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - code
+ *               - departmentId
+ *               - totalCreditHours
+ *               - duration
+ *             properties:
+ *               name:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               departmentId:
+ *                 type: integer
+ *               totalCreditHours:
+ *                 type: number
+ *               duration:
+ *                 type: number
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, archived]
+ *     responses:
+ *       200:
+ *         description: Program created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     code:
+ *                       type: string
+ *                     departmentId:
+ *                       type: integer
+ *                     totalCreditHours:
+ *                       type: number
+ *                     duration:
+ *                       type: number
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and role

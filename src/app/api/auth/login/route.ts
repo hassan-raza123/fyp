@@ -18,6 +18,64 @@ import {
 } from '@/types/auth';
 import { getRepository } from '@/lib/database/dbConnect';
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate a user and return a JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - userType
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               userType:
+ *                 type: string
+ *                 enum: [student, teacher, admin]
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     userData:
+ *                       type: object
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         description: Too many login attempts
+ *       500:
+ *         description: Internal server error
+ */
+
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
 const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes

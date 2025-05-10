@@ -11,6 +11,123 @@ interface UserWithRole {
   }[];
 }
 
+/**
+ * @swagger
+ * /api/departments/{id}/admin:
+ *   get:
+ *     summary: Get department admin
+ *     description: Retrieve information about the admin of a specific department
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Department ID
+ *     responses:
+ *       200:
+ *         description: Department admin information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     first_name:
+ *                       type: string
+ *                     last_name:
+ *                       type: string
+ *                     designation:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: Department or admin not found
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Assign department admin
+ *     description: Assign a user as the admin of a specific department
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Department ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: ID of the user to be assigned as department admin
+ *     responses:
+ *       200:
+ *         description: Department admin assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     department:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         name:
+ *                           type: string
+ *                         code:
+ *                           type: string
+ *                     admin:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         email:
+ *                           type: string
+ *                         first_name:
+ *                           type: string
+ *                         last_name:
+ *                           type: string
+ *       400:
+ *         description: Bad Request - Invalid department ID or user ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: Department or user not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }

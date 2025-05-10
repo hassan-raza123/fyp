@@ -58,6 +58,124 @@ interface CourseResponse {
   }[];
 }
 
+/**
+ * @swagger
+ * /api/courses:
+ *   get:
+ *     summary: Get all courses
+ *     description: Retrieve a list of courses with optional filtering and pagination
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for course code or name
+ *       - in: query
+ *         name: departmentId
+ *         schema:
+ *           type: string
+ *         description: Filter by department ID
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [THEORY, LAB, PROJECT, THESIS]
+ *         description: Filter by course type
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [ACTIVE, INACTIVE, ARCHIVED]
+ *         description: Filter by course status
+ *     responses:
+ *       200:
+ *         description: List of courses retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 courses:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       code:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       creditHours:
+ *                         type: number
+ *                       type:
+ *                         type: string
+ *                         enum: [THEORY, LAB, PROJECT, THESIS]
+ *                       department:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                           code:
+ *                             type: string
+ *                       status:
+ *                         type: string
+ *                         enum: [ACTIVE, INACTIVE, ARCHIVED]
+ *                       prerequisites:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             prerequisite:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: integer
+ *                                 code:
+ *                                   type: string
+ *                                 name:
+ *                                   type: string
+ *                       corequisites:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             corequisite:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: integer
+ *                                 code:
+ *                                   type: string
+ *                                 name:
+ *                                   type: string
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

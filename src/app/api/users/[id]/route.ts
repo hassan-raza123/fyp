@@ -3,6 +3,127 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { hash } from 'bcryptjs';
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get a specific user
+ *     description: Retrieve detailed information about a specific user
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 email:
+ *                   type: string
+ *                 first_name:
+ *                   type: string
+ *                 last_name:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 userrole:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       role:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                 faculty:
+ *                   type: object
+ *                   nullable: true
+ *                 student:
+ *                   type: object
+ *                   nullable: true
+ *       400:
+ *         description: Invalid user ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ *   put:
+ *     summary: Update a user
+ *     description: Update information for a specific user
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               phone_number:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     first_name:
+ *                       type: string
+ *                     last_name:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 // GET /api/users/[id] - Get a specific user
 export async function GET(
   request: NextRequest,

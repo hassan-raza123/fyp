@@ -1,70 +1,125 @@
-import { NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
-import { z } from 'zod'
+import { NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import { z } from 'zod';
+
+/**
+ * @swagger
+ * /api/contact:
+ *   post:
+ *     summary: Send contact form message
+ *     description: Send a message through the contact form
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - subject
+ *               - message
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               subject:
+ *                 type: string
+ *                 minLength: 5
+ *                 maxLength: 100
+ *               message:
+ *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 1000
+ *     responses:
+ *       200:
+ *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid form data
+ *       429:
+ *         description: Too many requests
+ *       500:
+ *         description: Internal server error
+ */
 
 // Email validation schema
 const emailSchema = z.object({
   name: z.string().min(2).max(50),
   email: z.string().email(),
   subject: z.string().min(5).max(100),
-  message: z.string().min(10).max(1000)
-})
+  message: z.string().min(10).max(1000),
+});
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-})
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 // Rate limiting setup
-const rateLimit = new Map()
-const RATE_LIMIT_WINDOW = 3600000 // 1 hour
-const MAX_REQUESTS = 5
+const rateLimit = new Map();
+const RATE_LIMIT_WINDOW = 3600000; // 1 hour
+const MAX_REQUESTS = 5;
 
 export async function POST(req: Request) {
   try {
     // Get form data from request
-    const body = await req.json()
-    
+    const body = await req.json();
+
     // Validate email format and content
-    const validatedData = emailSchema.safeParse(body)
+    const validatedData = emailSchema.safeParse(body);
     if (!validatedData.success) {
       return NextResponse.json(
         { error: 'Invalid form data. Please check your inputs.' },
         { status: 400 }
-      )
+      );
     }
 
-    const { name, email, subject, message } = validatedData.data
+    const { name, email, subject, message } = validatedData.data;
 
     // Rate limiting check
-    const now = Date.now()
-    const userRequests = rateLimit.get(email) || []
-    const recentRequests = userRequests.filter(time => now - time < RATE_LIMIT_WINDOW)
-    
+    const now = Date.now();
+    const userRequests = rateLimit.get(email) || [];
+    const recentRequests = userRequests.filter(
+      (time) => now - time < RATE_LIMIT_WINDOW
+    );
+
     if (recentRequests.length >= MAX_REQUESTS) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
         { status: 429 }
-      )
+      );
     }
-    
-    recentRequests.push(now)
-    rateLimit.set(email, recentRequests)
+
+    recentRequests.push(now);
+    rateLimit.set(email, recentRequests);
 
     // Email content for support team
     const supportMailOptions = {
       from: {
         name: 'UniTrack360 Support',
-        address: process.env.GMAIL_USER!
+        address: process.env.GMAIL_USER!,
       },
       to: process.env.GMAIL_USER,
       replyTo: {
         name: name,
-        address: email
+        address: email,
       },
       subject: `📬 New Contact Request: ${subject}`,
       html: `
@@ -103,14 +158,14 @@ export async function POST(req: Request) {
             <a href="mailto:${email}" style="display: inline-block; background: #6B46C1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply to ${name}</a>
           </div>
         </div>
-      `
-    }
+      `,
+    };
 
     // Email content for user acknowledgment
     const userMailOptions = {
       from: {
         name: 'UniTrack360 Support',
-        address: process.env.GMAIL_USER!
+        address: process.env.GMAIL_USER!,
       },
       to: email,
       subject: 'Thank you for contacting UniTrack360',
@@ -133,27 +188,27 @@ export async function POST(req: Request) {
             <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The UniTrack360 Team</p>
           </div>
         </div>
-      `
-    }
+      `,
+    };
 
     // Send both emails
     const [supportInfo, userInfo] = await Promise.all([
       transporter.sendMail(supportMailOptions),
-      transporter.sendMail(userMailOptions)
-    ])
+      transporter.sendMail(userMailOptions),
+    ]);
 
-    console.log('Support email sent successfully:', supportInfo)
-    console.log('User acknowledgment email sent successfully:', userInfo)
+    console.log('Support email sent successfully:', supportInfo);
+    console.log('User acknowledgment email sent successfully:', userInfo);
 
     return NextResponse.json(
       { message: 'Emails sent successfully' },
       { status: 200 }
-    )
+    );
   } catch (error) {
-    console.error('Error sending emails:', error)
+    console.error('Error sending emails:', error);
     return NextResponse.json(
       { error: 'Failed to send emails. Please try again later.' },
       { status: 500 }
-    )
+    );
   }
-} 
+}

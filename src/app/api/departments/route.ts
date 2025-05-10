@@ -37,6 +37,144 @@ type DepartmentWithAdmin = department & {
   };
 };
 
+/**
+ * @swagger
+ * /api/departments:
+ *   get:
+ *     summary: Get all departments
+ *     description: Retrieve a list of departments with optional filtering and pagination
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for department code or name
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, archived]
+ *         description: Filter by department status
+ *     responses:
+ *       200:
+ *         description: List of departments retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 departments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       code:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                         enum: [active, inactive, archived]
+ *                       admin:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           email:
+ *                             type: string
+ *                           first_name:
+ *                             type: string
+ *                           last_name:
+ *                             type: string
+ *                       _count:
+ *                         type: object
+ *                         properties:
+ *                           programs:
+ *                             type: integer
+ *                           faculty:
+ *                             type: integer
+ *                           students:
+ *                             type: integer
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new department
+ *     description: Create a new department with the provided information
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - code
+ *             properties:
+ *               name:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, archived]
+ *     responses:
+ *       200:
+ *         description: Department created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     code:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error
+ */
 // GET /api/departments - List all departments
 export async function GET(request: NextRequest) {
   try {

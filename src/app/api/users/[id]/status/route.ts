@@ -2,6 +2,65 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 
+/**
+ * @swagger
+ * /api/users/{id}/status:
+ *   put:
+ *     summary: Update user status
+ *     description: Update the status of a specific user (active/inactive)
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive]
+ *                 description: New status for the user
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Invalid request body or user ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

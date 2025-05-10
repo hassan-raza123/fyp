@@ -2,6 +2,76 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 
+/**
+ * @swagger
+ * /api/users/{id}/roles:
+ *   post:
+ *     summary: Assign roles to a user
+ *     description: Assign one or more roles to a user along with role-specific details
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roles
+ *             properties:
+ *               roles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [sub_admin, department_admin, teacher, student]
+ *                 description: List of roles to assign
+ *               studentDetails:
+ *                 type: object
+ *                 properties:
+ *                   rollNumber:
+ *                     type: string
+ *                   departmentId:
+ *                     type: integer
+ *                   programId:
+ *                     type: integer
+ *               facultyDetails:
+ *                 type: object
+ *                 properties:
+ *                   departmentId:
+ *                     type: integer
+ *                   designation:
+ *                     type: string
+ *     responses:
+ *       200:
+ *         description: Roles assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad Request - Invalid role or missing required details
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - User does not have permission
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
 // POST /api/users/[id]/roles - Assign roles and role-specific details to a user
 export async function POST(
   request: NextRequest,

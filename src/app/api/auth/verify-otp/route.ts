@@ -107,6 +107,65 @@ function createUserData(user: any, userType: AllRoles): UserData {
   return baseData;
 }
 
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     summary: Verify OTP
+ *     description: Verify the OTP sent to user's email and complete the login process
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *               - userType
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               otp:
+ *                 type: string
+ *               userType:
+ *                 type: string
+ *                 enum: [student, teacher, admin]
+ *     responses:
+ *       200:
+ *         description: OTP verification successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     userData:
+ *                       type: object
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Invalid OTP
+ *       403:
+ *         description: User does not have required role
+ *       429:
+ *         description: Too many OTP verification attempts
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<LoginResponse>> {
