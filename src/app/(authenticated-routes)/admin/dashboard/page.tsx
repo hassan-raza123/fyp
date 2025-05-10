@@ -569,31 +569,25 @@ const ModernDashboard = () => {
         transition-all duration-300 ease-in-out
         ${
           isDarkMode
-            ? 'bg-gray-800/95 backdrop-blur-md border-gray-700'
-            : 'bg-white/95 backdrop-blur-md border-gray-200'
+            ? 'bg-gray-800 border-gray-700'
+            : 'bg-white border-gray-200'
         }
-        border-r
+        border-r shadow-lg
         ${isSidebarOpen ? 'w-72' : 'w-20'}
-        ${!isSidebarOpen && 'lg:w-20'}
-        ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }
-        z-50
+        z-50 flex flex-col
       `}
       >
-        {/* Sidebar Header */}
+        {/* Sidebar Header - Fixed */}
         <div
-          className={`
-          h-16 flex items-center justify-between px-4
-          ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}
-          border-b
-        `}
+          className={`h-16 flex-shrink-0 flex items-center justify-between px-4 ${
+            isDarkMode ? 'border-gray-700' : 'border-gray-200'
+          } border-b`}
         >
           <div className='flex items-center space-x-3'>
             <div
               className={`flex-shrink-0 ${
                 isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
-              } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg`}
+              } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center`}
             >
               <Shield
                 className={`${
@@ -601,52 +595,37 @@ const ModernDashboard = () => {
                 } text-white`}
               />
             </div>
-
             {isSidebarOpen && (
               <div className='flex flex-col'>
                 <h1
-                  className={`font-bold text-lg tracking-tight ${
+                  className={`font-bold text-lg ${
                     isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}
                 >
                   Dashboard Pro
                 </h1>
-                <div className='flex items-center space-x-1'>
-                  <span
-                    className={`text-xs ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    v2.0.1
-                  </span>
-                  <span className='px-1.5 py-0.5 text-[10px]  bg-purple-100 text-primary rounded-full'>
-                    Beta
-                  </span>
-                </div>
+                <span className='text-xs text-gray-500'>v2.0.1</span>
               </div>
             )}
           </div>
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             className={`
-              p-1 rounded-lg transition-all duration-200 hover:scale-110
-              ${
-                isDarkMode
-                  ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-              }
+              p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
+              transition-all duration-200
+              ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}
             `}
           >
             {isSidebarOpen ? (
-              <ChevronLeft size={22} />
+              <ChevronLeft size={20} />
             ) : (
-              <ChevronRight size={21} />
+              <ChevronRight size={20} />
             )}
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className='p-4'>
+        {/* Navigation - Scrollable */}
+        <nav className='flex-1 overflow-y-auto overflow-x-hidden p-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent'>
           {navigationSections.map((section, idx) => (
             <div key={idx} className='mb-8'>
               {isSidebarOpen && (
@@ -675,11 +654,11 @@ const ModernDashboard = () => {
           ))}
         </nav>
 
-        {/* User Profile */}
+        {/* User Profile - Fixed */}
         <div
           ref={profileRef}
           className={`
-          absolute bottom-0 left-0 right-0 p-4
+          flex-shrink-0 p-4
           ${
             isDarkMode
               ? 'border-gray-700 bg-gray-800/50'
@@ -818,21 +797,20 @@ const ModernDashboard = () => {
       {/* Main Content */}
       <div
         className={`
-        transition-all duration-300
-        ${isSidebarOpen ? 'lg:ml-72' : 'lg:ml-20'}
-        ml-0
+        min-h-screen bg-gray-50 dark:bg-gray-900
+        transition-all duration-300 ease-in-out
+        ${isSidebarOpen ? 'pl-72' : 'pl-20'}
       `}
       >
-        {/* Enhanced Header */}
+        {/* Main Content Header */}
         <header
           className={`
-          h-16 flex items-center justify-between px-4 lg:px-12 sticky top-0 z-40
-          ${
-            isDarkMode
-              ? 'bg-gray-800/95 border-gray-700'
-              : 'bg-white/95 border-gray-200'
-          }
-          border-b backdrop-blur-md
+          fixed top-0 right-0 h-16
+          ${isSidebarOpen ? 'left-72' : 'left-20'}
+          transition-all duration-300 ease-in-out
+          flex items-center justify-between px-6
+          bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700
+          z-40
         `}
         >
           {/* Mobile Menu Button */}
@@ -1187,7 +1165,7 @@ const ModernDashboard = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className='p-12 sm:space-y-6 space-y-4'>
+        <main className='pt-20 px-6'>
           {/* Page Header */}
           <div className='flex flex-col sm:flex-row justify-between  mb-6 space-y-4'>
             <div>
