@@ -15,7 +15,7 @@
     "migration:create": "npm run typeorm -- migration:create",
     "migration:show": "npm run typeorm -- migration:show -d src/lib/database/dataSource.ts",
     "db:drop": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/drop-tables.ts",
-    "db:drop-all": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/dropAllTables.ts"
+    "seed": "node -r ts-node/register -r tsconfig-paths/register src/lib/database/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -65,7 +65,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
-    "@types/node": "^20",
+    "@types/node": "^20.17.46",
     "@types/nodemailer": "^6.4.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -81,6 +81,6 @@
     "tsconfig-paths": "^4.2.0",
     "typeorm": "^0.3.23",
     "typeorm-ts-node-commonjs": "^0.3.20",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   }
 }

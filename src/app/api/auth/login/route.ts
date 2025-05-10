@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, role_name } from '@prisma/client';
+import { getRepository } from 'typeorm';
+import { User, UserStatus } from '@/lib/database/entities/User';
+import { UserRole } from '@/lib/database/entities/UserRole';
+import { Role } from '@/lib/database/entities/Role';
+import { OTP } from '@/lib/database/entities/OTP';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
 const bcrypt = require('bcryptjs');
@@ -13,8 +17,6 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
-
-const prisma = new PrismaClient();
 
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
@@ -40,24 +42,22 @@ const loginSchema = z.object({
 });
 
 // Map login userType to database role_name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin'
-): role_name {
+function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
     case 'teacher':
       return 'teacher';
     case 'admin':
-      return 'super_admin'; // Default to super_admin for admin login
+      return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
 }
 
 // Check if a role is an admin role
-function isAdminRole(role: role_name): boolean {
-  const adminRoles: role_name[] = [
+function isAdminRole(role: string): boolean {
+  const adminRoles: string[] = [
     'super_admin',
     'sub_admin',
     'department_admin',
@@ -143,6 +143,35 @@ async function sendOTPEmail(email: string, otp: string): Promise<void> {
   });
 }
 
+async function saveOTP(
+  email: string,
+  userType: string,
+  otp: string
+): Promise<void> {
+  const otpRepo = getRepository(OTP);
+
+  // Delete any existing unused OTPs for this user
+  await otpRepo.delete({
+    email,
+    userType,
+    isUsed: false,
+  });
+
+  // Save new OTP
+  const hashedOTP = await bcrypt.hash(otp, 10);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+
+  const newOTP = otpRepo.create({
+    email,
+    userType,
+    code: hashedOTP,
+    expiresAt,
+    isUsed: false,
+  });
+
+  await otpRepo.save(newOTP);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -187,20 +216,10 @@ export async function POST(request: NextRequest) {
     recentRequests.push(now);
     rateLimit.set(email, recentRequests);
 
-    const user = await prisma.user.findFirst({
-      where: {
-        email,
-        status: 'active',
-      },
-      include: {
-        userrole: {
-          include: {
-            role: true,
-          },
-        },
-        student: true,
-        faculty: true,
-      },
+    const userRepo = getRepository(User);
+    const user = await userRepo.findOne({
+      where: { email, status: UserStatus.ACTIVE },
+      relations: ['userrole', 'userrole.role', 'student', 'faculty'],
     });
 
     if (!user) {
@@ -214,9 +233,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
     if (!isValidPassword) {
       return NextResponse.json(
         {
@@ -228,30 +245,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user roles
-    const userRoles = user.userrole?.map((ur) => ur.role.name) || [];
-
-    if (userRoles.length === 0) {
+    const userRoles = user.userrole?.map((ur: UserRole) => ur.role.name) || [];
+    const mappedRole = mapUserTypeToRole(userType);
+    if (!userRoles.includes(mappedRole)) {
       return NextResponse.json(
         {
           success: false,
-          message: 'User has no roles assigned',
-          error: 'Please contact administrator to assign roles',
+          message: `User does not have ${userType} role`,
         },
         { status: 403 }
       );
     }
 
-    // Handle admin users
     if (userType === 'admin') {
-      // Check if user has any admin role
       const hasAdminRole = userRoles.some(isAdminRole);
-
       if (!hasAdminRole) {
         return NextResponse.json(
           {
             success: false,
             message: 'User does not have admin privileges',
+            error: 'Please contact administrator to assign admin role',
           },
           { status: 403 }
         );
@@ -259,24 +272,7 @@ export async function POST(request: NextRequest) {
 
       // For admin users, always send OTP
       const otp = generateOTP();
-      const hashedOTP = await bcrypt.hash(otp, 10);
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
-
-      // Delete any existing OTPs for this user
-      await prisma.$executeRaw`
-        DELETE FROM OTP 
-        WHERE email = ${email} 
-        AND userType = ${userType} 
-        AND isUsed = false
-      `;
-
-      // Save OTP to database
-      await prisma.$executeRaw`
-        INSERT INTO OTP (email, userType, code, expiresAt, isUsed, updatedAt)
-        VALUES (${email}, ${userType}, ${hashedOTP}, ${expiresAt}, false, NOW())
-      `;
-
-      // Send OTP via email
+      await saveOTP(email, userType, otp);
       await sendOTPEmail(email, otp);
 
       return NextResponse.json({
@@ -291,15 +287,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Handle students and teachers
     if (userType === 'student' || userType === 'teacher') {
-      // Check if user has the specific role
       const requestedRole = mapUserTypeToRole(userType);
       if (!userRoles.includes(requestedRole)) {
         return NextResponse.json(
           {
             success: false,
             message: `User does not have ${userType} role`,
+            error: 'Please contact administrator to assign correct role',
           },
           { status: 403 }
         );
@@ -308,24 +303,7 @@ export async function POST(request: NextRequest) {
       if (!user.email_verified) {
         // First login - send OTP for email verification
         const otp = generateOTP();
-        const hashedOTP = await bcrypt.hash(otp, 10);
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
-
-        // Delete any existing OTPs for this user
-        await prisma.$executeRaw`
-          DELETE FROM OTP 
-          WHERE email = ${email} 
-          AND userType = ${userType} 
-          AND isUsed = false
-        `;
-
-        // Save OTP to database
-        await prisma.$executeRaw`
-          INSERT INTO OTP (email, userType, code, expiresAt, isUsed, updatedAt)
-          VALUES (${email}, ${userType}, ${hashedOTP}, ${expiresAt}, false, NOW())
-        `;
-
-        // Send OTP via email
+        await saveOTP(email, userType, otp);
         await sendOTPEmail(email, otp);
 
         return NextResponse.json({
@@ -347,19 +325,13 @@ export async function POST(request: NextRequest) {
           role: userType,
           userData,
         };
-
         const token = await createToken(tokenPayload);
 
         // Update last login
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { last_login: new Date() },
-        });
+        user.last_login = new Date();
+        await userRepo.save(user);
 
-        // Determine redirect path based on role
         const redirectTo = getDashboardPath(userType);
-
-        // Create response with token in cookie
         const response = NextResponse.json({
           success: true,
           message: 'Login successful',
@@ -370,15 +342,11 @@ export async function POST(request: NextRequest) {
             userType,
           },
         });
-
-        // Set cookie with constant name and options
         response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
-
         return response;
       }
     }
 
-    // Handle other non-admin roles
     const userData = createUserData(user, userType);
     const tokenPayload: TokenPayload = {
       userId: user.id,
@@ -386,19 +354,10 @@ export async function POST(request: NextRequest) {
       role: userType,
       userData,
     };
-
     const token = await createToken(tokenPayload);
-
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { last_login: new Date() },
-    });
-
-    // Determine redirect path based on role
+    user.last_login = new Date();
+    await userRepo.save(user);
     const redirectTo = getDashboardPath(userType);
-
-    // Create response with token in cookie
     const response = NextResponse.json({
       success: true,
       message: 'Login successful',
@@ -409,25 +368,18 @@ export async function POST(request: NextRequest) {
         userType,
       },
     });
-
-    // Set cookie with constant name and options
     response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
-
     return response;
   } catch (error) {
-    console.error(
-      'Login error:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    console.error('Login error:', error);
     return NextResponse.json(
       {
         success: false,
         message: 'An error occurred during login',
+        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
