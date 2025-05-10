@@ -10,7 +10,7 @@ const dashboardRoutes = {
   super_admin: '/admin/dashboard',
   sub_admin: '/admin/dashboard',
   department_admin: '/department/dashboard',
-  child_admin: '/sub-admin/dashboard',
+  child_admin: '/department/dashboard',
 };
 
 // Public web routes that don't require authentication
