@@ -32,6 +32,8 @@ const publicApiRoutes = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/verify-otp',
+  '/api-docs',
+  '/api/docs',
 ];
 
 export async function middleware(request: NextRequest) {

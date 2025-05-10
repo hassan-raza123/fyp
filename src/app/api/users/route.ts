@@ -3,7 +3,43 @@ import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
 import { requireAuth } from '@/lib/api-utils';
 
-// GET /api/users - Get all users
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve a list of all users. Requires admin privileges.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   email:
+ *                     type: string
+ *                   first_name:
+ *                     type: string
+ *                   last_name:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   role:
+ *                     type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and get user data
@@ -109,7 +145,70 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/users - Create a new user
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *     summary: Create a new user
+ *     description: Create a new user with the provided information. Requires admin privileges.
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - first_name
+ *               - last_name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               phone_number:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     first_name:
+ *                       type: string
+ *                     last_name:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and get user data
