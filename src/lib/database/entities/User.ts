@@ -20,6 +20,7 @@ import { UserRole } from './UserRole';
 export enum UserStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
 }
 
 @Entity('users')
@@ -36,10 +37,10 @@ export class User {
   @Column()
   password_hash: string;
 
-  @Column()
+  @Column({ nullable: true })
   first_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   last_name: string;
 
   @Column({ nullable: true })
@@ -73,24 +74,24 @@ export class User {
   @OneToMany(() => AuditLog, (auditLog) => auditLog.user)
   auditlog: AuditLog[];
 
-  @OneToMany(() => Department, (department) => department.admin)
-  departmentAdmin: Department[];
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  userrole: UserRole[];
+
+  @OneToOne(() => Student, (student) => student.user)
+  student: Student;
 
   @OneToOne(() => Faculty, (faculty) => faculty.user)
   faculty: Faculty;
 
+  @OneToMany(() => Department, (department) => department.admin)
+  departmentAdmin: Promise<Department[]>;
+
   @OneToMany(() => Notification, (notification) => notification.user)
-  notification: Notification[];
+  notifications: Notification[];
 
   @OneToMany(() => PasswordReset, (passwordReset) => passwordReset.user)
   passwordreset: PasswordReset[];
 
   @OneToMany(() => PasswordResetToken, (token) => token.users)
   passwordresettoken: PasswordResetToken[];
-
-  @OneToOne(() => Student, (student) => student.user)
-  student: Student;
-
-  @OneToMany(() => UserRole, (userRole) => userRole.user)
-  userrole: UserRole[];
 }

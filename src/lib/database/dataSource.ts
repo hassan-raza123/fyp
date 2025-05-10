@@ -18,6 +18,7 @@ import { Permission } from './entities/Permission';
 import { Session } from './entities/Session';
 import { PasswordReset } from './entities/PasswordReset';
 import { PasswordResetToken } from './entities/PasswordResetToken';
+import { OTP } from './entities/OTP';
 
 // Default database configuration
 const defaultConfig = {
@@ -44,8 +45,9 @@ console.log('Database Configuration:', {
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
+  driver: require('mysql2'),
   ...dbConfig,
-  synchronize: false,
+  synchronize: true,
   logging: true,
   entities: [
     User,
@@ -66,9 +68,7 @@ export const AppDataSource = new DataSource({
     Session,
     PasswordReset,
     PasswordResetToken,
+    OTP,
   ],
-  migrations: ['src/lib/database/migrations/*.ts'],
-  migrationsTableName: 'migrations',
-  migrationsRun: true,
   subscribers: ['src/subscribers/*.ts'],
 });

@@ -26,9 +26,12 @@ export class Notification {
   id: number;
 
   @Column()
-  title: string;
+  userId: number;
 
   @Column()
+  title: string;
+
+  @Column('text')
   message: string;
 
   @Column({
@@ -38,15 +41,8 @@ export class Notification {
   })
   type: NotificationType;
 
-  @Column({
-    type: 'enum',
-    enum: NotificationStatus,
-    default: NotificationStatus.UNREAD,
-  })
-  status: NotificationStatus;
-
-  @Column({ nullable: true })
-  link: string;
+  @Column({ default: false })
+  isRead: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -54,6 +50,6 @@ export class Notification {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.notification)
+  @ManyToOne(() => User, (user) => user.notifications)
   user: User;
 }

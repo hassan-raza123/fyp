@@ -8,6 +8,7 @@ import {
   LoginResponse,
   ValidationErrors,
   AdminRole,
+  AllRoles,
 } from '@/app/types/login';
 import Link from 'next/link';
 
@@ -16,6 +17,25 @@ interface FormData {
   password: string;
   userType: BaseUserType | AdminRole;
   rememberMe: boolean;
+}
+
+function getDashboardPath(role: AllRoles): string {
+  switch (role) {
+    case 'super_admin':
+      return '/admin/dashboard';
+    case 'sub_admin':
+      return '/admin/dashboard';
+    case 'department_admin':
+      return '/department/dashboard';
+    case 'child_admin':
+      return '/sub-admin/dashboard';
+    case 'teacher':
+      return '/faculty/dashboard';
+    case 'student':
+      return '/student/dashboard';
+    default:
+      return '/dashboard';
+  }
 }
 
 export default function LoginForm() {
@@ -123,23 +143,36 @@ export default function LoginForm() {
         return;
       }
 
-      // If user is verified and should be redirected directly
-      if (data.data.shouldRedirect) {
+      // If OTP is required
+      if (data.requiresOTP) {
         // Store user preferences in localStorage if remember me is checked
         if (formData.rememberMe) {
           localStorage.setItem('userEmail', formData.email);
           localStorage.setItem('userType', formData.userType);
         }
 
-        // Redirect to dashboard
-        window.location.href = data.data.redirectTo;
+        // Redirect to OTP verification
+        window.location.href = `/verify-otp?email=${encodeURIComponent(
+          formData.email
+        )}&userType=${encodeURIComponent(formData.userType)}`;
         return;
       }
 
-      // For OTP verification required
-      window.location.href = `/verify-otp?email=${encodeURIComponent(
-        formData.email
-      )}&userType=${encodeURIComponent(formData.userType)}`;
+      // If login is successful and no OTP is required
+      if (data.success) {
+        // Store user preferences in localStorage if remember me is checked
+        if (formData.rememberMe) {
+          localStorage.setItem('userEmail', formData.email);
+          localStorage.setItem('userType', formData.userType);
+        }
+
+        // Redirect to dashboard based on user type
+        const dashboardPath = getDashboardPath(data.user.role);
+        window.location.href = dashboardPath;
+        return;
+      }
+
+      setServerError(data.message || 'Login failed');
     } catch (error) {
       setServerError('An error occurred during login');
       console.error('Login error:', error);

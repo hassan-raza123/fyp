@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRepository } from 'typeorm';
 import { User, UserStatus } from '@/lib/database/entities/User';
 import { UserRole } from '@/lib/database/entities/UserRole';
 import { Role } from '@/lib/database/entities/Role';
@@ -17,6 +16,7 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
+import { getRepository } from '@/lib/database/dbConnect';
 
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
@@ -42,7 +42,9 @@ const loginSchema = z.object({
 });
 
 // Map login userType to database role_name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(
+  userType: 'student' | 'teacher' | 'admin'
+): AllRoles {
   switch (userType) {
     case 'student':
       return 'student';
@@ -148,7 +150,7 @@ async function saveOTP(
   userType: string,
   otp: string
 ): Promise<void> {
-  const otpRepo = getRepository(OTP);
+  const otpRepo = await getRepository(OTP);
 
   // Delete any existing unused OTPs for this user
   await otpRepo.delete({
@@ -199,7 +201,7 @@ export async function POST(request: NextRequest) {
     const now = Date.now();
     const userRequests = rateLimit.get(email) || [];
     const recentRequests = userRequests.filter(
-      (time: number) => now - time < RATE_LIMIT_WINDOW
+      (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
     );
 
     if (recentRequests.length >= MAX_OTP_REQUESTS) {
@@ -212,172 +214,125 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add current request to rate limit
-    recentRequests.push(now);
-    rateLimit.set(email, recentRequests);
+    // Get repositories
+    const userRepo = await getRepository(User);
+    const userRoleRepo = await getRepository(UserRole);
+    const roleRepo = await getRepository(Role);
 
-    const userRepo = getRepository(User);
+    // Find user by email
     const user = await userRepo.findOne({
-      where: { email, status: UserStatus.ACTIVE },
-      relations: ['userrole', 'userrole.role', 'student', 'faculty'],
+      where: { email },
+      relations: ['student', 'faculty'],
     });
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid credentials',
-          error: 'Invalid email or password',
+          message: 'Invalid email or password',
         },
         { status: 401 }
       );
     }
 
+    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid credentials',
-          error: 'Invalid email or password',
+          message: 'Invalid email or password',
         },
         { status: 401 }
       );
     }
 
-    const userRoles = user.userrole?.map((ur: UserRole) => ur.role.name) || [];
-    const mappedRole = mapUserTypeToRole(userType);
-    if (!userRoles.includes(mappedRole)) {
+    // Get user roles
+    const userRoles = await userRoleRepo.find({
+      where: { user: { id: user.id } },
+      relations: ['role'],
+    });
+
+    // Map user type to role
+    const expectedRole = mapUserTypeToRole(userType);
+
+    // Check if user has the expected role
+    const hasExpectedRole = userRoles.some(
+      (userRole) => userRole.role.name === expectedRole
+    );
+
+    if (!hasExpectedRole) {
       return NextResponse.json(
         {
           success: false,
-          message: `User does not have ${userType} role`,
+          message: 'Invalid user type for this account',
         },
         { status: 403 }
       );
     }
 
-    if (userType === 'admin') {
-      const hasAdminRole = userRoles.some(isAdminRole);
-      if (!hasAdminRole) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'User does not have admin privileges',
-            error: 'Please contact administrator to assign admin role',
-          },
-          { status: 403 }
-        );
-      }
+    // Check if user is active
+    if (user.status !== UserStatus.ACTIVE) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your account is not active. Please contact support.',
+        },
+        { status: 403 }
+      );
+    }
 
-      // For admin users, always send OTP
+    // Generate and send OTP for admin users or unverified emails
+    const isAdmin = isAdminRole(expectedRole);
+    if (isAdmin || !user.email_verified) {
       const otp = generateOTP();
-      await saveOTP(email, userType, otp);
       await sendOTPEmail(email, otp);
+      await saveOTP(email, userType, otp);
+
+      // Update rate limit
+      recentRequests.push(now);
+      rateLimit.set(email, recentRequests);
 
       return NextResponse.json({
         success: true,
-        message: 'OTP sent successfully. Please check your email.',
-        data: {
-          redirectTo: '/verify-otp',
-          email: email,
-          userType: userType,
-          otpSent: true,
-        },
+        message: 'OTP sent to your email',
+        requiresOTP: true,
       });
     }
 
-    if (userType === 'student' || userType === 'teacher') {
-      const requestedRole = mapUserTypeToRole(userType);
-      if (!userRoles.includes(requestedRole)) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `User does not have ${userType} role`,
-            error: 'Please contact administrator to assign correct role',
-          },
-          { status: 403 }
-        );
-      }
+    // Create user data for token
+    const userData = createUserData(user, expectedRole);
 
-      if (!user.email_verified) {
-        // First login - send OTP for email verification
-        const otp = generateOTP();
-        await saveOTP(email, userType, otp);
-        await sendOTPEmail(email, otp);
-
-        return NextResponse.json({
-          success: true,
-          message: 'OTP sent for email verification. Please check your email.',
-          data: {
-            redirectTo: '/verify-otp',
-            email: email,
-            userType: userType,
-            otpSent: true,
-          },
-        });
-      } else {
-        // Verified student/teacher - direct login
-        const userData = createUserData(user, userType);
-        const tokenPayload: TokenPayload = {
-          userId: user.id,
-          email: user.email,
-          role: userType,
-          userData,
-        };
-        const token = await createToken(tokenPayload);
-
-        // Update last login
-        user.last_login = new Date();
-        await userRepo.save(user);
-
-        const redirectTo = getDashboardPath(userType);
-        const response = NextResponse.json({
-          success: true,
-          message: 'Login successful',
-          data: {
-            user: userData,
-            redirectTo: redirectTo,
-            token,
-            userType,
-          },
-        });
-        response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
-        return response;
-      }
-    }
-
-    const userData = createUserData(user, userType);
+    // Create token payload
     const tokenPayload: TokenPayload = {
       userId: user.id,
       email: user.email,
-      role: userType,
+      role: expectedRole,
       userData,
     };
+
+    // Create token
     const token = await createToken(tokenPayload);
-    user.last_login = new Date();
-    await userRepo.save(user);
-    const redirectTo = getDashboardPath(userType);
-    const response = NextResponse.json({
+
+    // Create response
+    const response: LoginResponse = {
       success: true,
       message: 'Login successful',
-      data: {
-        user: userData,
-        redirectTo: redirectTo,
-        token,
-        userType,
-      },
-    });
-    response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
-    return response;
+      user: userData,
+    };
+
+    // Set cookie and return response
+    const res = NextResponse.json(response);
+    res.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
+
+    return res;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
       {
         success: false,
         message: 'An error occurred during login',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
+      } as LoginResponse,
       { status: 500 }
     );
   }

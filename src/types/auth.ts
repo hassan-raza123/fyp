@@ -57,7 +57,7 @@ export interface UserWithRoles extends IUser {
 export interface LoginRequest {
   email: string;
   password: string;
-  userType: AllRoles;
+  userType: 'student' | 'teacher' | 'admin';
 }
 
 export interface UserData {
@@ -75,19 +75,15 @@ export interface UserData {
 export interface TokenPayload {
   userId: number;
   email: string;
-  role: string;
+  role: AllRoles;
   userData: UserData;
 }
 
 export interface LoginResponse {
   success: boolean;
   message: string;
-  data?: {
-    user: UserData;
-    redirectTo: string;
-    token: string;
-    userType: AllRoles;
-  };
+  user?: UserData;
+  requiresOTP?: boolean;
   errors?: Array<{
     field: string;
     message: string;

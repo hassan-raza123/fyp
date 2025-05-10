@@ -51,7 +51,7 @@ export class Department {
   @OneToMany(() => Course, (course) => course.department)
   courses: Course[];
 
-  @ManyToOne(() => User, (user) => user.departmentAdmin)
+  @ManyToOne(() => User)
   admin: User;
 
   @OneToMany(() => Faculty, (faculty) => faculty.department)

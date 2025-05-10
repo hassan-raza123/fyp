@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity('otp')
+@Index(['email', 'userType'])
 export class OTP {
   @PrimaryGeneratedColumn()
   id: number;
@@ -32,7 +33,4 @@ export class OTP {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Index()
-  email_userType: string;
 }
