@@ -13,26 +13,63 @@ const dashboardRoutes = {
   child_admin: '/department/dashboard',
 };
 
-// Public web routes that don't require authentication
-const publicWebRoutes = [
-  '/',
+// Auth routes that should redirect to dashboard if user is logged in
+const authRoutes = [
   '/login',
   '/forgot-password',
   '/reset-password',
-  '/features',
-  '/about',
-  '/contact',
   '/verify-otp',
 ];
+
+// Public web routes that don't require authentication
+const publicWebRoutes = ['/', '/features', '/about', '/contact'];
 
 // Public API routes that don't require authentication
 const publicApiRoutes = [
   '/api/auth/login',
-  '/api/auth/register',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/verify-otp',
+  '/api/auth/verify',
 ];
+
+// Function to get user's dashboard based on role
+const getUserDashboard = (userRoles: string[]): string => {
+  // Check roles in order of priority
+  if (userRoles.includes('super_admin')) return dashboardRoutes.super_admin;
+  if (userRoles.includes('sub_admin')) return dashboardRoutes.sub_admin;
+  if (userRoles.includes('department_admin'))
+    return dashboardRoutes.department_admin;
+  if (userRoles.includes('child_admin')) return dashboardRoutes.child_admin;
+  if (userRoles.includes('teacher')) return dashboardRoutes.teacher;
+  if (userRoles.includes('student')) return dashboardRoutes.student;
+
+  // Default fallback
+  return '/dashboard';
+};
+
+// Function to verify token and get user details
+async function verifyToken(token: string) {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return {
+      isValid: true,
+      userRoles: (payload.role as string).split(','),
+      userId: payload.userId as string,
+      email: payload.email as string,
+      userData: payload.userData,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      userRoles: [],
+      userId: '',
+      email: '',
+      userData: null,
+    };
+  }
+}
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -56,15 +93,23 @@ export async function middleware(request: NextRequest) {
       }
 
       // Verify the token
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      const { payload } = await jwtVerify(token, secret);
+      const { isValid, userRoles, userId, email, userData } = await verifyToken(
+        token
+      );
+
+      if (!isValid || !userRoles.length) {
+        return NextResponse.json(
+          { error: 'Invalid or expired authentication token' },
+          { status: 401 }
+        );
+      }
 
       // Add user info to request headers for API routes
       const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-user-id', payload.userId as string);
-      requestHeaders.set('x-user-email', payload.email as string);
-      requestHeaders.set('x-user-role', payload.role as string);
-      requestHeaders.set('x-user-data', JSON.stringify(payload.userData));
+      requestHeaders.set('x-user-id', userId as string);
+      requestHeaders.set('x-user-email', email as string);
+      requestHeaders.set('x-user-role', userRoles.join(','));
+      requestHeaders.set('x-user-data', JSON.stringify(userData));
 
       return NextResponse.next({
         request: {
@@ -88,22 +133,49 @@ export async function middleware(request: NextRequest) {
   // Get the token from cookies
   const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
 
+  // If user is trying to access auth routes
+  if (authRoutes.some((route) => path.startsWith(route))) {
+    if (token) {
+      try {
+        // Verify the token
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret);
+
+        // If token is valid, redirect to dashboard
+        const userRoles = (payload.role as string).split(',');
+        const dashboard = getUserDashboard(userRoles);
+
+        // Clear any existing cookies and redirect
+        const response = NextResponse.redirect(new URL(dashboard, request.url));
+        return response;
+      } catch (error) {
+        // If token is invalid, clear it
+        const response = NextResponse.next();
+        response.cookies.delete(AUTH_TOKEN_COOKIE);
+        return response;
+      }
+    }
+    // If no token, allow access to auth routes
+    return NextResponse.next();
+  }
+
+  // For all other routes, require authentication
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
     // Verify the token
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { isValid, userRoles } = await verifyToken(token);
 
-    const userRole = payload.role as string;
-    const userRoles = userRole.split(',');
-    const userDashboard = userRoles.reduce((dashboard, role) => {
-      const roleDashboard =
-        dashboardRoutes[role as keyof typeof dashboardRoutes];
-      return roleDashboard || dashboard;
-    }, '/dashboard');
+    if (!isValid || !userRoles.length) {
+      // Token is invalid, redirect to login
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete(AUTH_TOKEN_COOKIE);
+      return response;
+    }
+
+    const userDashboard = getUserDashboard(userRoles);
 
     // Check if trying to access dashboard routes
     if (
@@ -117,25 +189,25 @@ export async function middleware(request: NextRequest) {
     // Check admin routes access
     if (path.startsWith('/admin')) {
       if (
-        userRoles.includes('super_admin') ||
-        userRoles.includes('sub_admin')
+        !userRoles.includes('super_admin') &&
+        !userRoles.includes('sub_admin')
       ) {
-        // Special handling for Sub Admin restrictions
-        if (
-          userRoles.includes('sub_admin') &&
-          !userRoles.includes('super_admin')
-        ) {
-          if (
-            path.startsWith('/admin/system-settings') ||
-            path.startsWith('/admin/manage-roles')
-          ) {
-            return NextResponse.redirect(
-              new URL('/admin/dashboard', request.url)
-            );
-          }
-        }
-      } else {
         return NextResponse.redirect(new URL(userDashboard, request.url));
+      }
+
+      // Special handling for Sub Admin restrictions
+      if (
+        userRoles.includes('sub_admin') &&
+        !userRoles.includes('super_admin')
+      ) {
+        if (
+          path.startsWith('/admin/system-settings') ||
+          path.startsWith('/admin/manage-roles')
+        ) {
+          return NextResponse.redirect(
+            new URL('/admin/dashboard', request.url)
+          );
+        }
       }
     }
 
@@ -164,7 +236,10 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch (error) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    // If token is invalid, redirect to login
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete(AUTH_TOKEN_COOKIE);
+    return response;
   }
 }
 
