@@ -190,8 +190,8 @@ export default function LoginForm() {
     <div className='max-w-md w-full mx-auto'>
       {/* Header */}
       <div className='text-center mb-10'>
-        <div className='bg-gradient-to-br from-primary to-primary-light w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <School className='w-12 h-12 text-accent group-hover:scale-110 transition-transform' />
+        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+          <School className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>Welcome Back!</h2>
         <p className='text-text-light mt-2'>
@@ -318,7 +318,7 @@ export default function LoginForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='relative w-full bg-gradient-to-br from-primary to-primary-light text-accent py-4 rounded-xl font-semibold hover:from-primary-light hover:to-primary transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-primary-light/20 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
         >
           <span
             className={`inline-flex items-center justify-center ${
@@ -331,13 +331,13 @@ export default function LoginForm() {
           </span>
           {isLoading && (
             <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin' />
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
             </div>
           )}
         </button>
 
         {/* Support Section */}
-        <div className='bg-gray-50 rounded-xl p-4 mt-6'>
+        <div className='bg-accent-light rounded-xl p-4 mt-6'>
           <p className='text-center text-text-light text-sm'>
             Need assistance? Contact{' '}
             <a

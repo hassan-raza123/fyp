@@ -56,7 +56,8 @@ export default function ResetPasswordForm() {
     if (!/[@$!%*?&]/.test(password)) {
       setErrors((prev) => ({
         ...prev,
-        password: 'Password must contain at least one special character (@$!%*?&)',
+        password:
+          'Password must contain at least one special character (@$!%*?&)',
       }));
       return false;
     }
@@ -113,7 +114,9 @@ export default function ResetPasswordForm() {
       const data = await response.json();
 
       if (!data.success) {
-        setServerError(data.message || 'Failed to reset password. Please try again.');
+        setServerError(
+          data.message || 'Failed to reset password. Please try again.'
+        );
         return;
       }
 
@@ -123,7 +126,9 @@ export default function ResetPasswordForm() {
         router.push('/login');
       }, 3000);
     } catch {
-      setServerError('Network error. Please check your connection and try again.');
+      setServerError(
+        'Network error. Please check your connection and try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -164,7 +169,8 @@ export default function ResetPasswordForm() {
             Password Reset Successful
           </h3>
           <p className='text-green-700 text-sm mb-4'>
-            Your password has been reset successfully. You will be redirected to the login page.
+            Your password has been reset successfully. You will be redirected to
+            the login page.
           </p>
         </div>
       </div>
@@ -172,123 +178,121 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <div className='max-w-md w-full space-y-8'>
-      {/* Header */}
-      <div className='text-center'>
+    <div className='max-w-md w-full mx-auto p-6'>
+      <div className='text-center mb-8'>
+        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+          <Lock className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
+        </div>
         <h2 className='text-3xl font-bold text-primary'>Reset Password</h2>
-        <p className='text-text-light mt-2'>
-          Enter your new password below
-        </p>
+        <p className='text-text-light mt-2'>Enter your new password below</p>
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        {/* Password Field */}
-        <div className='space-y-2'>
-          <label
-            htmlFor='password'
-            className='block text-sm font-semibold text-text'
-          >
-            New Password
-          </label>
-          <div className='relative group'>
-            <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-            <input
-              id='password'
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => validatePassword(password)}
-              className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                errors.password ? 'border-red-500' : 'border-gray-200'
-              } bg-gray-50 text-text placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-              placeholder='Enter your new password'
-            />
-            <button
-              type='button'
-              onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+      {!isSuccess ? (
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          <div className='space-y-2'>
+            <label
+              htmlFor='password'
+              className='block text-sm font-semibold text-primary'
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+              New Password
+            </label>
+            <div className='relative group'>
+              <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
+              <input
+                id='password'
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => validatePassword(password)}
+                className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
+                  errors.password ? 'border-red-500' : 'border-gray-200'
+                } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+                placeholder='Enter your new password'
+              />
+              <button
+                type='button'
+                onClick={() => setShowPassword(!showPassword)}
+                className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className='text-red-500 text-sm mt-1'>{errors.password}</p>
+            )}
           </div>
-          {errors.password && (
-            <p className='text-red-500 text-sm mt-1'>{errors.password}</p>
-          )}
-        </div>
 
-        {/* Confirm Password Field */}
-        <div className='space-y-2'>
-          <label
-            htmlFor='confirmPassword'
-            className='block text-sm font-semibold text-text'
-          >
-            Confirm New Password
-          </label>
-          <div className='relative group'>
-            <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-            <input
-              id='confirmPassword'
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onBlur={() => validateConfirmPassword(confirmPassword)}
-              className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-              } bg-gray-50 text-text placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-              placeholder='Confirm your new password'
-            />
-            <button
-              type='button'
-              onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+          <div className='space-y-2'>
+            <label
+              htmlFor='confirmPassword'
+              className='block text-sm font-semibold text-primary'
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+              Confirm New Password
+            </label>
+            <div className='relative group'>
+              <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
+              <input
+                id='confirmPassword'
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onBlur={() => validateConfirmPassword(confirmPassword)}
+                className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+                } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+                placeholder='Confirm your new password'
+              />
+              <button
+                type='button'
+                onClick={() => setShowPassword(!showPassword)}
+                className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className='text-red-500 text-sm mt-1'>
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
-          {errors.confirmPassword && (
-            <p className='text-red-500 text-sm mt-1'>{errors.confirmPassword}</p>
-          )}
-        </div>
 
-        {/* Server Error Message */}
-        {serverError && (
-          <div className='bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg'>
-            {serverError}
-          </div>
-        )}
-
-        {/* Submit Button */}
-        <button
-          type='submit'
-          disabled={isLoading}
-          className='relative w-full bg-gradient-to-r from-primary to-primary-light text-accent py-4 rounded-xl font-semibold hover:from-primary-light hover:to-primary transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-primary-light/20 disabled:opacity-70 disabled:cursor-not-allowed'
-        >
-          <span
-            className={`inline-flex items-center justify-center ${
-              isLoading ? 'invisible' : ''
-            }`}
-          >
-            Reset Password
-          </span>
-          {isLoading && (
-            <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin' />
+          {serverError && (
+            <div className='text-red-500 text-sm text-center'>
+              {serverError}
             </div>
           )}
-        </button>
-      </form>
 
-      {/* Back to Login Link */}
-      <div className='pt-4 text-center'>
-        <Link
-          href='/login'
-          className='text-primary hover:text-primary-light font-medium transition-colors'
-        >
-          Back to Login
-        </Link>
-      </div>
+          <button
+            type='submit'
+            disabled={isLoading}
+            className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+          >
+            <span
+              className={`inline-flex items-center justify-center ${
+                isLoading ? 'invisible' : ''
+              }`}
+            >
+              Reset Password
+            </span>
+            {isLoading && (
+              <div className='absolute inset-0 flex items-center justify-center'>
+                <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
+              </div>
+            )}
+          </button>
+        </form>
+      ) : (
+        <div className='text-center space-y-6'>
+          <div className='bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl'>
+            <CheckCircle2 className='w-6 h-6 mx-auto mb-2' />
+            <p>Your password has been reset successfully.</p>
+            <p className='text-sm mt-2'>Redirecting to login...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}

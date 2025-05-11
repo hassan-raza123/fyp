@@ -153,8 +153,8 @@ export default function OTPVerificationForm() {
   return (
     <div className='max-w-md w-full mx-auto p-6'>
       <div className='text-center mb-8'>
-        <div className='bg-gradient-to-br from-primary to-primary-light w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6'>
-          <Mail className='w-12 h-12 text-accent' />
+        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+          <Mail className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>Verify Your Email</h2>
         <p className='text-text-light mt-2'>
@@ -185,7 +185,7 @@ export default function OTPVerificationForm() {
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className='w-12 h-12 text-center text-xl font-semibold rounded-xl border-2 border-gray-200 bg-white text-primary focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300'
+                className='w-12 h-12 text-center text-xl font-semibold rounded-xl border-2 border-gray-200 bg-white text-primary focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50'
               />
             ))}
           </div>
@@ -202,7 +202,7 @@ export default function OTPVerificationForm() {
             disabled={!canResend || isResending}
             className={`text-sm ${
               canResend
-                ? 'text-primary hover:text-primary-dark'
+                ? 'text-primary hover:text-primary-light'
                 : 'text-gray-400'
             }`}
           >
@@ -214,7 +214,7 @@ export default function OTPVerificationForm() {
           </button>
           <Link
             href='/login'
-            className='text-sm text-primary hover:text-primary-dark'
+            className='text-sm text-primary hover:text-primary-light'
           >
             Back to Login
           </Link>
@@ -223,9 +223,20 @@ export default function OTPVerificationForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full py-4 px-6 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
         >
-          {isLoading ? 'Verifying...' : 'Verify'}
+          <span
+            className={`inline-flex items-center justify-center ${
+              isLoading ? 'invisible' : ''
+            }`}
+          >
+            Verify
+          </span>
+          {isLoading && (
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            </div>
+          )}
         </button>
       </form>
     </div>
