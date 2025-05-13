@@ -34,18 +34,11 @@ const publicApiRoutes = [
 ];
 
 // Function to get user's dashboard based on role
-const getUserDashboard = (userRoles: string[]): string => {
-  // Check roles in order of priority
-  if (userRoles.includes('super_admin')) return dashboardRoutes.super_admin;
-  if (userRoles.includes('sub_admin')) return dashboardRoutes.sub_admin;
-  if (userRoles.includes('department_admin'))
-    return dashboardRoutes.department_admin;
-  if (userRoles.includes('child_admin')) return dashboardRoutes.child_admin;
-  if (userRoles.includes('teacher')) return dashboardRoutes.teacher;
-  if (userRoles.includes('student')) return dashboardRoutes.student;
-
-  // Default fallback
-  return '/dashboard';
+const getUserDashboard = (userRole: string): string => {
+  // Get dashboard based on role
+  return (
+    dashboardRoutes[userRole as keyof typeof dashboardRoutes] || '/dashboard'
+  );
 };
 
 // Function to verify token and get user details
@@ -142,8 +135,8 @@ export async function middleware(request: NextRequest) {
         const { payload } = await jwtVerify(token, secret);
 
         // If token is valid, redirect to dashboard
-        const userRoles = (payload.role as string).split(',');
-        const dashboard = getUserDashboard(userRoles);
+        const userRole = payload.role as string;
+        const dashboard = getUserDashboard(userRole);
 
         // Clear any existing cookies and redirect
         const response = NextResponse.redirect(new URL(dashboard, request.url));
@@ -166,74 +159,44 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Verify the token
-    const { isValid, userRoles } = await verifyToken(token);
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
 
-    if (!isValid || !userRoles.length) {
-      // Token is invalid, redirect to login
-      const response = NextResponse.redirect(new URL('/login', request.url));
-      response.cookies.delete(AUTH_TOKEN_COOKIE);
-      return response;
-    }
+    // Get user roles from token
+    const userRole = payload.role as string;
 
-    const userDashboard = getUserDashboard(userRoles);
-
-    // Check if trying to access dashboard routes
+    // If accessing another dashboard/route, make sure user has permission
     if (
-      Object.values(dashboardRoutes).some((route) => path.startsWith(route))
+      path.startsWith('/admin') &&
+      !['super_admin', 'sub_admin'].includes(userRole)
     ) {
-      if (!path.startsWith(userDashboard)) {
-        return NextResponse.redirect(new URL(userDashboard, request.url));
-      }
+      return NextResponse.redirect(
+        new URL(getUserDashboard(userRole), request.url)
+      );
     }
 
-    // Check admin routes access
-    if (path.startsWith('/admin')) {
-      if (
-        !userRoles.includes('super_admin') &&
-        !userRoles.includes('sub_admin')
-      ) {
-        return NextResponse.redirect(new URL(userDashboard, request.url));
-      }
-
-      // Special handling for Sub Admin restrictions
-      if (
-        userRoles.includes('sub_admin') &&
-        !userRoles.includes('super_admin')
-      ) {
-        if (
-          path.startsWith('/admin/system-settings') ||
-          path.startsWith('/admin/manage-roles')
-        ) {
-          return NextResponse.redirect(
-            new URL('/admin/dashboard', request.url)
-          );
-        }
-      }
+    if (path.startsWith('/faculty') && userRole !== 'teacher') {
+      return NextResponse.redirect(
+        new URL(getUserDashboard(userRole), request.url)
+      );
     }
 
-    // Check department admin routes
-    if (path.startsWith('/department')) {
-      if (
-        !userRoles.includes('department_admin') &&
-        !userRoles.includes('super_admin') &&
-        !userRoles.includes('sub_admin')
-      ) {
-        return NextResponse.redirect(new URL(userDashboard, request.url));
-      }
+    if (path.startsWith('/student') && userRole !== 'student') {
+      return NextResponse.redirect(
+        new URL(getUserDashboard(userRole), request.url)
+      );
     }
 
-    // Check child admin routes
-    if (path.startsWith('/sub-admin')) {
-      if (
-        !userRoles.includes('child_admin') &&
-        !userRoles.includes('department_admin') &&
-        !userRoles.includes('super_admin') &&
-        !userRoles.includes('sub_admin')
-      ) {
-        return NextResponse.redirect(new URL(userDashboard, request.url));
-      }
+    if (
+      path.startsWith('/department') &&
+      !['department_admin', 'child_admin'].includes(userRole)
+    ) {
+      return NextResponse.redirect(
+        new URL(getUserDashboard(userRole), request.url)
+      );
     }
 
+    // Allow access
     return NextResponse.next();
   } catch (error) {
     // If token is invalid, redirect to login

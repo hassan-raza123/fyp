@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, role_name } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { createToken } from '@/lib/jwt';
 import { z } from 'zod';
 import {
@@ -32,10 +32,8 @@ const verifyOTPSchema = z.object({
     .regex(/^\d+$/, 'OTP must contain only numbers'),
 });
 
-// Map login userType to database role_name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin'
-): role_name {
+// Map login userType to database role name
+function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
@@ -49,8 +47,8 @@ function mapUserTypeToRole(
 }
 
 // Check if a role is an admin role
-function isAdminRole(role: role_name): boolean {
-  const adminRoles: role_name[] = [
+function isAdminRole(role: string): boolean {
+  const adminRoles: string[] = [
     'super_admin',
     'sub_admin',
     'department_admin',
@@ -224,7 +222,9 @@ export async function POST(
     }
 
     // Get user roles from database
-    const userRoles = user.userrole.map((ur) => ur.role.name as role_name);
+    const userRoles = user.userrole?.role?.name
+      ? [user.userrole.role.name]
+      : [];
     let actualRole: AllRoles;
 
     // Handle admin users

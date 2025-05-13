@@ -91,7 +91,7 @@ model faculty {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   department   department     @relation(fields: [departmentId], references: [id])
-  user         user           @relation(fields: [userId], references: [id])
+  user         user           @relation(fields: [userId], references: [id], onDelete: Cascade)
   sections     section[]
   course       course[]       @relation("facultycourses")
 
@@ -216,7 +216,7 @@ model student {
   programId      Int
   department     department       @relation(fields: [departmentId], references: [id])
   program        program          @relation(fields: [programId], references: [id])
-  user           user             @relation(fields: [userId], references: [id])
+  user           user             @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentsection studentsection[]
 
   @@index([departmentId], map: "students_departmentId_fkey")
@@ -278,20 +278,21 @@ model user {
   passwordreset      passwordreset[]
   passwordresettoken passwordresettoken[]
   student            student?
-  userrole           userrole[]
+  userrole           userrole?
 
   @@map("users")
 }
 
 model userrole {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int      @unique
   roleId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   role      role     @relation(fields: [roleId], references: [id])
-  user      user     @relation(fields: [userId], references: [id])
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, roleId], map: "user_roles_userId_roleId_key")
   @@index([roleId], map: "user_roles_roleId_fkey")
   @@index([userId], map: "user_roles_userId_fkey")
   @@map("user_roles")

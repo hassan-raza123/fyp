@@ -1,5 +1,5 @@
 // prisma/seed.js
-const { PrismaClient, user_status } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
@@ -77,7 +77,7 @@ async function main() {
           password_hash: defaultPassword,
           first_name: 'Super',
           last_name: `Admin ${i + 1}`,
-          status: user_status.active,
+          status: 'active',
           email_verified: true,
           userrole: {
             create: {
@@ -96,7 +96,7 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Sub',
         last_name: 'Admin',
-        status: user_status.active,
+        status: 'active',
         email_verified: true,
         userrole: {
           create: {
@@ -114,7 +114,7 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Department',
         last_name: 'Admin',
-        status: user_status.active,
+        status: 'active',
         email_verified: true,
         userrole: {
           create: {
@@ -132,7 +132,7 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Child',
         last_name: 'Admin',
-        status: user_status.active,
+        status: 'active',
         email_verified: true,
         userrole: {
           create: {
@@ -150,7 +150,7 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'John',
         last_name: 'Doe',
-        status: user_status.active,
+        status: 'active',
         email_verified: true,
         userrole: {
           create: {
@@ -168,7 +168,7 @@ async function main() {
         password_hash: defaultPassword,
         first_name: 'Jane',
         last_name: 'Smith',
-        status: user_status.active,
+        status: 'active',
         email_verified: true,
         userrole: {
           create: {

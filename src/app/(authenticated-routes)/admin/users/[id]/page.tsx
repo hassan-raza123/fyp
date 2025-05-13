@@ -51,7 +51,7 @@ interface User {
     role: {
       name: string;
     };
-  }[];
+  } | null;
   faculty?: {
     employeeId: string;
     departmentId: number;
@@ -323,7 +323,7 @@ const UserProfile = ({ params }: { params: Promise<{ id: string }> }) => {
                 <div className='flex items-center gap-2'>
                   <Shield className='h-4 w-4 text-muted-foreground' />
                   <span className='capitalize'>
-                    {user.userrole?.[0]?.role?.name || 'No Role'}
+                    {user.userrole?.role?.name || 'No Role'}
                   </span>
                 </div>
                 <div className='flex items-center gap-2'>
@@ -396,9 +396,9 @@ const UserProfile = ({ params }: { params: Promise<{ id: string }> }) => {
             </CardHeader>
             <CardContent>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {user.userrole?.[0]?.role?.name && (
+                {user.userrole?.role?.name && (
                   <Badge variant='outline' className='text-sm'>
-                    {user.userrole[0].role.name}
+                    {user.userrole.role.name}
                   </Badge>
                 )}
               </div>

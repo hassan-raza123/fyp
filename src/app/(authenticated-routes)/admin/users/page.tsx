@@ -59,11 +59,7 @@ interface User {
   last_name: string | null;
   email: string;
   status: string;
-  userrole: {
-    role: {
-      name: string;
-    };
-  }[];
+  role: string;
   faculty?: {
     employeeId: string;
     departmentId: number;
@@ -205,27 +201,17 @@ export default function UserManagement() {
   ];
 
   return (
-    <div className='p-6 space-y-6'>
-      {/* Header */}
+    <div className='space-y-6'>
+      {/* Page header */}
       <div className='flex justify-between items-center'>
-        <div>
-          <h1 className='text-3xl font-bold'>User Management</h1>
-          <p className='text-muted-foreground'>
-            Manage and monitor all system users
-          </p>
-        </div>
+        <h1 className='text-2xl font-bold'>User Management</h1>
         <div className='flex gap-2'>
-          <Button variant='outline' size='sm'>
-            <Download className='w-4 h-4 mr-2' />
-            Export
-          </Button>
           <Button
             variant='outline'
-            size='sm'
             onClick={() => router.push('/admin/users/import')}
           >
-            <Upload className='w-4 h-4 mr-2' />
-            Import
+            <FileUp className='w-4 h-4 mr-2' />
+            Import Users
           </Button>
           <Button onClick={() => router.push('/admin/users/create')}>
             <UserPlus className='w-4 h-4 mr-2' />
@@ -234,35 +220,14 @@ export default function UserManagement() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                {stat.title}
-              </CardTitle>
-              <stat.icon className='h-4 w-4 text-muted-foreground' />
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>{stat.value}</div>
-              <p className='text-xs text-muted-foreground'>
-                {stat.change} from last month
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Search and Filters */}
+      {/* Search and filters */}
       <div className='flex gap-4'>
-        <div className='relative flex-1'>
-          <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+        <div className='flex-1'>
           <Input
             placeholder='Search users...'
-            className='pl-8'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className='w-full'
           />
         </div>
         <Button variant='outline'>
@@ -271,24 +236,23 @@ export default function UserManagement() {
         </Button>
       </div>
 
-      {/* Users Table */}
+      {/* Users table */}
       <Card>
         <CardHeader>
           <CardTitle>Users</CardTitle>
           <CardDescription>
-            Manage all system users and their permissions
+            Manage your users and their permissions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className='w-[100px]'>User</TableHead>
+                <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead className='w-[100px]'>Actions</TableHead>
+                <TableHead className='text-right'>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -322,9 +286,7 @@ export default function UserManagement() {
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant='outline'>
-                        {user.userrole?.[0]?.role?.name || 'No Role'}
-                      </Badge>
+                      <Badge variant='outline'>{user.role}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -335,7 +297,6 @@ export default function UserManagement() {
                         {user.status || 'inactive'}
                       </Badge>
                     </TableCell>
-                    <TableCell>N/A</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -359,8 +320,27 @@ export default function UserManagement() {
                             }}
                           >
                             <Edit2 className='w-4 h-4 mr-2' />
-                            Edit
+                            Edit Profile
                           </DropdownMenuItem>
+                          {user.role && user.role !== 'No Role' ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                router.push(`/admin/users/${user.id}/edit-role`)
+                              }
+                            >
+                              <Edit2 className='w-4 h-4 mr-2' />
+                              Edit Role
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                router.push(`/admin/users/${user.id}/roles`)
+                              }
+                            >
+                              <Edit2 className='w-4 h-4 mr-2' />
+                              Assign Role
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => {
                               setUserToDelete(user.id);
@@ -370,14 +350,6 @@ export default function UserManagement() {
                           >
                             <Trash2 className='w-4 h-4 mr-2' />
                             Delete
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              router.push(`/admin/users/${user.id}/roles`)
-                            }
-                          >
-                            <Edit2 className='w-4 h-4 mr-2' />
-                            Assign Roles
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

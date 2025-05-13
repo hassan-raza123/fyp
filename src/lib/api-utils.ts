@@ -28,8 +28,10 @@ export function checkUserRole(
   request: NextRequest,
   allowedRoles: string[]
 ): boolean {
-  const userRole = getUserRoleFromRequest(request);
-  return userRole ? allowedRoles.includes(userRole) : false;
+  const user = getUserFromRequest(request);
+  if (!user) return false;
+
+  return allowedRoles.includes(user.role);
 }
 
 export function requireAuth(request: NextRequest): {

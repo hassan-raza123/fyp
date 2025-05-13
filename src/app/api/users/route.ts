@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     // If user is sub_admin, exclude super_admin users
     if (user.role === 'sub_admin') {
       whereClause.userrole = {
-        none: {
-          role: {
+        role: {
+          NOT: {
             name: 'super_admin',
           },
         },
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       first_name: user.first_name,
       last_name: user.last_name,
       status: user.status,
-      role: user.userrole[0]?.role.name || 'No Role',
+      role: user.userrole?.role.name || 'No Role',
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       ...(user.faculty && {
