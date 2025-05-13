@@ -13,15 +13,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { role_name } from '@prisma/client';
+
+// Define role types
+type RoleType =
+  | 'super_admin'
+  | 'sub_admin'
+  | 'department_admin'
+  | 'child_admin'
+  | 'teacher'
+  | 'student';
 
 const roleOptions = [
-  { value: role_name.super_admin, label: 'Super Admin' },
-  { value: role_name.sub_admin, label: 'Sub Admin' },
-  { value: role_name.department_admin, label: 'Department Admin' },
-  { value: role_name.child_admin, label: 'Child Admin' },
-  { value: role_name.teacher, label: 'Teacher' },
-  { value: role_name.student, label: 'Student' },
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'sub_admin', label: 'Sub Admin' },
+  { value: 'department_admin', label: 'Department Admin' },
+  { value: 'child_admin', label: 'Child Admin' },
+  { value: 'teacher', label: 'Teacher' },
+  { value: 'student', label: 'Student' },
 ];
 
 interface FormErrors {
@@ -46,7 +54,7 @@ export default function UserCreationForm() {
     firstName: '',
     lastName: '',
     email: '',
-    role: '' as role_name,
+    role: '' as RoleType,
     password: '',
     confirmPassword: '',
     departmentId: '',
@@ -86,19 +94,19 @@ export default function UserCreationForm() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.role === role_name.teacher && !formData.departmentId) {
+    if (formData.role === 'teacher' && !formData.departmentId) {
       newErrors.departmentId = 'Department is required for teachers';
     }
 
-    if (formData.role === role_name.student && !formData.rollNumber) {
+    if (formData.role === 'student' && !formData.rollNumber) {
       newErrors.rollNumber = 'Roll Number is required for students';
     }
 
-    if (formData.role === role_name.student && !formData.departmentId) {
+    if (formData.role === 'student' && !formData.departmentId) {
       newErrors.departmentId = 'Department is required for students';
     }
 
-    if (formData.role === role_name.student && !formData.programId) {
+    if (formData.role === 'student' && !formData.programId) {
       newErrors.programId = 'Program is required for students';
     }
 
@@ -130,13 +138,9 @@ export default function UserCreationForm() {
           departmentId: formData.departmentId || undefined,
           programId: formData.programId || undefined,
           rollNumber:
-            formData.role === role_name.student
-              ? formData.rollNumber
-              : undefined,
+            formData.role === 'student' ? formData.rollNumber : undefined,
           designation:
-            formData.role === role_name.teacher
-              ? formData.designation
-              : undefined,
+            formData.role === 'teacher' ? formData.designation : undefined,
         }),
       });
 
@@ -231,7 +235,7 @@ export default function UserCreationForm() {
           <Select
             value={formData.role}
             onValueChange={(value) => {
-              setFormData((prev) => ({ ...prev, role: value as role_name }));
+              setFormData((prev) => ({ ...prev, role: value as RoleType }));
               if (errors.role) {
                 setErrors((prev) => ({ ...prev, role: undefined }));
               }
@@ -290,7 +294,7 @@ export default function UserCreationForm() {
         </div>
 
         {/* Role-specific Fields */}
-        {formData.role === role_name.teacher && (
+        {formData.role === 'teacher' && (
           <div className='space-y-2'>
             <Label htmlFor='departmentId'>Department</Label>
             <Input
@@ -307,7 +311,7 @@ export default function UserCreationForm() {
           </div>
         )}
 
-        {formData.role === role_name.student && (
+        {formData.role === 'student' && (
           <div className='space-y-2'>
             <Label htmlFor='rollNumber'>Roll Number</Label>
             <Input

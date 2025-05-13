@@ -37,40 +37,26 @@ export async function GET(
       }
     }
 
-    // Get the target user with their role, faculty, and student data
+    // Get the target user with only the required fields
     const targetUser = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        userrole: {
-          include: {
-            role: true,
-          },
-        },
-        faculty: true,
-        student: true,
+      select: {
+        id: true,
+        email: true,
+        first_name: true,
+        last_name: true,
+        phone_number: true,
+        status: true,
       },
     });
 
-    // If user not found or is a super admin, return not found
-    if (!targetUser || targetUser.userrole[0]?.role.name === 'super_admin') {
+    // If user not found, return not found
+    if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Return the user data without the super admin
-    return NextResponse.json({
-      id: targetUser.id,
-      email: targetUser.email,
-      first_name: targetUser.first_name,
-      last_name: targetUser.last_name,
-      status: targetUser.status,
-      userrole: targetUser.userrole.map((ur) => ({
-        role: {
-          name: ur.role.name,
-        },
-      })),
-      faculty: targetUser.faculty,
-      student: targetUser.student,
-    });
+    // Return only the required user data
+    return NextResponse.json(targetUser);
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json(
@@ -98,20 +84,10 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const {
-      email,
-      first_name,
-      last_name,
-      phone_number,
-      status,
-      role,
-      password,
-      faculty,
-      student,
-    } = body;
+    const { email, first_name, last_name, phone_number, status } = body;
 
     // Validate required fields
-    if (!email || !first_name || !last_name || !role) {
+    if (!email || !first_name || !last_name) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -121,11 +97,6 @@ export async function PUT(
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { id: Number(params.id) },
-      include: {
-        userrole: true,
-        faculty: true,
-        student: true,
-      },
     });
 
     if (!existingUser) {
@@ -154,61 +125,7 @@ export async function PUT(
         last_name,
         phone_number,
         status,
-        ...(password && {
-          password_hash: await hash(password, 12),
-        }),
-        userrole: {
-          deleteMany: {},
-          create: {
-            role: {
-              connect: {
-                name: role,
-              },
-            },
-          },
-        },
-        ...(role === 'teacher' &&
-          faculty && {
-            faculty: {
-              upsert: {
-                where: {
-                  userId: Number(params.id),
-                },
-                create: {
-                  departmentId: Number(faculty.departmentId),
-                  designation: faculty.designation,
-                  status: faculty.status || 'active',
-                },
-                update: {
-                  departmentId: Number(faculty.departmentId),
-                  designation: faculty.designation,
-                  status: faculty.status || 'active',
-                },
-              },
-            },
-          }),
-        ...(role === 'student' &&
-          student && {
-            student: {
-              upsert: {
-                where: {
-                  userId: Number(params.id),
-                },
-                create: {
-                  rollNumber: student.rollNumber,
-                  departmentId: Number(student.departmentId),
-                  programId: Number(student.programId),
-                  status: student.status || 'active',
-                },
-                update: {
-                  rollNumber: student.rollNumber,
-                  departmentId: Number(student.departmentId),
-                  programId: Number(student.programId),
-                  status: student.status || 'active',
-                },
-              },
-            },
-          }),
+        updatedAt: new Date(),
       },
       include: {
         userrole: {
@@ -216,12 +133,21 @@ export async function PUT(
             role: true,
           },
         },
-        faculty: true,
-        student: true,
       },
     });
 
-    return NextResponse.json(updatedUser);
+    // Get the role name if it exists
+    const userRole = updatedUser.userrole?.role?.name || null;
+
+    return NextResponse.json({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      first_name: updatedUser.first_name,
+      last_name: updatedUser.last_name,
+      phone_number: updatedUser.phone_number,
+      status: updatedUser.status,
+      role: userRole,
+    });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(

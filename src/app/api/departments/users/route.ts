@@ -28,11 +28,9 @@ export async function GET(request: NextRequest) {
     const users = await prisma.user.findMany({
       where: {
         userrole: {
-          some: {
-            role: {
-              name: {
-                in: ['super_admin', 'sub_admin', 'department_admin', 'teacher'],
-              },
+          role: {
+            name: {
+              in: ['super_admin', 'sub_admin', 'department_admin', 'teacher'],
             },
           },
         },
@@ -60,7 +58,7 @@ export async function GET(request: NextRequest) {
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
-      roles: user.userrole.map((ur) => ur.role.name),
+      role: user.userrole?.role.name || 'No Role',
     }));
 
     return NextResponse.json({
@@ -89,10 +87,8 @@ export async function POST(request: Request) {
     }
 
     // Check if user has admin role
-    const userRoles = session.user.role.split(',');
-    const isAdmin = userRoles.some((role) =>
-      ['super_admin', 'sub_admin'].includes(role)
-    );
+    const userRole = session.user.role;
+    const isAdmin = ['super_admin', 'sub_admin'].includes(userRole);
 
     if (!isAdmin) {
       return NextResponse.json(
@@ -256,7 +252,7 @@ export async function POST(request: Request) {
         first_name: completeUser.first_name,
         last_name: completeUser.last_name,
         phone_number: completeUser.phone_number,
-        role: completeUser.userrole[0].role.name,
+        role: completeUser.userrole?.role.name,
         ...(studentRecord && {
           student: {
             rollNumber: studentRecord.rollNumber,

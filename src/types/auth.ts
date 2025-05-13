@@ -49,7 +49,7 @@ export interface IUserRole {
 }
 
 export interface UserWithRoles extends IUser {
-  userrole: IUserRole[];
+  userrole?: IUserRole;
   student?: IStudent | null;
   faculty?: IFaculty | null;
 }

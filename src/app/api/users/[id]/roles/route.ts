@@ -35,7 +35,15 @@ export async function POST(
     // Validate required fields
     if (!roles || !Array.isArray(roles) || roles.length === 0) {
       return NextResponse.json(
-        { error: 'At least one role is required' },
+        { error: 'A role is required' },
+        { status: 400 }
+      );
+    }
+
+    // Ensure only one role is assigned
+    if (roles.length > 1) {
+      return NextResponse.json(
+        { error: 'Only one role can be assigned to a user' },
         { status: 400 }
       );
     }
@@ -153,82 +161,82 @@ export async function POST(
           where: { userId },
         });
 
-        // Handle each role separately
-        for (const role of roles) {
-          // Find the role record
-          const roleRecord = roleRecords.find((r) => r.name === role);
-          if (!roleRecord) continue;
+        // Get the role record
+        const roleRecord = roleRecords[0]; // Since we only have one role now
+        if (!roleRecord) {
+          throw new Error('Invalid role');
+        }
 
-          // Create user role
-          await tx.userrole.create({
-            data: {
-              userId,
-              roleId: roleRecord.id,
-              updatedAt: new Date(),
-            },
-          });
+        // Create user role
+        await tx.userrole.create({
+          data: {
+            userId,
+            roleId: roleRecord.id,
+            updatedAt: new Date(),
+          },
+        });
 
-          // Handle role-specific details
-          switch (role) {
-            case 'student':
-              if (studentDetails) {
-                await tx.student.create({
-                  data: {
-                    rollNumber: studentDetails.rollNumber,
-                    departmentId: parseInt(studentDetails.departmentId),
-                    programId: parseInt(studentDetails.programId),
-                    status: 'active' as const,
-                    updatedAt: new Date(),
-                    userId,
-                  },
-                });
-              }
-              break;
+        // Handle role-specific details
+        const role = roles[0]; // Since we only have one role now
+        switch (role) {
+          case 'student':
+            if (studentDetails) {
+              await tx.student.create({
+                data: {
+                  rollNumber: studentDetails.rollNumber,
+                  departmentId: parseInt(studentDetails.departmentId),
+                  programId: parseInt(studentDetails.programId),
+                  status: 'active' as const,
+                  updatedAt: new Date(),
+                  userId,
+                },
+              });
+            }
+            break;
 
-            case 'teacher':
-              if (facultyDetails) {
-                await tx.faculty.create({
-                  data: {
-                    departmentId: parseInt(facultyDetails.departmentId),
-                    designation: facultyDetails.designation || 'Teacher',
-                    status: 'active' as const,
-                    updatedAt: new Date(),
-                    userId,
-                  },
-                });
-              }
-              break;
+          case 'teacher':
+            if (facultyDetails) {
+              await tx.faculty.create({
+                data: {
+                  departmentId: parseInt(facultyDetails.departmentId),
+                  designation: facultyDetails.designation || 'Teacher',
+                  status: 'active' as const,
+                  updatedAt: new Date(),
+                  userId,
+                },
+              });
+            }
+            break;
 
-            case 'department_admin':
-              if (facultyDetails) {
-                const departmentId = parseInt(facultyDetails.departmentId);
+          case 'department_admin':
+            if (facultyDetails) {
+              const departmentId = parseInt(facultyDetails.departmentId);
 
-                // First create the faculty record
-                await tx.faculty.create({
-                  data: {
-                    departmentId,
-                    designation: 'Department Admin',
-                    status: 'active' as const,
-                    updatedAt: new Date(),
-                    userId,
-                  },
-                });
+              // First create the faculty record
+              await tx.faculty.create({
+                data: {
+                  departmentId,
+                  designation: 'Department Admin',
+                  status: 'active' as const,
+                  updatedAt: new Date(),
+                  userId,
+                },
+              });
 
-                // Then update the department's adminId
-                await tx.department.update({
-                  where: { id: departmentId },
-                  data: {
-                    adminId: userId,
-                    updatedAt: new Date(),
-                  },
-                });
-              }
-              break;
+              // Then update the department's adminId
+              await tx.department.update({
+                where: { id: departmentId },
+                data: {
+                  adminId: userId,
+                  updatedAt: new Date(),
+                },
+              });
+            }
+            break;
 
-            case 'sub_admin':
-              // No additional details needed for sub_admin
-              break;
-          }
+          case 'sub_admin':
+            // No additional details needed for sub_admin
+            break;
         }
 
         // Fetch updated user with roles and details
@@ -260,6 +268,12 @@ export async function POST(
       throw new Error('Failed to update user roles');
     }
 
+    // Determine the role name safely
+    let roleName = null;
+    if (result.userrole && result.userrole.role) {
+      roleName = result.userrole.role.name;
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -267,7 +281,7 @@ export async function POST(
         email: result.email,
         first_name: result.first_name,
         last_name: result.last_name,
-        roles: result.userrole.map((ur) => ur.role.name),
+        role: roleName,
         student: result.student,
         faculty: result.faculty,
       },

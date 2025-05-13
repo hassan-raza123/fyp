@@ -22,33 +22,16 @@ interface User {
   first_name: string | null;
   last_name: string | null;
   email: string;
+  phone_number: string | null;
   status: string;
-  userrole: {
-    role: {
-      name: string;
-    };
-  }[];
-  faculty?: {
-    employeeId: string;
-    departmentId: number;
-  } | null;
-  student?: {
-    rollNumber: string;
-    departmentId: number;
-    programId: number;
-  } | null;
 }
 
 interface FormData {
   first_name: string;
   last_name: string;
   email: string;
-  role: string;
+  phone_number: string;
   status: string;
-  rollNumber: string;
-  departmentId: string;
-  programId: string;
-  designation: string;
 }
 
 export default function EditUserPage({
@@ -58,20 +41,14 @@ export default function EditUserPage({
 }) {
   const router = useRouter();
   const resolvedParams = use(params);
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     first_name: '',
     last_name: '',
     email: '',
-    role: '',
-    status: '',
-    employeeId: '',
-    rollNumber: '',
-    departmentId: '',
-    programId: '',
-    designation: '',
+    phone_number: '',
+    status: 'active',
   });
 
   useEffect(() => {
@@ -93,19 +70,12 @@ export default function EditUserPage({
         }
 
         const data = await response.json();
-        setUser(data);
         setFormData({
           first_name: data.first_name || '',
           last_name: data.last_name || '',
           email: data.email || '',
-          role: data.userrole?.[0]?.role?.name || '',
-          status: data.status || 'inactive',
-          employeeId: data.faculty?.employeeId || '',
-          rollNumber: data.student?.rollNumber || '',
-          departmentId:
-            data.faculty?.departmentId || data.student?.departmentId || '',
-          programId: data.student?.programId || '',
-          designation: '',
+          phone_number: data.phone_number || '',
+          status: data.status || 'active',
         });
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -127,23 +97,8 @@ export default function EditUserPage({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
-        role: formData.role,
+        phone_number: formData.phone_number,
         status: formData.status,
-        ...(formData.role === 'teacher' && {
-          faculty: {
-            departmentId: Number(formData.departmentId),
-            designation: formData.designation,
-            status: 'active',
-          },
-        }),
-        ...(formData.role === 'student' && {
-          student: {
-            rollNumber: formData.rollNumber,
-            departmentId: Number(formData.departmentId),
-            programId: Number(formData.programId),
-            status: 'active',
-          },
-        }),
       };
 
       const response = await fetch(`/api/users/${resolvedParams.id}`, {
@@ -221,120 +176,50 @@ export default function EditUserPage({
               </div>
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-              />
-            </div>
-
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div className='space-y-2'>
-                <Label htmlFor='role'>Role</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, role: value })
+                <Label htmlFor='email'>Email</Label>
+                <Input
+                  id='email'
+                  type='email'
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select role' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='super_admin'>Super Admin</SelectItem>
-                    <SelectItem value='sub_admin'>Sub Admin</SelectItem>
-                    <SelectItem value='department_admin'>
-                      Department Admin
-                    </SelectItem>
-                    <SelectItem value='teacher'>Teacher</SelectItem>
-                    <SelectItem value='student'>Student</SelectItem>
-                  </SelectContent>
-                </Select>
+                  required
+                />
               </div>
-
               <div className='space-y-2'>
-                <Label htmlFor='status'>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
+                <Label htmlFor='phone_number'>Phone Number</Label>
+                <Input
+                  id='phone_number'
+                  value={formData.phone_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_number: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select status' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='active'>Active</SelectItem>
-                    <SelectItem value='inactive'>Inactive</SelectItem>
-                    <SelectItem value='suspended'>Suspended</SelectItem>
-                    <SelectItem value='deleted'>Deleted</SelectItem>
-                  </SelectContent>
-                </Select>
+                  required
+                />
               </div>
             </div>
 
-            {formData.role === 'teacher' && (
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='space-y-2'>
-                  <Label htmlFor='departmentId'>Department ID</Label>
-                  <Input
-                    id='departmentId'
-                    type='number'
-                    value={formData.departmentId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, departmentId: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-            )}
-
-            {formData.role === 'student' && (
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                <div className='space-y-2'>
-                  <Label htmlFor='rollNumber'>Roll Number</Label>
-                  <Input
-                    id='rollNumber'
-                    value={formData.rollNumber}
-                    onChange={(e) =>
-                      setFormData({ ...formData, rollNumber: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='departmentId'>Department ID</Label>
-                  <Input
-                    id='departmentId'
-                    type='number'
-                    value={formData.departmentId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, departmentId: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='programId'>Program ID</Label>
-                  <Input
-                    id='programId'
-                    type='number'
-                    value={formData.programId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, programId: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-            )}
+            <div className='space-y-2'>
+              <Label htmlFor='status'>Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Select status' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='active'>Active</SelectItem>
+                  <SelectItem value='inactive'>Inactive</SelectItem>
+                  <SelectItem value='suspended'>Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className='flex justify-end gap-4'>
               <Button
