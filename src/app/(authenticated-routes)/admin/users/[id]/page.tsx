@@ -17,6 +17,7 @@ import {
   UserX,
   Lock,
   History,
+  Book,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,12 +55,23 @@ interface User {
   } | null;
   faculty?: {
     employeeId: string;
-    departmentId: number;
+    department: {
+      id: number;
+      name: string;
+      code: string;
+    };
   } | null;
   student?: {
     rollNumber: string;
-    departmentId: number;
-    programId: number;
+    department: {
+      id: number;
+      name: string;
+      code: string;
+    };
+    program: {
+      id: number;
+      name: string;
+    };
   } | null;
   createdAt: string;
   updatedAt: string;
@@ -329,20 +341,41 @@ const UserProfile = ({ params }: { params: Promise<{ id: string }> }) => {
                 <div className='flex items-center gap-2'>
                   <Calendar className='h-4 w-4 text-muted-foreground' />
                   <span>
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined{' '}
+                    {new Date(user.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
                 {user.faculty && (
                   <div className='flex items-center gap-2'>
                     <Building2 className='h-4 w-4 text-muted-foreground' />
-                    <span>Department: {user.faculty.departmentId}</span>
+                    <span>
+                      Department: {user.faculty.department.name} (
+                      {user.faculty.department.code})
+                    </span>
                   </div>
                 )}
                 {user.student && (
-                  <div className='flex items-center gap-2'>
-                    <Building2 className='h-4 w-4 text-muted-foreground' />
-                    <span>Roll Number: {user.student.rollNumber}</span>
-                  </div>
+                  <>
+                    <div className='flex items-center gap-2'>
+                      <Building2 className='h-4 w-4 text-muted-foreground' />
+                      <span>
+                        Department: {user.student.department.name} (
+                        {user.student.department.code})
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <User className='h-4 w-4 text-muted-foreground' />
+                      <span>Roll Number: {user.student.rollNumber}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Book className='h-4 w-4 text-muted-foreground' />
+                      <span>Program: {user.student.program.name}</span>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -424,14 +457,26 @@ const UserProfile = ({ params }: { params: Promise<{ id: string }> }) => {
                   <TableRow>
                     <TableCell>Profile Updated</TableCell>
                     <TableCell>
-                      {new Date(user.updatedAt).toLocaleString()}
+                      {new Date(user.updatedAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </TableCell>
                     <TableCell>User profile information was updated</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Account Created</TableCell>
                     <TableCell>
-                      {new Date(user.createdAt).toLocaleString()}
+                      {new Date(user.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </TableCell>
                     <TableCell>User account was created</TableCell>
                   </TableRow>

@@ -47,6 +47,24 @@ export async function GET(
         last_name: true,
         phone_number: true,
         status: true,
+        createdAt: true,
+        updatedAt: true,
+        userrole: {
+          include: {
+            role: true,
+          },
+        },
+        faculty: {
+          include: {
+            department: true,
+          },
+        },
+        student: {
+          include: {
+            department: true,
+            program: true,
+          },
+        },
       },
     });
 
@@ -55,7 +73,7 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Return only the required user data
+    // Return the user data with role and department information
     return NextResponse.json(targetUser);
   } catch (error) {
     console.error('Error fetching user:', error);
