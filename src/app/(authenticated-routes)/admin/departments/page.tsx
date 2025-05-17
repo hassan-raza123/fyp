@@ -186,6 +186,16 @@ export default function DepartmentsPage() {
       const data = await response.json();
 
       if (!data.success) {
+        if (data.details) {
+          // Handle case where department has related data
+          const details = data.details;
+          const message = `Cannot delete department because it has:
+            ${details.programs} program(s)
+            ${details.faculty} faculty member(s)
+            ${details.students} student(s)
+            Please remove all related data first.`;
+          throw new Error(message);
+        }
         throw new Error(data.error || 'Failed to delete department');
       }
 
@@ -194,6 +204,9 @@ export default function DepartmentsPage() {
         description: 'Department deleted successfully',
       });
 
+      // Close dialog and refresh data
+      setIsDeleteDialogOpen(false);
+      setSelectedDepartment(null);
       fetchDepartments();
     } catch (error) {
       console.error('Error deleting department:', error);
@@ -207,8 +220,6 @@ export default function DepartmentsPage() {
       });
     } finally {
       setDeleteLoading(null);
-      setIsDeleteDialogOpen(false);
-      setSelectedDepartment(null);
     }
   };
 

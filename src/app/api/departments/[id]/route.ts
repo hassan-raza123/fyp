@@ -53,7 +53,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authResult = await requireRole(request, ['super_admin', 'sub_admin']);
+    const authResult = await requireAuth(request);
     if (!authResult.success) {
       return NextResponse.json(
         { success: false, error: authResult.error },
@@ -72,19 +72,11 @@ export async function GET(
     const department = await prisma.department.findUnique({
       where: { id: departmentId },
       include: {
-        admin: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
         _count: {
           select: {
-            programs: true,
             faculty: true,
             students: true,
+            courses: true,
           },
         },
       },
@@ -97,16 +89,89 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...department,
-        createdAt: department.createdAt.toISOString(),
-        updatedAt: department.updatedAt.toISOString(),
+    // Fetch department admins
+    const admins = await prisma.user.findMany({
+      where: {
+        AND: [
+          {
+            faculty: {
+              departmentId: departmentId,
+            },
+          },
+          {
+            userrole: {
+              role: {
+                name: 'department_admin',
+              },
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
       },
     });
+
+    const formattedAdmins = admins.map((admin) => ({
+      id: admin.id,
+      first_name: admin.first_name,
+      last_name: admin.last_name,
+      email: admin.email,
+      isHead: admin.id === department.adminId,
+    }));
+
+    // Fetch faculty members
+    const facultyMembers = await prisma.faculty.findMany({
+      where: {
+        departmentId: departmentId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    const formattedFaculty = facultyMembers.map((faculty) => ({
+      id: faculty.id,
+      first_name: faculty.user.first_name,
+      last_name: faculty.user.last_name,
+      email: faculty.user.email,
+      designation: faculty.designation,
+      status: faculty.status,
+    }));
+
+    // Fetch programs
+    const programs = await prisma.program.findMany({
+      where: {
+        departmentId: departmentId,
+      },
+      include: {
+        _count: {
+          select: {
+            students: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      department,
+      admins: formattedAdmins,
+      faculty: formattedFaculty,
+      programs,
+    });
   } catch (error) {
-    console.error('Error fetching department:', error);
+    console.error('Error fetching department details:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -120,26 +185,36 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-
-    const authResult = await requireRole(request, ['super_admin', 'sub_admin']);
-    if (!authResult.success) {
-      return NextResponse.json(
-        { success: false, error: authResult.error },
-        { status: 401 }
-      );
+    // Check authentication and get user data
+    const { success, user, error } = await requireAuth(request);
+    if (!success) {
+      return NextResponse.json({ error }, { status: 401 });
     }
 
-    const departmentId = parseInt(id);
-    if (isNaN(departmentId)) {
+    // Check if user has admin role
+    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { name, code, description, status, adminId } = body;
+
+    // Validate required fields
+    if (!name || !code) {
       return NextResponse.json(
-        { success: false, error: 'Invalid department ID' },
+        { error: 'Name and code are required' },
         { status: 400 }
       );
     }
 
-    const body = await request.json();
-    const validatedData = departmentUpdateSchema.parse(body);
+    // Parse department ID
+    const departmentId = parseInt(params.id);
+    if (isNaN(departmentId)) {
+      return NextResponse.json(
+        { error: 'Invalid department ID' },
+        { status: 400 }
+      );
+    }
 
     // Check if department exists
     const existingDepartment = await prisma.department.findUnique({
@@ -148,76 +223,64 @@ export async function PUT(
 
     if (!existingDepartment) {
       return NextResponse.json(
-        { success: false, error: 'Department not found' },
+        { error: 'Department not found' },
         { status: 404 }
       );
     }
 
-    // Check if code is already taken by another department
-    if (validatedData.code !== existingDepartment.code) {
-      const codeExists = await prisma.department.findFirst({
-        where: {
-          code: validatedData.code,
-          id: { not: departmentId },
+    // Start a transaction to ensure all operations succeed or fail together
+    const result = await prisma.$transaction(async (tx) => {
+      // Update department
+      const updatedDepartment = await tx.department.update({
+        where: { id: departmentId },
+        data: {
+          name,
+          code,
+          description,
+          status: status as department_status,
+          adminId: adminId ? parseInt(adminId) : null,
+          updatedAt: new Date(),
+        },
+        include: {
+          admin: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+            },
+          },
+          _count: {
+            select: {
+              programs: true,
+              faculty: true,
+              students: true,
+            },
+          },
         },
       });
 
-      if (codeExists) {
-        return NextResponse.json(
-          { success: false, error: 'Department code already exists' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Update department
-    const updatedDepartment = await prisma.department.update({
-      where: { id: departmentId },
-      data: {
-        name: validatedData.name,
-        code: validatedData.code,
-        description: validatedData.description,
-        status: validatedData.status,
-        adminId: validatedData.adminId,
-        updatedAt: new Date(),
-      },
-      include: {
-        admin: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
-        _count: {
-          select: {
-            programs: true,
-            faculty: true,
-            students: true,
-          },
-        },
-      },
+      return updatedDepartment;
     });
 
     // Format the response to match frontend expectations
     const formattedDepartment = {
-      id: updatedDepartment.id,
-      name: updatedDepartment.name,
-      code: updatedDepartment.code,
-      description: updatedDepartment.description,
-      status: updatedDepartment.status,
-      hod: updatedDepartment.admin
+      id: result.id,
+      name: result.name,
+      code: result.code,
+      description: result.description,
+      status: result.status,
+      hod: result.admin
         ? {
-            id: updatedDepartment.admin.id,
-            name: `${updatedDepartment.admin.first_name} ${updatedDepartment.admin.last_name}`,
-            email: updatedDepartment.admin.email,
+            id: result.admin.id,
+            name: `${result.admin.first_name} ${result.admin.last_name}`,
+            email: result.admin.email,
           }
         : null,
       stats: {
-        programs: updatedDepartment._count.programs,
-        faculty: updatedDepartment._count.faculty,
-        students: updatedDepartment._count.students,
+        programs: result._count.programs,
+        faculty: result._count.faculty,
+        students: result._count.students,
       },
     };
 
@@ -228,14 +291,11 @@ export async function PUT(
     });
   } catch (error) {
     console.error('Error updating department:', error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.errors[0].message },
-        { status: 400 }
-      );
-    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
       { status: 500 }
     );
   }
@@ -247,8 +307,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-
     const authResult = await requireRole(request, ['super_admin', 'sub_admin']);
     if (!authResult.success) {
       return NextResponse.json(
@@ -257,7 +315,7 @@ export async function DELETE(
       );
     }
 
-    const departmentId = parseInt(id);
+    const departmentId = parseInt(params.id);
     if (isNaN(departmentId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid department ID' },
@@ -295,15 +353,38 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: 'Cannot delete department with related data',
+          error:
+            'Cannot delete department with related data. Please remove all programs, faculty, and students first.',
+          details: {
+            programs: department._count.programs,
+            faculty: department._count.faculty,
+            students: department._count.students,
+          },
         },
         { status: 400 }
       );
     }
 
-    // Delete department
-    await prisma.department.delete({
-      where: { id: departmentId },
+    // Start a transaction to ensure data consistency
+    await prisma.$transaction(async (tx) => {
+      // Remove any department admin role assignments
+      await tx.userrole.deleteMany({
+        where: {
+          user: {
+            faculty: {
+              departmentId: departmentId,
+            },
+          },
+          role: {
+            name: 'department_admin',
+          },
+        },
+      });
+
+      // Delete the department
+      await tx.department.delete({
+        where: { id: departmentId },
+      });
     });
 
     return NextResponse.json({
@@ -313,7 +394,11 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting department:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        success: false,
+        error: 'Failed to delete department',
+        details: error instanceof Error ? error.message : undefined,
+      },
       { status: 500 }
     );
   }
