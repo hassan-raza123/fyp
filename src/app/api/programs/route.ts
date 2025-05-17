@@ -11,7 +11,7 @@ type ProgramWithCounts = Prisma.programGetPayload<{
     _count: {
       select: {
         students: true;
-        courses: true;
+        course: true;
       };
     };
   };
@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search } },
+        { code: { contains: search } },
       ];
     }
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               students: true,
-              courses: true,
+              course: true,
             },
           },
         },
@@ -75,9 +75,18 @@ export async function GET(request: NextRequest) {
       prisma.program.count({ where }),
     ]);
 
+    // Transform the data to match the expected format in the frontend
+    const transformedPrograms = programs.map((program) => ({
+      ...program,
+      _count: {
+        ...program._count,
+        courses: program._count.course,
+      },
+    }));
+
     return NextResponse.json({
       success: true,
-      data: programs,
+      data: transformedPrograms,
       pagination: {
         total,
         page,
@@ -88,7 +97,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching programs:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch programs' },
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch programs',
+      },
       { status: 500 }
     );
   }
@@ -284,7 +297,7 @@ export async function POST(request: NextRequest) {
         _count: {
           select: {
             students: true,
-            courses: true,
+            course: true,
           },
         },
       },
@@ -310,7 +323,7 @@ export async function POST(request: NextRequest) {
         },
         stats: {
           students: program._count.students,
-          courses: program._count.courses,
+          courses: program._count.course,
         },
       },
     });
