@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { batches_status } from '@prisma/client';
 
 interface Program {
   id: number;
@@ -17,11 +26,22 @@ interface Program {
   };
 }
 
+interface FormData {
+  name: string;
+  code: string;
+  programId: string;
+  startDate: string;
+  endDate: string;
+  maxStudents: string;
+  description: string;
+  status: batches_status;
+}
+
 export default function CreateBatchPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     code: '',
     programId: '',
@@ -29,7 +49,7 @@ export default function CreateBatchPage() {
     endDate: '',
     maxStudents: '',
     description: '',
-    status: 'upcoming',
+    status: batches_status.upcoming,
   });
 
   // Fetch programs for dropdown
@@ -243,23 +263,26 @@ export default function CreateBatchPage() {
           </div>
 
           <div className='space-y-2'>
-            <label htmlFor='status' className='block text-sm font-medium'>
-              Status
-            </label>
-            <select
-              id='status'
+            <Label htmlFor='status'>Status</Label>
+            <Select
               value={formData.status}
-              onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, status: value as batches_status })
               }
-              className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
-              required
             >
-              <option value='upcoming'>Upcoming</option>
-              <option value='active'>Active</option>
-              <option value='inactive'>Inactive</option>
-              <option value='completed'>Completed</option>
-            </select>
+              <SelectTrigger id='status'>
+                <SelectValue placeholder='Select status' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={batches_status.upcoming}>
+                  Upcoming
+                </SelectItem>
+                <SelectItem value={batches_status.active}>Active</SelectItem>
+                <SelectItem value={batches_status.completed}>
+                  Completed
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className='space-y-2'>

@@ -303,6 +303,7 @@ model passwordresettokens {
 model batches {
   id          String         @id @default(cuid())
   name        String
+  code        String         @unique
   startDate   DateTime
   endDate     DateTime
   maxStudents Int

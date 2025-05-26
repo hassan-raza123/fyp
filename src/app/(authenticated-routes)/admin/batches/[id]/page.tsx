@@ -65,8 +65,12 @@ export default function BatchDetailsPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch batch');
       }
-      const data = await response.json();
-      setBatch(data);
+      const { data } = await response.json();
+      if (data) {
+        setBatch(data);
+      } else {
+        throw new Error('Invalid batch data format');
+      }
     } catch (error) {
       console.error('Error fetching batch:', error);
       setError('Failed to load batch data');
