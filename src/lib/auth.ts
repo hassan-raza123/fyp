@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
           where: {
             email: credentials.email,
           },
@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.first_name + ' ' + user.last_name,
           status: user.status,
-          role: user.userrole.map((ur) => ur.role.name).join(','),
+          role: user.userrole?.role?.name || '',
         };
       },
     }),
@@ -189,7 +189,7 @@ export async function generatePasswordResetToken(userId: number) {
   const expiresAt = new Date(Date.now() + 3600000);
 
   // Create or update the password reset token
-  const resetToken = await prisma.passwordreset.create({
+  const resetToken = await prisma.passwordresets.create({
     data: {
       userId,
       token,

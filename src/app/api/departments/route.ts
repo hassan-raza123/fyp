@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, getUserIdFromRequest } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/api-utils';
 import { prisma } from '@/lib/prisma';
-import { Prisma, department_status, department, user } from '@prisma/client';
+import { Prisma, department_status, departments, users } from '@prisma/client';
 
 const departmentInclude = {
   admin: true,
   _count: {
     select: {
-      program: true,
-      faculty: true,
-      student: true,
+      programs: true,
+      faculties: true,
+      students: true,
     },
   },
 } as const;
 
-type DepartmentWithIncludes = department & {
-  admin: user | null;
+type DepartmentWithIncludes = departments & {
+  admin: users | null;
   _count: {
-    program: number;
-    faculty: number;
-    student: number;
+    programs: number;
+    faculties: number;
+    students: number;
   };
 };
 
-type DepartmentWithAdmin = department & {
+type DepartmentWithAdmin = departments & {
   admin: {
     id: number;
     first_name: string;
@@ -32,7 +32,7 @@ type DepartmentWithAdmin = department & {
   } | null;
   _count: {
     programs: number;
-    faculty: number;
+    faculties: number;
     students: number;
   };
 };
@@ -70,10 +70,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get total count for pagination
-    const total = await prisma.department.count({ where });
+    const total = await prisma.departments.count({ where });
 
     // Get departments with pagination and sorting
-    const departments = await prisma.department.findMany({
+    const departments = await prisma.departments.findMany({
       where,
       include: {
         admin: {
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         _count: {
           select: {
             programs: true,
-            faculty: true,
+            faculties: true,
             students: true,
           },
         },
@@ -100,29 +100,31 @@ export async function GET(request: NextRequest) {
     });
 
     // Format the response
-    const formattedDepartments = departments.map((dept) => ({
-      id: dept.id,
-      name: dept.name,
-      code: dept.code,
-      description: dept.description,
-      status: dept.status,
-      createdAt: dept.createdAt,
-      updatedAt: dept.updatedAt,
-      adminId: dept.adminId,
-      admin: dept.admin
-        ? {
-            id: dept.admin.id,
-            first_name: dept.admin.first_name,
-            last_name: dept.admin.last_name,
-            email: dept.admin.email,
-          }
-        : null,
-      _count: {
-        programs: dept._count.programs,
-        faculty: dept._count.faculty,
-        students: dept._count.students,
-      },
-    }));
+    const formattedDepartments = departments.map(
+      (dept: DepartmentWithAdmin) => ({
+        id: dept.id,
+        name: dept.name,
+        code: dept.code,
+        description: dept.description,
+        status: dept.status,
+        createdAt: dept.createdAt,
+        updatedAt: dept.updatedAt,
+        adminId: dept.adminId,
+        admin: dept.admin
+          ? {
+              id: dept.admin.id,
+              first_name: dept.admin.first_name,
+              last_name: dept.admin.last_name,
+              email: dept.admin.email,
+            }
+          : null,
+        _count: {
+          programs: dept._count.programs,
+          faculties: dept._count.faculties,
+          students: dept._count.students,
+        },
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -197,7 +199,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if department code already exists
-    const existingDepartment = await prisma.department.findUnique({
+    const existingDepartment = await prisma.departments.findUnique({
       where: { code },
     });
 
@@ -211,25 +213,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current user's ID from the request
-    // const userId = getUserIdFromRequest(request);
-    // if (!userId) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       error: 'User ID not found',
-    //     },
-    //     { status: 401 }
-    //   );
-    // }
-
-    const department = (await prisma.department.create({
+    const department = (await prisma.departments.create({
       data: {
         name,
         code,
         description,
         status: status as department_status,
-        // adminId: userId,
         updatedAt: new Date(),
       },
       include: {
@@ -237,7 +226,7 @@ export async function POST(request: NextRequest) {
         _count: {
           select: {
             programs: true,
-            faculty: true,
+            faculties: true,
             students: true,
           },
         },
@@ -259,7 +248,7 @@ export async function POST(request: NextRequest) {
         : null,
       stats: {
         programs: department._count.programs,
-        faculty: department._count.faculty,
+        faculties: department._count.faculties,
         students: department._count.students,
       },
     };

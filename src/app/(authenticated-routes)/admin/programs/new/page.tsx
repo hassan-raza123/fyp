@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { program_status } from '@prisma/client';
+import { programs_status } from '@prisma/client';
 
 interface Department {
   id: number;
@@ -29,7 +29,7 @@ interface FormData {
   totalCreditHours: string;
   duration: string;
   description: string;
-  status: program_status;
+  status: programs_status;
 }
 
 export default function NewProgramPage() {
@@ -43,7 +43,7 @@ export default function NewProgramPage() {
     totalCreditHours: '',
     duration: '',
     description: '',
-    status: program_status.active,
+    status: programs_status.active,
   });
 
   useEffect(() => {
@@ -239,15 +239,15 @@ export default function NewProgramPage() {
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, status: value as program_status })
+                  setFormData({ ...formData, status: value as programs_status })
                 }
               >
                 <SelectTrigger id='status'>
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={program_status.active}>Active</SelectItem>
-                  <SelectItem value={program_status.inactive}>
+                  <SelectItem value={programs_status.active}>Active</SelectItem>
+                  <SelectItem value={programs_status.inactive}>
                     Inactive
                   </SelectItem>
                 </SelectContent>

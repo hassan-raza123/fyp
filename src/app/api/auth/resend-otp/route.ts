@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const { email, userType } = validationResult.data;
 
     // Check if user exists
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: {
         email,
         status: 'active',

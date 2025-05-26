@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const { email } = validationResult.data;
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email },
     });
 
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
       // Return error if user not found
       return NextResponse.json({
         success: false,
-        message: 'No account found with this email address. Please check your email or register for a new account.',
+        message:
+          'No account found with this email address. Please check your email or register for a new account.',
       });
     }
 
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
 
     // Create password reset record
-    await prisma.passwordreset.create({
+    await prisma.passwordresets.create({
       data: {
         userId: user.id,
         token,
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       const mailOptions = {
         from: {
           name: 'UniTrack360 Support',
-          address: process.env.GMAIL_USER!
+          address: process.env.GMAIL_USER!,
         },
         to: email,
         subject: 'Password Reset Request - UniTrack360',
@@ -138,4 +139,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

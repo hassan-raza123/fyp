@@ -128,6 +128,7 @@ const navigationSections = [
       { id: 'users', label: 'Users', icon: Users },
       { id: 'departments', label: 'Departments', icon: Building2 },
       { id: 'programs', label: 'Programs', icon: GraduationCap },
+      { id: 'batches', label: 'Batches', icon: Layers },
     ],
   },
   {

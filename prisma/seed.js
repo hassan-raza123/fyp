@@ -6,59 +6,125 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    // Clear existing data in correct order
-    await prisma.userrole.deleteMany();
-    await prisma.faculty.deleteMany();
-    await prisma.student.deleteMany();
-    await prisma.program.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
+    // Clear existing data in correct order (following foreign key dependencies)
+    console.log('Clearing existing data...');
+
+    // Delete dependent records first
+    await prisma.userroles.deleteMany();
+    await prisma.attendances.deleteMany();
+    await prisma.studentsections.deleteMany();
+    await prisma.sessions.deleteMany();
+    await prisma.timetableslots.deleteMany();
+    await prisma.sections.deleteMany();
+    await prisma.faculties.deleteMany();
+    await prisma.students.deleteMany();
+    await prisma.batches.deleteMany();
+    await prisma.courses.deleteMany();
+    await prisma.programs.deleteMany();
+    await prisma.departments.deleteMany();
+    await prisma.users.deleteMany();
+    await prisma.roles.deleteMany();
+    await prisma.permissions.deleteMany();
 
     const defaultPassword = await bcrypt.hash('11223344', 10);
 
-    // Create roles
-    const superAdminRole = await prisma.role.create({
+    console.log('Creating permissions...');
+
+    // Create permissions
+    const permissions = await Promise.all([
+      prisma.permissions.create({
+        data: {
+          name: 'user_management',
+          description: 'Manage users and roles',
+        },
+      }),
+      prisma.permissions.create({
+        data: {
+          name: 'department_management',
+          description: 'Manage departments',
+        },
+      }),
+      prisma.permissions.create({
+        data: {
+          name: 'course_management',
+          description: 'Manage courses',
+        },
+      }),
+      prisma.permissions.create({
+        data: {
+          name: 'attendance_management',
+          description: 'Manage attendance',
+        },
+      }),
+      prisma.permissions.create({
+        data: {
+          name: 'student_management',
+          description: 'Manage students',
+        },
+      }),
+    ]);
+
+    console.log('Creating roles...');
+
+    // Create roles with permissions
+    const superAdminRole = await prisma.roles.create({
       data: {
         name: 'super_admin',
         description: 'Super Admin Role',
+        permissions: {
+          connect: permissions.map((p) => ({ id: p.id })),
+        },
       },
     });
 
-    const subAdminRole = await prisma.role.create({
+    const subAdminRole = await prisma.roles.create({
       data: {
         name: 'sub_admin',
         description: 'Sub Admin Role',
+        permissions: {
+          connect: permissions.slice(1).map((p) => ({ id: p.id })),
+        },
       },
     });
 
-    const departmentAdminRole = await prisma.role.create({
+    const departmentAdminRole = await prisma.roles.create({
       data: {
         name: 'department_admin',
         description: 'Department Admin Role',
+        permissions: {
+          connect: permissions.slice(2).map((p) => ({ id: p.id })),
+        },
       },
     });
 
-    const childAdminRole = await prisma.role.create({
+    const childAdminRole = await prisma.roles.create({
       data: {
         name: 'child_admin',
         description: 'Child Admin Role',
+        permissions: {
+          connect: [permissions[3], permissions[4]].map((p) => ({ id: p.id })),
+        },
       },
     });
 
-    const teacherRole = await prisma.role.create({
+    const teacherRole = await prisma.roles.create({
       data: {
         name: 'teacher',
         description: 'Teacher Role',
+        permissions: {
+          connect: [permissions[3]].map((p) => ({ id: p.id })),
+        },
       },
     });
 
-    const studentRole = await prisma.role.create({
+    const studentRole = await prisma.roles.create({
       data: {
         name: 'student',
         description: 'Student Role',
       },
     });
+
+    console.log('Creating super admin users...');
 
     // Create super admin users with incrementing numbers
     const adminEmails = [
@@ -70,7 +136,7 @@ async function main() {
     ];
 
     for (let i = 0; i < adminEmails.length; i++) {
-      const admin = await prisma.user.create({
+      const admin = await prisma.users.create({
         data: {
           email: adminEmails[i],
           username: `admin${i + 1}`,
@@ -86,10 +152,13 @@ async function main() {
           },
         },
       });
+      console.log(`Created super admin: ${admin.email}`);
     }
 
+    console.log('Creating other admin users...');
+
     // Create sub admin
-    const subAdmin = await prisma.user.create({
+    const subAdmin = await prisma.users.create({
       data: {
         email: 'sub.admin@university.edu',
         username: 'subadmin',
@@ -107,7 +176,7 @@ async function main() {
     });
 
     // Create department admin
-    const deptAdmin = await prisma.user.create({
+    const deptAdmin = await prisma.users.create({
       data: {
         email: 'dept.admin@university.edu',
         username: 'deptadmin',
@@ -125,7 +194,7 @@ async function main() {
     });
 
     // Create child admin
-    const childAdmin = await prisma.user.create({
+    const childAdmin = await prisma.users.create({
       data: {
         email: 'child.admin@university.edu',
         username: 'childadmin',
@@ -143,7 +212,7 @@ async function main() {
     });
 
     // Create teacher
-    const teacher = await prisma.user.create({
+    const teacher = await prisma.users.create({
       data: {
         email: 'teacher@university.edu',
         username: 'teacher',
@@ -160,8 +229,8 @@ async function main() {
       },
     });
 
-    // Create student
-    const student = await prisma.user.create({
+    // Create student user
+    const studentUser = await prisma.users.create({
       data: {
         email: 'student@university.edu',
         username: 'student',
@@ -178,29 +247,231 @@ async function main() {
       },
     });
 
-    // Create a department
-    const department = await prisma.department.create({
+    console.log('Creating departments...');
+
+    // Create departments
+    const csDepartment = await prisma.departments.create({
       data: {
         name: 'Computer Science',
         code: 'CS',
         status: 'active',
-        adminId: subAdmin.id,
+        adminId: deptAdmin.id,
+        description: 'Department of Computer Science',
       },
     });
 
-    // Create a program
-    const program = await prisma.program.create({
+    const mathDepartment = await prisma.departments.create({
+      data: {
+        name: 'Mathematics',
+        code: 'MATH',
+        status: 'active',
+        description: 'Department of Mathematics',
+      },
+    });
+
+    console.log('Creating programs...');
+
+    // Create programs
+    const bscsProgram = await prisma.programs.create({
       data: {
         name: 'BS Computer Science',
         code: 'BSCS',
-        departmentId: department.id,
+        departmentId: csDepartment.id,
         duration: 4,
         description: 'Bachelor of Science in Computer Science',
+        status: 'active',
+        totalCreditHours: 130,
+      },
+    });
+
+    const mscsProgram = await prisma.programs.create({
+      data: {
+        name: 'MS Computer Science',
+        code: 'MSCS',
+        departmentId: csDepartment.id,
+        duration: 2,
+        description: 'Master of Science in Computer Science',
+        status: 'active',
+        totalCreditHours: 60,
+      },
+    });
+
+    console.log('Creating batches...');
+
+    // Create batches
+    const batch2024 = await prisma.batches.create({
+      data: {
+        name: 'Fall 2024',
+        startDate: new Date('2024-09-01'),
+        endDate: new Date('2028-06-30'),
+        maxStudents: 50,
+        description: 'Fall 2024 intake',
+        status: 'active',
+        programId: bscsProgram.id,
+      },
+    });
+
+    const batch2025 = await prisma.batches.create({
+      data: {
+        name: 'Spring 2025',
+        startDate: new Date('2025-01-15'),
+        endDate: new Date('2029-12-31'),
+        maxStudents: 45,
+        description: 'Spring 2025 intake',
+        status: 'upcoming',
+        programId: bscsProgram.id,
+      },
+    });
+
+    console.log('Creating courses...');
+
+    // Create courses
+    const programmingCourse = await prisma.courses.create({
+      data: {
+        code: 'CS101',
+        name: 'Programming Fundamentals',
+        description: 'Introduction to programming concepts',
+        creditHours: 3,
+        labHours: 2,
+        theoryHours: 1,
+        type: 'THEORY',
+        status: 'active',
+        departmentId: csDepartment.id,
+      },
+    });
+
+    const dsCourse = await prisma.courses.create({
+      data: {
+        code: 'CS201',
+        name: 'Data Structures',
+        description: 'Fundamental data structures and algorithms',
+        creditHours: 3,
+        labHours: 2,
+        theoryHours: 1,
+        type: 'THEORY',
+        status: 'active',
+        departmentId: csDepartment.id,
+        requiredBy: {
+          connect: { id: programmingCourse.id },
+        },
+      },
+    });
+
+    // Connect courses to programs
+    await prisma.programs.update({
+      where: { id: bscsProgram.id },
+      data: {
+        courses: {
+          connect: [{ id: programmingCourse.id }, { id: dsCourse.id }],
+        },
+      },
+    });
+
+    console.log('Creating faculty...');
+
+    // Create faculty
+    const faculty = await prisma.faculties.create({
+      data: {
+        userId: teacher.id,
+        departmentId: csDepartment.id,
+        designation: 'Assistant Professor',
+        status: 'active',
+        courses: {
+          connect: [{ id: programmingCourse.id }, { id: dsCourse.id }],
+        },
+      },
+    });
+
+    console.log('Creating student...');
+
+    // Create student
+    const student = await prisma.students.create({
+      data: {
+        rollNumber: 'BSCS-2024-001',
+        userId: studentUser.id,
+        departmentId: csDepartment.id,
+        programId: bscsProgram.id,
+        batchId: batch2024.id,
         status: 'active',
       },
     });
 
-    console.log('Database seeded successfully');
+    console.log('Creating sections...');
+
+    // Create sections
+    const section1 = await prisma.sections.create({
+      data: {
+        name: 'CS101-A',
+        courseId: programmingCourse.id,
+        facultyId: faculty.id,
+        semester: 1,
+        maxStudents: 30,
+        status: 'active',
+        startDate: new Date('2024-09-01'),
+        endDate: new Date('2024-12-15'),
+      },
+    });
+
+    console.log('Creating student sections...');
+
+    // Enroll student in section
+    const studentSection = await prisma.studentsections.create({
+      data: {
+        studentId: student.id,
+        sectionId: section1.id,
+        status: 'active',
+      },
+    });
+
+    console.log('Creating timetable slots...');
+
+    // Create timetable slots
+    await prisma.timetableslots.create({
+      data: {
+        sectionId: section1.id,
+        dayOfWeek: 1, // Monday
+        startTime: new Date('1970-01-01T09:00:00Z'),
+        endTime: new Date('1970-01-01T10:30:00Z'),
+        roomNumber: 'CS-Lab-1',
+        status: 'active',
+      },
+    });
+
+    console.log('Creating sessions...');
+
+    // Create a session
+    const session1 = await prisma.sessions.create({
+      data: {
+        sectionId: section1.id,
+        date: new Date('2024-09-02'),
+        startTime: new Date('2024-09-02T09:00:00Z'),
+        endTime: new Date('2024-09-02T10:30:00Z'),
+        topic: 'Introduction to Programming',
+        status: 'completed',
+      },
+    });
+
+    console.log('Creating attendance records...');
+
+    // Create attendance record
+    await prisma.attendances.create({
+      data: {
+        studentSectionId: studentSection.id, // Use the actual studentSection ID
+        sessionId: session1.id,
+        status: 'present',
+        markedBy: teacher.id,
+      },
+    });
+
+    console.log('Database seeded successfully!');
+    console.log('\n=== Login Credentials ===');
+    console.log('Super Admin: itzhassanraza276@gmail.com / 11223344');
+    console.log('Sub Admin: sub.admin@university.edu / 11223344');
+    console.log('Dept Admin: dept.admin@university.edu / 11223344');
+    console.log('Child Admin: child.admin@university.edu / 11223344');
+    console.log('Teacher: teacher@university.edu / 11223344');
+    console.log('Student: student@university.edu / 11223344');
+    console.log('========================\n');
   } catch (error) {
     console.error('Error seeding database:', error);
     throw error;
@@ -209,4 +480,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

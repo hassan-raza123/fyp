@@ -10,6 +10,7 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
+import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
@@ -33,7 +34,9 @@ const verifyOTPSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(
+  userType: 'student' | 'teacher' | 'admin'
+): AllRoles {
   switch (userType) {
     case 'student':
       return 'student';
@@ -131,71 +134,7 @@ export async function POST(
     const { email, userType, otp } = validationResult.data;
 
     // Get the OTP from the database
-    const otpRecord = await prisma.$queryRaw`
-      SELECT id, code, expiresAt, isUsed 
-      FROM OTP 
-      WHERE email = ${email} 
-      AND userType = ${userType} 
-      AND isUsed = false 
-      ORDER BY createdAt DESC 
-      LIMIT 1
-    `;
-
-    console.log('OTP Record:', otpRecord); // Debug log
-
-    if (!otpRecord || !Array.isArray(otpRecord) || otpRecord.length === 0) {
-      console.log('No valid OTP found for:', { email, userType }); // Debug log
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'No valid OTP found. Please request a new OTP.',
-        },
-        { status: 400 }
-      );
-    }
-
-    const otpData = otpRecord[0] as {
-      id: number;
-      code: string;
-      expiresAt: Date;
-      isUsed: boolean;
-    };
-
-    // Check if OTP is expired
-    if (new Date(otpData.expiresAt) < new Date()) {
-      console.log('OTP expired:', otpData.expiresAt); // Debug log
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'OTP has expired. Please request a new OTP.',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Verify OTP
-    const isOTPValid = await bcrypt.compare(otp, otpData.code);
-    if (!isOTPValid) {
-      console.log('OTP mismatch:', { provided: otp, stored: otpData.code }); // Debug log
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid OTP code. Please try again.',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Mark OTP as used
-    await prisma.$executeRaw`
-      UPDATE OTP 
-      SET isUsed = true,
-          updatedAt = NOW()
-      WHERE id = ${otpData.id}
-    `;
-
-    // Get user data
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findFirst({
       where: {
         email,
         status: 'active',
@@ -221,93 +160,106 @@ export async function POST(
       );
     }
 
-    // Get user roles from database
+    // Get user roles
     const userRoles = user.userrole?.role?.name
       ? [user.userrole.role.name]
       : [];
-    let actualRole: AllRoles;
 
-    // Handle admin users
-    if (userType === 'admin') {
-      // Check if user has any admin role
-      const hasAdminRole = userRoles.some(isAdminRole);
-
-      if (!hasAdminRole) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'User does not have admin privileges',
-          },
-          { status: 403 }
-        );
-      }
-
-      // Get the first admin role found
-      actualRole = userRoles.find(isAdminRole) as AdminRole;
-    } else {
-      // Handle students and teachers
-      const requestedRole = mapUserTypeToRole(userType);
-      if (!userRoles.includes(requestedRole)) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `User does not have ${userType} role`,
-          },
-          { status: 403 }
-        );
-      }
-      actualRole = userType;
-
-      // For non-admin users, mark email as verified after first successful OTP verification
-      if (!user.email_verified) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { email_verified: true },
-        });
-      }
+    if (userRoles.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'User has no roles assigned',
+          error: 'Please contact administrator to assign roles',
+        },
+        { status: 403 }
+      );
     }
 
-    // Create user data based on role
-    const userData = createUserData(user, actualRole);
+    // Verify OTP
+    const otpRecord = await prisma.otps.findFirst({
+      where: {
+        email,
+        userType,
+        isUsed: false,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
 
-    // Create JWT token
+    if (!otpRecord) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid or expired OTP',
+        },
+        { status: 400 }
+      );
+    }
+
+    const isValidOTP = await bcrypt.compare(otp, otpRecord.code);
+
+    if (!isValidOTP) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid OTP',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Mark OTP as used
+    await prisma.otps.update({
+      where: { id: otpRecord.id },
+      data: { isUsed: true },
+    });
+
+    // If this is first login, mark email as verified
+    if (!user.email_verified) {
+      await prisma.users.update({
+        where: { id: user.id },
+        data: { email_verified: true },
+      });
+    }
+
+    // Create user data and token
+    const userData = createUserData(user, mapUserTypeToRole(userType));
     const tokenPayload: TokenPayload = {
       userId: user.id,
       email: user.email,
-      role: actualRole,
+      role: mapUserTypeToRole(userType),
       userData,
     };
 
     const token = await createToken(tokenPayload);
 
     // Update last login
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { last_login: new Date() },
     });
 
     // Determine redirect path based on role
-    const redirectTo = getDashboardPath(actualRole);
+    const redirectTo = getDashboardPath(mapUserTypeToRole(userType));
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'OTP verified successfully. Redirecting to dashboard...',
-        data: {
-          user: userData,
-          redirectTo,
-          token,
-          userType: actualRole,
-          verified: true,
-        },
+    // Create response with token in cookie
+    const response = NextResponse.json({
+      success: true,
+      message: 'OTP verified successfully',
+      data: {
+        user: userData,
+        redirectTo: redirectTo,
+        token,
+        userType: mapUserTypeToRole(userType),
       },
-      {
-        status: 200,
-        headers: {
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`,
-        },
-      }
-    );
+    });
+
+    // Set cookie with constant name and options
+    response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
+
+    return response;
   } catch (error) {
     console.error('OTP verification error:', error);
     return NextResponse.json(

@@ -55,7 +55,7 @@ export async function POST(
     }
 
     // Check if user exists
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       include: {
         userrole: {
@@ -136,7 +136,7 @@ export async function POST(
     }
 
     // Get role IDs
-    const roleRecords = await prisma.role.findMany({
+    const roleRecords = await prisma.roles.findMany({
       where: { name: { in: roles } },
     });
 
@@ -151,13 +151,13 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       try {
         // Delete existing roles and role-specific records
-        await tx.userrole.deleteMany({
+        await tx.userroles.deleteMany({
           where: { userId },
         });
-        await tx.student.deleteMany({
+        await tx.students.deleteMany({
           where: { userId },
         });
-        await tx.faculty.deleteMany({
+        await tx.faculties.deleteMany({
           where: { userId },
         });
 
@@ -168,7 +168,7 @@ export async function POST(
         }
 
         // Create user role
-        await tx.userrole.create({
+        await tx.userroles.create({
           data: {
             userId,
             roleId: roleRecord.id,
@@ -181,7 +181,7 @@ export async function POST(
         switch (role) {
           case 'student':
             if (studentDetails) {
-              await tx.student.create({
+              await tx.students.create({
                 data: {
                   rollNumber: studentDetails.rollNumber,
                   departmentId: parseInt(studentDetails.departmentId),
@@ -196,7 +196,7 @@ export async function POST(
 
           case 'teacher':
             if (facultyDetails) {
-              await tx.faculty.create({
+              await tx.faculties.create({
                 data: {
                   departmentId: parseInt(facultyDetails.departmentId),
                   designation: facultyDetails.designation || 'Teacher',
@@ -213,7 +213,7 @@ export async function POST(
               const departmentId = parseInt(facultyDetails.departmentId);
 
               // First create the faculty record
-              await tx.faculty.create({
+              await tx.faculties.create({
                 data: {
                   departmentId,
                   designation: 'Department Admin',
@@ -224,7 +224,7 @@ export async function POST(
               });
 
               // Then update the department's adminId
-              await tx.department.update({
+              await tx.departments.update({
                 where: { id: departmentId },
                 data: {
                   adminId: userId,
@@ -240,7 +240,7 @@ export async function POST(
         }
 
         // Fetch updated user with roles and details
-        const updatedUser = await tx.user.findUnique({
+        const updatedUser = await tx.users.findUnique({
           where: { id: userId },
           include: {
             userrole: {

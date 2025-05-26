@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -7,7 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model attendance {
+model attendances {
   id               Int               @id @default(autoincrement())
   studentSectionId Int
   sessionId        Int
@@ -15,18 +16,18 @@ model attendance {
   markedBy         Int
   remarks          String?
   createdAt        DateTime          @default(now())
-  updatedAt        DateTime
-  user             user              @relation(fields: [markedBy], references: [id], map: "Attendance_markedBy_fkey")
-  session          session           @relation(fields: [sessionId], references: [id], map: "Attendance_sessionId_fkey")
-  studentsection   studentsection    @relation(fields: [studentSectionId], references: [id], map: "Attendance_studentSectionId_fkey")
+  updatedAt        DateTime          @updatedAt
+  user             users             @relation(fields: [markedBy], references: [id], map: "Attendances_markedBy_fkey")
+  session          sessions          @relation(fields: [sessionId], references: [id], map: "Attendances_sessionId_fkey")
+  studentsection   studentsections   @relation(fields: [studentSectionId], references: [id], map: "Attendances_studentSectionId_fkey")
 
-  @@unique([studentSectionId, sessionId], map: "Attendance_studentSectionId_sessionId_key")
-  @@index([markedBy], map: "Attendance_markedBy_idx")
-  @@index([sessionId], map: "Attendance_sessionId_idx")
-  @@index([studentSectionId], map: "Attendance_studentSectionId_idx")
+  @@unique([studentSectionId, sessionId], map: "Attendances_studentSectionId_sessionId_key")
+  @@index([markedBy], map: "Attendances_markedBy_idx")
+  @@index([sessionId], map: "Attendances_sessionId_idx")
+  @@index([studentSectionId], map: "Attendances_studentSectionId_idx")
 }
 
-model auditlog {
+model auditlogs {
   id        Int      @id @default(autoincrement())
   userId    Int
   action    String
@@ -34,36 +35,36 @@ model auditlog {
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
-  user      user     @relation(fields: [userId], references: [id], map: "AuditLog_userId_fkey")
+  user      users    @relation(fields: [userId], references: [id], map: "AuditLogs_userId_fkey")
 
-  @@index([createdAt], map: "AuditLog_createdAt_idx")
-  @@index([userId], map: "AuditLog_userId_idx")
+  @@index([createdAt], map: "AuditLogs_createdAt_idx")
+  @@index([userId], map: "AuditLogs_userId_idx")
 }
 
-model course {
-  id           Int           @id @default(autoincrement())
-  code         String        @unique(map: "Course_code_key")
-  name         String
-  description  String?
-  creditHours  Int
-  status       course_status @default(active)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  departmentId Int
-  labHours     Int
-  theoryHours  Int
-  type         course_type
-  department   department    @relation("DepartmentToCourse", fields: [departmentId], references: [id])
-  sections     section[]
-  course_A     course[]      @relation("courseprerequisites")
-  course_B     course[]      @relation("courseprerequisites")
-  faculty      faculty[]     @relation("facultycourses")
-  programs     program[]     @relation("programtocourse")
+model courses {
+  id             Int           @id @default(autoincrement())
+  code           String        @unique(map: "Courses_code_key")
+  name           String
+  description    String?
+  creditHours    Int
+  labHours       Int
+  theoryHours    Int
+  type           course_type
+  status         course_status @default(active)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  departmentId   Int
+  department     departments   @relation("DepartmentToCourse", fields: [departmentId], references: [id])
+  sections       sections[]
+  prerequisites  courses[]     @relation("CoursePrerequisites")
+  requiredBy     courses[]     @relation("CoursePrerequisites")
+  faculties      faculties[]   @relation("FacultyCourses")
+  programs       programs[]    @relation("ProgramToCourse")
 
-  @@index([departmentId], map: "Course_departmentId_idx")
+  @@index([departmentId], map: "Courses_departmentId_idx")
 }
 
-model department {
+model departments {
   id          Int               @id @default(autoincrement())
   name        String
   code        String            @unique
@@ -71,18 +72,17 @@ model department {
   status      department_status @default(active)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  adminId     Int?
-  courses     course[]          @relation("DepartmentToCourse")
-  admin       user?             @relation("DepartmentAdmin", fields: [adminId], references: [id])
-  faculty     faculty[]
-  programs    program[]
-  students    student[]
+  adminId     Int?              @unique
+  courses     courses[]         @relation("DepartmentToCourse")
+  admin       users?            @relation("DepartmentAdmin", fields: [adminId], references: [id])
+  faculties   faculties[]
+  programs    programs[]
+  students    students[]
 
-  @@index([adminId], map: "departments_adminId_fkey")
-  @@map("departments")
+  @@index([adminId], map: "Departments_adminId_fkey")
 }
 
-model faculty {
+model faculties {
   id           Int            @id @default(autoincrement())
   userId       Int            @unique
   departmentId Int
@@ -90,16 +90,15 @@ model faculty {
   status       faculty_status @default(active)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  department   department     @relation(fields: [departmentId], references: [id])
-  user         user           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sections     section[]
-  course       course[]       @relation("facultycourses")
+  department   departments    @relation(fields: [departmentId], references: [id])
+  user         users          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sections     sections[]
+  courses      courses[]      @relation("FacultyCourses")
 
-  @@index([departmentId], map: "faculty_departmentId_fkey")
-  @@map("faculty")
+  @@index([departmentId], map: "Faculties_departmentId_fkey")
 }
 
-model notification {
+model notifications {
   id        Int               @id @default(autoincrement())
   userId    Int
   title     String
@@ -107,66 +106,45 @@ model notification {
   isRead    Boolean           @default(false)
   type      notification_type
   createdAt DateTime          @default(now())
-  updatedAt DateTime
-  user      user              @relation(fields: [userId], references: [id], map: "Notification_userId_fkey")
+  updatedAt DateTime          @updatedAt
+  user      users             @relation(fields: [userId], references: [id], map: "Notifications_userId_fkey")
 
-  @@index([userId], map: "Notification_userId_idx")
+  @@index([userId], map: "Notifications_userId_idx")
 }
 
-model passwordreset {
+model passwordresets {
   id        Int      @id @default(autoincrement())
   userId    Int
-  token     String   @unique(map: "PasswordReset_token_key")
+  token     String   @unique(map: "PasswordResets_token_key")
   expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime
-  user      user     @relation(fields: [userId], references: [id], map: "PasswordReset_userId_fkey")
+  updatedAt DateTime @updatedAt
+  user      users    @relation(fields: [userId], references: [id], map: "PasswordResets_userId_fkey")
 
-  @@index([token], map: "PasswordReset_token_idx")
-  @@index([userId], map: "PasswordReset_userId_idx")
+  @@index([token], map: "PasswordResets_token_idx")
+  @@index([userId], map: "PasswordResets_userId_idx")
 }
 
-model permission {
+model permissions {
   id          Int      @id @default(autoincrement())
-  name        String   @unique(map: "Permission_name_key")
+  name        String   @unique(map: "Permissions_name_key")
   description String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  roles       role[]   @relation("permissiontorole")
+  updatedAt   DateTime @updatedAt
+  roles       roles[]  @relation("PermissionToRole")
 }
 
-model program {
-  id               Int            @id @default(autoincrement())
-  name             String
-  code             String         @unique
-  description      String?
-  duration         Int
-  status           program_status @default(active)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  departmentId     Int
-  totalCreditHours Int            @default(0)
-  department       department     @relation(fields: [departmentId], references: [id])
-  students         student[]
-  course           course[]       @relation("programtocourse")
-
-  @@index([departmentId], map: "programs_departmentId_fkey")
-  @@map("programs")
-}
-
-model role {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
+model roles {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
   description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  userRoles   userrole[]
-  permissions permission[] @relation("permissiontorole")
-
-  @@map("roles")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userRoles   userroles[]
+  permissions permissions[] @relation("PermissionToRole")
 }
 
-model section {
+model sections {
   id             Int              @id @default(autoincrement())
   name           String
   courseId       Int
@@ -177,71 +155,73 @@ model section {
   startDate      DateTime
   endDate        DateTime
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
-  course         course           @relation(fields: [courseId], references: [id], map: "Section_courseId_fkey")
-  faculty        faculty?         @relation(fields: [facultyId], references: [id], map: "Section_facultyId_fkey")
-  session        session[]
-  studentsection studentsection[]
-  timetableslot  timetableslot[]
-
-  @@index([courseId], map: "Section_courseId_idx")
-  @@index([facultyId], map: "Section_facultyId_idx")
-}
-
-model session {
-  id         Int            @id @default(autoincrement())
-  sectionId  Int
-  date       DateTime
-  startTime  DateTime
-  endTime    DateTime
-  topic      String?
-  remarks    String?
-  status     session_status @default(scheduled)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime
-  attendance attendance[]
-  section    section        @relation(fields: [sectionId], references: [id], map: "Session_sectionId_fkey")
-
-  @@index([sectionId], map: "Session_sectionId_idx")
-}
-
-model student {
-  id             Int              @id @default(autoincrement())
-  rollNumber     String           @unique
-  status         student_status   @default(active)
-  createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  userId         Int              @unique
-  departmentId   Int
-  programId      Int
-  department     department       @relation(fields: [departmentId], references: [id])
-  program        program          @relation(fields: [programId], references: [id])
-  user           user             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  studentsection studentsection[]
+  course         courses          @relation(fields: [courseId], references: [id], map: "Sections_courseId_fkey")
+  faculty        faculties?       @relation(fields: [facultyId], references: [id], map: "Sections_facultyId_fkey")
+  sessions       sessions[]
+  studentsections studentsections[]
+  timetableslots timetableslots[]
 
-  @@index([departmentId], map: "students_departmentId_fkey")
-  @@index([programId], map: "students_programId_fkey")
-  @@map("students")
+  @@index([courseId], map: "Sections_courseId_idx")
+  @@index([facultyId], map: "Sections_facultyId_idx")
 }
 
-model studentsection {
+model sessions {
+  id          Int            @id @default(autoincrement())
+  sectionId   Int
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  topic       String?
+  remarks     String?
+  status      session_status @default(scheduled)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  attendances attendances[]
+  section     sections       @relation(fields: [sectionId], references: [id], map: "Sessions_sectionId_fkey")
+
+  @@index([sectionId], map: "Sessions_sectionId_idx")
+}
+
+model students {
+  id              Int               @id @default(autoincrement())
+  rollNumber      String            @unique
+  status          student_status    @default(active)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  userId          Int               @unique
+  departmentId    Int
+  programId       Int
+  batchId         String?
+  batch           batches?          @relation("StudentToBatch", fields: [batchId], references: [id])
+  department      departments       @relation(fields: [departmentId], references: [id])
+  program         programs          @relation(fields: [programId], references: [id])
+  user            users             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentsections studentsections[]
+
+  @@index([departmentId], map: "Students_departmentId_fkey")
+  @@index([programId], map: "Students_programId_fkey")
+  @@index([batchId], map: "Students_batchId_fkey")
+}
+
+model studentsections {
   id             Int                   @id @default(autoincrement())
   studentId      Int
   sectionId      Int
   enrollmentDate DateTime              @default(now())
   status         studentsection_status @default(active)
   createdAt      DateTime              @default(now())
-  updatedAt      DateTime
-  attendance     attendance[]
-  section        section               @relation(fields: [sectionId], references: [id], map: "StudentSection_sectionId_fkey")
-  student        student               @relation(fields: [studentId], references: [id], map: "StudentSection_studentId_fkey")
+  updatedAt      DateTime              @updatedAt
+  attendances    attendances[]
+  section        sections              @relation(fields: [sectionId], references: [id], map: "StudentSections_sectionId_fkey")
+  student        students              @relation(fields: [studentId], references: [id], map: "StudentSections_studentId_fkey")
 
-  @@unique([studentId, sectionId], map: "StudentSection_studentId_sectionId_key")
-  @@index([sectionId], map: "StudentSection_sectionId_idx")
-  @@index([studentId], map: "StudentSection_studentId_idx")
+  @@unique([studentId, sectionId], map: "StudentSections_studentId_sectionId_key")
+  @@index([sectionId], map: "StudentSections_sectionId_idx")
+  @@index([studentId], map: "StudentSections_studentId_idx")
 }
 
-model timetableslot {
+model timetableslots {
   id         Int                  @id @default(autoincrement())
   sectionId  Int
   dayOfWeek  Int
@@ -250,16 +230,16 @@ model timetableslot {
   roomNumber String?
   status     timetableslot_status @default(active)
   createdAt  DateTime             @default(now())
-  updatedAt  DateTime
-  section    section              @relation(fields: [sectionId], references: [id], map: "TimetableSlot_sectionId_fkey")
+  updatedAt  DateTime             @updatedAt
+  section    sections             @relation(fields: [sectionId], references: [id], map: "TimetableSlots_sectionId_fkey")
 
-  @@index([sectionId], map: "TimetableSlot_sectionId_idx")
+  @@index([sectionId], map: "TimetableSlots_sectionId_idx")
 }
 
-model user {
+model users {
   id                 Int                  @id @default(autoincrement())
-  username           String?              @unique(map: "User_username_key")
-  email              String               @unique(map: "User_email_key")
+  username           String?              @unique(map: "Users_username_key")
+  email              String               @unique(map: "Users_email_key")
   password_hash      String
   first_name         String
   last_name          String
@@ -270,35 +250,32 @@ model user {
   email_verified     Boolean              @default(false)
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
-  attendance         attendance[]
-  auditlog           auditlog[]
-  departmentAdmin    department[]         @relation("DepartmentAdmin")
-  faculty            faculty?
-  notification       notification[]
-  passwordreset      passwordreset[]
-  passwordresettoken passwordresettoken[]
-  student            student?
-  userrole           userrole?
-
-  @@map("users")
+  attendances        attendances[]
+  auditlogs          auditlogs[]
+  departmentAdmin    departments?         @relation("DepartmentAdmin")
+  faculty            faculties?
+  notifications      notifications[]
+  passwordresets     passwordresets[]
+  passwordresettokens passwordresettokens[]
+  student            students?
+  userrole           userroles?
 }
 
-model userrole {
+model userroles {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
   roleId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role      role     @relation(fields: [roleId], references: [id])
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      roles    @relation(fields: [roleId], references: [id])
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, roleId], map: "user_roles_userId_roleId_key")
-  @@index([roleId], map: "user_roles_roleId_fkey")
-  @@index([userId], map: "user_roles_userId_fkey")
-  @@map("user_roles")
+  @@unique([userId, roleId])
+  @@index([roleId], map: "UserRoles_roleId_fkey")
+  @@index([userId], map: "UserRoles_userId_fkey")
 }
 
-model otp {
+model otps {
   id        Int      @id @default(autoincrement())
   email     String
   userType  String
@@ -306,21 +283,57 @@ model otp {
   expiresAt DateTime
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
-  @@index([email, userType], map: "OTP_email_userType_idx")
+  @@index([email, userType], map: "OTPs_email_userType_idx")
 }
 
-model passwordresettoken {
+model passwordresettokens {
   id        Int      @id @default(autoincrement())
   userId    Int
-  token     String   @unique(map: "PasswordResetToken_token_key")
+  token     String   @unique(map: "PasswordResetTokens_token_key")
   expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime
-  users     user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "PasswordResetToken_userId_fkey")
+  updatedAt DateTime @updatedAt
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "PasswordResetTokens_userId_fkey")
 
-  @@index([userId], map: "PasswordResetToken_userId_idx")
+  @@index([userId], map: "PasswordResetTokens_userId_idx")
+}
+
+model batches {
+  id          String         @id @default(cuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  maxStudents Int
+  description String?
+  status      batches_status @default(upcoming)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  programId   Int
+  program     programs       @relation(fields: [programId], references: [id])
+  students    students[]     @relation("StudentToBatch")
+
+  @@index([programId], map: "Batches_programId_fkey")
+}
+
+model programs {
+  id               Int             @id @default(autoincrement())
+  name             String
+  code             String          @unique
+  description      String?
+  duration         Int
+  status           programs_status @default(active)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  departmentId     Int
+  totalCreditHours Int             @default(0)
+  batches          batches[]
+  department       departments     @relation(fields: [departmentId], references: [id])
+  students         students[]
+  courses          courses[]       @relation("ProgramToCourse")
+
+  @@index([departmentId], map: "Programs_departmentId_fkey")
 }
 
 enum attendance_status {
@@ -376,11 +389,6 @@ enum course_status {
   archived
 }
 
-enum program_status {
-  active
-  inactive
-}
-
 enum session_status {
   scheduled
   in_progress
@@ -404,4 +412,15 @@ enum course_type {
   LAB
   PROJECT
   THESIS
+}
+
+enum programs_status {
+  active
+  inactive
+}
+
+enum batches_status {
+  active
+  completed
+  upcoming
 }

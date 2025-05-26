@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: whereClause,
       select: {
         id: true,
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email },
     });
 
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     const username = email.split('@')[0];
 
     // Create user with basic information only
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.users.create({
       data: {
         email,
         username,
