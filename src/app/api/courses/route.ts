@@ -1,20 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
-
-const CourseType = {
-  THEORY: 'THEORY',
-  LAB: 'LAB',
-  PROJECT: 'PROJECT',
-  THESIS: 'THESIS',
-} as const;
-
-const CourseStatus = {
-  active: 'active',
-  inactive: 'inactive',
-  archived: 'archived',
-} as const;
+import { Prisma, course_type, course_status } from '@prisma/client';
 
 const createCourseSchema = z.object({
   code: z.string().min(1, 'Course code is required'),
@@ -24,38 +11,51 @@ const createCourseSchema = z.object({
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
   type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
-  departmentId: z.string().min(1, 'Department is required'),
+  departmentId: z.coerce.number().min(1, 'Department is required'),
   status: z.enum(['active', 'inactive', 'archived'] as const).default('active'),
+  prerequisites: z.array(z.number()).optional(),
+  programIds: z.array(z.number()).optional(),
+});
+
+const updateCourseSchema = createCourseSchema.partial().extend({
+  id: z.number().optional(),
 });
 
 type CreateCourseInput = z.infer<typeof createCourseSchema>;
+type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 
 interface CourseResponse {
   id: number;
   code: string;
   name: string;
+  description: string | null;
   creditHours: number;
-  type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS';
+  theoryHours: number;
+  labHours: number;
+  type: course_type;
   department: {
     id: number;
     name: string;
     code: string;
   };
-  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  status: course_status;
   prerequisites: {
-    prerequisite: {
-      id: number;
-      code: string;
-      name: string;
-    };
+    id: number;
+    code: string;
+    name: string;
   }[];
-  corequisites: {
-    corequisite: {
-      id: number;
-      code: string;
-      name: string;
-    };
+  programs: {
+    id: number;
+    name: string;
+    code: string;
   }[];
+  clos: {
+    id: number;
+    code: string;
+    description: string;
+  }[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export async function GET(request: NextRequest) {
@@ -67,8 +67,10 @@ export async function GET(request: NextRequest) {
     const departmentId = searchParams.get('departmentId');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
+    const programId = searchParams.get('programId');
 
-    const where: any = {};
+    const where: Prisma.coursesWhereInput = {};
+
     if (search) {
       where.OR = [
         { code: { contains: search } },
@@ -79,81 +81,66 @@ export async function GET(request: NextRequest) {
       where.departmentId = parseInt(departmentId);
     }
     if (type && type !== 'all') {
-      where.type = type;
+      where.type = type as course_type;
     }
     if (status && status !== 'all') {
-      where.status = status.toLowerCase();
+      where.status = status as course_status;
+    }
+    if (programId && programId !== 'all') {
+      where.programs = {
+        some: {
+          id: parseInt(programId),
+        },
+      };
     }
 
-    const [courses, total] = await Promise.all([
-      prisma.course.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { code: 'asc' },
-        include: {
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-          course_A: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-            },
-          },
-          course_B: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-            },
+    // First get total count
+    const total = await prisma.courses.count({ where });
+
+    // Then get paginated data
+    const courses = await prisma.courses.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { code: 'asc' },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
           },
         },
-      }) as unknown as (Omit<
-        CourseResponse,
-        'prerequisites' | 'corequisites' | 'status'
-      > & {
-        course_A: { id: number; code: string; name: string }[];
-        course_B: { id: number; code: string; name: string }[];
-        status: string;
-      })[],
-      prisma.course.count({ where }),
-    ]);
-
-    // Transform the data to match the frontend interface
-    const transformedCourses: CourseResponse[] = courses.map((course) => {
-      const { course_A, course_B, ...rest } = course;
-      return {
-        ...rest,
-        status: course.status.toUpperCase() as
-          | 'ACTIVE'
-          | 'INACTIVE'
-          | 'ARCHIVED',
-        prerequisites: course_A.map((c) => ({
-          prerequisite: {
-            id: c.id,
-            code: c.code,
-            name: c.name,
+        prerequisites: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
           },
-        })),
-        corequisites: course_B.map((c) => ({
-          corequisite: {
-            id: c.id,
-            code: c.code,
-            name: c.name,
+        },
+        programs: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
           },
-        })),
-      };
+        },
+        clos: {
+          where: {
+            status: 'active',
+          },
+          select: {
+            id: true,
+            code: true,
+            description: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({
       success: true,
-      data: transformedCourses,
+      data: courses,
       pagination: {
         total,
         page,
@@ -172,64 +159,311 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Received POST request for course creation');
+    console.log('Course POST request received');
+
+    // Parse and validate request body
     const body = await request.json();
-    console.log('Request body:', body);
+    console.log('Request body:', JSON.stringify(body, null, 2));
 
-    const validatedData = createCourseSchema.parse(body) as CreateCourseInput;
-    console.log('Validated data:', validatedData);
+    const validatedData = createCourseSchema.parse(body);
+    console.log('Validated data:', JSON.stringify(validatedData, null, 2));
 
-    const courseData = {
-      code: validatedData.code,
-      name: validatedData.name,
-      description: validatedData.description ?? '',
-      creditHours: validatedData.creditHours,
-      theoryHours: validatedData.theoryHours,
-      labHours: validatedData.labHours,
-      type: validatedData.type,
-      departmentId: parseInt(validatedData.departmentId),
-      status: validatedData.status,
-    } as const;
-
-    const course = await prisma.course.create({
-      data: courseData,
+    // Check if course code already exists
+    const existingCourse = await prisma.courses.findUnique({
+      where: { code: validatedData.code },
     });
 
-    console.log('Course created:', course);
-    return NextResponse.json({
-      success: true,
-      data: course,
-    });
-  } catch (error) {
-    console.error('Error in course creation:', error);
+    if (existingCourse) {
+      console.log('Course code already exists:', validatedData.code);
+      return NextResponse.json(
+        { success: false, error: 'Course code already exists' },
+        { status: 400 }
+      );
+    }
 
-    if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors);
+    // Validate theory and lab hours
+    if (
+      validatedData.theoryHours + validatedData.labHours !==
+      validatedData.creditHours
+    ) {
+      console.log('Invalid hours configuration:', {
+        theoryHours: validatedData.theoryHours,
+        labHours: validatedData.labHours,
+        creditHours: validatedData.creditHours,
+      });
       return NextResponse.json(
         {
           success: false,
-          error: error.errors[0].message,
+          error: 'Theory hours plus lab hours must equal total credit hours',
         },
         { status: 400 }
       );
     }
 
-    if (error instanceof Error) {
-      console.error('Error details:', error.message);
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
+    // Extract prerequisites and programIds from validated data
+    const { prerequisites, programIds, ...courseData } = validatedData;
+    console.log('Course data to create:', JSON.stringify(courseData, null, 2));
+    console.log('Prerequisites:', prerequisites);
+    console.log('Program IDs:', programIds);
+
+    // Create the course with related data
+    const course = await prisma.courses.create({
+      data: {
+        ...courseData,
+        prerequisites: prerequisites
+          ? {
+              connect: prerequisites.map((id) => ({ id })),
+            }
+          : undefined,
+        programs: programIds
+          ? {
+              connect: programIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
         },
-        { status: 500 }
+        prerequisites: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+        programs: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        clos: {
+          where: {
+            status: 'active',
+          },
+          select: {
+            id: true,
+            code: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    console.log(
+      'Course created successfully:',
+      JSON.stringify(course, null, 2)
+    );
+
+    // Return success response
+    return NextResponse.json({
+      success: true,
+      data: course,
+      message: 'Course created successfully',
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('Validation error:', JSON.stringify(error.errors, null, 2));
+      return NextResponse.json(
+        { success: false, error: error.errors },
+        { status: 400 }
       );
     }
 
+    console.error('Error creating course:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      errorObject: JSON.stringify(error, null, 2),
+    });
+
     return NextResponse.json(
-      {
-        success: false,
-        error: 'An unexpected error occurred while creating the course',
+      { success: false, error: 'Failed to create course' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = updateCourseSchema.parse(body);
+
+    if (!validatedData.id) {
+      return NextResponse.json(
+        { success: false, error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const { id, prerequisites, programIds, ...updateData } = validatedData;
+
+    // Check if course exists
+    const existingCourse = await prisma.courses.findUnique({
+      where: { id },
+    });
+
+    if (!existingCourse) {
+      return NextResponse.json(
+        { success: false, error: 'Course not found' },
+        { status: 404 }
+      );
+    }
+
+    // Validate theory and lab hours if both are provided
+    if (
+      updateData.theoryHours &&
+      updateData.labHours &&
+      updateData.creditHours
+    ) {
+      if (
+        updateData.theoryHours + updateData.labHours !==
+        updateData.creditHours
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Theory hours plus lab hours must equal total credit hours',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update course
+    const course = await prisma.courses.update({
+      where: { id },
+      data: {
+        ...updateData,
+        prerequisites: prerequisites
+          ? {
+              set: [], // Clear existing prerequisites
+              connect: prerequisites.map((id) => ({ id })),
+            }
+          : undefined,
+        programs: programIds
+          ? {
+              set: [], // Clear existing program mappings
+              connect: programIds.map((id) => ({ id })),
+            }
+          : undefined,
       },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        prerequisites: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+        programs: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        clos: {
+          where: {
+            status: 'active',
+          },
+          select: {
+            id: true,
+            code: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: course,
+      message: 'Course updated successfully',
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: error.errors },
+        { status: 400 }
+      );
+    }
+    console.error('Error updating course:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to update course' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Check if course exists
+    const existingCourse = await prisma.courses.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!existingCourse) {
+      return NextResponse.json(
+        { success: false, error: 'Course not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if course has any active offerings
+    const activeOfferings = await prisma.courseofferings.findFirst({
+      where: {
+        courseId: parseInt(id),
+        status: 'active',
+      },
+    });
+
+    if (activeOfferings) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Cannot delete course with active offerings. Please archive the course instead.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Delete course
+    await prisma.courses.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Course deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete course' },
       { status: 500 }
     );
   }

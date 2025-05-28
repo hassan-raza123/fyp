@@ -302,8 +302,9 @@ async function main() {
     const batch2024 = await prisma.batches.create({
       data: {
         name: 'Fall 2024',
-        startDate: new Date('2024-09-01'),
-        endDate: new Date('2028-06-30'),
+        code: 'F2024',
+        startDate: new Date('2024-09-01T00:00:00.000Z'),
+        endDate: new Date('2028-06-30T00:00:00.000Z'),
         maxStudents: 50,
         description: 'Fall 2024 intake',
         status: 'active',
@@ -311,14 +312,15 @@ async function main() {
       },
     });
 
-    const batch2025 = await prisma.batches.create({
+    const batch2023 = await prisma.batches.create({
       data: {
-        name: 'Spring 2025',
-        startDate: new Date('2025-01-15'),
-        endDate: new Date('2029-12-31'),
-        maxStudents: 45,
-        description: 'Spring 2025 intake',
-        status: 'upcoming',
+        name: 'Fall 2023',
+        code: 'F2023',
+        startDate: new Date('2023-09-01T00:00:00.000Z'),
+        endDate: new Date('2027-06-30T00:00:00.000Z'),
+        maxStudents: 50,
+        description: 'Fall 2023 intake',
+        status: 'active',
         programId: bscsProgram.id,
       },
     });
@@ -396,19 +398,38 @@ async function main() {
       },
     });
 
+    console.log('Creating a semester');
+
+    // Create a semester
+    const semester = await prisma.semesters.create({
+      data: {
+        name: 'Fall 2024',
+        startDate: new Date('2024-09-01'),
+        endDate: new Date('2024-12-15'),
+        status: 'active',
+      },
+    });
+
+    // Create a course offering for programmingCourse
+    const offering = await prisma.courseofferings.create({
+      data: {
+        courseId: programmingCourse.id,
+        semesterId: semester.id,
+        status: 'active',
+      },
+    });
+
     console.log('Creating sections...');
 
     // Create sections
     const section1 = await prisma.sections.create({
       data: {
         name: 'CS101-A',
-        courseId: programmingCourse.id,
+        courseOfferingId: offering.id,
         facultyId: faculty.id,
-        semester: 1,
+        batchId: batch2024.id,
         maxStudents: 30,
         status: 'active',
-        startDate: new Date('2024-09-01'),
-        endDate: new Date('2024-12-15'),
       },
     });
 

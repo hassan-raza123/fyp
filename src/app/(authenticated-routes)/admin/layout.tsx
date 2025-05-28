@@ -135,9 +135,16 @@ const navigationSections = [
     title: 'Management',
     items: [
       { id: 'courses', label: 'Courses', icon: BookOpen },
+      { id: 'sections', label: 'Sections', icon: List },
       { id: 'faculty', label: 'Faculty', icon: UserCheck },
       { id: 'students', label: 'Students', icon: Users },
       { id: 'attendance', label: 'Attendance', icon: Calendar },
+      {
+        id: 'semesters',
+        label: 'Semesters',
+        icon: Calendar,
+        href: '/admin/semesters',
+      },
     ],
   },
   {

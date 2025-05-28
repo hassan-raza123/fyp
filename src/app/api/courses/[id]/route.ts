@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { course_type, course_status } from '@prisma/client';
 
 const updateCourseSchema = z.object({
   code: z.string().min(1, 'Course code is required'),
@@ -12,15 +13,26 @@ const updateCourseSchema = z.object({
   type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
   departmentId: z.coerce.number(),
   status: z.enum(['active', 'inactive', 'archived'] as const),
+  prerequisites: z.array(z.number()).optional(),
+  programIds: z.array(z.number()).optional(),
 });
 
 export async function GET(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const course = await prisma.course.findUnique({
-      where: { id: parseInt(params.id) },
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid course ID' },
+        { status: 400 }
+      );
+    }
+
+    const course = await prisma.courses.findUnique({
+      where: { id },
       include: {
         department: {
           select: {
@@ -29,18 +41,46 @@ export async function GET(
             code: true,
           },
         },
-        course_A: {
+        prerequisites: {
           select: {
             id: true,
             code: true,
             name: true,
           },
         },
-        course_B: {
+        courseOfferings: {
+          include: {
+            semester: true,
+            sections: {
+              include: {
+                faculty: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        clos: {
+          where: {
+            status: 'active',
+          },
+          orderBy: {
+            code: 'asc',
+          },
+        },
+        programs: {
           select: {
             id: true,
-            code: true,
             name: true,
+            code: true,
           },
         },
       },
@@ -53,27 +93,10 @@ export async function GET(
       );
     }
 
-    // Transform the data to match the frontend interface
-    const transformedCourse = {
-      ...course,
-      status: course.status.toUpperCase() as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED',
-      prerequisites: course.course_A.map((c) => ({
-        prerequisite: {
-          id: c.id,
-          code: c.code,
-          name: c.name,
-        },
-      })),
-      corequisites: course.course_B.map((c) => ({
-        corequisite: {
-          id: c.id,
-          code: c.code,
-          name: c.name,
-        },
-      })),
-    };
-
-    return NextResponse.json({ success: true, data: transformedCourse });
+    return NextResponse.json({
+      success: true,
+      data: course,
+    });
   } catch (error) {
     console.error('Error fetching course:', error);
     return NextResponse.json(
@@ -84,15 +107,15 @@ export async function GET(
 }
 
 export async function PUT(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await req.json();
+    const body = await request.json();
     const validatedData = updateCourseSchema.parse(body);
 
     // Check if course exists
-    const existingCourse = await prisma.course.findUnique({
+    const existingCourse = await prisma.courses.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -105,7 +128,7 @@ export async function PUT(
 
     // Check if code is already taken by another course
     if (validatedData.code !== existingCourse.code) {
-      const codeExists = await prisma.course.findFirst({
+      const codeExists = await prisma.courses.findFirst({
         where: {
           code: validatedData.code,
           id: { not: parseInt(params.id) },
@@ -136,9 +159,25 @@ export async function PUT(
       );
     }
 
-    const course = await prisma.course.update({
+    const { prerequisites, programIds, ...updateData } = validatedData;
+
+    const course = await prisma.courses.update({
       where: { id: parseInt(params.id) },
-      data: validatedData,
+      data: {
+        ...updateData,
+        prerequisites: prerequisites
+          ? {
+              set: [], // Clear existing prerequisites
+              connect: prerequisites.map((id) => ({ id })),
+            }
+          : undefined,
+        programs: programIds
+          ? {
+              set: [], // Clear existing program mappings
+              connect: programIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
       include: {
         department: {
           select: {
@@ -147,18 +186,37 @@ export async function PUT(
             code: true,
           },
         },
+        prerequisites: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+        programs: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        clos: {
+          where: {
+            status: 'active',
+          },
+          select: {
+            id: true,
+            code: true,
+            description: true,
+          },
+        },
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: {
-        ...course,
-        status: course.status.toUpperCase() as
-          | 'ACTIVE'
-          | 'INACTIVE'
-          | 'ARCHIVED',
-      },
+      data: course,
+      message: 'Course updated successfully',
     });
   } catch (error) {
     console.error('Error updating course:', error);
@@ -176,55 +234,59 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid course ID' },
+        { status: 400 }
+      );
+    }
+
     // Check if course exists
-    const course = await prisma.course.findUnique({
-      where: { id: parseInt(params.id) },
-      include: {
-        sections: true,
-        course_A: true,
-        course_B: true,
-      },
+    const existingCourse = await prisma.courses.findUnique({
+      where: { id },
     });
 
-    if (!course) {
+    if (!existingCourse) {
       return NextResponse.json(
         { success: false, error: 'Course not found' },
         { status: 404 }
       );
     }
 
-    // Check if course has any sections
-    if (course.sections.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete course with active sections',
-        },
-        { status: 400 }
-      );
-    }
+    // Check if course has any active offerings
+    const activeOfferings = await prisma.courseofferings.findFirst({
+      where: {
+        courseId: id,
+        status: 'active',
+      },
+    });
 
-    // Check if course is a prerequisite or corequisite for other courses
-    if (course.course_A.length > 0 || course.course_B.length > 0) {
+    if (activeOfferings) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Cannot delete course that is a prerequisite or corequisite for other courses',
+            'Cannot delete course with active offerings. Please archive the course instead.',
         },
         { status: 400 }
       );
     }
 
-    await prisma.course.delete({
-      where: { id: parseInt(params.id) },
+    // Delete course
+    await prisma.courses.delete({
+      where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: 'Course deleted successfully',
+    });
   } catch (error) {
     console.error('Error deleting course:', error);
     return NextResponse.json(

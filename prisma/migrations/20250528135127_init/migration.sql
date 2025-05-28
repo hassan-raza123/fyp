@@ -141,18 +141,17 @@ CREATE TABLE `roles` (
 CREATE TABLE `sections` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
-    `courseId` INTEGER NOT NULL,
+    `courseOfferingId` INTEGER NOT NULL,
     `facultyId` INTEGER NULL,
-    `semester` INTEGER NOT NULL,
+    `batchId` VARCHAR(191) NOT NULL,
     `maxStudents` INTEGER NOT NULL,
     `status` ENUM('active', 'inactive', 'suspended', 'deleted') NOT NULL DEFAULT 'active',
-    `startDate` DATETIME(3) NOT NULL,
-    `endDate` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    INDEX `Sections_courseId_idx`(`courseId`),
+    INDEX `Sections_courseOfferingId_idx`(`courseOfferingId`),
     INDEX `Sections_facultyId_idx`(`facultyId`),
+    INDEX `Sections_batchId_idx`(`batchId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -291,9 +290,28 @@ CREATE TABLE `passwordresettokens` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `batch_sessions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `batchId` VARCHAR(191) NOT NULL,
+    `type` ENUM('morning', 'evening') NOT NULL,
+    `dayOfWeek` INTEGER NULL,
+    `startTime` TIME(0) NULL,
+    `endTime` TIME(0) NULL,
+    `roomNumber` VARCHAR(191) NULL,
+    `status` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `BatchSessions_batchId_idx`(`batchId`),
+    UNIQUE INDEX `BatchSessions_batchId_type_key`(`batchId`, `type`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `batches` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
     `startDate` DATETIME(3) NOT NULL,
     `endDate` DATETIME(3) NOT NULL,
     `maxStudents` INTEGER NOT NULL,
@@ -303,6 +321,7 @@ CREATE TABLE `batches` (
     `updatedAt` DATETIME(3) NOT NULL,
     `programId` INTEGER NOT NULL,
 
+    UNIQUE INDEX `batches_code_key`(`code`),
     INDEX `Batches_programId_fkey`(`programId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -322,6 +341,236 @@ CREATE TABLE `programs` (
 
     UNIQUE INDEX `programs_code_key`(`code`),
     INDEX `Programs_departmentId_fkey`(`departmentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `semesters` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NOT NULL,
+    `status` ENUM('active', 'inactive', 'completed') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Semesters_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `courseofferings` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `courseId` INTEGER NOT NULL,
+    `semesterId` INTEGER NOT NULL,
+    `status` ENUM('active', 'inactive', 'cancelled') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `CourseOfferings_courseId_idx`(`courseId`),
+    INDEX `CourseOfferings_semesterId_idx`(`semesterId`),
+    UNIQUE INDEX `CourseOfferings_courseId_semesterId_key`(`courseId`, `semesterId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `plos` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `programId` INTEGER NOT NULL,
+    `bloomLevel` VARCHAR(191) NULL,
+    `status` ENUM('active', 'inactive', 'archived') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `PLOs_programId_idx`(`programId`),
+    UNIQUE INDEX `PLOs_code_programId_key`(`code`, `programId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `clos` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `courseId` INTEGER NOT NULL,
+    `bloomLevel` VARCHAR(191) NULL,
+    `status` ENUM('active', 'inactive', 'archived') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `CLOs_courseId_idx`(`courseId`),
+    UNIQUE INDEX `CLOs_code_courseId_key`(`code`, `courseId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `cloplomappings` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `cloId` INTEGER NOT NULL,
+    `ploId` INTEGER NOT NULL,
+    `weight` DOUBLE NOT NULL DEFAULT 1.0,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `CLO_PLO_Mappings_cloId_idx`(`cloId`),
+    INDEX `CLO_PLO_Mappings_ploId_idx`(`ploId`),
+    UNIQUE INDEX `CLO_PLO_Mappings_cloId_ploId_key`(`cloId`, `ploId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `assessments` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `type` ENUM('quiz', 'assignment', 'mid_exam', 'final_exam', 'project', 'presentation', 'lab_exam', 'viva') NOT NULL,
+    `totalMarks` DOUBLE NOT NULL,
+    `weightage` DOUBLE NOT NULL,
+    `courseOfferingId` INTEGER NOT NULL,
+    `conductedBy` INTEGER NOT NULL,
+    `dueDate` DATETIME(3) NULL,
+    `instructions` VARCHAR(191) NULL,
+    `status` ENUM('active', 'inactive', 'completed', 'cancelled') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `Assessments_courseOfferingId_idx`(`courseOfferingId`),
+    INDEX `Assessments_conductedBy_idx`(`conductedBy`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `assessmentitems` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `assessmentId` INTEGER NOT NULL,
+    `questionNo` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `marks` DOUBLE NOT NULL,
+    `cloId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `AssessmentItems_assessmentId_idx`(`assessmentId`),
+    INDEX `AssessmentItems_cloId_idx`(`cloId`),
+    UNIQUE INDEX `AssessmentItems_assessmentId_questionNo_key`(`assessmentId`, `questionNo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `studentassessmentresults` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `studentId` INTEGER NOT NULL,
+    `assessmentId` INTEGER NOT NULL,
+    `totalMarks` DOUBLE NOT NULL,
+    `obtainedMarks` DOUBLE NOT NULL,
+    `percentage` DOUBLE NOT NULL,
+    `submittedAt` DATETIME(3) NULL,
+    `evaluatedAt` DATETIME(3) NULL,
+    `evaluatedBy` INTEGER NULL,
+    `remarks` VARCHAR(191) NULL,
+    `status` ENUM('pending', 'evaluated', 'published', 'draft') NOT NULL DEFAULT 'pending',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `StudentAssessmentResults_studentId_idx`(`studentId`),
+    INDEX `StudentAssessmentResults_assessmentId_idx`(`assessmentId`),
+    INDEX `StudentAssessmentResults_evaluatedBy_idx`(`evaluatedBy`),
+    UNIQUE INDEX `StudentAssessmentResults_studentId_assessmentId_key`(`studentId`, `assessmentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `studentassessmentitemresults` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `studentAssessmentResultId` INTEGER NOT NULL,
+    `assessmentItemId` INTEGER NOT NULL,
+    `obtainedMarks` DOUBLE NOT NULL,
+    `totalMarks` DOUBLE NOT NULL,
+    `isCorrect` BOOLEAN NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `StudentItemResults_studentResult_idx`(`studentAssessmentResultId`),
+    INDEX `StudentItemResults_assessmentItem_idx`(`assessmentItemId`),
+    UNIQUE INDEX `StudentItemResults_unique`(`studentAssessmentResultId`, `assessmentItemId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `closattainments` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `cloId` INTEGER NOT NULL,
+    `courseOfferingId` INTEGER NOT NULL,
+    `totalStudents` INTEGER NOT NULL,
+    `studentsAchieved` INTEGER NOT NULL,
+    `threshold` DOUBLE NOT NULL DEFAULT 60.0,
+    `attainmentPercent` DOUBLE NOT NULL,
+    `calculatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `calculatedBy` INTEGER NOT NULL,
+    `status` ENUM('active', 'archived', 'draft') NOT NULL DEFAULT 'active',
+
+    INDEX `CLOsAttainments_cloId_idx`(`cloId`),
+    INDEX `CLOsAttainments_courseOfferingId_idx`(`courseOfferingId`),
+    INDEX `CLOsAttainments_calculatedBy_idx`(`calculatedBy`),
+    UNIQUE INDEX `CLOsAttainments_cloId_courseOfferingId_key`(`cloId`, `courseOfferingId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ploattainments` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `ploId` INTEGER NOT NULL,
+    `programId` INTEGER NOT NULL,
+    `semesterId` INTEGER NOT NULL,
+    `totalStudents` INTEGER NOT NULL,
+    `studentsAchieved` INTEGER NOT NULL,
+    `threshold` DOUBLE NOT NULL DEFAULT 60.0,
+    `attainmentPercent` DOUBLE NOT NULL,
+    `calculatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `calculatedBy` INTEGER NOT NULL,
+    `status` ENUM('active', 'archived', 'draft') NOT NULL DEFAULT 'active',
+
+    INDEX `PLOsAttainments_ploId_idx`(`ploId`),
+    INDEX `PLOsAttainments_programId_idx`(`programId`),
+    INDEX `PLOsAttainments_semesterId_idx`(`semesterId`),
+    INDEX `PLOsAttainments_calculatedBy_idx`(`calculatedBy`),
+    UNIQUE INDEX `PLOsAttainments_unique`(`ploId`, `programId`, `semesterId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `coursefeedbacks` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `studentId` INTEGER NOT NULL,
+    `courseOfferingId` INTEGER NOT NULL,
+    `rating` INTEGER NOT NULL,
+    `comments` VARCHAR(191) NULL,
+    `suggestions` VARCHAR(191) NULL,
+    `isAnonymous` BOOLEAN NOT NULL DEFAULT false,
+    `submittedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `CourseFeedbacks_studentId_idx`(`studentId`),
+    INDEX `CourseFeedbacks_courseOfferingId_idx`(`courseOfferingId`),
+    UNIQUE INDEX `CourseFeedbacks_studentId_courseOfferingId_key`(`studentId`, `courseOfferingId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `facultyfeedbacks` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `facultyId` INTEGER NOT NULL,
+    `courseOfferingId` INTEGER NOT NULL,
+    `studentEngagement` INTEGER NOT NULL,
+    `infrastructureRating` INTEGER NOT NULL,
+    `suggestions` VARCHAR(191) NULL,
+    `challenges` VARCHAR(191) NULL,
+    `submittedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `FacultyFeedbacks_facultyId_idx`(`facultyId`),
+    INDEX `FacultyFeedbacks_courseOfferingId_idx`(`courseOfferingId`),
+    UNIQUE INDEX `FacultyFeedbacks_facultyId_courseOfferingId_key`(`facultyId`, `courseOfferingId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -392,10 +641,13 @@ ALTER TABLE `notifications` ADD CONSTRAINT `Notifications_userId_fkey` FOREIGN K
 ALTER TABLE `passwordresets` ADD CONSTRAINT `PasswordResets_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `sections` ADD CONSTRAINT `Sections_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `courses`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `sections` ADD CONSTRAINT `sections_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `sections` ADD CONSTRAINT `Sections_facultyId_fkey` FOREIGN KEY (`facultyId`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `sections` ADD CONSTRAINT `sections_facultyId_fkey` FOREIGN KEY (`facultyId`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `sections` ADD CONSTRAINT `sections_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `batches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `sessions` ADD CONSTRAINT `Sessions_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `sections`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -431,10 +683,91 @@ ALTER TABLE `userroles` ADD CONSTRAINT `userroles_userId_fkey` FOREIGN KEY (`use
 ALTER TABLE `passwordresettokens` ADD CONSTRAINT `PasswordResetTokens_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `batch_sessions` ADD CONSTRAINT `batch_sessions_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `batches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `batches` ADD CONSTRAINT `batches_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `programs` ADD CONSTRAINT `programs_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `departments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `courseofferings` ADD CONSTRAINT `courseofferings_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `courses`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `courseofferings` ADD CONSTRAINT `courseofferings_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `plos` ADD CONSTRAINT `plos_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `clos` ADD CONSTRAINT `clos_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `courses`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `cloplomappings` ADD CONSTRAINT `cloplomappings_cloId_fkey` FOREIGN KEY (`cloId`) REFERENCES `clos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `cloplomappings` ADD CONSTRAINT `cloplomappings_ploId_fkey` FOREIGN KEY (`ploId`) REFERENCES `plos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assessments` ADD CONSTRAINT `assessments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assessments` ADD CONSTRAINT `assessments_conductedBy_fkey` FOREIGN KEY (`conductedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_cloId_fkey` FOREIGN KEY (`cloId`) REFERENCES `clos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_evaluatedBy_fkey` FOREIGN KEY (`evaluatedBy`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentassessmentitemresults` ADD CONSTRAINT `studentassessmentitemresults_studentAssessmentResultId_fkey` FOREIGN KEY (`studentAssessmentResultId`) REFERENCES `studentassessmentresults`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentassessmentitemresults` ADD CONSTRAINT `studentassessmentitemresults_assessmentItemId_fkey` FOREIGN KEY (`assessmentItemId`) REFERENCES `assessmentitems`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_cloId_fkey` FOREIGN KEY (`cloId`) REFERENCES `clos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_ploId_fkey` FOREIGN KEY (`ploId`) REFERENCES `plos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `coursefeedbacks` ADD CONSTRAINT `coursefeedbacks_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `coursefeedbacks` ADD CONSTRAINT `coursefeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `facultyfeedbacks` ADD CONSTRAINT `facultyfeedbacks_facultyId_fkey` FOREIGN KEY (`facultyId`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `facultyfeedbacks` ADD CONSTRAINT `facultyfeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_CoursePrerequisites` ADD CONSTRAINT `_CoursePrerequisites_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

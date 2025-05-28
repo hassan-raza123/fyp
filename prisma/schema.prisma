@@ -55,11 +55,12 @@ model courses {
   updatedAt      DateTime      @updatedAt
   departmentId   Int
   department     departments   @relation("DepartmentToCourse", fields: [departmentId], references: [id])
-  sections       sections[]
+  courseOfferings courseofferings[]
   prerequisites  courses[]     @relation("CoursePrerequisites")
   requiredBy     courses[]     @relation("CoursePrerequisites")
   faculties      faculties[]   @relation("FacultyCourses")
   programs       programs[]    @relation("ProgramToCourse")
+  clos            clos[]
 
   @@index([departmentId], map: "Courses_departmentId_idx")
 }
@@ -94,6 +95,10 @@ model faculties {
   user         users          @relation(fields: [userId], references: [id], onDelete: Cascade)
   sections     sections[]
   courses      courses[]      @relation("FacultyCourses")
+  assessments  assessments[]
+  evaluatedResults studentassessmentresults[] @relation("ResultEvaluator")
+  closCalculated  closattainments[] @relation("CLOAttainmentCalculator")
+  facultyFeedbacks facultyfeedbacks[] @relation("FacultyFeedbackGiver")
 
   @@index([departmentId], map: "Faculties_departmentId_fkey")
 }
@@ -145,25 +150,27 @@ model roles {
 }
 
 model sections {
-  id             Int              @id @default(autoincrement())
-  name           String
-  courseId       Int
-  facultyId      Int?
-  semester       Int
-  maxStudents    Int
-  status         section_status   @default(active)
-  startDate      DateTime
-  endDate        DateTime
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  course         courses          @relation(fields: [courseId], references: [id], map: "Sections_courseId_fkey")
-  faculty        faculties?       @relation(fields: [facultyId], references: [id], map: "Sections_facultyId_fkey")
-  sessions       sessions[]
-  studentsections studentsections[]
-  timetableslots timetableslots[]
+  id               Int              @id @default(autoincrement())
+  name             String           // "CS101-A", "CS101-B"
+  courseOfferingId Int
+  facultyId        Int?
+  batchId          String           // Required now
+  maxStudents      Int
+  status           section_status   @default(active)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  
+  // Relations
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  faculty          faculties?       @relation(fields: [facultyId], references: [id])
+  batch            batches          @relation(fields: [batchId], references: [id]) // Changed from optional to required
+  sessions         sessions[]
+  studentsections  studentsections[]
+  timetableslots   timetableslots[]
 
-  @@index([courseId], map: "Sections_courseId_idx")
+  @@index([courseOfferingId], map: "Sections_courseOfferingId_idx")
   @@index([facultyId], map: "Sections_facultyId_idx")
+  @@index([batchId], map: "Sections_batchId_idx")
 }
 
 model sessions {
@@ -198,6 +205,8 @@ model students {
   program         programs          @relation(fields: [programId], references: [id])
   user            users             @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentsections studentsections[]
+  assessmentResults studentassessmentresults[]
+  courseFeedbacks coursefeedbacks[]
 
   @@index([departmentId], map: "Students_departmentId_fkey")
   @@index([programId], map: "Students_programId_fkey")
@@ -259,6 +268,7 @@ model users {
   passwordresettokens passwordresettokens[]
   student            students?
   userrole           userroles?
+  ploCalculated      ploattainments[]    @relation("PLOAttainmentCalculator")
 }
 
 model userroles {
@@ -300,6 +310,35 @@ model passwordresettokens {
   @@index([userId], map: "PasswordResetTokens_userId_idx")
 }
 
+enum batch_session_type {
+  morning
+  evening
+}
+
+enum batch_session_status {
+  active
+  inactive
+  cancelled
+}
+
+model batch_sessions {
+  id          Int                  @id @default(autoincrement())
+  batchId     String
+  type        batch_session_type
+  dayOfWeek   Int?                 // 0=Sunday, 1=Monday, etc.
+  startTime   DateTime?            @db.Time(0)
+  endTime     DateTime?            @db.Time(0)
+  roomNumber  String?
+  status      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  
+  batch       batches              @relation(fields: [batchId], references: [id])
+
+  @@unique([batchId, type], map: "BatchSessions_batchId_type_key")
+  @@index([batchId], map: "BatchSessions_batchId_idx")
+}
+
 model batches {
   id          String         @id @default(cuid())
   name        String
@@ -312,9 +351,13 @@ model batches {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   programId   Int
+  
+  // Relations
   program     programs       @relation(fields: [programId], references: [id])
   students    students[]     @relation("StudentToBatch")
-
+  sessions    batch_sessions[]
+  sections    sections[]     // Relation to sections
+  
   @@index([programId], map: "Batches_programId_fkey")
 }
 
@@ -333,8 +376,44 @@ model programs {
   department       departments     @relation(fields: [departmentId], references: [id])
   students         students[]
   courses          courses[]       @relation("ProgramToCourse")
+  plos             plos[]
+  ploAttainments   ploattainments[]
 
   @@index([departmentId], map: "Programs_departmentId_fkey")
+}
+
+model semesters {
+  id          Int               @id @default(autoincrement())
+  name        String            // e.g., "Fall 2021", "Spring 2022"
+  startDate   DateTime
+  endDate     DateTime
+  status      semester_status   @default(active)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  courseOfferings courseofferings[]
+  ploAttainments  ploattainments[]
+
+  @@unique([name], map: "Semesters_name_key")
+}
+
+model courseofferings {
+  id          Int       @id @default(autoincrement())
+  courseId    Int
+  semesterId  Int
+  status      course_offering_status @default(active)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  course      courses   @relation(fields: [courseId], references: [id])
+  semester    semesters @relation(fields: [semesterId], references: [id])
+  sections    sections[]
+  assessments assessments[]
+  closAttainments closattainments[]
+  courseFeedbacks coursefeedbacks[]
+  facultyFeedbacks facultyfeedbacks[]
+
+  @@unique([courseId, semesterId], map: "CourseOfferings_courseId_semesterId_key")
+  @@index([courseId], map: "CourseOfferings_courseId_idx")
+  @@index([semesterId], map: "CourseOfferings_semesterId_idx")
 }
 
 enum attendance_status {
@@ -424,4 +503,293 @@ enum batches_status {
   active
   completed
   upcoming
+}
+
+enum semester_status {
+  active
+  inactive
+  completed
+}
+
+enum course_offering_status {
+  active
+  inactive
+  cancelled
+}
+
+model plos {
+  id          Int       @id @default(autoincrement())
+  code        String    // PLO1, PLO2, etc.
+  description String    // "Apply knowledge of computing and mathematics"
+  programId   Int
+  bloomLevel  String?   // Remember, Understand, Apply, Analyze, Evaluate, Create
+  status      plo_status @default(active)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  program     programs  @relation(fields: [programId], references: [id])
+  cloMappings cloplomappings[]
+  ploAttainments ploattainments[]
+  
+  @@unique([code, programId], map: "PLOs_code_programId_key")
+  @@index([programId], map: "PLOs_programId_idx")
+}
+
+model clos {
+  id          Int       @id @default(autoincrement())
+  code        String    // CLO1, CLO2, etc.
+  description String    // "Understand basic programming constructs"
+  courseId    Int
+  bloomLevel  String?   // Bloom's taxonomy level
+  status      clo_status @default(active)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  course      courses   @relation(fields: [courseId], references: [id])
+  ploMappings cloplomappings[]
+  assessmentItems assessmentitems[]
+  closAttainments closattainments[]
+  
+  @@unique([code, courseId], map: "CLOs_code_courseId_key")
+  @@index([courseId], map: "CLOs_courseId_idx")
+}
+
+model cloplomappings {
+  id        Int      @id @default(autoincrement())
+  cloId     Int
+  ploId     Int
+  weight    Float    @default(1.0) // Weightage for mapping
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  clo       clos     @relation(fields: [cloId], references: [id])
+  plo       plos     @relation(fields: [ploId], references: [id])
+  
+  @@unique([cloId, ploId], map: "CLO_PLO_Mappings_cloId_ploId_key")
+  @@index([cloId], map: "CLO_PLO_Mappings_cloId_idx")
+  @@index([ploId], map: "CLO_PLO_Mappings_ploId_idx")
+}
+
+model assessments {
+  id              Int             @id @default(autoincrement())
+  title           String
+  description     String?
+  type            assessment_type // quiz, assignment, mid, final, project
+  totalMarks      Float
+  weightage       Float           // % contribution to course
+  courseOfferingId Int
+  conductedBy     Int             // Faculty ID
+  dueDate         DateTime?
+  instructions    String?
+  status          assessment_status @default(active)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  courseOffering  courseofferings @relation(fields: [courseOfferingId], references: [id])
+  faculty         faculties       @relation(fields: [conductedBy], references: [id])
+  assessmentItems assessmentitems[]
+  studentResults  studentassessmentresults[]
+  
+  @@index([courseOfferingId], map: "Assessments_courseOfferingId_idx")
+  @@index([conductedBy], map: "Assessments_conductedBy_idx")
+}
+
+model assessmentitems {
+  id            Int      @id @default(autoincrement())
+  assessmentId  Int
+  questionNo    String   // Q1, Q1a, Q1b, etc.
+  description   String?  // Question text/description
+  marks         Float    // Marks for this question
+  cloId         Int      // Which CLO this question tests
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  assessment    assessments @relation(fields: [assessmentId], references: [id])
+  clo           clos        @relation(fields: [cloId], references: [id])
+  studentItemResults studentassessmentitemresults[]
+  
+  @@unique([assessmentId, questionNo], map: "AssessmentItems_assessmentId_questionNo_key")
+  @@index([assessmentId], map: "AssessmentItems_assessmentId_idx")
+  @@index([cloId], map: "AssessmentItems_cloId_idx")
+}
+
+model studentassessmentresults {
+  id            Int      @id @default(autoincrement())
+  studentId     Int
+  assessmentId  Int
+  totalMarks    Float    // Total marks obtained by student
+  obtainedMarks Float    // Marks obtained
+  percentage    Float    // Calculated percentage
+  submittedAt   DateTime?
+  evaluatedAt   DateTime?
+  evaluatedBy   Int?     // Faculty who evaluated
+  remarks       String?
+  status        result_status @default(pending)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  student       students    @relation(fields: [studentId], references: [id])
+  assessment    assessments @relation(fields: [assessmentId], references: [id])
+  evaluator     faculties?  @relation("ResultEvaluator", fields: [evaluatedBy], references: [id])
+  itemResults   studentassessmentitemresults[]
+  
+  @@unique([studentId, assessmentId], map: "StudentAssessmentResults_studentId_assessmentId_key")
+  @@index([studentId], map: "StudentAssessmentResults_studentId_idx")
+  @@index([assessmentId], map: "StudentAssessmentResults_assessmentId_idx")
+  @@index([evaluatedBy], map: "StudentAssessmentResults_evaluatedBy_idx")
+}
+
+model studentassessmentitemresults {
+  id                      Int      @id @default(autoincrement())
+  studentAssessmentResultId Int
+  assessmentItemId        Int
+  obtainedMarks          Float
+  totalMarks             Float
+  isCorrect              Boolean? // For objective questions
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  
+  // Relations
+  studentResult          studentassessmentresults @relation(fields: [studentAssessmentResultId], references: [id])
+  assessmentItem         assessmentitems          @relation(fields: [assessmentItemId], references: [id])
+  
+  @@unique([studentAssessmentResultId, assessmentItemId], map: "StudentItemResults_unique")
+  @@index([studentAssessmentResultId], map: "StudentItemResults_studentResult_idx")
+  @@index([assessmentItemId], map: "StudentItemResults_assessmentItem_idx")
+}
+
+model closattainments {
+  id                Int      @id @default(autoincrement())
+  cloId             Int
+  courseOfferingId  Int
+  totalStudents     Int      // Total students in course
+  studentsAchieved  Int      // Students who achieved threshold
+  threshold         Float    @default(60.0) // Threshold percentage
+  attainmentPercent Float    // Final attainment percentage
+  calculatedAt      DateTime @default(now())
+  calculatedBy      Int      // Faculty/Admin who calculated
+  status            attainment_status @default(active)
+  
+  // Relations
+  clo               clos            @relation(fields: [cloId], references: [id])
+  courseOffering    courseofferings @relation(fields: [courseOfferingId], references: [id])
+  calculator        faculties       @relation("CLOAttainmentCalculator", fields: [calculatedBy], references: [id])
+  
+  @@unique([cloId, courseOfferingId], map: "CLOsAttainments_cloId_courseOfferingId_key")
+  @@index([cloId], map: "CLOsAttainments_cloId_idx")
+  @@index([courseOfferingId], map: "CLOsAttainments_courseOfferingId_idx")
+  @@index([calculatedBy], map: "CLOsAttainments_calculatedBy_idx")
+}
+
+model ploattainments {
+  id                Int      @id @default(autoincrement())
+  ploId             Int
+  programId         Int
+  semesterId        Int      // For which semester this is calculated
+  totalStudents     Int
+  studentsAchieved  Int
+  threshold         Float    @default(60.0)
+  attainmentPercent Float
+  calculatedAt      DateTime @default(now())
+  calculatedBy      Int
+  status            attainment_status @default(active)
+  
+  // Relations
+  plo               plos      @relation(fields: [ploId], references: [id])
+  program           programs  @relation(fields: [programId], references: [id])
+  semester          semesters @relation(fields: [semesterId], references: [id])
+  calculator        users     @relation("PLOAttainmentCalculator", fields: [calculatedBy], references: [id])
+  
+  @@unique([ploId, programId, semesterId], map: "PLOsAttainments_unique")
+  @@index([ploId], map: "PLOsAttainments_ploId_idx")
+  @@index([programId], map: "PLOsAttainments_programId_idx")
+  @@index([semesterId], map: "PLOsAttainments_semesterId_idx")
+  @@index([calculatedBy], map: "PLOsAttainments_calculatedBy_idx")
+}
+
+model coursefeedbacks {
+  id               Int      @id @default(autoincrement())
+  studentId        Int
+  courseOfferingId Int
+  rating           Int      // 1-5 scale
+  comments         String?
+  suggestions      String?
+  isAnonymous      Boolean  @default(false)
+  submittedAt      DateTime @default(now())
+  
+  // Relations
+  student          students        @relation(fields: [studentId], references: [id])
+  courseOffering   courseofferings @relation(fields: [courseOfferingId], references: [id])
+  
+  @@unique([studentId, courseOfferingId], map: "CourseFeedbacks_studentId_courseOfferingId_key")
+  @@index([studentId], map: "CourseFeedbacks_studentId_idx")
+  @@index([courseOfferingId], map: "CourseFeedbacks_courseOfferingId_idx")
+}
+
+model facultyfeedbacks {
+  id               Int      @id @default(autoincrement())
+  facultyId        Int
+  courseOfferingId Int
+  studentEngagement Int     // 1-5 scale
+  infrastructureRating Int  // 1-5 scale
+  suggestions      String?
+  challenges       String?
+  submittedAt      DateTime @default(now())
+  
+  // Relations
+  faculty          faculties       @relation("FacultyFeedbackGiver", fields: [facultyId], references: [id])
+  courseOffering   courseofferings @relation(fields: [courseOfferingId], references: [id])
+  
+  @@unique([facultyId, courseOfferingId], map: "FacultyFeedbacks_facultyId_courseOfferingId_key")
+  @@index([facultyId], map: "FacultyFeedbacks_facultyId_idx")
+  @@index([courseOfferingId], map: "FacultyFeedbacks_courseOfferingId_idx")
+}
+
+enum plo_status {
+  active
+  inactive
+  archived
+}
+
+enum clo_status {
+  active
+  inactive
+  archived
+}
+
+enum assessment_type {
+  quiz
+  assignment
+  mid_exam
+  final_exam
+  project
+  presentation
+  lab_exam
+  viva
+}
+
+enum assessment_status {
+  active
+  inactive
+  completed
+  cancelled
+}
+
+enum result_status {
+  pending
+  evaluated
+  published
+  draft
+}
+
+enum attainment_status {
+  active
+  archived
+  draft
 }
