@@ -29,18 +29,25 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  courseId: z.string().min(1, 'Course is required'),
   facultyId: z.string().optional(),
-  semester: z.string().min(1, 'Semester is required'),
   maxStudents: z.string().min(1, 'Max students is required'),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
+  batchId: z.string().min(1, 'Batch is required'),
 });
 
-export function CreateSectionDialog() {
+interface CreateSectionDialogProps {
+  courseOfferingId: number;
+  onSuccess?: () => void;
+}
+
+export function CreateSectionDialog({
+  courseOfferingId,
+  onSuccess,
+}: CreateSectionDialogProps) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -48,23 +55,9 @@ export function CreateSectionDialog() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      courseId: '',
       facultyId: '',
-      semester: '',
       maxStudents: '',
-      startDate: '',
-      endDate: '',
-    },
-  });
-
-  const { data: courses } = useQuery({
-    queryKey: ['courses'],
-    queryFn: async () => {
-      const response = await fetch('/api/courses');
-      if (!response.ok) {
-        throw new Error('Failed to fetch courses');
-      }
-      return response.json();
+      batchId: '',
     },
   });
 
@@ -75,7 +68,20 @@ export function CreateSectionDialog() {
       if (!response.ok) {
         throw new Error('Failed to fetch faculties');
       }
-      return response.json();
+      const data = await response.json();
+      return data.data;
+    },
+  });
+
+  const { data: batches } = useQuery({
+    queryKey: ['batches'],
+    queryFn: async () => {
+      const response = await fetch('/api/batches');
+      if (!response.ok) {
+        throw new Error('Failed to fetch batches');
+      }
+      const data = await response.json();
+      return data.data;
     },
   });
 
@@ -88,15 +94,15 @@ export function CreateSectionDialog() {
         },
         body: JSON.stringify({
           ...values,
-          courseId: parseInt(values.courseId),
+          courseOfferingId,
           facultyId: values.facultyId ? parseInt(values.facultyId) : null,
-          semester: parseInt(values.semester),
           maxStudents: parseInt(values.maxStudents),
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create section');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create section');
       }
 
       return response.json();
@@ -105,6 +111,11 @@ export function CreateSectionDialog() {
       queryClient.invalidateQueries({ queryKey: ['sections'] });
       setOpen(false);
       form.reset();
+      toast.success('Section created successfully');
+      onSuccess?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -115,7 +126,10 @@ export function CreateSectionDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create Section</Button>
+        <Button>
+          <Plus className='mr-2 h-4 w-4' />
+          Create Section
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -132,36 +146,6 @@ export function CreateSectionDialog() {
                   <FormControl>
                     <Input placeholder='e.g., Section A' {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='courseId'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Course</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select a course' />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {courses?.map((course: any) => (
-                        <SelectItem
-                          key={course.id}
-                          value={course.id.toString()}
-                        >
-                          {course.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -198,13 +182,27 @@ export function CreateSectionDialog() {
             />
             <FormField
               control={form.control}
-              name='semester'
+              name='batchId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Semester</FormLabel>
-                  <FormControl>
-                    <Input type='number' min='1' max='8' {...field} />
-                  </FormControl>
+                  <FormLabel>Batch</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a batch' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {batches?.map((batch: any) => (
+                        <SelectItem key={batch.id} value={batch.id}>
+                          {batch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -222,34 +220,12 @@ export function CreateSectionDialog() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name='startDate'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <Input type='date' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='endDate'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <Input type='date' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type='submit' className='w-full'>
-              Create Section
+            <Button
+              type='submit'
+              className='w-full'
+              disabled={createSection.isPending}
+            >
+              {createSection.isPending ? 'Creating...' : 'Create Section'}
             </Button>
           </form>
         </Form>

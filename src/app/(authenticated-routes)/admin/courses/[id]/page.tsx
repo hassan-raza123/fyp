@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { use } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -70,54 +69,61 @@ interface Course {
   }[];
 }
 
-export default function CourseDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CourseDetailsPage() {
   const router = useRouter();
+  const params = useParams();
+  const courseId = params?.id;
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const resolvedParams = use(params);
-  const courseId = resolvedParams.id;
 
   useEffect(() => {
+    if (!courseId) {
+      setError('Course ID is missing');
+      setLoading(false);
+      return;
+    }
     fetchCourse();
   }, [courseId]);
 
   const fetchCourse = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch(`/api/courses/${courseId}`);
       if (!response.ok) throw new Error('Failed to fetch course');
       const data = await response.json();
-      if (data.success) {
-        const courseData = {
+      if (data.success && data.data) {
+        setCourse({
           ...data.data,
-          status: data.data.status.toLowerCase(),
+          status: data.data.status?.toLowerCase() || 'inactive',
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
           teachers: data.data.teachers || [],
           programs: data.data.programs || [],
-        };
-        setCourse(courseData);
+        });
       } else {
         throw new Error(data.error || 'Failed to fetch course');
       }
     } catch (error) {
       console.error('Error fetching course:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to fetch course'
+      );
       toast.error(
         error instanceof Error ? error.message : 'Failed to fetch course'
       );
-      router.push('/admin/courses');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!course) return;
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/courses/${courseId}`, {
@@ -170,22 +176,57 @@ export default function CourseDetailsPage({
     }
   };
 
+  // Loading state
   if (loading) {
     return (
       <div className='container mx-auto py-10'>
-        <div className='text-center'>Loading...</div>
+        <div className='flex items-center justify-center'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4'></div>
+            <p>Loading course details...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className='container mx-auto py-10'>
+        <div className='text-center'>
+          <p className='text-red-500 mb-4'>{error}</p>
+          <Button
+            variant='outline'
+            onClick={() => router.push('/admin/courses')}
+          >
+            <ArrowLeft className='h-4 w-4 mr-2' />
+            Back to Courses
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Not found state
   if (!course) {
     return (
       <div className='container mx-auto py-10'>
-        <div className='text-center'>Course not found</div>
+        <div className='text-center'>
+          <p className='text-muted-foreground mb-4'>Course not found</p>
+          <Button
+            variant='outline'
+            onClick={() => router.push('/admin/courses')}
+          >
+            <ArrowLeft className='h-4 w-4 mr-2' />
+            Back to Courses
+          </Button>
+        </div>
       </div>
     );
   }
 
+  // Main content
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
@@ -198,8 +239,12 @@ export default function CourseDetailsPage({
             <ArrowLeft className='h-4 w-4' />
           </Button>
           <div>
-            <h1 className='text-3xl font-bold'>{course.name}</h1>
-            <p className='text-muted-foreground'>Course Code: {course.code}</p>
+            <h1 className='text-3xl font-bold'>
+              {course?.name || 'Untitled Course'}
+            </h1>
+            <p className='text-muted-foreground'>
+              Course Code: {course?.code || 'N/A'}
+            </p>
           </div>
         </div>
         <div className='flex gap-2'>
@@ -227,12 +272,14 @@ export default function CourseDetailsPage({
             <div>
               <p className='text-sm text-muted-foreground'>Department</p>
               <p className='font-medium'>
-                {course.department.name} ({course.department.code})
+                {course.department
+                  ? `${course.department.name} (${course.department.code})`
+                  : 'N/A'}
               </p>
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>Credit Hours</p>
-              <p className='font-medium'>{course.creditHours}</p>
+              <p className='font-medium'>{course.creditHours || 0}</p>
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>Theory Hours</p>
@@ -267,8 +314,8 @@ export default function CourseDetailsPage({
                 <p className='text-sm text-muted-foreground'>Prerequisites</p>
                 <ul className='mt-1 list-disc list-inside'>
                   {course.prerequisites.map((prereq) => (
-                    <li key={prereq.prerequisite.id}>
-                      {prereq.prerequisite.code} - {prereq.prerequisite.name}
+                    <li key={prereq.prerequisite?.id}>
+                      {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
                     </li>
                   ))}
                 </ul>
@@ -279,8 +326,8 @@ export default function CourseDetailsPage({
                 <p className='text-sm text-muted-foreground'>Co-requisites</p>
                 <ul className='mt-1 list-disc list-inside'>
                   {course.corequisites.map((coreq) => (
-                    <li key={coreq.corequisite.id}>
-                      {coreq.corequisite.code} - {coreq.corequisite.name}
+                    <li key={coreq.corequisite?.id}>
+                      {coreq.corequisite?.code} - {coreq.corequisite?.name}
                     </li>
                   ))}
                 </ul>
@@ -314,10 +361,10 @@ export default function CourseDetailsPage({
           <div className='space-y-4'>
             {course.teachers && course.teachers.length > 0 ? (
               course.teachers.map((teacher) => (
-                <div key={teacher.teacher.id}>
-                  <p className='font-medium'>{teacher.teacher.name}</p>
+                <div key={teacher.teacher?.id}>
+                  <p className='font-medium'>{teacher.teacher?.name}</p>
                   <p className='text-muted-foreground'>
-                    {teacher.teacher.email}
+                    {teacher.teacher?.email}
                   </p>
                 </div>
               ))
@@ -334,9 +381,9 @@ export default function CourseDetailsPage({
           <div className='space-y-4'>
             {course.programs && course.programs.length > 0 ? (
               course.programs.map((program) => (
-                <div key={program.program.id}>
+                <div key={program.program?.id}>
                   <p className='font-medium'>
-                    {program.program.name} ({program.program.code})
+                    {program.program?.name} ({program.program?.code})
                   </p>
                   <p className='text-muted-foreground'>
                     Semester {program.semester} •{' '}
