@@ -168,6 +168,12 @@ const navigationSections = [
         icon: Users,
         href: '/admin/sections',
       },
+      {
+        id: 'batches',
+        label: 'Batches',
+        icon: Layers,
+        href: '/admin/batches',
+      },
     ],
   },
   {

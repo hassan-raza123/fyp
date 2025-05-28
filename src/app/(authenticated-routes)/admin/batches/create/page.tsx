@@ -64,12 +64,7 @@ export default function CreateBatchPage() {
           throw new Error('Failed to fetch programs');
         }
 
-        const text = await response.text();
-        if (!text) {
-          throw new Error('Empty response from server');
-        }
-
-        const { data } = JSON.parse(text);
+        const { data } = await response.json();
         if (Array.isArray(data)) {
           setPrograms(data);
         } else {
@@ -115,7 +110,6 @@ export default function CreateBatchPage() {
         throw new Error('Maximum students must be a positive number');
       }
 
-      console.log('Sending batch creation request...');
       const response = await fetch('/api/batches', {
         method: 'POST',
         headers: {
@@ -136,54 +130,23 @@ export default function CreateBatchPage() {
         }),
       });
 
-      console.log('Response status:', response.status);
-
-      // First check if the response is ok
       if (!response.ok) {
-        console.error('Response not OK:', response.status, response.statusText);
         const errorText = await response.text();
-        console.log('Error response text:', errorText);
-
         let errorMessage = 'Failed to create batch';
         if (errorText) {
           try {
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.error || errorMessage;
           } catch (e) {
-            console.error('Error parsing error response:', e);
-            // Use the raw text if parsing fails
             errorMessage = errorText || errorMessage;
           }
         }
         throw new Error(errorMessage);
       }
 
-      // Now get the response text for successful response
-      console.log('Getting response text...');
-      const responseText = await response.text();
-      console.log('Response text length:', responseText?.length);
-
-      if (!responseText || responseText.trim() === '') {
-        console.error('Empty response from server');
-        throw new Error('Empty response from server');
-      }
-
-      try {
-        // Try to parse the JSON response
-        console.log('Parsing response JSON...');
-        const data = JSON.parse(responseText);
-        console.log('Response data:', data);
-
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to create batch');
-        }
-
-        toast.success('Batch created successfully');
-        router.push('/admin/batches');
-      } catch (parseError) {
-        console.error('Error parsing success response:', parseError);
-        throw new Error('Invalid response from server');
-      }
+      const { data } = await response.json();
+      toast.success('Batch created successfully');
+      router.push('/admin/batches');
     } catch (error: any) {
       console.error('Error creating batch:', error);
       toast.error(error.message || 'Failed to create batch');
@@ -253,36 +216,31 @@ export default function CreateBatchPage() {
               className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
               required
             >
-              <option value=''>Select Program</option>
+              <option value=''>Select a program</option>
               {programs.map((program) => (
                 <option key={program.id} value={program.id}>
-                  {program.code} - {program.name} ({program.department.code})
+                  {program.name} ({program.code}) - {program.department.name}
                 </option>
               ))}
             </select>
           </div>
 
           <div className='space-y-2'>
-            <Label htmlFor='status'>Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) =>
-                setFormData({ ...formData, status: value as batches_status })
+            <label htmlFor='maxStudents' className='block text-sm font-medium'>
+              Maximum Students
+            </label>
+            <input
+              type='number'
+              id='maxStudents'
+              value={formData.maxStudents}
+              onChange={(e) =>
+                setFormData({ ...formData, maxStudents: e.target.value })
               }
-            >
-              <SelectTrigger id='status'>
-                <SelectValue placeholder='Select status' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={batches_status.upcoming}>
-                  Upcoming
-                </SelectItem>
-                <SelectItem value={batches_status.active}>Active</SelectItem>
-                <SelectItem value={batches_status.completed}>
-                  Completed
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+              required
+              min='1'
+              placeholder='Enter maximum number of students'
+            />
           </div>
 
           <div className='space-y-2'>
@@ -318,27 +276,31 @@ export default function CreateBatchPage() {
           </div>
 
           <div className='space-y-2'>
-            <label htmlFor='maxStudents' className='block text-sm font-medium'>
-              Maximum Students
+            <label htmlFor='status' className='block text-sm font-medium'>
+              Status
             </label>
-            <input
-              type='number'
-              id='maxStudents'
-              value={formData.maxStudents}
+            <select
+              id='status'
+              value={formData.status}
               onChange={(e) =>
-                setFormData({ ...formData, maxStudents: e.target.value })
+                setFormData({
+                  ...formData,
+                  status: e.target.value as batches_status,
+                })
               }
               className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
               required
-              min='1'
-              placeholder='Enter maximum number of students'
-            />
+            >
+              <option value={batches_status.upcoming}>Upcoming</option>
+              <option value={batches_status.active}>Active</option>
+              <option value={batches_status.completed}>Completed</option>
+            </select>
           </div>
         </div>
 
         <div className='space-y-2'>
           <label htmlFor='description' className='block text-sm font-medium'>
-            Description (Optional)
+            Description
           </label>
           <textarea
             id='description'
@@ -346,19 +308,13 @@ export default function CreateBatchPage() {
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            rows={4}
             className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
-            placeholder='Enter batch description'
+            rows={4}
+            placeholder='Enter batch description (optional)'
           />
         </div>
 
-        <div className='flex justify-end gap-4'>
-          <Link
-            href='/admin/batches'
-            className='px-6 py-2 border rounded-lg hover:bg-gray-50 transition-colors'
-          >
-            Cancel
-          </Link>
+        <div className='flex justify-end'>
           <button
             type='submit'
             disabled={isLoading}

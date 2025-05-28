@@ -1,159 +1,143 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import PageTitle from '@/components/ui/PageTitle';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { batches_status } from '@prisma/client';
 
 interface Program {
   id: number;
   name: string;
   code: string;
+  department: {
+    name: string;
+    code: string;
+  };
 }
 
 interface Batch {
   id: string;
   name: string;
-  programId: number;
+  code: string;
   startDate: string;
   endDate: string;
   maxStudents: number;
-  description: string;
-  status: 'active' | 'completed' | 'upcoming';
+  description: string | null;
+  status: batches_status;
+  program: {
+    id: number;
+    name: string;
+    code: string;
+  };
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  programId: z.string().min(1, 'Program is required'),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
-  maxStudents: z.string().min(1, 'Max students is required'),
-  description: z.string().optional(),
-  status: z.enum(['active', 'completed', 'upcoming']),
-});
+interface FormData {
+  name: string;
+  code: string;
+  programId: number;
+  maxStudents: number;
+  startDate: string;
+  endDate: string;
+  status: batches_status;
+  description: string;
+}
 
-export default function EditBatchPage() {
-  const params = useParams();
+export default function EditBatchPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const batchId = params.id as string;
-
-  const [batch, setBatch] = useState<Batch | null>(null);
-  const [programs, setPrograms] = useState<Program[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      programId: '',
-      startDate: '',
-      endDate: '',
-      maxStudents: '',
-      description: '',
-      status: 'upcoming',
-    },
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    code: '',
+    programId: 0,
+    maxStudents: 0,
+    startDate: '',
+    endDate: '',
+    status: 'upcoming',
+    description: '',
   });
 
   useEffect(() => {
-    fetchBatch();
-    fetchPrograms();
-  }, [batchId]);
+    fetchBatchAndPrograms();
+  }, [params.id]);
 
-  const fetchBatch = async () => {
+  const fetchBatchAndPrograms = async () => {
     try {
-      const response = await fetch(`/api/batches/${batchId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch batch');
+      const [batchResponse, programsResponse] = await Promise.all([
+        fetch(`/api/batches/${params.id}`),
+        fetch('/api/programs'),
+      ]);
+
+      if (!batchResponse.ok || !programsResponse.ok) {
+        throw new Error('Failed to fetch data');
       }
-      const { data } = await response.json();
-      if (data) {
-        setBatch(data);
-        form.reset({
-          name: data.name,
-          programId: data.programId.toString(),
-          startDate: new Date(data.startDate).toISOString().split('T')[0],
-          endDate: new Date(data.endDate).toISOString().split('T')[0],
-          maxStudents: data.maxStudents.toString(),
-          description: data.description || '',
-          status: data.status,
-        });
-      }
+
+      const [{ data: batch }, { data: programsData }] = await Promise.all([
+        batchResponse.json(),
+        programsResponse.json(),
+      ]);
+
+      setPrograms(programsData);
+      setFormData({
+        name: batch.name,
+        code: batch.code,
+        programId: batch.program.id,
+        maxStudents: batch.maxStudents,
+        startDate: batch.startDate.split('T')[0],
+        endDate: batch.endDate ? batch.endDate.split('T')[0] : '',
+        status: batch.status,
+        description: batch.description || '',
+      });
     } catch (error) {
-      console.error('Error fetching batch:', error);
+      console.error('Error fetching data:', error);
       toast.error('Failed to load batch data');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchPrograms = async () => {
-    try {
-      const response = await fetch('/api/programs');
-      if (!response.ok) {
-        throw new Error('Failed to fetch programs');
-      }
-      const { data } = await response.json();
-      setPrograms(data);
-    } catch (error) {
-      console.error('Error fetching programs:', error);
-      toast.error('Failed to load programs');
-    }
-  };
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      const response = await fetch(`/api/batches/${batchId}`, {
+      // Validate form data
+      if (!formData.name || !formData.code || !formData.programId) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      if (formData.maxStudents <= 0) {
+        toast.error('Maximum students must be greater than 0');
+        return;
+      }
+
+      if (
+        formData.endDate &&
+        new Date(formData.endDate) < new Date(formData.startDate)
+      ) {
+        toast.error('End date cannot be before start date');
+        return;
+      }
+
+      const response = await fetch(`/api/batches/${params.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...values,
-          programId: parseInt(values.programId),
-          maxStudents: parseInt(values.maxStudents),
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to update batch');
+        throw new Error(error.message || 'Failed to update batch');
       }
 
       toast.success('Batch updated successfully');
-      router.push(`/admin/batches/${batchId}`);
+      router.push(`/admin/batches/${params.id}`);
     } catch (error) {
       console.error('Error updating batch:', error);
       toast.error(
@@ -164,198 +148,210 @@ export default function EditBatchPage() {
     }
   };
 
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        name === 'programId' || name === 'maxStudents' ? Number(value) : value,
+    }));
+  };
+
   if (isLoading) {
     return (
-      <div className='container mx-auto p-6 flex justify-center items-center min-h-[400px]'>
+      <div className='flex items-center justify-center min-h-[400px]'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
       </div>
     );
   }
 
   return (
-    <div className='container mx-auto p-6'>
-      <div className='flex items-center justify-between mb-6'>
-        <Button variant='outline' asChild>
-          <Link href={`/admin/batches/${batchId}`}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Batch
-          </Link>
-        </Button>
+    <div className='space-y-6'>
+      <div className='flex items-center gap-4'>
+        <Link
+          href={`/admin/batches/${params.id}`}
+          className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+        >
+          <ArrowLeft className='w-5 h-5' />
+        </Link>
+        <h1 className='text-2xl font-bold'>Edit Batch</h1>
       </div>
 
-      <PageTitle heading='Edit Batch' />
+      <form onSubmit={handleSubmit} className='space-y-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='space-y-2'>
+            <label
+              htmlFor='name'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Batch Name *
+            </label>
+            <input
+              type='text'
+              id='name'
+              name='name'
+              value={formData.name}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            />
+          </div>
 
-      <Card className='mt-6'>
-        <CardHeader>
-          <CardTitle>Batch Information</CardTitle>
-          <CardDescription>
-            Update the batch details below. All fields marked with * are
-            required.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Enter batch name' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='space-y-2'>
+            <label
+              htmlFor='code'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Batch Code *
+            </label>
+            <input
+              type='text'
+              id='code'
+              name='code'
+              value={formData.code}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name='programId'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Program *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select a program' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {programs.map((program) => (
-                            <SelectItem
-                              key={program.id}
-                              value={program.id.toString()}
-                            >
-                              {program.name} ({program.code})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='space-y-2'>
+            <label
+              htmlFor='programId'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Program *
+            </label>
+            <select
+              id='programId'
+              name='programId'
+              value={formData.programId}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            >
+              <option value=''>Select a program</option>
+              {programs.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.name} ({program.code}) - {program.department.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name='startDate'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date *</FormLabel>
-                      <FormControl>
-                        <Input type='date' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='space-y-2'>
+            <label
+              htmlFor='maxStudents'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Maximum Students *
+            </label>
+            <input
+              type='number'
+              id='maxStudents'
+              name='maxStudents'
+              value={formData.maxStudents}
+              onChange={handleChange}
+              min='1'
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name='endDate'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Date *</FormLabel>
-                      <FormControl>
-                        <Input type='date' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='space-y-2'>
+            <label
+              htmlFor='startDate'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Start Date *
+            </label>
+            <input
+              type='date'
+              id='startDate'
+              name='startDate'
+              value={formData.startDate}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name='maxStudents'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Maximum Students *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          min='1'
-                          placeholder='Enter maximum number of students'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='space-y-2'>
+            <label
+              htmlFor='endDate'
+              className='block text-sm font-medium text-gray-700'
+            >
+              End Date
+            </label>
+            <input
+              type='date'
+              id='endDate'
+              name='endDate'
+              value={formData.endDate}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name='status'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select status' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='upcoming'>Upcoming</SelectItem>
-                          <SelectItem value='active'>Active</SelectItem>
-                          <SelectItem value='completed'>Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <div className='space-y-2'>
+            <label
+              htmlFor='status'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Status *
+            </label>
+            <select
+              id='status'
+              name='status'
+              value={formData.status}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+              required
+            >
+              <option value='upcoming'>Upcoming</option>
+              <option value='active'>Active</option>
+              <option value='completed'>Completed</option>
+            </select>
+          </div>
+        </div>
 
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Enter batch description'
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Optional: Add a description for this batch
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <div className='space-y-2'>
+          <label
+            htmlFor='description'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Description
+          </label>
+          <textarea
+            id='description'
+            name='description'
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary'
+          />
+        </div>
 
-              <div className='flex justify-end gap-4'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => router.back()}
-                >
-                  Cancel
-                </Button>
-                <Button type='submit' disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  )}
-                  Update Batch
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+        <div className='flex justify-end gap-4'>
+          <Link
+            href={`/admin/batches/${params.id}`}
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
+          >
+            Cancel
+          </Link>
+          <button
+            type='submit'
+            disabled={isSubmitting}
+            className='px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

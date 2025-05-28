@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { batches_status } from '@prisma/client';
 
 interface Batch {
   id: string;
@@ -19,13 +20,18 @@ interface Batch {
   code: string;
   startDate: string;
   endDate: string;
-  status: 'active' | 'inactive' | 'completed' | 'upcoming';
+  status: batches_status;
   program: {
     name: string;
     code: string;
+    department: {
+      name: string;
+      code: string;
+    };
   };
   _count: {
     students: number;
+    sections: number;
   };
 }
 
@@ -86,7 +92,10 @@ export default function BatchesPage() {
     const matchesSearch =
       batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       batch.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      batch.program.name.toLowerCase().includes(searchTerm.toLowerCase());
+      batch.program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      batch.program.department.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     const matchesStatus =
       selectedStatus === 'all' || batch.status === selectedStatus;
     return matchesSearch && matchesStatus;
@@ -135,7 +144,6 @@ export default function BatchesPage() {
           >
             <option value='all'>All Status</option>
             <option value='active'>Active</option>
-            <option value='inactive'>Inactive</option>
             <option value='completed'>Completed</option>
             <option value='upcoming'>Upcoming</option>
           </select>
@@ -163,6 +171,9 @@ export default function BatchesPage() {
                   Program
                 </th>
                 <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
+                  Department
+                </th>
+                <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
                   Start Date
                 </th>
                 <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
@@ -173,6 +184,9 @@ export default function BatchesPage() {
                 </th>
                 <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
                   Students
+                </th>
+                <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
+                  Sections
                 </th>
                 <th className='px-6 py-3 text-left text-sm font-medium text-gray-500'>
                   Actions
@@ -190,6 +204,9 @@ export default function BatchesPage() {
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-500'>
                     {batch.program.name}
+                  </td>
+                  <td className='px-6 py-4 text-sm text-gray-500'>
+                    {batch.program.department.name}
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-500'>
                     {new Date(batch.startDate).toLocaleDateString()}
@@ -215,6 +232,9 @@ export default function BatchesPage() {
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-500'>
                     {batch._count.students}
+                  </td>
+                  <td className='px-6 py-4 text-sm text-gray-500'>
+                    {batch._count.sections}
                   </td>
                   <td className='px-6 py-4'>
                     <div className='flex items-center gap-2'>
