@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-utils';
 import { z } from 'zod';
 
 const createSectionSchema = z.object({
@@ -12,8 +11,17 @@ const createSectionSchema = z.object({
   maxStudents: z.number().min(1, 'Max students must be at least 1'),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const sections = await prisma.sections.findMany({
       include: {
         courseOffering: {
@@ -73,18 +81,22 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Check authentication
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
     const body = await request.json();
+    console.log('Received request body:', body);
+
     const validatedData = createSectionSchema.parse(body);
+    console.log('Validated data:', validatedData);
 
     // Check if course offering exists
     const courseOffering = await prisma.courseofferings.findUnique({
@@ -198,12 +210,13 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Check authentication
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }

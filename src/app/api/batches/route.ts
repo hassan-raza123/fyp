@@ -6,6 +6,15 @@ import { batches_status } from '@prisma/client';
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
@@ -30,6 +39,8 @@ export async function GET(request: NextRequest) {
         { description: { contains: search } },
       ];
     }
+
+    console.log('Fetching batches with conditions:', where);
 
     // Execute the query using Prisma
     const batches = await prisma.batches.findMany({
@@ -58,6 +69,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
+
+    console.log('Found batches:', batches.length);
 
     return NextResponse.json({
       success: true,

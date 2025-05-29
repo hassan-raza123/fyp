@@ -27,57 +27,59 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
     const courseId = searchParams.get('courseId');
     const semesterId = searchParams.get('semesterId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get('page') || '1');
 
+    // Build query conditions
     const where: any = {};
 
     if (courseId) {
       where.courseId = parseInt(courseId);
     }
+
     if (semesterId) {
       where.semesterId = parseInt(semesterId);
     }
+
     if (status) {
       where.status = status;
     }
+
     if (search) {
       where.OR = [
-        {
-          course: {
-            OR: [
-              { code: { contains: search } },
-              { name: { contains: search } },
-            ],
-          },
-        },
-        {
-          semester: {
-            name: { contains: search },
-          },
-        },
+        { course: { name: { contains: search } } },
+        { course: { code: { contains: search } } },
+        { semester: { name: { contains: search } } },
       ];
     }
 
+    console.log('Fetching course offerings with conditions:', where);
+
+    // Execute the query using Prisma
     const [offerings, total] = await Promise.all([
       prisma.courseofferings.findMany({
         where,
         include: {
           course: {
             select: {
-              id: true,
-              code: true,
               name: true,
+              code: true,
+              department: {
+                select: {
+                  name: true,
+                  code: true,
+                },
+              },
             },
           },
           semester: {
             select: {
-              id: true,
               name: true,
               startDate: true,
               endDate: true,
@@ -89,35 +91,31 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        skip: (page - 1) * limit,
-        take: limit,
         orderBy: {
           createdAt: 'desc',
         },
+        take: limit,
+        skip: (page - 1) * limit,
       }),
       prisma.courseofferings.count({ where }),
     ]);
+
+    console.log('Found course offerings:', offerings.length);
 
     return NextResponse.json({
       success: true,
       data: offerings,
       pagination: {
         total,
+        pages: Math.ceil(total / limit),
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
     console.error('Error fetching course offerings:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to fetch course offerings',
-      },
+      { success: false, error: 'Failed to fetch course offerings' },
       { status: 500 }
     );
   }

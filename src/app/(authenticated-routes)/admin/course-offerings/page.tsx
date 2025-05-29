@@ -25,7 +25,6 @@ import { toast } from 'sonner';
 import { Plus, Search, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { course_offering_status } from '@prisma/client';
-import { CreateCourseOfferingDialog } from '@/components/course-offerings/create-course-offering-dialog';
 
 interface CourseOffering {
   id: number;
@@ -117,7 +116,10 @@ export default function CourseOfferingsPage() {
             Manage course offerings for each semester
           </p>
         </div>
-        <CreateCourseOfferingDialog onSuccess={fetchCourseOfferings} />
+        <Button onClick={() => router.push('/admin/course-offerings/create')}>
+          <Plus className='mr-2 h-4 w-4' />
+          Create Course Offering
+        </Button>
       </div>
 
       <Card className='p-6'>

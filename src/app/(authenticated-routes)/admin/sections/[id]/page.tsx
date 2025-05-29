@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -15,45 +12,47 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface CourseOffering {
+  id: number;
+  course: {
+    id: number;
+    code: string;
+    name: string;
+  };
+  semester: {
+    id: number;
+    name: string;
+  };
+}
+
+interface Faculty {
+  id: number;
+  user: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
+interface Batch {
+  id: string;
+  name: string;
+}
 
 interface Section {
   id: number;
   name: string;
   maxStudents: number;
   status: 'active' | 'inactive' | 'suspended' | 'deleted';
-  courseOffering: {
-    id: number;
-    course: {
-      id: number;
-      code: string;
-      name: string;
-    };
-    semester: {
-      id: number;
-      name: string;
-    };
-  };
-  faculty: {
-    id: number;
-    user: {
-      first_name: string;
-      last_name: string;
-      email: string;
-    };
-  } | null;
-  batch: {
-    id: string;
-    name: string;
-  };
+  courseOffering: CourseOffering;
+  faculty: Faculty | null;
+  batch: Batch;
   _count: {
     studentsections: number;
   };
@@ -62,72 +61,64 @@ interface Section {
 export default function SectionDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const [section, setSection] = useState<Section | null>(null);
+  const { id } = use(params);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [section, setSection] = useState<Section | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchSection = async () => {
+  useEffect(() => {
+    fetchSectionDetails();
+  }, [id]);
+
+  const fetchSectionDetails = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(`/api/sections/${params.id}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setSection(data.data);
-      } else {
-        toast.error(data.error || 'Failed to fetch section');
-        router.push('/admin/sections');
+      const response = await fetch(`/api/sections/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch section details');
       }
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch section details');
+      }
+      setSection(data.data);
     } catch (error) {
-      toast.error('Failed to fetch section');
-      router.push('/admin/sections');
+      console.error('Error fetching section details:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch section details'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchSection();
-  }, [params.id]);
-
   const handleDelete = async () => {
+    setDeleting(true);
     try {
-      setIsDeleting(true);
-      const response = await fetch(`/api/sections?id=${params.id}`, {
+      const response = await fetch(`/api/sections/${id}`, {
         method: 'DELETE',
       });
+
       const data = await response.json();
-
-      if (data.success) {
-        toast.success('Section deleted successfully');
-        router.push('/admin/sections');
-      } else {
-        toast.error(data.error || 'Failed to delete section');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete section');
       }
-    } catch (error) {
-      toast.error('Failed to delete section');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
 
-  const getStatusColor = (status: Section['status']) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500';
-      case 'inactive':
-        return 'bg-yellow-500';
-      case 'suspended':
-        return 'bg-orange-500';
-      case 'deleted':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
+      toast.success('Section deleted successfully');
+      router.push('/admin/sections');
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete section'
+      );
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -151,6 +142,19 @@ export default function SectionDetailsPage({
     );
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500';
+      case 'inactive':
+        return 'bg-gray-500';
+      case 'suspended':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
   return (
     <div className='container mx-auto py-10'>
       <div className='flex items-center gap-4 mb-6'>
@@ -162,7 +166,7 @@ export default function SectionDetailsPage({
           <ArrowLeft className='h-4 w-4' />
         </Button>
         <div>
-          <h1 className='text-3xl font-bold'>{section.name}</h1>
+          <h1 className='text-3xl font-bold'>Section Details</h1>
           <p className='text-muted-foreground'>
             {section.courseOffering.course.code} -{' '}
             {section.courseOffering.course.name}
@@ -170,97 +174,132 @@ export default function SectionDetailsPage({
         </div>
       </div>
 
-      <div className='grid gap-6'>
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Section Details</h2>
-          <div className='space-y-4'>
-            <div>
-              <p className='text-sm text-muted-foreground'>Section Name</p>
-              <p className='font-medium'>{section.name}</p>
+      <Card>
+        <CardHeader>
+          <div className='flex items-center justify-between'>
+            <CardTitle>Section Information</CardTitle>
+            <div className='flex items-center gap-2'>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => router.push(`/admin/sections/${id}/edit`)}
+              >
+                <Pencil className='h-4 w-4 mr-2' />
+                Edit
+              </Button>
+              <Dialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button variant='destructive' size='sm'>
+                    <Trash2 className='h-4 w-4 mr-2' />
+                    Delete
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete Section</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this section? This action
+                      cannot be undone.
+                      {section._count.studentsections > 0 && (
+                        <span className='block text-red-500 mt-2'>
+                          Warning: This section has{' '}
+                          {section._count.studentsections} enrolled students.
+                          You cannot delete a section with enrolled students.
+                        </span>
+                      )}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant='outline'
+                      onClick={() => setShowDeleteDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant='destructive'
+                      onClick={handleDelete}
+                      disabled={deleting || section._count.studentsections > 0}
+                    >
+                      {deleting ? 'Deleting...' : 'Delete'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className='grid grid-cols-2 gap-6'>
             <div>
-              <p className='text-sm text-muted-foreground'>Course</p>
-              <p className='font-medium'>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Section Name
+              </h3>
+              <p className='mt-1'>{section.name}</p>
+            </div>
+
+            <div>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Course
+              </h3>
+              <p className='mt-1'>
                 {section.courseOffering.course.code} -{' '}
                 {section.courseOffering.course.name}
               </p>
             </div>
+
             <div>
-              <p className='text-sm text-muted-foreground'>Semester</p>
-              <p className='font-medium'>
-                {section.courseOffering.semester.name}
-              </p>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Semester
+              </h3>
+              <p className='mt-1'>{section.courseOffering.semester.name}</p>
             </div>
+
             <div>
-              <p className='text-sm text-muted-foreground'>Faculty</p>
-              <p className='font-medium'>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Faculty
+              </h3>
+              <p className='mt-1'>
                 {section.faculty
                   ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
                   : 'Not assigned'}
               </p>
             </div>
+
             <div>
-              <p className='text-sm text-muted-foreground'>Batch</p>
-              <p className='font-medium'>{section.batch.name}</p>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Batch
+              </h3>
+              <p className='mt-1'>{section.batch.name}</p>
             </div>
+
             <div>
-              <p className='text-sm text-muted-foreground'>Students</p>
-              <p className='font-medium'>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Students
+              </h3>
+              <p className='mt-1'>
                 {section._count.studentsections} / {section.maxStudents}
               </p>
             </div>
+
             <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
-              <Badge className={getStatusColor(section.status)}>
-                {section.status}
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Status
+              </h3>
+              <Badge
+                className={`mt-1 ${getStatusColor(section.status)}`}
+                variant='secondary'
+              >
+                {section.status.charAt(0).toUpperCase() +
+                  section.status.slice(1)}
               </Badge>
             </div>
           </div>
-        </Card>
-      </div>
-
-      <div className='flex justify-end gap-4 mt-6'>
-        <Button
-          variant='outline'
-          onClick={() =>
-            router.push(`/admin/course-offerings/${section.courseOffering.id}`)
-          }
-        >
-          View Course Offering
-        </Button>
-        <Button variant='destructive' onClick={() => setShowDeleteDialog(true)}>
-          <Trash2 className='mr-2 h-4 w-4' />
-          Delete Section
-        </Button>
-      </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the
-              section and all its associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Section'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }
