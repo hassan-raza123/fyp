@@ -13,37 +13,34 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const departmentId = parseInt(params.id);
-    if (isNaN(departmentId)) {
+    const programId = parseInt(params.id);
+    if (isNaN(programId)) {
       return NextResponse.json(
-        { error: 'Invalid department ID' },
+        { error: 'Invalid program ID' },
         { status: 400 }
       );
     }
 
-    // Check if department exists
-    const department = await prisma.departments.findUnique({
-      where: { id: departmentId },
+    // Check if program exists
+    const program = await prisma.programs.findUnique({
+      where: { id: programId },
     });
 
-    if (!department) {
-      return NextResponse.json(
-        { error: 'Department not found' },
-        { status: 404 }
-      );
+    if (!program) {
+      return NextResponse.json({ error: 'Program not found' }, { status: 404 });
     }
 
-    // Get programs for the department
-    const programs = await prisma.programs.findMany({
+    // Get batches for the program
+    const batches = await prisma.batches.findMany({
       where: {
-        departmentId,
+        programId,
         status: 'active',
       },
       select: {
         id: true,
         name: true,
         code: true,
-        departmentId: true,
+        programId: true,
       },
       orderBy: {
         name: 'asc',
@@ -52,12 +49,12 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: programs,
+      data: batches,
     });
   } catch (error) {
-    console.error('Error fetching department programs:', error);
+    console.error('Error fetching program batches:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch programs' },
+      { error: 'Failed to fetch batches' },
       { status: 500 }
     );
   }

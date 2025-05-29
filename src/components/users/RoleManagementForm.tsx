@@ -30,9 +30,10 @@ const roleSchema = z.object({
   role: z.string().min(1, 'Role is required'),
   studentDetails: z
     .object({
-      rollNumber: z.string(),
-      departmentId: z.string(),
-      programId: z.string(),
+      rollNumber: z.string().min(1, 'Roll number is required'),
+      departmentId: z.string().min(1, 'Department is required'),
+      programId: z.string().min(1, 'Program is required'),
+      batchId: z.string().min(1, 'Batch is required'),
     })
     .optional(),
   facultyDetails: z
@@ -66,7 +67,11 @@ export default function RoleManagementForm({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
   const [fetchingDepartments, setFetchingDepartments] = useState(false);
+  const [fetchingPrograms, setFetchingPrograms] = useState(false);
+  const [fetchingBatches, setFetchingBatches] = useState(false);
 
   const form = useForm<RoleForm>({
     resolver: zodResolver(roleSchema),
@@ -76,6 +81,7 @@ export default function RoleManagementForm({
         rollNumber: '',
         departmentId: '',
         programId: '',
+        batchId: '',
       },
       facultyDetails: {
         departmentId: '',
@@ -106,6 +112,7 @@ export default function RoleManagementForm({
               rollNumber: data.student.rollNumber || '',
               departmentId: String(data.student.departmentId || ''),
               programId: String(data.student.programId || ''),
+              batchId: String(data.student.batchId || ''),
             });
           } else if (
             (currentRole === 'teacher' || currentRole === 'department_admin') &&
@@ -147,6 +154,66 @@ export default function RoleManagementForm({
     }
     fetchDepartments();
   }, [userId, mode, form]);
+
+  const fetchPrograms = async (departmentId: string) => {
+    try {
+      setFetchingPrograms(true);
+      const response = await fetch(`/api/departments/${departmentId}/programs`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch programs');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setPrograms(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching programs:', error);
+      toast.error('Failed to fetch programs');
+    } finally {
+      setFetchingPrograms(false);
+    }
+  };
+
+  const fetchBatches = async (programId: string) => {
+    try {
+      setFetchingBatches(true);
+      const response = await fetch(`/api/programs/${programId}/batches`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch batches');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setBatches(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+      toast.error('Failed to fetch batches');
+    } finally {
+      setFetchingBatches(false);
+    }
+  };
+
+  // Watch for department and program changes
+  const selectedDepartmentId = form.watch('studentDetails.departmentId');
+  const selectedProgramId = form.watch('studentDetails.programId');
+
+  useEffect(() => {
+    if (selectedDepartmentId) {
+      fetchPrograms(selectedDepartmentId);
+    } else {
+      setPrograms([]);
+      form.setValue('studentDetails.programId', '');
+    }
+  }, [selectedDepartmentId]);
+
+  useEffect(() => {
+    if (selectedProgramId) {
+      fetchBatches(selectedProgramId);
+    } else {
+      setBatches([]);
+      form.setValue('studentDetails.batchId', '');
+    }
+  }, [selectedProgramId]);
 
   const onSubmit = async (values: RoleForm) => {
     setIsLoading(true);
@@ -251,6 +318,7 @@ export default function RoleManagementForm({
                             rollNumber: '',
                             departmentId: '',
                             programId: '',
+                            batchId: '',
                           });
                         }
                         if (
@@ -274,9 +342,7 @@ export default function RoleManagementForm({
                           Department Admin
                         </SelectItem>
                         <SelectItem value='teacher'>Teacher</SelectItem>
-                        <SelectItem value='student' disabled>
-                          Student (Coming Soon)
-                        </SelectItem>
+                        <SelectItem value='student'>Student</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -294,7 +360,7 @@ export default function RoleManagementForm({
                       <FormItem>
                         <FormLabel>Roll Number</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder='Enter roll number' />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -307,7 +373,11 @@ export default function RoleManagementForm({
                       <FormItem>
                         <FormLabel>Department</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('studentDetails.programId', '');
+                            form.setValue('studentDetails.batchId', '');
+                          }}
                           value={field.value}
                           disabled={fetchingDepartments}
                         >
@@ -335,9 +405,54 @@ export default function RoleManagementForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Program</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('studentDetails.batchId', '');
+                          }}
+                          value={field.value}
+                          disabled={fetchingPrograms || !selectedDepartmentId}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select program' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {programs.map((program) => (
+                              <SelectItem
+                                key={program.id}
+                                value={program.id.toString()}
+                              >
+                                {program.name} ({program.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name='studentDetails.batchId'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Batch</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={fetchingBatches || !selectedProgramId}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select batch' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {batches.map((batch) => (
+                              <SelectItem key={batch.id} value={batch.id}>
+                                {batch.name} ({batch.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
