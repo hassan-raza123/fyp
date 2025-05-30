@@ -69,10 +69,17 @@ export default function SectionsPage() {
         throw new Error('Failed to fetch sections');
       }
       const data = await response.json();
-      setSections(data.data);
+      if (Array.isArray(data)) {
+        setSections(data);
+      } else if (Array.isArray(data.data)) {
+        setSections(data.data);
+      } else {
+        setSections([]);
+      }
     } catch (error) {
       console.error('Error fetching sections:', error);
       toast.error('Failed to fetch sections');
+      setSections([]);
     } finally {
       setLoading(false);
     }
@@ -185,22 +192,23 @@ export default function SectionsPage() {
                 ) : (
                   filteredSections.map((section) => (
                     <TableRow key={section.id}>
-                      <TableCell>{section.name}</TableCell>
+                      <TableCell>{section.name || 'N/A'}</TableCell>
                       <TableCell>
-                        {section.courseOffering.course.code} -{' '}
-                        {section.courseOffering.course.name}
+                        {section.courseOffering?.course?.code || 'N/A'} -{' '}
+                        {section.courseOffering?.course?.name || 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {section.courseOffering.semester.name}
+                        {section.courseOffering?.semester?.name || 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {section.faculty
+                        {section.faculty?.user
                           ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
                           : 'Not assigned'}
                       </TableCell>
-                      <TableCell>{section.batch.name}</TableCell>
+                      <TableCell>{section.batch?.name || 'N/A'}</TableCell>
                       <TableCell>
-                        {section.currentStudents} / {section.maxStudents}
+                        {section.currentStudents ?? 0} /{' '}
+                        {section.maxStudents ?? 0}
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(section.status)}>

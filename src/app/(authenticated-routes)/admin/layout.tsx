@@ -184,6 +184,12 @@ const navigationSections = [
         href: '/admin/assessments',
       },
       {
+        id: 'results',
+        label: 'Results',
+        icon: BarChart2,
+        href: '/admin/results',
+      },
+      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,

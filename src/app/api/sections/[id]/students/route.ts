@@ -269,3 +269,60 @@ export async function DELETE(
     );
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const sectionId = parseInt(params.id);
+    if (isNaN(sectionId)) {
+      return NextResponse.json(
+        { error: 'Invalid section ID' },
+        { status: 400 }
+      );
+    }
+
+    const students = await prisma.studentsections.findMany({
+      where: {
+        sectionId: sectionId,
+        status: 'active',
+      },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        student: {
+          rollNumber: 'asc',
+        },
+      },
+    });
+
+    // Transform the data to include full name
+    const transformedStudents = students.map(({ student }) => ({
+      id: student.id,
+      rollNumber: student.rollNumber,
+      user: {
+        name: `${student.user.first_name} ${student.user.last_name}`,
+      },
+    }));
+
+    return NextResponse.json(transformedStudents);
+  } catch (error) {
+    console.error('Error fetching section students:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch section students' },
+      { status: 500 }
+    );
+  }
+}

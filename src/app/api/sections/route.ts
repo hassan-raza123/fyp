@@ -23,59 +23,31 @@ export async function GET(request: NextRequest) {
     }
 
     const sections = await prisma.sections.findMany({
+      where: {
+        status: 'active',
+      },
       include: {
         courseOffering: {
           include: {
-            course: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-              },
-            },
-            semester: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            course: true,
+            semester: true,
           },
         },
-        faculty: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                first_name: true,
-                last_name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        batch: true,
-        _count: {
-          select: {
-            studentsections: true,
+      },
+      orderBy: {
+        courseOffering: {
+          semester: {
+            startDate: 'desc',
           },
         },
       },
     });
 
-    // Transform the data to include currentStudents count
-    const transformedSections = sections.map((section) => ({
-      ...section,
-      currentStudents: section._count.studentsections,
-    }));
-
-    return NextResponse.json({
-      success: true,
-      data: transformedSections,
-    });
+    return NextResponse.json(sections);
   } catch (error) {
     console.error('Error fetching sections:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch sections' },
+      { error: 'Failed to fetch sections' },
       { status: 500 }
     );
   }
