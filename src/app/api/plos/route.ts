@@ -1,53 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
 
 // GET /api/plos
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const { searchParams } = new URL(request.url);
+    const programId = searchParams.get('programId');
 
-    // Get all PLOs with their program information
+    const where: any = {};
+    if (programId) where.programId = parseInt(programId);
+
     const plos = await prisma.plos.findMany({
+      where,
       include: {
-        program: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
+        program: true,
       },
-      orderBy: [
-        {
-          program: {
-            name: 'asc',
-          },
-        },
-        {
-          code: 'asc',
-        },
-      ],
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: plos,
-    });
+    return NextResponse.json({ success: true, data: plos });
   } catch (error) {
     console.error('Error fetching PLOs:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch PLOs',
-      },
+      { success: false, error: 'Failed to fetch PLOs' },
       { status: 500 }
     );
   }

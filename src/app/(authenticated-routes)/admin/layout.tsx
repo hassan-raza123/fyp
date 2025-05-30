@@ -44,6 +44,9 @@ import {
   HelpCircle,
   Settings2,
   Building2,
+  Link,
+  LayoutDashboard,
+  UserCog,
 } from 'lucide-react';
 import { LucideProps } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -151,6 +154,12 @@ const navigationSections = [
         href: '/admin/clos',
       },
       {
+        id: 'clo-plo-mappings',
+        label: 'CLO-PLO Mappings',
+        icon: Link,
+        href: '/admin/clo-plo-mappings',
+      },
+      {
         id: 'departments',
         label: 'Departments',
         icon: Building2,
@@ -194,6 +203,69 @@ const navigationSections = [
       { id: 'users', label: 'Users', icon: Users, badge: 0 },
       { id: 'analytics', label: 'Analytics', icon: BarChart2, badge: 0 },
     ],
+  },
+];
+
+const navigationItems = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    icon: LayoutDashboard,
+    href: '/admin',
+  },
+  {
+    id: 'students',
+    label: 'Students',
+    icon: Users,
+    href: '/admin/students',
+  },
+  {
+    id: 'programs',
+    label: 'Programs',
+    icon: GraduationCap,
+    href: '/admin/programs',
+  },
+  {
+    id: 'departments',
+    label: 'Departments',
+    icon: Building2,
+    href: '/admin/departments',
+  },
+  {
+    id: 'faculties',
+    label: 'Faculties',
+    icon: UserCog,
+    href: '/admin/faculties',
+  },
+  {
+    id: 'courses',
+    label: 'Courses',
+    icon: BookOpen,
+    href: '/admin/courses',
+  },
+  {
+    id: 'clos',
+    label: 'CLOs',
+    icon: Target,
+    href: '/admin/clos',
+  },
+  {
+    id: 'plos',
+    label: 'PLOs',
+    icon: Target,
+    href: '/admin/plos',
+  },
+  {
+    id: 'clo-plo-mappings',
+    label: 'CLO-PLO Mappings',
+    icon: Link,
+    href: '/admin/clo-plo-mappings',
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    href: '/admin/settings',
   },
 ];
 

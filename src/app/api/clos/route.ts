@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/clos
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
     const where = {
@@ -15,15 +15,13 @@ export async function GET(req: Request) {
       where,
       include: {
         course: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
+          include: {
+            programs: true,
           },
         },
       },
       orderBy: {
-        code: 'asc',
+        createdAt: 'desc',
       },
     });
 
@@ -31,14 +29,14 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error('Error fetching CLOs:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to fetch CLOs' },
       { status: 500 }
     );
   }
 }
 
 // POST /api/clos
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
     const { code, description, courseId, bloomLevel, status } = data;
