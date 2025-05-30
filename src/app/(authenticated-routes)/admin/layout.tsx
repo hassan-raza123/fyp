@@ -145,6 +145,12 @@ const navigationSections = [
         href: '/admin/plos',
       },
       {
+        id: 'clos',
+        label: 'CLOs',
+        icon: FileText,
+        href: '/admin/clos',
+      },
+      {
         id: 'departments',
         label: 'Departments',
         icon: Building2,
