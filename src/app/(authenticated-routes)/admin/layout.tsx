@@ -178,6 +178,12 @@ const navigationSections = [
         href: '/admin/course-offerings',
       },
       {
+        id: 'assessments',
+        label: 'Assessments',
+        icon: FileText,
+        href: '/admin/assessments',
+      },
+      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
