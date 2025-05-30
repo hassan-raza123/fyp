@@ -273,14 +273,22 @@ export async function DELETE(
       );
     }
 
-    // Delete the student (this will cascade delete the user due to the relation)
-    await prisma.students.delete({
-      where: { id: parseInt(params.id) },
+    // Start a transaction to ensure all operations succeed or fail together
+    await prisma.$transaction(async (tx) => {
+      // First delete the student record
+      await tx.students.delete({
+        where: { id: parseInt(params.id) },
+      });
+
+      // Then explicitly delete the user record
+      await tx.users.delete({
+        where: { id: student.user.id },
+      });
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Student deleted successfully',
+      message: 'Student and associated user deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting student:', error);
