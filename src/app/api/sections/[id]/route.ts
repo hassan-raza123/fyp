@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 
+// GET /api/sections/[id] - Get section details
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -16,31 +17,21 @@ export async function GET(
       );
     }
 
+    const sectionId = parseInt(params.id);
+
     const section = await prisma.sections.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: sectionId },
       include: {
         courseOffering: {
           include: {
-            course: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-              },
-            },
-            semester: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            course: true,
+            semester: true,
           },
         },
         faculty: {
           include: {
             user: {
               select: {
-                id: true,
                 first_name: true,
                 last_name: true,
                 email: true,
@@ -48,10 +39,20 @@ export async function GET(
             },
           },
         },
-        batch: {
-          select: {
-            id: true,
-            name: true,
+        batch: true,
+        studentsections: {
+          include: {
+            student: {
+              include: {
+                user: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
           },
         },
         _count: {
@@ -82,6 +83,7 @@ export async function GET(
   }
 }
 
+// PUT /api/sections/[id] - Update section
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -96,31 +98,21 @@ export async function PUT(
       );
     }
 
+    const sectionId = parseInt(params.id);
     const body = await request.json();
-    const { name, maxStudents, status, courseOfferingId, facultyId, batchId } =
-      body;
+    const { name, maxStudents, status, facultyId } = body;
 
     // Validate required fields
-    if (!name || !maxStudents || !status || !courseOfferingId || !batchId) {
+    if (!name || !maxStudents) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required fields',
-        },
+        { success: false, error: 'Name and max students are required' },
         { status: 400 }
       );
     }
 
     // Check if section exists
     const existingSection = await prisma.sections.findUnique({
-      where: { id: parseInt(params.id) },
-      include: {
-        _count: {
-          select: {
-            studentsections: true,
-          },
-        },
-      },
+      where: { id: sectionId },
     });
 
     if (!existingSection) {
@@ -130,90 +122,26 @@ export async function PUT(
       );
     }
 
-    // Check if new maxStudents is less than current students
-    if (maxStudents < existingSection._count.studentsections) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            'Maximum students cannot be less than current enrolled students',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if course offering exists
-    const courseOffering = await prisma.courseofferings.findUnique({
-      where: { id: courseOfferingId },
-    });
-
-    if (!courseOffering) {
-      return NextResponse.json(
-        { success: false, error: 'Course offering not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if faculty exists if provided
-    if (facultyId) {
-      const faculty = await prisma.faculties.findUnique({
-        where: { id: facultyId },
-      });
-
-      if (!faculty) {
-        return NextResponse.json(
-          { success: false, error: 'Faculty not found' },
-          { status: 404 }
-        );
-      }
-    }
-
-    // Check if batch exists
-    const batch = await prisma.batches.findUnique({
-      where: { id: batchId },
-    });
-
-    if (!batch) {
-      return NextResponse.json(
-        { success: false, error: 'Batch not found' },
-        { status: 404 }
-      );
-    }
-
     // Update section
     const updatedSection = await prisma.sections.update({
-      where: { id: parseInt(params.id) },
+      where: { id: sectionId },
       data: {
         name,
         maxStudents,
-        status,
-        courseOfferingId,
-        facultyId,
-        batchId,
+        status: status || 'active',
+        facultyId: facultyId || null,
       },
       include: {
         courseOffering: {
           include: {
-            course: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-              },
-            },
-            semester: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            course: true,
+            semester: true,
           },
         },
         faculty: {
           include: {
             user: {
               select: {
-                id: true,
                 first_name: true,
                 last_name: true,
                 email: true,
@@ -221,17 +149,7 @@ export async function PUT(
             },
           },
         },
-        batch: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        _count: {
-          select: {
-            studentsections: true,
-          },
-        },
+        batch: true,
       },
     });
 
@@ -248,6 +166,7 @@ export async function PUT(
   }
 }
 
+// DELETE /api/sections/[id] - Delete section
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -262,39 +181,23 @@ export async function DELETE(
       );
     }
 
-    // Check if section exists and get current student count
-    const section = await prisma.sections.findUnique({
-      where: { id: parseInt(params.id) },
-      include: {
-        _count: {
-          select: {
-            studentsections: true,
-          },
-        },
-      },
+    const sectionId = parseInt(params.id);
+
+    // Check if section exists
+    const existingSection = await prisma.sections.findUnique({
+      where: { id: sectionId },
     });
 
-    if (!section) {
+    if (!existingSection) {
       return NextResponse.json(
         { success: false, error: 'Section not found' },
         { status: 404 }
       );
     }
 
-    // Check if section has enrolled students
-    if (section._count.studentsections > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete section with enrolled students',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Delete the section
+    // Delete section
     await prisma.sections.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: sectionId },
     });
 
     return NextResponse.json({

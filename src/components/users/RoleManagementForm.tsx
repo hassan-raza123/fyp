@@ -34,6 +34,7 @@ const roleSchema = z.object({
       departmentId: z.string().min(1, 'Department is required'),
       programId: z.string().min(1, 'Program is required'),
       batchId: z.string().min(1, 'Batch is required'),
+      sectionId: z.string().optional(),
     })
     .optional(),
   facultyDetails: z
@@ -69,9 +70,11 @@ export default function RoleManagementForm({
   const [departments, setDepartments] = useState<Department[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
   const [fetchingDepartments, setFetchingDepartments] = useState(false);
   const [fetchingPrograms, setFetchingPrograms] = useState(false);
   const [fetchingBatches, setFetchingBatches] = useState(false);
+  const [fetchingSections, setFetchingSections] = useState(false);
 
   const form = useForm<RoleForm>({
     resolver: zodResolver(roleSchema),
@@ -82,6 +85,7 @@ export default function RoleManagementForm({
         departmentId: '',
         programId: '',
         batchId: '',
+        sectionId: '',
       },
       facultyDetails: {
         departmentId: '',
@@ -113,6 +117,7 @@ export default function RoleManagementForm({
               departmentId: String(data.student.departmentId || ''),
               programId: String(data.student.programId || ''),
               batchId: String(data.student.batchId || ''),
+              sectionId: data.student.sectionId || '',
             });
           } else if (
             (currentRole === 'teacher' || currentRole === 'department_admin') &&
@@ -193,9 +198,29 @@ export default function RoleManagementForm({
     }
   };
 
-  // Watch for department and program changes
+  const fetchSections = async (batchId: string) => {
+    try {
+      setFetchingSections(true);
+      const response = await fetch(`/api/batches/${batchId}/sections`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch sections');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setSections(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+      toast.error('Failed to fetch sections');
+    } finally {
+      setFetchingSections(false);
+    }
+  };
+
+  // Watch for department, program, and batch changes
   const selectedDepartmentId = form.watch('studentDetails.departmentId');
   const selectedProgramId = form.watch('studentDetails.programId');
+  const selectedBatchId = form.watch('studentDetails.batchId');
 
   useEffect(() => {
     if (selectedDepartmentId) {
@@ -214,6 +239,15 @@ export default function RoleManagementForm({
       form.setValue('studentDetails.batchId', '');
     }
   }, [selectedProgramId]);
+
+  useEffect(() => {
+    if (selectedBatchId) {
+      fetchSections(selectedBatchId);
+    } else {
+      setSections([]);
+      form.setValue('studentDetails.sectionId', '');
+    }
+  }, [selectedBatchId]);
 
   const onSubmit = async (values: RoleForm) => {
     setIsLoading(true);
@@ -319,6 +353,7 @@ export default function RoleManagementForm({
                             departmentId: '',
                             programId: '',
                             batchId: '',
+                            sectionId: '',
                           });
                         }
                         if (
@@ -438,7 +473,10 @@ export default function RoleManagementForm({
                       <FormItem>
                         <FormLabel>Batch</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('studentDetails.sectionId', '');
+                          }}
                           value={field.value}
                           disabled={fetchingBatches || !selectedProgramId}
                         >
@@ -449,6 +487,35 @@ export default function RoleManagementForm({
                             {batches.map((batch) => (
                               <SelectItem key={batch.id} value={batch.id}>
                                 {batch.name} ({batch.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name='studentDetails.sectionId'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Section</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={fetchingSections || !selectedBatchId}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select section' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sections.map((section) => (
+                              <SelectItem
+                                key={section.id}
+                                value={section.id.toString()}
+                              >
+                                {section.name}
                               </SelectItem>
                             ))}
                           </SelectContent>

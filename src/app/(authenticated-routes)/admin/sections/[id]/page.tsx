@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,33 +16,62 @@ import {
 } from '@/components/ui/dialog';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Loader2 } from 'lucide-react';
 
-interface CourseOffering {
-  id: number;
-  course: {
-    id: number;
-    code: string;
-    name: string;
-  };
-  semester: {
-    id: number;
-    name: string;
-  };
-}
+const formSchema = z.object({
+  studentId: z.string().min(1, 'Please select a student'),
+});
 
-interface Faculty {
+interface Student {
   id: number;
+  rollNumber: string;
   user: {
-    id: number;
     first_name: string;
     last_name: string;
     email: string;
   };
 }
 
-interface Batch {
-  id: string;
-  name: string;
+interface StudentSection {
+  id: number;
+  studentId: number;
+  status: 'active' | 'inactive';
+  student: {
+    id: number;
+    rollNumber: string;
+    user: {
+      first_name: string;
+      last_name: string;
+      email: string;
+    };
+  };
 }
 
 interface Section {
@@ -50,94 +79,155 @@ interface Section {
   name: string;
   maxStudents: number;
   status: 'active' | 'inactive' | 'suspended' | 'deleted';
-  courseOffering: CourseOffering;
-  faculty: Faculty | null;
-  batch: Batch;
+  courseOffering: {
+    id: number;
+    course: {
+      id: number;
+      code: string;
+      name: string;
+    };
+    semester: {
+      id: number;
+      name: string;
+    };
+  };
+  faculty: {
+    id: number;
+    user: {
+      id: number;
+      first_name: string;
+      last_name: string;
+      email: string;
+    };
+  } | null;
+  batch: {
+    id: string;
+    name: string;
+  };
+  studentsections: StudentSection[];
   _count: {
     studentsections: number;
   };
 }
 
-export default function SectionDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function SectionDetailsPage() {
   const router = useRouter();
-  const { id } = use(params);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
+  const params = useParams();
+  const queryClient = useQueryClient();
   const [section, setSection] = useState<Section | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchSectionDetails();
-  }, [id]);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      studentId: '',
+    },
+  });
 
-  const fetchSectionDetails = async () => {
+  const fetchSection = async () => {
     try {
-      const response = await fetch(`/api/sections/${id}`);
+      const response = await fetch(`/api/sections/${params.id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch section details');
+        throw new Error('Failed to fetch section');
       }
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch section details');
+        throw new Error(data.error || 'Failed to fetch section');
       }
       setSection(data.data);
     } catch (error) {
-      console.error('Error fetching section details:', error);
+      console.error('Error fetching section:', error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to fetch section details'
+        error instanceof Error ? error.message : 'Failed to fetch section'
       );
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      const response = await fetch(`/api/sections/${id}`, {
-        method: 'DELETE',
-      });
+  useEffect(() => {
+    fetchSection();
+  }, [params.id]);
 
-      const data = await response.json();
+  // Fetch students from the same batch
+  const { data: students } = useQuery<Student[]>({
+    queryKey: ['students', section?.batch.id],
+    queryFn: async () => {
+      if (!section?.batch.id) return [];
+      const response = await fetch(`/api/students?batchId=${section.batch.id}`);
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete section');
+        throw new Error('Failed to fetch students');
       }
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!section?.batch.id,
+  });
 
-      toast.success('Section deleted successfully');
-      router.push('/admin/sections');
-    } catch (error) {
-      console.error('Error deleting section:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to delete section'
+  const addStudentMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await fetch(`/api/sections/${params.id}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['section', params.id] });
+      toast.success('Student added successfully');
+      setIsAddDialogOpen(false);
+      form.reset();
+      fetchSection();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add student');
+    },
+  });
+
+  const removeStudentMutation = useMutation({
+    mutationFn: async (studentId: string) => {
+      const response = await fetch(
+        `/api/sections/${params.id}/students?studentId=${studentId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
-    } finally {
-      setDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to remove student');
+      }
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['section', params.id] });
+      toast.success('Student removed successfully');
+      fetchSection();
+    },
+    onError: (error) => {
+      console.error('Error removing student:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to remove student'
+      );
+    },
+  });
 
-  if (loading) {
+  if (section === null) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Loading...</p>
-        </div>
+      <div className='flex items-center justify-center min-h-screen'>
+        <Loader2 className='w-8 h-8 animate-spin' />
       </div>
     );
   }
 
   if (!section) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Section not found</p>
-        </div>
+      <div className='flex flex-col items-center justify-center min-h-screen'>
+        <h1 className='text-2xl font-bold mb-4'>Section not found</h1>
+        <Button onClick={() => window.history.back()}>Go Back</Button>
       </div>
     );
   }
@@ -156,150 +246,220 @@ export default function SectionDetailsPage({
   };
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => router.push('/admin/sections')}
-        >
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
+    <div className='container mx-auto py-8'>
+      <div className='flex justify-between items-center mb-8'>
         <div>
-          <h1 className='text-3xl font-bold'>Section Details</h1>
-          <p className='text-muted-foreground'>
-            {section.courseOffering.course.code} -{' '}
-            {section.courseOffering.course.name}
+          <h1 className='text-3xl font-bold mb-2'>{section.name}</h1>
+          <p className='text-gray-500'>
+            {section.courseOffering.course.name} -{' '}
+            {section.courseOffering.semester.name}
           </p>
+        </div>
+        <div className='flex gap-4'>
+          <Button variant='outline' onClick={() => router.back()}>
+            Back
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className='w-4 h-4 mr-2' />
+                Add Student
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Student to Section</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit((data) =>
+                    addStudentMutation.mutate(data)
+                  )}
+                  className='space-y-4'
+                >
+                  <FormField
+                    control={form.control}
+                    name='studentId'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Student</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder='Select a student' />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {students?.map((student) => (
+                              <SelectItem
+                                key={student.id}
+                                value={student.id.toString()}
+                              >
+                                <div className='flex flex-col'>
+                                  <span className='font-medium'>
+                                    {student.user.first_name}{' '}
+                                    {student.user.last_name}
+                                  </span>
+                                  <span className='text-sm text-gray-500'>
+                                    Roll No: {student.rollNumber} | Email:{' '}
+                                    {student.user.email}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type='submit'
+                    className='w-full'
+                    disabled={addStudentMutation.isPending}
+                  >
+                    {addStudentMutation.isPending && (
+                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    )}
+                    Add Student
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className='flex items-center justify-between'>
-            <CardTitle>Section Information</CardTitle>
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => router.push(`/admin/sections/${id}/edit`)}
-              >
-                <Pencil className='h-4 w-4 mr-2' />
-                Edit
-              </Button>
-              <Dialog
-                open={showDeleteDialog}
-                onOpenChange={setShowDeleteDialog}
-              >
-                <DialogTrigger asChild>
-                  <Button variant='destructive' size='sm'>
-                    <Trash2 className='h-4 w-4 mr-2' />
-                    Delete
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Delete Section</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete this section? This action
-                      cannot be undone.
-                      {section._count.studentsections > 0 && (
-                        <span className='block text-red-500 mt-2'>
-                          Warning: This section has{' '}
-                          {section._count.studentsections} enrolled students.
-                          You cannot delete a section with enrolled students.
-                        </span>
-                      )}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant='outline'
-                      onClick={() => setShowDeleteDialog(false)}
+      <div className='grid gap-6'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Section Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <p className='text-sm text-gray-500'>Course</p>
+                <p className='font-medium'>
+                  {section.courseOffering.course.name}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm text-gray-500'>Semester</p>
+                <p className='font-medium'>
+                  {section.courseOffering.semester.name}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm text-gray-500'>Faculty</p>
+                <p className='font-medium'>
+                  {section.faculty
+                    ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
+                    : 'Not assigned'}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm text-gray-500'>Batch</p>
+                <p className='font-medium'>{section.batch.name}</p>
+              </div>
+              <div>
+                <p className='text-sm text-gray-500'>Students</p>
+                <p className='font-medium'>
+                  {section._count.studentsections} / {section.maxStudents}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm text-gray-500'>Status</p>
+                <Badge
+                  variant={
+                    section.status === 'active' ? 'default' : 'secondary'
+                  }
+                >
+                  {section.status}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Enrolled Students</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Roll Number</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className='w-[100px]'>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {section.studentsections.map((enrollment) => (
+                  <TableRow key={enrollment.id}>
+                    <TableCell>
+                      {enrollment.student.user.first_name}{' '}
+                      {enrollment.student.user.last_name}
+                    </TableCell>
+                    <TableCell>{enrollment.student.rollNumber}</TableCell>
+                    <TableCell>{enrollment.student.user.email}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          enrollment.status === 'active'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                      >
+                        {enrollment.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              'Are you sure you want to remove this student from the section?'
+                            )
+                          ) {
+                            removeStudentMutation.mutate(
+                              enrollment.student.id.toString()
+                            );
+                          }
+                        }}
+                        disabled={removeStudentMutation.isPending}
+                      >
+                        {removeStudentMutation.isPending ? (
+                          <Loader2 className='w-4 h-4 animate-spin' />
+                        ) : (
+                          <Trash2 className='w-4 h-4 text-red-500' />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {section.studentsections.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className='text-center text-gray-500'
                     >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      onClick={handleDelete}
-                      disabled={deleting || section._count.studentsections > 0}
-                    >
-                      {deleting ? 'Deleting...' : 'Delete'}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className='grid grid-cols-2 gap-6'>
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Section Name
-              </h3>
-              <p className='mt-1'>{section.name}</p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Course
-              </h3>
-              <p className='mt-1'>
-                {section.courseOffering.course.code} -{' '}
-                {section.courseOffering.course.name}
-              </p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Semester
-              </h3>
-              <p className='mt-1'>{section.courseOffering.semester.name}</p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Faculty
-              </h3>
-              <p className='mt-1'>
-                {section.faculty
-                  ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
-                  : 'Not assigned'}
-              </p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Batch
-              </h3>
-              <p className='mt-1'>{section.batch.name}</p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Students
-              </h3>
-              <p className='mt-1'>
-                {section._count.studentsections} / {section.maxStudents}
-              </p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-medium text-muted-foreground'>
-                Status
-              </h3>
-              <Badge
-                className={`mt-1 ${getStatusColor(section.status)}`}
-                variant='secondary'
-              >
-                {section.status.charAt(0).toUpperCase() +
-                  section.status.slice(1)}
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                      No students enrolled
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

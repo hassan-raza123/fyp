@@ -25,6 +25,7 @@ const createStudentSchema = z.object({
   departmentId: z.string().min(1, 'Department is required'),
   programId: z.string().min(1, 'Program is required'),
   batchId: z.string().min(1, 'Batch is required'),
+  sectionId: z.string().optional(),
   status: z.enum(['active', 'inactive']),
 });
 
@@ -46,15 +47,22 @@ interface Batch {
   code: string;
 }
 
+interface Section {
+  id: number;
+  name: string;
+}
+
 export default function CreateStudentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [fetchingDepartments, setFetchingDepartments] = useState(false);
   const [fetchingPrograms, setFetchingPrograms] = useState(false);
   const [fetchingBatches, setFetchingBatches] = useState(false);
+  const [fetchingSections, setFetchingSections] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -63,6 +71,7 @@ export default function CreateStudentPage() {
     departmentId: '',
     programId: '',
     batchId: '',
+    sectionId: '',
     status: 'active',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -137,26 +146,64 @@ export default function CreateStudentPage() {
     }
   };
 
+  const fetchSections = async (batchId: string) => {
+    try {
+      setFetchingSections(true);
+      const response = await fetch(`/api/batches/${batchId}`);
+      if (!response.ok) throw new Error('Failed to fetch batch sections');
+      const data = await response.json();
+      if (!data.success)
+        throw new Error(data.error || 'Failed to fetch batch sections');
+      setSections(data.data.sections || []);
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to fetch sections'
+      );
+    } finally {
+      setFetchingSections(false);
+    }
+  };
+
   // Watch for department and program changes
   useEffect(() => {
     if (formData.departmentId) {
       fetchPrograms(formData.departmentId);
-      setFormData((prev) => ({ ...prev, programId: '', batchId: '' }));
+      setFormData((prev) => ({
+        ...prev,
+        programId: '',
+        batchId: '',
+        sectionId: '',
+      }));
     } else {
       setPrograms([]);
-      setFormData((prev) => ({ ...prev, programId: '', batchId: '' }));
+      setFormData((prev) => ({
+        ...prev,
+        programId: '',
+        batchId: '',
+        sectionId: '',
+      }));
     }
   }, [formData.departmentId]);
 
   useEffect(() => {
     if (formData.programId) {
       fetchBatches(formData.programId);
-      setFormData((prev) => ({ ...prev, batchId: '' }));
+      setFormData((prev) => ({ ...prev, batchId: '', sectionId: '' }));
     } else {
       setBatches([]);
-      setFormData((prev) => ({ ...prev, batchId: '' }));
+      setFormData((prev) => ({ ...prev, batchId: '', sectionId: '' }));
     }
   }, [formData.programId]);
+
+  useEffect(() => {
+    if (formData.batchId) {
+      fetchSections(formData.batchId);
+    } else {
+      setSections([]);
+      setFormData((prev) => ({ ...prev, sectionId: '' }));
+    }
+  }, [formData.batchId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +233,9 @@ export default function CreateStudentPage() {
           ...formData,
           departmentId: parseInt(formData.departmentId),
           programId: parseInt(formData.programId),
+          sectionId: formData.sectionId
+            ? parseInt(formData.sectionId)
+            : undefined,
         }),
       });
 
@@ -371,6 +421,40 @@ export default function CreateStudentPage() {
                 </Select>
                 {errors.batchId && (
                   <p className='text-sm text-red-500'>{errors.batchId}</p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='sectionId'>Section</Label>
+                <Select
+                  value={formData.sectionId || ''}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, sectionId: value })
+                  }
+                  disabled={
+                    fetchingSections ||
+                    !formData.batchId ||
+                    sections.length === 0
+                  }
+                >
+                  <SelectTrigger
+                    className={errors.sectionId ? 'border-red-500' : ''}
+                  >
+                    <SelectValue placeholder='Select section (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sections.map((section) => (
+                      <SelectItem
+                        key={section.id}
+                        value={section.id.toString()}
+                      >
+                        {section.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.sectionId && (
+                  <p className='text-sm text-red-500'>{errors.sectionId}</p>
                 )}
               </div>
 

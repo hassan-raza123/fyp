@@ -49,18 +49,21 @@ export default function BatchesPage() {
     try {
       const response = await fetch('/api/batches');
       if (!response.ok) {
-        throw new Error('Failed to fetch batches');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch batches');
       }
-      const { data } = await response.json();
-      if (Array.isArray(data)) {
-        setBatches(data);
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        setBatches(result.data);
       } else {
-        console.error('Invalid batches data format:', data);
-        toast.error('Failed to load batches');
+        console.error('Invalid batches data format:', result);
+        toast.error('Failed to load batches: Invalid data format');
       }
     } catch (error) {
       console.error('Error fetching batches:', error);
-      toast.error('Failed to fetch batches');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to fetch batches'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -209,10 +212,22 @@ export default function BatchesPage() {
                     {batch.program.department.name}
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-500'>
-                    {new Date(batch.startDate).toLocaleDateString()}
+                    {batch.startDate
+                      ? new Date(batch.startDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : 'N/A'}
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-500'>
-                    {new Date(batch.endDate).toLocaleDateString()}
+                    {batch.endDate
+                      ? new Date(batch.endDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : 'N/A'}
                   </td>
                   <td className='px-6 py-4'>
                     <span

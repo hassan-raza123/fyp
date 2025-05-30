@@ -24,6 +24,28 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { DialogTrigger } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 
 interface Batch {
   id: string;
@@ -74,6 +96,22 @@ interface Student {
   } | null;
   status: 'active' | 'inactive';
   sections: Section[];
+  studentsections: {
+    id: number;
+    section: {
+      id: number;
+      name: string;
+      courseOffering: {
+        course: {
+          code: string;
+          name: string;
+        };
+        semester: {
+          name: string;
+        };
+      };
+    };
+  }[];
 }
 
 interface FormData {
@@ -87,10 +125,15 @@ interface FormData {
   status: 'active' | 'inactive';
 }
 
+const formSchema = z.object({
+  sectionId: z.string().min(1, 'Section is required'),
+});
+
 export default function StudentDetailsPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -109,6 +152,11 @@ export default function StudentDetailsPage() {
     departmentId: '',
     programId: '',
     status: 'active',
+  });
+  const [open, setOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
   });
 
   useEffect(() => {
@@ -273,6 +321,57 @@ export default function StudentDetailsPage() {
     }
   };
 
+  // Fetch available sections for the student's batch
+  const { data: sections } = useQuery({
+    queryKey: ['sections', student?.batch.id],
+    queryFn: async () => {
+      if (!student?.batch.id) return [];
+      const response = await fetch(`/api/sections?batchId=${student.batch.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch sections');
+      }
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!student?.batch.id,
+  });
+
+  const addSection = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await fetch(
+        `/api/sections/${values.sectionId}/students`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ studentId: params.id }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add student to section');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students', params.id] });
+      setOpen(false);
+      form.reset();
+      toast.success('Student added to section successfully');
+      fetchStudent();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    addSection.mutate(values);
+  }
+
   if (loading) {
     return (
       <div className='container mx-auto py-10'>
@@ -292,6 +391,19 @@ export default function StudentDetailsPage() {
       </div>
     );
   }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500';
+      case 'inactive':
+        return 'bg-gray-500';
+      case 'suspended':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
 
   return (
     <div className='container mx-auto py-10'>
@@ -558,13 +670,10 @@ export default function StudentDetailsPage() {
                     Status
                   </h3>
                   <Badge
-                    variant={
-                      student.status === 'active' ? 'default' : 'secondary'
-                    }
-                    className='mt-1'
+                    className={`mt-1 ${getStatusColor(student.status)}`}
+                    variant='secondary'
                   >
-                    {student.status.charAt(0).toUpperCase() +
-                      student.status.slice(1)}
+                    {student.status}
                   </Badge>
                 </div>
               </div>
@@ -574,40 +683,136 @@ export default function StudentDetailsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Enrolled Sections</CardTitle>
+            <div className='flex items-center justify-between'>
+              <CardTitle>Enrolled Sections</CardTitle>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className='w-4 h-4 mr-2' />
+                    Add Section
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Student to Section</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className='space-y-4'
+                    >
+                      <FormField
+                        control={form.control}
+                        name='sectionId'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Section</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder='Select a section' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {sections?.map((section: any) => (
+                                  <SelectItem
+                                    key={section.id}
+                                    value={section.id.toString()}
+                                  >
+                                    {section.name} -{' '}
+                                    {section.courseOffering.course.code} (
+                                    {section.courseOffering.semester.name})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type='submit'
+                        className='w-full'
+                        disabled={addSection.isPending}
+                      >
+                        {addSection.isPending ? 'Adding...' : 'Add Section'}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
-            {student.sections.length === 0 ? (
-              <p className='text-muted-foreground'>
-                This student is not enrolled in any sections.
-              </p>
-            ) : (
-              <div className='space-y-4'>
-                {student.sections.map((section) => (
-                  <div
-                    key={section.id}
-                    className='flex items-center justify-between p-4 border rounded-lg'
-                  >
-                    <div>
-                      <h3 className='font-medium'>{section.name}</h3>
-                      <p className='text-sm text-muted-foreground'>
-                        {section.courseOffering.course.code} -{' '}
-                        {section.courseOffering.course.name}
-                      </p>
-                    </div>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() =>
-                        router.push(`/admin/sections/${section.id}`)
-                      }
-                    >
-                      View Section
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className='rounded-md border'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Section</TableHead>
+                    <TableHead>Course</TableHead>
+                    <TableHead>Semester</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {student.studentsections.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className='text-center'>
+                        No sections enrolled
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    student.studentsections.map((enrollment) => (
+                      <TableRow key={enrollment.id}>
+                        <TableCell>{enrollment.section.name}</TableCell>
+                        <TableCell>
+                          {enrollment.section.courseOffering.course.code} -{' '}
+                          {enrollment.section.courseOffering.course.name}
+                        </TableCell>
+                        <TableCell>
+                          {enrollment.section.courseOffering.semester.name}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(
+                                  `/api/sections/${enrollment.section.id}/students?studentId=${params.id}`,
+                                  {
+                                    method: 'DELETE',
+                                  }
+                                );
+                                if (!response.ok) {
+                                  throw new Error('Failed to remove student');
+                                }
+                                toast.success(
+                                  'Student removed from section successfully'
+                                );
+                                fetchStudent();
+                              } catch (error) {
+                                console.error('Error removing student:', error);
+                                toast.error(
+                                  error instanceof Error
+                                    ? error.message
+                                    : 'Failed to remove student'
+                                );
+                              }
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

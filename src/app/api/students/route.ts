@@ -368,6 +368,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Enroll student in section if sectionId is provided
+    if (body.sectionId) {
+      await prisma.studentsections.create({
+        data: {
+          studentId: student.id,
+          sectionId: Number(body.sectionId),
+          status: 'active',
+        },
+      });
+    }
+
     // Transform the data to include currentStudents count
     const transformedStudent = {
       ...student,

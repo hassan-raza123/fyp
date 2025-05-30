@@ -181,16 +181,28 @@ export async function POST(
         switch (role) {
           case 'student':
             if (studentDetails) {
-              await tx.students.create({
+              const student = await tx.students.create({
                 data: {
                   rollNumber: studentDetails.rollNumber,
                   departmentId: parseInt(studentDetails.departmentId),
                   programId: parseInt(studentDetails.programId),
+                  batchId: studentDetails.batchId,
                   status: 'active' as const,
                   updatedAt: new Date(),
                   userId,
                 },
               });
+
+              // If sectionId is provided, enroll student in the section
+              if (studentDetails.sectionId) {
+                await tx.studentsections.create({
+                  data: {
+                    studentId: student.id,
+                    sectionId: parseInt(studentDetails.sectionId),
+                    status: 'active',
+                  },
+                });
+              }
             }
             break;
 
