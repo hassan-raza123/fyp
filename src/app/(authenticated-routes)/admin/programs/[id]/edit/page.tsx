@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { program_status } from '@prisma/client';
+import { programs_status } from '@prisma/client';
 import { use } from 'react';
 
 interface Department {
@@ -31,21 +31,17 @@ interface Program {
   departmentId: number;
   totalCreditHours: number;
   duration: number;
-  status: program_status;
+  status: programs_status;
   description: string | null;
 }
 
-export default function EditProgramPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function EditProgramPage() {
   const router = useRouter();
+  const params = useParams();
+  const programId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [formData, setFormData] = useState<Program | null>(null);
-  const resolvedParams = use(params);
-  const programId = resolvedParams.id;
 
   useEffect(() => {
     fetchProgram();
@@ -252,8 +248,8 @@ export default function EditProgramPage({
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={program_status.active}>Active</SelectItem>
-                  <SelectItem value={program_status.inactive}>
+                  <SelectItem value={programs_status.active}>Active</SelectItem>
+                  <SelectItem value={programs_status.inactive}>
                     Inactive
                   </SelectItem>
                 </SelectContent>
