@@ -207,6 +207,12 @@ const navigationSections = [
         icon: Layers,
         href: '/admin/batches',
       },
+      {
+        id: 'sessions',
+        label: 'Sessions',
+        icon: Calendar,
+        href: '/admin/sessions',
+      },
     ],
   },
   {
