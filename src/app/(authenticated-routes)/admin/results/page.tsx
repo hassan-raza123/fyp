@@ -1,111 +1,149 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { FileCheck, BarChart3, ClipboardCheck, Target } from 'lucide-react';
+import {
+  BarChart3,
+  FileText,
+  GraduationCap,
+  LineChart,
+  ListChecks,
+  Target,
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const ResultsPage = () => {
+export default function ResultsPage() {
   return (
     <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>Student Results Management</h1>
+      <h1 className='text-2xl font-bold mb-6'>Results Management</h1>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {/* Marks Entry Card */}
-        <Link
-          href='/admin/results/marks-entry'
-          className='p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow'
-        >
-          <div className='flex items-center gap-4'>
-            <div className='p-3 bg-blue-100 rounded-full'>
-              <FileCheck className='h-6 w-6 text-blue-600' />
-            </div>
-            <div>
-              <h2 className='text-xl font-semibold mb-2'>Marks Entry</h2>
-              <p className='text-gray-600'>
+        <Link href='/admin/results/marks-entry'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <FileText className='h-5 w-5' />
+                Marks Entry
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
                 Enter and manage student assessment marks
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        {/* Result Evaluation Card */}
-        <Link
-          href='/admin/results/result-evaluation'
-          className='p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow'
-        >
-          <div className='flex items-center gap-4'>
-            <div className='p-3 bg-green-100 rounded-full'>
-              <ClipboardCheck className='h-6 w-6 text-green-600' />
-            </div>
-            <div>
-              <h2 className='text-xl font-semibold mb-2'>Result Evaluation</h2>
-              <p className='text-gray-600'>
-                Review and evaluate student results
+        <Link href='/admin/results/evaluation'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <ListChecks className='h-5 w-5' />
+                Result Evaluation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
+                Review and evaluate assessment results
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        {/* Analytics Card */}
-        <Link
-          href='/admin/results/analytics'
-          className='p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow'
-        >
-          <div className='flex items-center gap-4'>
-            <div className='p-3 bg-purple-100 rounded-full'>
-              <BarChart3 className='h-6 w-6 text-purple-600' />
-            </div>
-            <div>
-              <h2 className='text-xl font-semibold mb-2'>Analytics</h2>
-              <p className='text-gray-600'>
-                View performance metrics and grade distribution
+        <Link href='/admin/results/analytics'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <BarChart3 className='h-5 w-5' />
+                Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
+                View detailed analytics and performance metrics
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        {/* CLO Attainments Card */}
-        <Link
-          href='/admin/results/clo-attainments'
-          className='p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow'
-        >
-          <div className='flex items-center gap-4'>
-            <div className='p-3 bg-orange-100 rounded-full'>
-              <Target className='h-6 w-6 text-orange-600' />
-            </div>
-            <div>
-              <h2 className='text-xl font-semibold mb-2'>CLO Attainments</h2>
-              <p className='text-gray-600'>
+        <Link href='/admin/results/clo-attainments'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Target className='h-5 w-5' />
+                CLO Attainments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
                 Calculate and analyze CLO achievement percentages
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href='/admin/results/plo-attainments'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <GraduationCap className='h-5 w-5' />
+                PLO Attainments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
+                Track and analyze program learning outcomes
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href='/admin/results/reports'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <LineChart className='h-5 w-5' />
+                Reports
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
+                Generate and view detailed result reports
+              </p>
+            </CardContent>
+          </Card>
         </Link>
       </div>
 
-      <div className='mt-8 bg-white rounded-lg shadow-md p-6'>
+      <div className='mt-8'>
         <h2 className='text-xl font-semibold mb-4'>Quick Actions</h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
           <Link
             href='/admin/results/marks-entry'
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center'
+            className='text-blue-600 hover:underline'
           >
-            Bulk Marks Entry
+            Enter New Marks
           </Link>
           <Link
-            href='/admin/results/result-evaluation'
-            className='px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-center'
+            href='/admin/results/evaluation'
+            className='text-blue-600 hover:underline'
           >
-            Result Moderation
+            Evaluate Results
           </Link>
           <Link
             href='/admin/results/clo-attainments'
-            className='px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-center'
+            className='text-blue-600 hover:underline'
           >
-            CLO Attainments
+            Calculate CLOs
+          </Link>
+          <Link
+            href='/admin/results/plo-attainments'
+            className='text-blue-600 hover:underline'
+          >
+            Calculate PLOs
           </Link>
         </div>
       </div>
     </div>
   );
-};
-
-export default ResultsPage;
+}
