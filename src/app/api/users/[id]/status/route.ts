@@ -43,7 +43,7 @@ export async function PATCH(
     }
 
     // Update user status
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: {
         status,

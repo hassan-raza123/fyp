@@ -41,7 +41,7 @@ export async function PUT(
     const { adminId } = await request.json();
 
     // Check if department exists
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: departmentId },
     });
 
@@ -54,7 +54,7 @@ export async function PUT(
 
     // Validate adminId if provided
     if (adminId !== null) {
-      const admin = await prisma.user.findUnique({
+      const admin = await prisma.users.findUnique({
         where: { id: adminId },
         include: {
           userrole: {
@@ -73,9 +73,8 @@ export async function PUT(
       }
 
       // Check if user has department_admin role
-      const isDepartmentAdmin = admin.userrole.some(
-        (ur) => ur.role.name === 'department_admin'
-      );
+      const isDepartmentAdmin =
+        admin.userrole?.role.name === 'department_admin';
 
       if (!isDepartmentAdmin) {
         return NextResponse.json(
@@ -86,7 +85,7 @@ export async function PUT(
     }
 
     // Update department
-    const updatedDepartment = await prisma.department.update({
+    const updatedDepartment = await prisma.departments.update({
       where: { id: departmentId },
       data: { adminId },
       include: {

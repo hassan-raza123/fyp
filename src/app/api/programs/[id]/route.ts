@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { program_status } from '@prisma/client';
+import { programs_status } from '@prisma/client';
 import { requireAuth } from '@/lib/api-utils';
 import { Prisma } from '@prisma/client';
 
@@ -18,14 +18,14 @@ export async function GET(
       );
     }
 
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
       include: {
         department: true,
         _count: {
           select: {
             students: true,
-            course: true,
+            courses: true,
           },
         },
       },
@@ -58,7 +58,7 @@ export async function GET(
         },
         stats: {
           students: program._count.students,
-          courses: program._count.course,
+          courses: program._count.courses,
         },
       },
     });
@@ -101,7 +101,7 @@ export async function PUT(
     } = body;
 
     // Check if program exists
-    const existingProgram = await prisma.program.findUnique({
+    const existingProgram = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -117,7 +117,7 @@ export async function PUT(
 
     // Check if new code is unique
     if (code && code !== existingProgram.code) {
-      const codeExists = await prisma.program.findUnique({
+      const codeExists = await prisma.programs.findUnique({
         where: { code },
       });
 
@@ -134,7 +134,7 @@ export async function PUT(
 
     // Check if department exists
     if (departmentId) {
-      const department = await prisma.department.findUnique({
+      const department = await prisma.departments.findUnique({
         where: { id: departmentId },
       });
 
@@ -149,7 +149,7 @@ export async function PUT(
       }
     }
 
-    const program = await prisma.program.update({
+    const program = await prisma.programs.update({
       where: { id: parseInt(params.id) },
       data: {
         name,
@@ -158,14 +158,14 @@ export async function PUT(
         totalCreditHours,
         duration,
         description,
-        status,
-      } as Prisma.programUncheckedUpdateInput,
+        status: status as programs_status,
+      } as Prisma.programsUncheckedUpdateInput,
       include: {
         department: true,
         _count: {
           select: {
             students: true,
-            course: true,
+            courses: true,
           },
         },
       },
@@ -188,7 +188,7 @@ export async function PUT(
         },
         stats: {
           students: program._count.students,
-          courses: program._count.course,
+          courses: program._count.courses,
         },
       },
     });
@@ -220,13 +220,13 @@ export async function DELETE(
     }
 
     // Check if program exists
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
       include: {
         _count: {
           select: {
             students: true,
-            course: true,
+            courses: true,
           },
         },
       },
@@ -243,21 +243,22 @@ export async function DELETE(
     }
 
     // Check for dependencies
-    if (program._count.students > 0 || program._count.course > 0) {
+    if (program._count.students > 0 || program._count.courses > 0) {
       return NextResponse.json(
         {
           success: false,
           error: 'Cannot delete program with active students or courses',
-          data: {
+          details: {
             students: program._count.students,
-            courses: program._count.course,
+            courses: program._count.courses,
           },
         },
         { status: 400 }
       );
     }
 
-    await prisma.program.delete({
+    // Delete program
+    await prisma.programs.delete({
       where: { id: parseInt(params.id) },
     });
 

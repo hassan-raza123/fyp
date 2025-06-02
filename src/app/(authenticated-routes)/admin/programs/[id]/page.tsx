@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Edit, Trash2 } from 'lucide-react';
-import { program_status } from '@prisma/client';
+import { Edit, Trash2, BookOpen } from 'lucide-react';
+import { programs_status } from '@prisma/client';
 import { use } from 'react';
 import {
   Dialog,
@@ -29,7 +29,7 @@ interface Program {
   };
   totalCreditHours: number;
   duration: number;
-  status: program_status;
+  status: programs_status;
   description: string | null;
   stats: {
     students: number;
@@ -37,18 +37,14 @@ interface Program {
   };
 }
 
-export default function ProgramDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ProgramDetailsPage() {
   const router = useRouter();
+  const params = useParams();
+  const programId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState<Program | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const resolvedParams = use(params);
-  const programId = resolvedParams.id;
 
   useEffect(() => {
     fetchProgram();
@@ -100,11 +96,11 @@ export default function ProgramDetailsPage({
     }
   };
 
-  const getStatusBadge = (status: program_status) => {
+  const getStatusBadge = (status: programs_status) => {
     switch (status) {
-      case program_status.active:
+      case programs_status.active:
         return <Badge variant='success'>Active</Badge>;
-      case program_status.inactive:
+      case programs_status.inactive:
         return <Badge variant='secondary'>Inactive</Badge>;
       default:
         return <Badge>{status}</Badge>;
@@ -135,6 +131,13 @@ export default function ProgramDetailsPage({
           <p className='text-muted-foreground'>Program Code: {program.code}</p>
         </div>
         <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            onClick={() => router.push(`/admin/programs/${program.id}/plos`)}
+          >
+            <BookOpen className='mr-2 h-4 w-4' />
+            Manage PLOs
+          </Button>
           <Button
             variant='outline'
             onClick={() => router.push(`/admin/programs/${program.id}/edit`)}

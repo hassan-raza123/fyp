@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find the password reset record
-    const resetRecord = await prisma.passwordreset.findUnique({
+    const resetRecord = await prisma.passwordresets.findUnique({
       where: { token },
     });
 
@@ -35,14 +35,15 @@ export async function GET(request: NextRequest) {
 
     if (resetRecord.expiresAt < new Date()) {
       // Delete expired token
-      await prisma.passwordreset.delete({
+      await prisma.passwordresets.delete({
         where: { token },
       });
 
       return NextResponse.json(
         {
           success: false,
-          message: 'Reset token has expired. Please request a new password reset link.',
+          message:
+            'Reset token has expired. Please request a new password reset link.',
         },
         { status: 400 }
       );
@@ -62,4 +63,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

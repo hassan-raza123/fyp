@@ -22,7 +22,7 @@ export async function GET(
     }
 
     // Check if department exists
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: departmentId },
     });
 
@@ -34,7 +34,7 @@ export async function GET(
     }
 
     // Get programs for the department
-    const programs = await prisma.program.findMany({
+    const programs = await prisma.programs.findMany({
       where: {
         departmentId,
         status: 'active',

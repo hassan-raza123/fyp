@@ -20,14 +20,14 @@ export async function GET(
     }
 
     // Get the requesting user's role
-    const requestingUserRole = await prisma.userrole.findFirst({
+    const requestingUserRole = await prisma.userroles.findFirst({
       where: { userId: authResult.user.userId },
       include: { role: true },
     });
 
     // If the requesting user is a sub_admin, don't allow access to super_admin
     if (requestingUserRole?.role.name === 'sub_admin') {
-      const targetUserRole = await prisma.userrole.findFirst({
+      const targetUserRole = await prisma.userroles.findFirst({
         where: { userId },
         include: { role: true },
       });
@@ -38,7 +38,7 @@ export async function GET(
     }
 
     // Get the target user with only the required fields
-    const targetUser = await prisma.user.findUnique({
+    const targetUser = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -113,7 +113,7 @@ export async function PUT(
     }
 
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { id: Number(params.id) },
     });
 
@@ -123,7 +123,7 @@ export async function PUT(
 
     // Check if email is already taken by another user
     if (email !== existingUser.email) {
-      const emailExists = await prisma.user.findUnique({
+      const emailExists = await prisma.users.findUnique({
         where: { email },
       });
       if (emailExists) {
@@ -135,7 +135,7 @@ export async function PUT(
     }
 
     // Update user data
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: Number(params.id) },
       data: {
         email,
@@ -194,14 +194,14 @@ export async function DELETE(
     }
 
     // Get the requesting user's role
-    const requestingUserRole = await prisma.userrole.findFirst({
+    const requestingUserRole = await prisma.userroles.findFirst({
       where: { userId: authResult.user.userId },
       include: { role: true },
     });
 
     // If the requesting user is a sub_admin, don't allow deletion of super_admin
     if (requestingUserRole?.role.name === 'sub_admin') {
-      const targetUserRole = await prisma.userrole.findFirst({
+      const targetUserRole = await prisma.userroles.findFirst({
         where: { userId },
         include: { role: true },
       });
@@ -220,20 +220,20 @@ export async function DELETE(
     }
 
     // First delete any related records
-    await prisma.userrole.deleteMany({
+    await prisma.userroles.deleteMany({
       where: { userId },
     });
 
-    await prisma.faculty.deleteMany({
+    await prisma.faculties.deleteMany({
       where: { userId },
     });
 
-    await prisma.student.deleteMany({
+    await prisma.students.deleteMany({
       where: { userId },
     });
 
     // Finally delete the user
-    await prisma.user.delete({
+    await prisma.users.delete({
       where: { id: userId },
     });
 

@@ -44,6 +44,9 @@ import {
   HelpCircle,
   Settings2,
   Building2,
+  Link,
+  LayoutDashboard,
+  UserCog,
 } from 'lucide-react';
 import { LucideProps } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -122,30 +125,159 @@ const SidebarNavLink = ({
 
 const navigationSections = [
   {
-    title: 'Main',
+    title: 'MAIN',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: Home },
-      { id: 'users', label: 'Users', icon: Users },
-      { id: 'departments', label: 'Departments', icon: Building2 },
-      { id: 'programs', label: 'Programs', icon: GraduationCap },
+      { id: 'overview', label: 'Overview', icon: Home },
+      { id: 'students', label: 'Students', icon: Users, badge: 0 },
+      { id: 'attendance', label: 'Attendance', icon: Calendar, badge: 0 },
     ],
   },
   {
-    title: 'Management',
+    title: 'ACADEMIC',
     items: [
-      { id: 'courses', label: 'Courses', icon: BookOpen },
-      { id: 'faculty', label: 'Faculty', icon: UserCheck },
-      { id: 'students', label: 'Students', icon: Users },
-      { id: 'attendance', label: 'Attendance', icon: Calendar },
+      {
+        id: 'programs',
+        label: 'Programs',
+        icon: GraduationCap,
+        href: '/admin/programs',
+      },
+      {
+        id: 'plos',
+        label: 'PLOs',
+        icon: Target,
+        href: '/admin/plos',
+      },
+      {
+        id: 'clos',
+        label: 'CLOs',
+        icon: FileText,
+        href: '/admin/clos',
+      },
+      {
+        id: 'clo-plo-mappings',
+        label: 'CLO-PLO Mappings',
+        icon: Link,
+        href: '/admin/clo-plo-mappings',
+      },
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: Building2,
+        href: '/admin/departments',
+      },
+      {
+        id: 'courses',
+        label: 'Courses',
+        icon: BookOpen,
+        href: '/admin/courses',
+      },
+      {
+        id: 'course-offerings',
+        label: 'Course Offerings',
+        icon: BookCheck,
+        href: '/admin/course-offerings',
+      },
+      {
+        id: 'assessments',
+        label: 'Assessments',
+        icon: FileText,
+        href: '/admin/assessments',
+      },
+      {
+        id: 'results',
+        label: 'Results',
+        icon: BarChart2,
+        href: '/admin/results',
+      },
+      {
+        id: 'semesters',
+        label: 'Semesters',
+        icon: Calendar,
+        href: '/admin/semesters',
+      },
+      {
+        id: 'sections',
+        label: 'Sections',
+        icon: Users,
+        href: '/admin/sections',
+      },
+      {
+        id: 'batches',
+        label: 'Batches',
+        icon: Layers,
+        href: '/admin/batches',
+      },
     ],
   },
   {
-    title: 'Reports',
+    title: 'MANAGEMENT',
     items: [
-      { id: 'analytics', label: 'Analytics', icon: BarChart2 },
-      { id: 'reports', label: 'Reports', icon: FileText },
-      { id: 'settings', label: 'Settings', icon: Settings2 },
+      { id: 'users', label: 'Users', icon: Users, badge: 0 },
+      { id: 'analytics', label: 'Analytics', icon: BarChart2, badge: 0 },
     ],
+  },
+];
+
+const navigationItems = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    icon: LayoutDashboard,
+    href: '/admin',
+  },
+  {
+    id: 'students',
+    label: 'Students',
+    icon: Users,
+    href: '/admin/students',
+  },
+  {
+    id: 'programs',
+    label: 'Programs',
+    icon: GraduationCap,
+    href: '/admin/programs',
+  },
+  {
+    id: 'departments',
+    label: 'Departments',
+    icon: Building2,
+    href: '/admin/departments',
+  },
+  {
+    id: 'faculties',
+    label: 'Faculties',
+    icon: UserCog,
+    href: '/admin/faculties',
+  },
+  {
+    id: 'courses',
+    label: 'Courses',
+    icon: BookOpen,
+    href: '/admin/courses',
+  },
+  {
+    id: 'clos',
+    label: 'CLOs',
+    icon: Target,
+    href: '/admin/clos',
+  },
+  {
+    id: 'plos',
+    label: 'PLOs',
+    icon: Target,
+    href: '/admin/plos',
+  },
+  {
+    id: 'clo-plo-mappings',
+    label: 'CLO-PLO Mappings',
+    icon: Link,
+    href: '/admin/clo-plo-mappings',
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    href: '/admin/settings',
   },
 ];
 

@@ -41,7 +41,7 @@ export async function POST(
     // Start a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Check if user exists
-      const existingUser = await tx.user.findUnique({
+      const existingUser = await tx.users.findUnique({
         where: { id: userId },
       });
 
@@ -50,7 +50,7 @@ export async function POST(
       }
 
       // Check if department exists
-      const department = await tx.department.findUnique({
+      const department = await tx.departments.findUnique({
         where: { id: departmentId },
       });
 
@@ -59,7 +59,7 @@ export async function POST(
       }
 
       // Remove any existing department admin role
-      await tx.userrole.deleteMany({
+      await tx.userroles.deleteMany({
         where: {
           userId,
           role: {
@@ -69,7 +69,7 @@ export async function POST(
       });
 
       // Remove any existing faculty record
-      await tx.faculty.deleteMany({
+      await tx.faculties.deleteMany({
         where: {
           userId,
           designation: 'Department Admin',
@@ -77,7 +77,7 @@ export async function POST(
       });
 
       // Get the department admin role
-      const departmentAdminRole = await tx.role.findUnique({
+      const departmentAdminRole = await tx.roles.findUnique({
         where: { name: 'department_admin' },
       });
 
@@ -86,7 +86,7 @@ export async function POST(
       }
 
       // Create the department admin role
-      await tx.userrole.create({
+      await tx.userroles.create({
         data: {
           userId,
           roleId: departmentAdminRole.id,
@@ -94,7 +94,7 @@ export async function POST(
       });
 
       // Create faculty record
-      await tx.faculty.create({
+      await tx.faculties.create({
         data: {
           userId,
           departmentId,
@@ -105,7 +105,7 @@ export async function POST(
       });
 
       // Update department's adminId
-      await tx.department.update({
+      await tx.departments.update({
         where: { id: departmentId },
         data: {
           adminId: userId,

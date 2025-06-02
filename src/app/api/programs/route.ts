@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { Prisma, program_status } from '@prisma/client';
+import { Prisma, programs_status } from '@prisma/client';
 import { requireRole, requireAuth } from '@/lib/api-utils';
 
-type ProgramWithCounts = Prisma.programGetPayload<{
+type ProgramWithCounts = Prisma.programsGetPayload<{
   include: {
     department: true;
     _count: {
       select: {
         students: true;
-        course: true;
+        courses: true;
       };
     };
   };
@@ -55,14 +55,14 @@ export async function GET(request: NextRequest) {
     }
 
     const [programs, total] = await Promise.all([
-      prisma.program.findMany({
+      prisma.programs.findMany({
         where,
         include: {
           department: true,
           _count: {
             select: {
               students: true,
-              course: true,
+              courses: true,
             },
           },
         },
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           createdAt: 'desc',
         },
       }),
-      prisma.program.count({ where }),
+      prisma.programs.count({ where }),
     ]);
 
     // Transform the data to match the expected format in the frontend
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       ...program,
       _count: {
         ...program._count,
-        courses: program._count.course,
+        courses: program._count.courses,
       },
     }));
 
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate status
-    if (!Object.values(program_status).includes(status as program_status)) {
+    if (!Object.values(programs_status).includes(status as programs_status)) {
       console.log('10. Validation failed: invalid status');
       return NextResponse.json(
         {
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
 
     // Check if department exists
     console.log('11. Checking department:', departmentId);
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: Number(departmentId) },
     });
     console.log('12. Department check result:', department);
@@ -253,12 +253,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if program code is unique
-    console.log('13. Checking program code uniqueness:', code);
-    const existingProgram = await prisma.program.findUnique({
+    // Check if program code already exists
+    const existingProgram = await prisma.programs.findUnique({
       where: { code },
     });
-    console.log('14. Program code check result:', existingProgram);
 
     if (existingProgram) {
       return NextResponse.json(
@@ -270,65 +268,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the program
-    console.log('15. Creating program with data:', {
-      name: name.trim(),
-      code: code.trim(),
-      departmentId: Number(departmentId),
-      totalCreditHours: Number(totalCreditHours),
-      duration: Number(duration),
-      description: description?.trim() || null,
-      status: status as program_status,
-    });
-
-    const program = (await prisma.program.create({
+    // Create program
+    const program = await prisma.programs.create({
       data: {
-        name: name.trim(),
-        code: code.trim(),
+        name,
+        code,
         departmentId: Number(departmentId),
         totalCreditHours: Number(totalCreditHours),
         duration: Number(duration),
-        description: description?.trim() || null,
-        status: status as program_status,
-        updatedAt: new Date(),
-      } as Prisma.programUncheckedCreateInput,
+        description,
+        status: status as programs_status,
+      },
       include: {
         department: true,
         _count: {
           select: {
             students: true,
-            course: true,
+            courses: true,
           },
         },
       },
-    })) as ProgramWithCounts;
-
-    console.log('16. Program created successfully:', program);
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Program created successfully',
-      data: {
-        id: program.id,
-        name: program.name,
-        code: program.code,
-        description: program.description,
-        status: program.status,
-        totalCreditHours: program.totalCreditHours,
-        duration: program.duration,
-        department: {
-          id: program.department.id,
-          name: program.department.name,
-          code: program.department.code,
-        },
-        stats: {
-          students: program._count.students,
-          courses: program._count.course,
-        },
-      },
+      data: program,
     });
   } catch (error) {
-    console.error('18. Error in program creation:', error);
+    console.error('Error creating program:', error);
     return NextResponse.json(
       {
         success: false,

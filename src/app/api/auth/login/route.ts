@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     recentRequests.push(now);
     rateLimit.set(email, recentRequests);
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.users.findFirst({
       where: {
         email,
         status: 'active',
@@ -263,18 +263,24 @@ export async function POST(request: NextRequest) {
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
       // Delete any existing OTPs for this user
-      await prisma.$executeRaw`
-        DELETE FROM OTP 
-        WHERE email = ${email} 
-        AND userType = ${userType} 
-        AND isUsed = false
-      `;
+      await prisma.otps.deleteMany({
+        where: {
+          email,
+          userType,
+          isUsed: false,
+        },
+      });
 
       // Save OTP to database
-      await prisma.$executeRaw`
-        INSERT INTO OTP (email, userType, code, expiresAt, isUsed, updatedAt)
-        VALUES (${email}, ${userType}, ${hashedOTP}, ${expiresAt}, false, NOW())
-      `;
+      await prisma.otps.create({
+        data: {
+          email,
+          userType,
+          code: hashedOTP,
+          expiresAt,
+          isUsed: false,
+        },
+      });
 
       // Send OTP via email
       await sendOTPEmail(email, otp);
@@ -312,18 +318,24 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
         // Delete any existing OTPs for this user
-        await prisma.$executeRaw`
-          DELETE FROM OTP 
-          WHERE email = ${email} 
-          AND userType = ${userType} 
-          AND isUsed = false
-        `;
+        await prisma.otps.deleteMany({
+          where: {
+            email,
+            userType,
+            isUsed: false,
+          },
+        });
 
         // Save OTP to database
-        await prisma.$executeRaw`
-          INSERT INTO OTP (email, userType, code, expiresAt, isUsed, updatedAt)
-          VALUES (${email}, ${userType}, ${hashedOTP}, ${expiresAt}, false, NOW())
-        `;
+        await prisma.otps.create({
+          data: {
+            email,
+            userType,
+            code: hashedOTP,
+            expiresAt,
+            isUsed: false,
+          },
+        });
 
         // Send OTP via email
         await sendOTPEmail(email, otp);
@@ -338,44 +350,44 @@ export async function POST(request: NextRequest) {
             otpSent: true,
           },
         });
-      } else {
-        // Verified student/teacher - direct login
-        const userData = createUserData(user, userType);
-        const tokenPayload: TokenPayload = {
-          userId: user.id,
-          email: user.email,
-          role: userType,
-          userData,
-        };
-
-        const token = await createToken(tokenPayload);
-
-        // Update last login
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { last_login: new Date() },
-        });
-
-        // Determine redirect path based on role
-        const redirectTo = getDashboardPath(userType);
-
-        // Create response with token in cookie
-        const response = NextResponse.json({
-          success: true,
-          message: 'Login successful',
-          data: {
-            user: userData,
-            redirectTo: redirectTo,
-            token,
-            userType,
-          },
-        });
-
-        // Set cookie with constant name and options
-        response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
-
-        return response;
       }
+
+      // Verified student/teacher - direct login
+      const userData = createUserData(user, userType);
+      const tokenPayload: TokenPayload = {
+        userId: user.id,
+        email: user.email,
+        role: userType,
+        userData,
+      };
+
+      const token = await createToken(tokenPayload);
+
+      // Update last login
+      await prisma.users.update({
+        where: { id: user.id },
+        data: { last_login: new Date() },
+      });
+
+      // Determine redirect path based on role
+      const redirectTo = getDashboardPath(userType);
+
+      // Create response with token in cookie
+      const response = NextResponse.json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: userData,
+          redirectTo: redirectTo,
+          token,
+          userType,
+        },
+      });
+
+      // Set cookie with constant name and options
+      response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
+
+      return response;
     }
 
     // Handle other non-admin roles
@@ -390,7 +402,7 @@ export async function POST(request: NextRequest) {
     const token = await createToken(tokenPayload);
 
     // Update last login
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { last_login: new Date() },
     });

@@ -29,6 +29,7 @@ interface SidebarNavLinkProps {
     label: string;
     icon: React.ForwardRefExoticComponent<any>;
     badge?: number;
+    href?: string;
   };
   isChild?: boolean;
   activeTab: string;
@@ -90,10 +91,36 @@ const navigationSections = [
   {
     title: 'ACADEMIC',
     items: [
-      { id: 'programs', label: 'Programs', icon: GraduationCap, badge: 0 },
-      { id: 'courses', label: 'Courses', icon: BookOpen, badge: 2 },
-      { id: 'grades', label: 'Grades', icon: FileText, badge: 0 },
-      { id: 'departments', label: 'Departments', icon: Building2, badge: 0 },
+      {
+        id: 'programs',
+        label: 'Programs',
+        icon: GraduationCap,
+        href: '/admin/programs',
+      },
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: Building2,
+        href: '/admin/departments',
+      },
+      {
+        id: 'courses',
+        label: 'Courses',
+        icon: BookOpen,
+        href: '/admin/courses',
+      },
+      {
+        id: 'semesters',
+        label: 'Semesters',
+        icon: Calendar,
+        href: '/admin/semesters',
+      },
+      {
+        id: 'sections',
+        label: 'Sections',
+        icon: Users,
+        href: '/admin/sections',
+      },
     ],
   },
   {

@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import {
-  requireAuth,
-  getUserIdFromRequest,
-  requireRole,
-} from '@/lib/api-utils';
+import { requireAuth, requireRole } from '@/lib/api-utils';
 import { department_status } from '@prisma/client';
-
-const prismaClient = new PrismaClient();
 
 // Validation schema for department update
 const departmentUpdateSchema = z.object({
@@ -42,7 +33,7 @@ type DepartmentWithAdmin = {
   } | null;
   _count: {
     programs: number;
-    faculty: number;
+    faculties: number;
     students: number;
   };
 };
@@ -69,12 +60,12 @@ export async function GET(
       );
     }
 
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: departmentId },
       include: {
         _count: {
           select: {
-            faculty: true,
+            faculties: true,
             students: true,
             courses: true,
           },
@@ -90,7 +81,7 @@ export async function GET(
     }
 
     // Fetch department admins
-    const admins = await prisma.user.findMany({
+    const admins = await prisma.users.findMany({
       where: {
         AND: [
           {
@@ -124,7 +115,7 @@ export async function GET(
     }));
 
     // Fetch faculty members
-    const facultyMembers = await prisma.faculty.findMany({
+    const facultyMembers = await prisma.faculties.findMany({
       where: {
         departmentId: departmentId,
       },
@@ -150,7 +141,7 @@ export async function GET(
     }));
 
     // Fetch programs
-    const programs = await prisma.program.findMany({
+    const programs = await prisma.programs.findMany({
       where: {
         departmentId: departmentId,
       },
@@ -217,7 +208,7 @@ export async function PUT(
     }
 
     // Check if department exists
-    const existingDepartment = await prisma.department.findUnique({
+    const existingDepartment = await prisma.departments.findUnique({
       where: { id: departmentId },
     });
 
@@ -231,7 +222,7 @@ export async function PUT(
     // Start a transaction to ensure all operations succeed or fail together
     const result = await prisma.$transaction(async (tx) => {
       // Update department
-      const updatedDepartment = await tx.department.update({
+      const updatedDepartment = await tx.departments.update({
         where: { id: departmentId },
         data: {
           name,
@@ -253,7 +244,7 @@ export async function PUT(
           _count: {
             select: {
               programs: true,
-              faculty: true,
+              faculties: true,
               students: true,
             },
           },
@@ -279,7 +270,7 @@ export async function PUT(
         : null,
       stats: {
         programs: result._count.programs,
-        faculty: result._count.faculty,
+        faculties: result._count.faculties,
         students: result._count.students,
       },
     };
@@ -324,13 +315,13 @@ export async function DELETE(
     }
 
     // Check if department exists
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: departmentId },
       include: {
         _count: {
           select: {
             programs: true,
-            faculty: true,
+            faculties: true,
             students: true,
           },
         },
@@ -347,7 +338,7 @@ export async function DELETE(
     // Check if department has any related data
     if (
       department._count.programs > 0 ||
-      department._count.faculty > 0 ||
+      department._count.faculties > 0 ||
       department._count.students > 0
     ) {
       return NextResponse.json(
@@ -357,7 +348,7 @@ export async function DELETE(
             'Cannot delete department with related data. Please remove all programs, faculty, and students first.',
           details: {
             programs: department._count.programs,
-            faculty: department._count.faculty,
+            faculties: department._count.faculties,
             students: department._count.students,
           },
         },
@@ -368,7 +359,7 @@ export async function DELETE(
     // Start a transaction to ensure data consistency
     await prisma.$transaction(async (tx) => {
       // Remove any department admin role assignments
-      await tx.userrole.deleteMany({
+      await tx.userroles.deleteMany({
         where: {
           user: {
             faculty: {
@@ -382,7 +373,7 @@ export async function DELETE(
       });
 
       // Delete the department
-      await tx.department.delete({
+      await tx.departments.delete({
         where: { id: departmentId },
       });
     });
