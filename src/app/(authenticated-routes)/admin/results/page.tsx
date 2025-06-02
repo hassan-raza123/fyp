@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { FileCheck, BarChart3, ClipboardCheck } from 'lucide-react';
+import { FileCheck, BarChart3, ClipboardCheck, Target } from 'lucide-react';
 
 const ResultsPage = () => {
   return (
@@ -61,11 +61,29 @@ const ResultsPage = () => {
             </div>
           </div>
         </Link>
+
+        {/* CLO Attainments Card */}
+        <Link
+          href='/admin/results/clo-attainments'
+          className='p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow'
+        >
+          <div className='flex items-center gap-4'>
+            <div className='p-3 bg-orange-100 rounded-full'>
+              <Target className='h-6 w-6 text-orange-600' />
+            </div>
+            <div>
+              <h2 className='text-xl font-semibold mb-2'>CLO Attainments</h2>
+              <p className='text-gray-600'>
+                Calculate and analyze CLO achievement percentages
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       <div className='mt-8 bg-white rounded-lg shadow-md p-6'>
         <h2 className='text-xl font-semibold mb-4'>Quick Actions</h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           <Link
             href='/admin/results/marks-entry'
             className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center'
@@ -77,6 +95,12 @@ const ResultsPage = () => {
             className='px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-center'
           >
             Result Moderation
+          </Link>
+          <Link
+            href='/admin/results/clo-attainments'
+            className='px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-center'
+          >
+            CLO Attainments
           </Link>
         </div>
       </div>
