@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';
+import { ResultModeration } from '@/components/assessments/ResultModeration';
 
 interface CourseOffering {
   id: number;
@@ -43,15 +45,22 @@ interface AssessmentItem {
   cloId: number;
 }
 
+interface Marks {
+  [studentId: number]: {
+    [itemId: number]: number;
+  };
+}
+
 const MarksEntryPage = () => {
   const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [marks, setMarks] = useState<Record<string, Record<number, number>>>(
-    {}
+  const [selectedAssessment, setSelectedAssessment] = useState<number | null>(
+    null
   );
+  const [marks, setMarks] = useState<Marks>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +105,7 @@ const MarksEntryPage = () => {
         setAssessments(assessmentsData);
 
         // Initialize marks object
-        const initialMarks: Record<string, Record<number, number>> = {};
+        const initialMarks: Marks = {};
         studentsData.forEach((student: Student) => {
           initialMarks[student.id] = {};
           assessmentsData.forEach((assessment: Assessment) => {
@@ -122,7 +131,7 @@ const MarksEntryPage = () => {
     itemId: number,
     value: number
   ) => {
-    setMarks((prev) => ({
+    setMarks((prev: Marks) => ({
       ...prev,
       [studentId]: {
         ...prev[studentId],
@@ -132,7 +141,7 @@ const MarksEntryPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedSection) return;
+    if (!selectedSection || !selectedAssessment) return;
 
     setLoading(true);
     try {
@@ -145,14 +154,15 @@ const MarksEntryPage = () => {
           sectionId: selectedSection,
           marks: Object.entries(marks).map(([studentId, itemMarks]) => ({
             studentId: parseInt(studentId),
-            assessmentId: assessments[0].id, // Assuming we're submitting for the first assessment
+            assessmentId: selectedAssessment,
             items: Object.entries(itemMarks).map(([itemId, mark]) => ({
               itemId: parseInt(itemId),
               marks: mark,
               totalMarks:
-                assessments[0].assessmentItems.find(
-                  (item) => item.id === parseInt(itemId)
-                )?.marks || 0,
+                assessments
+                  .find((a) => a.id === selectedAssessment)
+                  ?.assessmentItems.find((item) => item.id === parseInt(itemId))
+                  ?.marks || 0,
             })),
           })),
         }),
@@ -170,16 +180,13 @@ const MarksEntryPage = () => {
     }
   };
 
-  const hasAssessmentsWithItems =
-    assessments.length > 0 &&
-    assessments.some(
-      (assessment) =>
-        assessment.assessmentItems && assessment.assessmentItems.length > 0
-    );
+  const selectedAssessmentData = assessments.find(
+    (a) => a.id === selectedAssessment
+  );
 
   return (
     <div className='p-6'>
-      <h2 className='text-xl font-semibold mb-4'>Marks Entry</h2>
+      <h1 className='text-2xl font-bold mb-6'>Marks Entry</h1>
 
       {/* Section Selection */}
       <div className='mb-6'>
@@ -199,94 +206,60 @@ const MarksEntryPage = () => {
         </select>
       </div>
 
+      {/* Assessment Selection */}
+      {selectedSection && (
+        <div className='mb-6'>
+          <label className='block text-sm font-medium mb-2'>
+            Select Assessment
+          </label>
+          <select
+            className='w-full max-w-md p-2 border rounded'
+            value={selectedAssessment || ''}
+            onChange={(e) => setSelectedAssessment(Number(e.target.value))}
+          >
+            <option value=''>Select an assessment</option>
+            {assessments.map((assessment) => (
+              <option key={assessment.id} value={assessment.id}>
+                {assessment.title} ({assessment.type})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {error && (
         <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
       )}
 
       {loading ? (
         <div className='text-center py-4'>Loading...</div>
-      ) : selectedSection && students.length > 0 && hasAssessmentsWithItems ? (
-        <div className='overflow-x-auto'>
-          <table className='min-w-full bg-white border'>
-            <thead>
-              <tr>
-                <th className='border p-2'>Roll No</th>
-                <th className='border p-2'>Student Name</th>
-                {assessments.map((assessment) => (
-                  <React.Fragment key={assessment.id}>
-                    <th
-                      colSpan={assessment.assessmentItems.length}
-                      className='border p-2 text-center'
-                    >
-                      {assessment.title} ({assessment.type})
-                    </th>
-                  </React.Fragment>
-                ))}
-              </tr>
-              <tr>
-                <th className='border p-2'></th>
-                <th className='border p-2'></th>
-                {assessments.map((assessment) =>
-                  assessment.assessmentItems.map((item) => (
-                    <th key={item.id} className='border p-2'>
-                      Q{item.questionNo} ({item.marks})
-                    </th>
-                  ))
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.id}>
-                  <td className='border p-2'>{student.rollNumber}</td>
-                  <td className='border p-2'>{student.user.name}</td>
-                  {assessments.map((assessment) =>
-                    assessment.assessmentItems.map((item) => (
-                      <td key={item.id} className='border p-2'>
-                        <input
-                          type='number'
-                          min='0'
-                          max={item.marks}
-                          value={marks[student.id]?.[item.id] || 0}
-                          onChange={(e) =>
-                            handleMarkChange(
-                              student.id,
-                              item.id,
-                              Number(e.target.value)
-                            )
-                          }
-                          className='w-20 p-1 border rounded'
-                        />
-                      </td>
-                    ))
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      ) : selectedSection && selectedAssessment && selectedAssessmentData ? (
+        <div className='space-y-6'>
+          <BulkMarksEntry
+            sectionId={selectedSection}
+            assessmentId={selectedAssessment}
+            assessment={selectedAssessmentData}
+            students={students}
+            onSuccess={() => {
+              // Refresh data or show success message
+              router.refresh();
+            }}
+          />
 
-          <div className='mt-4'>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50'
-            >
-              {loading ? 'Saving...' : 'Save Marks'}
-            </button>
+          <div className='mt-8'>
+            <h2 className='text-xl font-semibold mb-4'>Result Moderation</h2>
+            <ResultModeration
+              sectionId={selectedSection}
+              assessmentId={selectedAssessment}
+              students={students}
+            />
           </div>
         </div>
-      ) : selectedSection && students.length > 0 && !hasAssessmentsWithItems ? (
-        <div className='text-center py-4 text-red-600 font-semibold'>
-          No assessments or assessment items found for this section.
-          <br />
-          Please create at least one assessment and add questions/items to it
-          before entering marks.
+      ) : (
+        <div className='text-center text-gray-500 py-4'>
+          Select a section and assessment to enter marks
         </div>
-      ) : selectedSection ? (
-        <div className='text-center py-4'>
-          No students found in this section
-        </div>
-      ) : null}
+      )}
     </div>
   );
 };
