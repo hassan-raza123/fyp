@@ -432,7 +432,7 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className='p-4'>
+        <nav className='p-4 overflow-y-auto max-h-[calc(100vh-200px)]'>
           {navigationSections.map((section, idx) => (
             <div key={idx} className='mb-8'>
               {isSidebarOpen && (
