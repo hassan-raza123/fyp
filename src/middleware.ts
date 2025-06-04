@@ -44,12 +44,6 @@ async function verifyToken(token: string) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
 
-    console.log('Token verified successfully:', {
-      userId: payload.userId,
-      email: payload.email,
-      role: payload.role,
-    });
-
     return {
       isValid: true,
       userRole: payload.role as string,
@@ -58,7 +52,6 @@ async function verifyToken(token: string) {
       userData: payload.userData,
     };
   } catch (error) {
-    console.error('Token verification failed:', error);
     return {
       isValid: false,
       userRole: '',
@@ -96,7 +89,6 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
 
 // Function to create redirect response with token cleanup
 function createLoginRedirect(request: NextRequest, reason: string) {
-  console.log('Redirecting to login:', reason);
   const response = NextResponse.redirect(new URL('/login', request.url));
   response.cookies.delete(AUTH_TOKEN_COOKIE);
   return response;
@@ -104,7 +96,6 @@ function createLoginRedirect(request: NextRequest, reason: string) {
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  console.log('Middleware processing path:', path);
 
   // Allow public web routes
   if (
@@ -112,7 +103,6 @@ export async function middleware(request: NextRequest) {
       (route) => path === route || (route !== '/' && path.startsWith(route))
     )
   ) {
-    console.log('Allowing public web route:', path);
     return NextResponse.next();
   }
 
@@ -123,13 +113,11 @@ export async function middleware(request: NextRequest) {
   if (path.startsWith('/api/')) {
     // Allow public API routes
     if (publicApiRoutes.includes(path)) {
-      console.log('Allowing public API route:', path);
       return NextResponse.next();
     }
 
     // For protected API routes, token is required
     if (!token) {
-      console.log('API route accessed without token:', path);
       return NextResponse.json(
         { error: 'Authentication token is required' },
         { status: 401 }
@@ -142,7 +130,6 @@ export async function middleware(request: NextRequest) {
     );
 
     if (!isValid) {
-      console.log('Invalid token for API route:', path);
       return NextResponse.json(
         { error: 'Invalid or expired authentication token' },
         { status: 401 }
@@ -155,13 +142,6 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-email', email);
     requestHeaders.set('x-user-role', userRole);
     requestHeaders.set('x-user-data', JSON.stringify(userData));
-
-    console.log('API route authorized for user:', {
-      userId,
-      email,
-      userRole,
-      path,
-    });
 
     return NextResponse.next({
       request: {
@@ -178,18 +158,10 @@ export async function middleware(request: NextRequest) {
 
       if (isValid && userRole) {
         const dashboard = getUserDashboard(userRole);
-        console.log(
-          'Redirecting authenticated user from auth route to dashboard:',
-          {
-            from: path,
-            to: dashboard,
-            role: userRole,
-          }
-        );
+
         return NextResponse.redirect(new URL(dashboard, request.url));
       } else {
         // Invalid token, clear it and allow access to auth route
-        console.log('Invalid token on auth route, clearing token');
         const response = NextResponse.next();
         response.cookies.delete(AUTH_TOKEN_COOKIE);
         return response;
@@ -197,7 +169,6 @@ export async function middleware(request: NextRequest) {
     }
 
     // No token, allow access to auth routes
-    console.log('Allowing unauthenticated access to auth route:', path);
     return NextResponse.next();
   }
 
@@ -226,11 +197,6 @@ export async function middleware(request: NextRequest) {
   if (isProtectedRoute) {
     // Check if user has permission for this route
     if (!isRouteAllowedForRole(path, userRole)) {
-      console.log('User role mismatch for protected route:', {
-        path,
-        userRole,
-        action: 'redirecting to login',
-      });
       return createLoginRedirect(
         request,
         `Role ${userRole} not allowed for route: ${path}`
@@ -239,7 +205,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // All checks passed, allow access
-  console.log('Access granted:', { path, userRole });
   return NextResponse.next();
 }
 
