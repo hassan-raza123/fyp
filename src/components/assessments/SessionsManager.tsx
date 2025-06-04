@@ -25,6 +25,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { AttendanceMarkingDialog } from './AttendanceMarkingDialog';
+import { AttendanceReport } from './AttendanceReport';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface Session {
   id: number;
@@ -59,6 +70,24 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
   >(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
+  const [attendanceSessionId, setAttendanceSessionId] = useState<number | null>(
+    null
+  );
+  const [attendanceSectionId, setAttendanceSectionId] = useState<number | null>(
+    null
+  );
+  const [attendanceMarkedSessions, setAttendanceMarkedSessions] = useState<
+    Record<number, boolean>
+  >({});
+  const [showReport, setShowReport] = useState(false);
+  const [attendanceStats, setAttendanceStats] = useState({
+    totalSessions: 0,
+    totalPresent: 0,
+    totalAbsent: 0,
+    totalLate: 0,
+    averageAttendance: 0,
+  });
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -80,9 +109,38 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
     }
   };
 
+  const fetchAttendanceStats = async () => {
+    if (!sectionId) return;
+    const res = await fetch(`/api/attendance?sectionId=${sectionId}&report=1`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.data)) {
+      const stats = {
+        totalSessions: sessions.length,
+        totalPresent: 0,
+        totalAbsent: 0,
+        totalLate: 0,
+        averageAttendance: 0,
+      };
+
+      data.data.forEach((student: any) => {
+        stats.totalPresent += student.present;
+        stats.totalAbsent += student.absent;
+        stats.totalLate += student.late;
+      });
+
+      const totalAttendance =
+        stats.totalPresent + stats.totalAbsent + stats.totalLate;
+      stats.averageAttendance =
+        totalAttendance > 0 ? (stats.totalPresent / totalAttendance) * 100 : 0;
+
+      setAttendanceStats(stats);
+    }
+  };
+
   useEffect(() => {
     if (sectionId) {
       fetchSessions();
+      fetchAttendanceStats();
     }
   }, [sectionId]);
 
@@ -191,6 +249,38 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
   };
 
+  // Fetch which sessions have attendance marked
+  const fetchAttendanceStatus = async () => {
+    if (!sectionId) return;
+    const res = await fetch(`/api/attendance?sectionId=${sectionId}&report=1`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.data)) {
+      // Mark sessions as attended if present+absent+late > 0 for any student
+      const status: Record<number, boolean> = {};
+      sessions.forEach((session) => {
+        status[session.id] = false;
+      });
+      data.data.forEach((studentReport: any) => {
+        if (studentReport.attendanceBySession) {
+          Object.entries(studentReport.attendanceBySession).forEach(
+            ([sessionId, statusVal]) => {
+              if (statusVal !== undefined && statusVal !== null) {
+                status[Number(sessionId)] = true;
+              }
+            }
+          );
+        }
+      });
+      setAttendanceMarkedSessions(status);
+    }
+  };
+
+  // Call fetchAttendanceStatus after marking attendance
+  const handleAttendanceMarked = () => {
+    fetchSessions();
+    fetchAttendanceStatus();
+  };
+
   if (loading) {
     return <Loading message='Loading sessions...' />;
   }
@@ -207,9 +297,111 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
   return (
     <div className='space-y-6'>
       <div className='flex justify-between items-center'>
-        <h2 className='text-xl font-semibold'>Class Sessions</h2>
+        <div>
+          <h2 className='text-xl font-semibold'>Class Sessions & Attendance</h2>
+          <p className='text-sm text-gray-500 mt-1'>
+            Manage class sessions and mark attendance for each session
+          </p>
+        </div>
         <Button onClick={() => setIsCreating(true)}>Add New Session</Button>
       </div>
+
+      <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
+        <h3 className='text-lg font-semibold text-blue-800 mb-2'>
+          How to Mark Attendance
+        </h3>
+        <div className='text-sm text-blue-600 space-y-2'>
+          <p>Follow these steps to mark attendance:</p>
+          <ol className='list-decimal list-inside space-y-1 ml-2'>
+            <li>Find the session you want to mark attendance for</li>
+            <li>Click the "Mark Attendance" button on that session</li>
+            <li>
+              Select attendance status (Present/Absent/Late) for each student
+            </li>
+            <li>Click "Save Attendance" to submit</li>
+          </ol>
+          <p className='mt-2'>
+            <span className='font-semibold'>Note:</span> You can view the
+            complete attendance report by clicking the "View Attendance Report"
+            button at the bottom of the page.
+          </p>
+        </div>
+      </div>
+
+      {/* Attendance Statistics Summary */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Total Sessions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>
+              {attendanceStats.totalSessions}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>Present</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-green-600'>
+              {attendanceStats.totalPresent}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>Absent</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-red-600'>
+              {attendanceStats.totalAbsent}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Average Attendance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-blue-600'>
+              {attendanceStats.averageAttendance.toFixed(1)}%
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Attendance Trends Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Attendance Trends</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='h-[200px]'>
+            <ResponsiveContainer width='100%' height='100%'>
+              <BarChart
+                data={sessions.map((session) => ({
+                  date: format(new Date(session.date), 'MMM dd'),
+                  present: attendanceMarkedSessions[session.id] ? 1 : 0,
+                  absent: attendanceMarkedSessions[session.id] ? 0 : 1,
+                }))}
+              >
+                <CartesianGrid strokeDasharray='3 3' />
+                <XAxis dataKey='date' />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey='present' fill='#22c55e' name='Present' />
+                <Bar dataKey='absent' fill='#ef4444' name='Absent' />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {sessions.length === 0 ? (
         <div className='text-center text-gray-500 py-4'>
@@ -223,6 +415,28 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
                 <CardTitle className='text-lg flex justify-between items-center'>
                   {session.topic}
                   <div className='flex items-center gap-2'>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => {
+                        setAttendanceSessionId(session.id);
+                        setAttendanceSectionId(session.sectionId);
+                        setAttendanceDialogOpen(true);
+                      }}
+                    >
+                      Mark Attendance
+                    </Button>
+                    {attendanceMarkedSessions[session.id] ? (
+                      <span className='text-green-600 text-xs ml-2 flex items-center'>
+                        <span className='w-2 h-2 bg-green-500 rounded-full mr-1'></span>
+                        Attendance Marked
+                      </span>
+                    ) : (
+                      <span className='text-red-500 text-xs ml-2 flex items-center'>
+                        <span className='w-2 h-2 bg-red-500 rounded-full mr-1'></span>
+                        Not Marked
+                      </span>
+                    )}
                     <Button
                       variant='outline'
                       size='sm'
@@ -530,6 +744,27 @@ export function SessionsManager({ sectionId }: SessionsManagerProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AttendanceMarkingDialog
+        open={attendanceDialogOpen}
+        onOpenChange={setAttendanceDialogOpen}
+        sessionId={attendanceSessionId || 0}
+        sectionId={attendanceSectionId || 0}
+        onAttendanceMarked={handleAttendanceMarked}
+      />
+
+      <div className='mt-6'>
+        <Button variant='outline' onClick={() => setShowReport(true)}>
+          View Attendance Report
+        </Button>
+      </div>
+
+      {showReport && (
+        <AttendanceReport
+          sectionId={sectionId}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   );
 }
