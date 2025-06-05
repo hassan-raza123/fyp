@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Users,
   GraduationCap,
@@ -62,33 +62,91 @@ const StatCard = ({ title, value, icon, change, trend }: StatCardProps) => (
 );
 
 interface ActivityItemProps {
-  title: string;
-  description: string;
+  summary: string;
+  user: string;
   time: string;
   icon: React.ReactNode;
 }
 
-const ActivityItem = ({
-  title,
-  description,
-  time,
-  icon,
-}: ActivityItemProps) => (
+const ActivityItem = ({ summary, user, time, icon }: ActivityItemProps) => (
   <div className='flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors'>
     <div className='p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
       {icon}
     </div>
     <div className='flex-1 min-w-0'>
       <p className='text-sm font-medium text-gray-900 dark:text-white'>
-        {title}
+        {summary}
       </p>
-      <p className='text-sm text-gray-500 dark:text-gray-400'>{description}</p>
+      <p className='text-xs text-gray-500 dark:text-gray-400'>By {user}</p>
       <p className='text-xs text-gray-400 dark:text-gray-500 mt-1'>{time}</p>
     </div>
   </div>
 );
 
+interface DashboardData {
+  stats: {
+    totalStudents: number;
+    totalPrograms: number;
+    totalCourses: number;
+    totalDepartments: number;
+  };
+  recentActivities: Array<{
+    id: string;
+    summary: string;
+    createdAt: string;
+    user: string;
+  }>;
+  currentSemester: {
+    name: string;
+    startDate: string;
+    endDate: string;
+  };
+}
+
 export default function AdminOverview() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/admin/overview');
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        const data = await response.json();
+        setData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-red-500'>Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -113,7 +171,7 @@ export default function AdminOverview() {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <StatCard
           title='Total Students'
-          value='2,543'
+          value={data.stats.totalStudents.toLocaleString()}
           icon={
             <Users className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -122,7 +180,7 @@ export default function AdminOverview() {
         />
         <StatCard
           title='Active Programs'
-          value='24'
+          value={data.stats.totalPrograms}
           icon={
             <GraduationCap className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -131,7 +189,7 @@ export default function AdminOverview() {
         />
         <StatCard
           title='Total Courses'
-          value='156'
+          value={data.stats.totalCourses}
           icon={
             <BookOpen className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -140,7 +198,7 @@ export default function AdminOverview() {
         />
         <StatCard
           title='Departments'
-          value='12'
+          value={data.stats.totalDepartments}
           icon={
             <Building2 className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -157,38 +215,23 @@ export default function AdminOverview() {
             </h2>
           </div>
           <div className='divide-y divide-gray-100 dark:divide-gray-700'>
-            <ActivityItem
-              title='New Student Registration'
-              description='50 new students enrolled in Computer Science program'
-              time='2 hours ago'
-              icon={
-                <Users className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-              }
-            />
-            <ActivityItem
-              title='Course Update'
-              description='Advanced Mathematics syllabus has been updated'
-              time='4 hours ago'
-              icon={
-                <BookOpen className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-              }
-            />
-            <ActivityItem
-              title='Assessment Results'
-              description='Final semester results have been published'
-              time='1 day ago'
-              icon={
-                <Award className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-              }
-            />
-            <ActivityItem
-              title='Program Review'
-              description='Annual review of Engineering programs completed'
-              time='2 days ago'
-              icon={
-                <Target className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-              }
-            />
+            {data.recentActivities.length === 0 ? (
+              <div className='p-6 text-center text-gray-400 dark:text-gray-500'>
+                No recent activity.
+              </div>
+            ) : (
+              data.recentActivities.map((activity) => (
+                <ActivityItem
+                  key={activity.id}
+                  summary={activity.summary}
+                  user={activity.user}
+                  time={new Date(activity.createdAt).toLocaleString()}
+                  icon={
+                    <Users className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+                  }
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -207,7 +250,7 @@ export default function AdminOverview() {
                   </span>
                 </div>
                 <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                  Fall 2023
+                  {data.currentSemester.name}
                 </span>
               </div>
               <div className='flex items-center justify-between'>
