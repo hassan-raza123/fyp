@@ -5,20 +5,30 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const courseId = Number(params.id);
-  if (isNaN(courseId))
+  try {
+    const courseId = parseInt(params.id);
+
+    if (isNaN(courseId)) {
+      return NextResponse.json({ error: 'Invalid course ID' }, { status: 400 });
+    }
+
+    const clos = await prisma.clos.findMany({
+      where: {
+        courseId: courseId,
+      },
+      orderBy: {
+        code: 'asc',
+      },
+    });
+
+    return NextResponse.json(clos);
+  } catch (error) {
+    console.error('Error fetching CLOs:', error);
     return NextResponse.json(
-      { success: false, error: 'Invalid course id' },
-      { status: 400 }
+      { error: 'Failed to fetch CLOs' },
+      { status: 500 }
     );
-
-  const clos = await prisma.clos.findMany({
-    where: { courseId },
-    include: { course: { select: { id: true, name: true, code: true } } },
-    orderBy: { code: 'asc' },
-  });
-
-  return NextResponse.json({ success: true, data: clos });
+  }
 }
 
 export async function POST(

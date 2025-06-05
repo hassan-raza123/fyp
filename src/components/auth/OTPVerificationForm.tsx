@@ -25,6 +25,9 @@ export default function OTPVerificationForm() {
       return;
     }
 
+    // Auto focus the first input field
+    inputRefs.current[0]?.focus();
+
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
