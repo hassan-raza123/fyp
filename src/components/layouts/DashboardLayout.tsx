@@ -49,7 +49,7 @@ import {
   UserCog,
 } from 'lucide-react';
 import { LucideProps } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { logout } from '@/app/actions/auth';
 
 interface SidebarNavLinkProps {
@@ -90,33 +90,54 @@ const SidebarNavLink = ({
       }}
       className={`
         w-full flex items-center px-4 py-2.5 rounded-lg
-        transition-all duration-200
+        transition-all duration-300 ease-in-out
         ${
           isActive
-            ? isDarkMode
-              ? 'bg-gray-700 text-white'
-              : 'bg-gray-100 text-gray-900'
+            ? 'bg-gradient-to-r from-purple-500/10 to-indigo-500/10 text-primary shadow-sm relative'
             : isDarkMode
-            ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            ? 'text-gray-400 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
+            : 'text-gray-600 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
         }
         ${isChild ? 'pl-8' : ''}
+        group
       `}
     >
-      <item.icon
-        className={`flex-shrink-0 ${isSidebarOpen ? 'w-5 h-5' : 'w-6 h-6'}`}
-      />
+      <div className='relative flex items-center'>
+        <div
+          className={`
+          p-2 rounded-lg transition-all duration-300
+          ${
+            isActive
+              ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md'
+              : 'text-current group-hover:scale-110'
+          }
+        `}
+        >
+          <item.icon
+            className={`flex-shrink-0 ${isSidebarOpen ? 'w-5 h-5' : 'w-6 h-6'}`}
+          />
+        </div>
+        {isActive && (
+          <div className='absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 rounded-lg' />
+        )}
+      </div>
       {isSidebarOpen && (
-        <span className='ml-3 text-sm font-medium'>{item.label}</span>
+        <span
+          className={`ml-3 text-sm font-medium transition-all duration-300 ${
+            isActive ? 'font-semibold' : ''
+          }`}
+        >
+          {item.label}
+        </span>
       )}
       {item.badge && isSidebarOpen && (
         <span
           className={`
             ml-auto px-2 py-0.5 text-xs font-medium rounded-full
             ${
-              isDarkMode
-                ? 'bg-gray-700 text-white'
-                : 'bg-gray-200 text-gray-900'
+              isActive
+                ? 'bg-white text-primary shadow-sm'
+                : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm'
             }
           `}
         >
@@ -129,57 +150,55 @@ const SidebarNavLink = ({
 
 const navigationSections = [
   {
-    title: 'MAIN',
+    title: 'DASHBOARD',
     items: [
       { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        icon: BarChart2,
+        href: '/admin/analytics',
+      },
+    ],
+  },
+  {
+    title: 'STUDENT MANAGEMENT',
+    items: [
       {
         id: 'students',
         label: 'Students',
         icon: Users,
-        badge: 0,
         href: '/admin/students',
       },
       {
         id: 'attendance',
         label: 'Attendance',
         icon: Calendar,
-        badge: 0,
         href: '/admin/attendance',
+      },
+      { id: 'batches', label: 'Batches', icon: Layers, href: '/admin/batches' },
+      {
+        id: 'sessions',
+        label: 'Sessions',
+        icon: Calendar,
+        href: '/admin/sessions',
       },
     ],
   },
   {
-    title: 'ACADEMIC',
+    title: 'ACADEMIC STRUCTURE',
     items: [
-      {
-        id: 'programs',
-        label: 'Programs',
-        icon: GraduationCap,
-        href: '/admin/programs',
-      },
-      {
-        id: 'plos',
-        label: 'PLOs',
-        icon: Target,
-        href: '/admin/plos',
-      },
-      {
-        id: 'clos',
-        label: 'CLOs',
-        icon: FileText,
-        href: '/admin/clos',
-      },
-      {
-        id: 'clo-plo-mappings',
-        label: 'CLO-PLO Mappings',
-        icon: Link,
-        href: '/admin/clo-plo-mappings',
-      },
       {
         id: 'departments',
         label: 'Departments',
         icon: Building2,
         href: '/admin/departments',
+      },
+      {
+        id: 'programs',
+        label: 'Programs',
+        icon: GraduationCap,
+        href: '/admin/programs',
       },
       {
         id: 'courses',
@@ -194,18 +213,6 @@ const navigationSections = [
         href: '/admin/course-offerings',
       },
       {
-        id: 'assessments',
-        label: 'Assessments',
-        icon: FileText,
-        href: '/admin/assessments',
-      },
-      {
-        id: 'results',
-        label: 'Results',
-        icon: BarChart2,
-        href: '/admin/results',
-      },
-      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
@@ -217,36 +224,47 @@ const navigationSections = [
         icon: Users,
         href: '/admin/sections',
       },
+    ],
+  },
+  {
+    title: 'LEARNING OUTCOMES',
+    items: [
+      { id: 'plos', label: 'PLOs', icon: Target, href: '/admin/plos' },
+      { id: 'clos', label: 'CLOs', icon: FileText, href: '/admin/clos' },
       {
-        id: 'batches',
-        label: 'Batches',
-        icon: Layers,
-        href: '/admin/batches',
-      },
-      {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Calendar,
-        href: '/admin/sessions',
+        id: 'clo-plo-mappings',
+        label: 'CLO-PLO Mappings',
+        icon: Link,
+        href: '/admin/clo-plo-mappings',
       },
     ],
   },
   {
-    title: 'MANAGEMENT',
+    title: 'ASSESSMENT & RESULTS',
     items: [
       {
-        id: 'users',
-        label: 'Users',
-        icon: Users,
-        badge: 0,
-        href: '/admin/users',
+        id: 'assessments',
+        label: 'Assessments',
+        icon: FileText,
+        href: '/admin/assessments',
       },
       {
-        id: 'analytics',
-        label: 'Analytics',
+        id: 'results',
+        label: 'Results',
         icon: BarChart2,
-        badge: 0,
-        href: '/admin/analytics',
+        href: '/admin/results',
+      },
+    ],
+  },
+  {
+    title: 'SYSTEM',
+    items: [
+      { id: 'users', label: 'Users', icon: Users, href: '/admin/users' },
+      {
+        id: 'settings',
+        label: 'Settings',
+        icon: Settings2,
+        href: '/admin/settings',
       },
     ],
   },
@@ -259,9 +277,10 @@ export default function DashboardLayout({
 }) {
   // Core States
   const router = useRouter();
+  const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isDarkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -276,6 +295,33 @@ export default function DashboardLayout({
   const handleLogout = async () => {
     await logout();
   };
+
+  // Update active tab based on URL
+  useEffect(() => {
+    const pathSegments = pathname.split('/');
+    // Get the base path (e.g., 'batches' from '/admin/batches/cmbf08ds800038tugw9lz6p40')
+    const basePath = pathSegments[2] || ''; // Index 2 because pathname starts with '/admin/'
+
+    // Find the matching navigation item
+    const findActiveTab = () => {
+      for (const section of navigationSections) {
+        const matchingItem = section.items.find((item) => {
+          // Get the base path from the item's href (e.g., 'batches' from '/admin/batches')
+          const itemBasePath = item.href?.split('/')[2];
+          return (
+            itemBasePath === basePath ||
+            (basePath === '' && item.id === 'overview')
+          );
+        });
+        if (matchingItem) {
+          return matchingItem.id;
+        }
+      }
+      return 'overview'; // Default to overview if no match found
+    };
+
+    setActiveTab(findActiveTab());
+  }, [pathname]); // Update when pathname changes
 
   // Handle click outside for dropdowns
   useEffect(() => {
@@ -335,7 +381,7 @@ export default function DashboardLayout({
             ? 'bg-gray-800/95 backdrop-blur-md border-gray-700'
             : 'bg-white/95 backdrop-blur-md border-gray-200'
         }
-        border-r
+        border-r shadow-lg
         ${isSidebarOpen ? 'w-72' : 'w-20'}
         ${!isSidebarOpen && 'lg:w-20'}
         ${
@@ -356,12 +402,12 @@ export default function DashboardLayout({
             <div
               className={`flex-shrink-0 ${
                 isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
-              } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg`}
+              } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
             >
               <Shield
                 className={`${
                   isSidebarOpen ? 'w-7 h-7' : 'w-5 h-5'
-                } text-white`}
+                } text-white transition-transform duration-300 hover:scale-110`}
               />
             </div>
 
@@ -382,7 +428,7 @@ export default function DashboardLayout({
                   >
                     v2.0.1
                   </span>
-                  <span className='px-1.5 py-0.5 text-[10px] bg-purple-100 text-primary rounded-full'>
+                  <span className='px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm'>
                     Beta
                   </span>
                 </div>
@@ -392,11 +438,11 @@ export default function DashboardLayout({
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             className={`
-              p-1 rounded-lg transition-all duration-200 hover:scale-110
+              p-1 rounded-lg transition-all duration-300 hover:scale-110
               ${
                 isDarkMode
-                  ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                  ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
+                  : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
               }
             `}
           >
@@ -409,14 +455,14 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation */}
-        <nav className='p-4 overflow-y-auto max-h-[calc(100vh-200px)]'>
+        <nav className='p-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent'>
           {navigationSections.map((section, idx) => (
             <div key={idx} className='mb-8'>
               {isSidebarOpen && (
                 <h2
                   className={`
                   px-4 mb-3 text-xs font-semibold uppercase tracking-wider
-                  ${isDarkMode ? 'text-gray-400' : 'text-text-light'}
+                  ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
                 `}
                 >
                   {section.title}
@@ -455,15 +501,15 @@ export default function DashboardLayout({
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`
               w-full flex items-center space-x-3 p-2 rounded-lg
-              transition-all duration-200
+              transition-all duration-300
               ${
                 isDarkMode
-                  ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                  ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
+                  : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
               }
             `}
           >
-            <div className='flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center'>
+            <div className='flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110'>
               <User className='w-4 h-4 text-white' />
             </div>
             {isSidebarOpen && (
@@ -505,12 +551,12 @@ export default function DashboardLayout({
               ? 'bg-gray-800/95 border-gray-700'
               : 'bg-white/95 border-gray-200'
           }
-          border-b backdrop-blur-md
+          border-b backdrop-blur-md shadow-sm
         `}
         >
           {/* Mobile Menu Button */}
           <button
-            className='lg:hidden mr-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700'
+            className='lg:hidden mr-4 p-2 rounded-lg hover:bg-purple-500/10 text-gray-600 hover:text-primary transition-all duration-300'
             onClick={() => setSidebarOpen(true)}
           >
             <Menu size={22} />
@@ -545,8 +591,9 @@ export default function DashboardLayout({
                       ? 'bg-gray-700 text-white placeholder-gray-400'
                       : 'bg-gray-100 text-gray-900 placeholder-gray-500'
                   }
-                  focus:outline-none focus:ring-2 focus:ring-primary
-                  transition-all duration-200
+                  focus:outline-none focus:ring-2 focus:ring-purple-500
+                  transition-all duration-300
+                  shadow-sm
                 `}
                 />
               </div>
@@ -561,10 +608,10 @@ export default function DashboardLayout({
                 p-2 rounded-lg
                 ${
                   isDarkMode
-                    ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                    ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
+                    : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
                 }
-                transition-all duration-200
+                transition-all duration-300 hover:scale-110
               `}
             >
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -578,10 +625,10 @@ export default function DashboardLayout({
                   p-2 rounded-lg
                   ${
                     isDarkMode
-                      ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
+                      : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
                   }
-                  transition-all duration-200
+                  transition-all duration-300 hover:scale-110
                 `}
               >
                 <Bell size={20} />
@@ -596,10 +643,10 @@ export default function DashboardLayout({
                   p-2 rounded-lg
                   ${
                     isDarkMode
-                      ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
+                      : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
                   }
-                  transition-all duration-200
+                  transition-all duration-300 hover:scale-110
                 `}
               >
                 <User size={20} />
@@ -610,16 +657,16 @@ export default function DashboardLayout({
                 <div
                   className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${
                     isDarkMode ? 'bg-gray-800' : 'bg-white'
-                  } ring-1 ring-black ring-opacity-5 z-50`}
+                  } ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-300 origin-top-right`}
                 >
                   <div className='py-1'>
                     <button
                       onClick={handleLogout}
                       className={`w-full flex items-center px-4 py-2 text-sm ${
                         isDarkMode
-                          ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
+                          ? 'text-gray-300 hover:bg-purple-500/10 hover:text-primary'
+                          : 'text-gray-700 hover:bg-purple-500/10 hover:text-primary'
+                      } transition-all duration-300`}
                     >
                       <LogOut className='w-4 h-4 mr-3' />
                       Logout
