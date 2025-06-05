@@ -90,6 +90,7 @@ export default function OTPVerificationForm() {
 
     try {
       setIsResending(true);
+      setError('');
       const response = await fetch('/api/auth/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

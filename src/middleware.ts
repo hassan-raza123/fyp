@@ -31,6 +31,7 @@ const publicApiRoutes = [
   '/api/auth/reset-password',
   '/api/auth/verify-otp',
   '/api/auth/verify',
+  '/api/auth/resend-otp',
 ];
 
 // Function to get user's dashboard based on role

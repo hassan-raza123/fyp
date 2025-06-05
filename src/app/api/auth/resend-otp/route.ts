@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     // Delete any existing OTPs for this user
     await prisma.$executeRaw`
-      DELETE FROM OTP 
+      DELETE FROM otps 
       WHERE email = ${email} 
       AND userType = ${userType} 
       AND isUsed = false
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     // Save OTP to database
     await prisma.$executeRaw`
-      INSERT INTO OTP (email, userType, code, expiresAt, isUsed, updatedAt)
+      INSERT INTO otps (email, userType, code, expiresAt, isUsed, updatedAt)
       VALUES (${email}, ${userType}, ${otp}, ${expiresAt}, false, NOW())
     `;
 
