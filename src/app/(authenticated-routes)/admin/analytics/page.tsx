@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Users,
   GraduationCap,
@@ -34,31 +34,17 @@ import {
   Cell,
 } from 'recharts';
 
-// Sample data for charts
-const enrollmentData = [
-  { month: 'Jan', students: 400 },
-  { month: 'Feb', students: 300 },
-  { month: 'Mar', students: 600 },
-  { month: 'Apr', students: 800 },
-  { month: 'May', students: 700 },
-  { month: 'Jun', students: 900 },
-];
-
-const programDistribution = [
-  { name: 'Computer Science', value: 35 },
-  { name: 'Engineering', value: 25 },
-  { name: 'Business', value: 20 },
-  { name: 'Arts', value: 15 },
-  { name: 'Others', value: 5 },
-];
-
-const gpaDistribution = [
-  { range: '3.5-4.0', students: 120 },
-  { range: '3.0-3.5', students: 180 },
-  { range: '2.5-3.0', students: 150 },
-  { range: '2.0-2.5', students: 90 },
-  { range: 'Below 2.0', students: 40 },
-];
+interface AnalyticsData {
+  enrollmentTrend: { month: string; students: number }[];
+  programDistribution: { name: string; value: number }[];
+  gpaDistribution: { gpa: number; students: number }[];
+  stats: {
+    totalEnrollment: number;
+    programCompletion: number;
+    averageGPA: number;
+    retentionRate: number;
+  };
+}
 
 const COLORS = ['#8B5CF6', '#6366F1', '#4F46E5', '#3730A3', '#312E81'];
 
@@ -108,6 +94,61 @@ const StatCard = ({ title, value, icon, change, trend }: StatCardProps) => (
 );
 
 export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/admin/analytics');
+        if (!response.ok) throw new Error('Failed to fetch analytics data');
+        const json = await response.json();
+        setData(json);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-red-500'>Error: {error}</div>
+      </div>
+    );
+  }
+  if (!data) return null;
+
+  // GPA buckets for bar chart
+  const gpaBuckets = [4, 3.5, 3, 2.5, 2, 0];
+  const gpaBarData = gpaBuckets.slice(0, -1).map((gpa, i) => {
+    const count = data.gpaDistribution
+      .filter((d) => d.gpa >= gpaBuckets[i + 1] && d.gpa < gpa)
+      .reduce((sum, d) => sum + d.students, 0);
+    return {
+      range: `${gpaBuckets[i + 1].toFixed(1)}-${gpa.toFixed(1)}`,
+      students: count,
+    };
+  });
+
+  // Program completion percentage
+  const programCompletionPercent = data.stats.totalEnrollment
+    ? Math.round(
+        (data.stats.programCompletion / data.stats.totalEnrollment) * 100
+      )
+    : 0;
+
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -136,7 +177,7 @@ export default function AnalyticsPage() {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <StatCard
           title='Total Enrollment'
-          value='2,543'
+          value={data.stats.totalEnrollment.toLocaleString()}
           icon={
             <Users className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -145,7 +186,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           title='Program Completion'
-          value='85%'
+          value={programCompletionPercent + '%'}
           icon={
             <GraduationCap className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -154,7 +195,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           title='Average GPA'
-          value='3.45'
+          value={data.stats.averageGPA.toFixed(2)}
           icon={
             <BarChart2 className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -163,7 +204,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           title='Retention Rate'
-          value='92%'
+          value={Math.round(data.stats.retentionRate * 100) + '%'}
           icon={
             <TrendingUp className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
@@ -181,7 +222,7 @@ export default function AnalyticsPage() {
           </h2>
           <div className='h-[300px]'>
             <ResponsiveContainer width='100%' height='100%'>
-              <LineChart data={enrollmentData}>
+              <LineChart data={data.enrollmentTrend}>
                 <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
                 <XAxis dataKey='month' stroke='#6B7280' />
                 <YAxis stroke='#6B7280' />
@@ -207,7 +248,7 @@ export default function AnalyticsPage() {
             <ResponsiveContainer width='100%' height='100%'>
               <PieChart>
                 <Pie
-                  data={programDistribution}
+                  data={data.programDistribution}
                   cx='50%'
                   cy='50%'
                   innerRadius={60}
@@ -216,7 +257,7 @@ export default function AnalyticsPage() {
                   paddingAngle={5}
                   dataKey='value'
                 >
-                  {programDistribution.map((entry, index) => (
+                  {data.programDistribution.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -228,7 +269,7 @@ export default function AnalyticsPage() {
             </ResponsiveContainer>
           </div>
           <div className='grid grid-cols-2 gap-4 mt-4'>
-            {programDistribution.map((program, index) => (
+            {data.programDistribution.map((program, index) => (
               <div key={program.name} className='flex items-center space-x-2'>
                 <div
                   className='w-3 h-3 rounded-full'
@@ -238,7 +279,7 @@ export default function AnalyticsPage() {
                   {program.name}
                 </span>
                 <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                  {program.value}%
+                  {program.value}
                 </span>
               </div>
             ))}
@@ -252,7 +293,7 @@ export default function AnalyticsPage() {
           </h2>
           <div className='h-[300px]'>
             <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={gpaDistribution}>
+              <BarChart data={gpaBarData}>
                 <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
                 <XAxis dataKey='range' stroke='#6B7280' />
                 <YAxis stroke='#6B7280' />
@@ -277,7 +318,7 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                Fall 2023
+                -
               </span>
             </div>
             <div className='flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
@@ -288,7 +329,7 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                87%
+                {programCompletionPercent}%
               </span>
             </div>
             <div className='flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
@@ -299,7 +340,11 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                Computer Science
+                {data.programDistribution.length > 0
+                  ? data.programDistribution.reduce((a, b) =>
+                      a.value > b.value ? a : b
+                    ).name
+                  : '-'}
               </span>
             </div>
           </div>
