@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node prisma/seed.js"
+    "seed:basic": "node prisma/seed-basic.js",
+    "seed:full": "node prisma/seed.js",
+    "db:clear": "node prisma/clear-db.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

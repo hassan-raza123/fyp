@@ -629,7 +629,7 @@ async function main() {
 
     console.log('👨‍🏫 Creating faculty members...');
 
-    // Create Faculty
+    // Create Faculty Members
     const facultyMembers = [];
     for (const [index, user] of facultyUsers.entries()) {
       const faculty = await prisma.faculties.create({
@@ -1373,14 +1373,16 @@ async function main() {
             ? 'late'
             : 'absent'; // 85% present, 10% late, 5% absent
 
+        // Get a valid faculty user for marking attendance
+        const facultyUser =
+          facultyUsers[Math.floor(Math.random() * facultyUsers.length)];
+
         await prisma.attendances.create({
           data: {
             studentSectionId: studentSection.id,
             sessionId: session.id,
             status: attendanceStatus,
-            markedBy:
-              facultyMembers[Math.floor(Math.random() * facultyMembers.length)]
-                .id,
+            markedBy: facultyUser.id, // Use the user ID, not faculty ID
             remarks:
               attendanceStatus === 'late'
                 ? 'Arrived 10 minutes late'
