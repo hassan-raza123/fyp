@@ -239,23 +239,23 @@ const navigationSections = [
       },
     ],
   },
-  {
-    title: 'ASSESSMENT & RESULTS',
-    items: [
-      {
-        id: 'assessments',
-        label: 'Assessments',
-        icon: FileText,
-        href: '/admin/assessments',
-      },
-      {
-        id: 'results',
-        label: 'Results',
-        icon: BarChart2,
-        href: '/admin/results',
-      },
-    ],
-  },
+  // {
+  //   title: 'ASSESSMENT & RESULTS',
+  //   items: [
+  //     {
+  //       id: 'assessments',
+  //       label: 'Assessments',
+  //       icon: FileText,
+  //       href: '/admin/assessments',
+  //     },
+  //     {
+  //       id: 'results',
+  //       label: 'Results',
+  //       icon: BarChart2,
+  //       href: '/admin/results',
+  //     },
+  //   ],
+  // },
   {
     title: 'SYSTEM',
     items: [
