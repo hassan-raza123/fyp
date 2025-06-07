@@ -63,17 +63,17 @@ function isAdminRole(role: string): boolean {
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'student':
-      return '/student/dashboard';
+      return '/student';
     case 'teacher':
-      return '/faculty/dashboard';
+      return '/faculty';
     case 'super_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'sub_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'department_admin':
-      return '/department/dashboard';
+      return '/department';
     case 'child_admin':
-      return '/sub-admin/dashboard';
+      return '/sub-admin';
     default:
       return '/login';
   }
