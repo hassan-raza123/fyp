@@ -446,18 +446,18 @@ export async function POST(request: NextRequest) {
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'super_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'sub_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'department_admin':
-      return '/department/dashboard';
+      return '/department';
     case 'child_admin':
-      return '/sub-admin/dashboard';
+      return '/sub-admin';
     case 'teacher':
-      return '/faculty/dashboard';
+      return '/faculty';
     case 'student':
-      return '/student/dashboard';
+      return '/student';
     default:
-      return '/dashboard';
+      return '/';
   }
 }
