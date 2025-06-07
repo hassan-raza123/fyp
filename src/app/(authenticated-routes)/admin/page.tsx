@@ -250,7 +250,7 @@ export default function AdminOverview() {
                   </span>
                 </div>
                 <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                  {data.currentSemester.name}
+                  {data.currentSemester ? data.currentSemester.name : 'No active semester'}
                 </span>
               </div>
               <div className='flex items-center justify-between'>
