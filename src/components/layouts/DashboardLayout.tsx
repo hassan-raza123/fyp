@@ -170,7 +170,19 @@ const navigationSections = [
         icon: Users,
         href: '/admin/students',
       },
+      // {
+      //   id: 'attendance',
+      //   label: 'Attendance',
+      //   icon: Calendar,
+      //   href: '/admin/attendance',
+      // },
       { id: 'batches', label: 'Batches', icon: Layers, href: '/admin/batches' },
+      // {
+      //   id: 'sessions',
+      //   label: 'Sessions',
+      //   icon: Calendar,
+      //   href: '/admin/sessions',
+      // },
     ],
   },
   {
