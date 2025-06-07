@@ -105,12 +105,13 @@ export async function POST(
       if (
         !studentDetails.rollNumber ||
         !studentDetails.departmentId ||
-        !studentDetails.programId
+        !studentDetails.programId ||
+        !studentDetails.batchId
       ) {
         return NextResponse.json(
           {
             error:
-              'Student details must include rollNumber, departmentId, and programId',
+              'Student details must include rollNumber, departmentId, programId, and batchId',
           },
           { status: 400 }
         );
@@ -127,9 +128,11 @@ export async function POST(
           { status: 400 }
         );
       }
-      if (!facultyDetails.departmentId) {
+      if (!facultyDetails.departmentId || !facultyDetails.designation) {
         return NextResponse.json(
-          { error: 'Faculty details must include departmentId' },
+          {
+            error: 'Faculty details must include departmentId and designation',
+          },
           { status: 400 }
         );
       }
@@ -207,42 +210,28 @@ export async function POST(
             break;
 
           case 'teacher':
-            if (facultyDetails) {
-              await tx.faculties.create({
-                data: {
-                  departmentId: parseInt(facultyDetails.departmentId),
-                  designation: facultyDetails.designation || 'Teacher',
-                  status: 'active' as const,
-                  updatedAt: new Date(),
-                  userId,
-                },
-              });
-            }
-            break;
-
           case 'department_admin':
             if (facultyDetails) {
-              const departmentId = parseInt(facultyDetails.departmentId);
-
-              // First create the faculty record
-              await tx.faculties.create({
+              const faculty = await tx.faculties.create({
                 data: {
-                  departmentId,
-                  designation: 'Department Admin',
+                  departmentId: parseInt(facultyDetails.departmentId),
+                  designation: facultyDetails.designation,
                   status: 'active' as const,
                   updatedAt: new Date(),
                   userId,
                 },
               });
 
-              // Then update the department's adminId
-              await tx.departments.update({
-                where: { id: departmentId },
-                data: {
-                  adminId: userId,
-                  updatedAt: new Date(),
-                },
-              });
+              // If it's a department admin, update the department's adminId
+              if (role === 'department_admin') {
+                await tx.departments.update({
+                  where: { id: parseInt(facultyDetails.departmentId) },
+                  data: {
+                    adminId: userId,
+                    updatedAt: new Date(),
+                  },
+                });
+              }
             }
             break;
 
@@ -251,8 +240,8 @@ export async function POST(
             break;
         }
 
-        // Fetch updated user with roles and details
-        const updatedUser = await tx.users.findUnique({
+        // Return the updated user with their role and role-specific details
+        return await tx.users.findUnique({
           where: { id: userId },
           include: {
             userrole: {
@@ -264,12 +253,6 @@ export async function POST(
             faculty: true,
           },
         });
-
-        if (!updatedUser) {
-          throw new Error('Failed to fetch updated user');
-        }
-
-        return updatedUser;
       } catch (error) {
         console.error('Transaction error:', error);
         throw error;
@@ -277,14 +260,16 @@ export async function POST(
     });
 
     if (!result) {
-      throw new Error('Failed to update user roles');
+      throw new Error('Failed to update user');
     }
 
-    // Determine the role name safely
-    let roleName = null;
-    if (result.userrole && result.userrole.role) {
-      roleName = result.userrole.role.name;
-    }
+    // Get the role name for the response
+    const roleName =
+      result.userrole &&
+      Array.isArray(result.userrole) &&
+      result.userrole.length > 0
+        ? result.userrole[0].role?.name
+        : '';
 
     return NextResponse.json({
       success: true,

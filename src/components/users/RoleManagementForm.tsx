@@ -28,21 +28,13 @@ import { Loader2 } from 'lucide-react';
 
 const roleSchema = z.object({
   role: z.string().min(1, 'Role is required'),
-  studentDetails: z
-    .object({
-      rollNumber: z.string().min(1, 'Roll number is required'),
-      departmentId: z.string().min(1, 'Department is required'),
-      programId: z.string().min(1, 'Program is required'),
-      batchId: z.string().min(1, 'Batch is required'),
-      sectionId: z.string().optional(),
-    })
-    .optional(),
   facultyDetails: z
     .object({
-      departmentId: z.string(),
-      designation: z.string(),
+      departmentId: z.string().min(1, 'Department is required'),
+      designation: z.string().min(1, 'Designation is required'),
     })
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 type RoleForm = z.infer<typeof roleSchema>;
@@ -68,25 +60,12 @@ export default function RoleManagementForm({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
   const [fetchingDepartments, setFetchingDepartments] = useState(false);
-  const [fetchingPrograms, setFetchingPrograms] = useState(false);
-  const [fetchingBatches, setFetchingBatches] = useState(false);
-  const [fetchingSections, setFetchingSections] = useState(false);
 
   const form = useForm<RoleForm>({
     resolver: zodResolver(roleSchema),
     defaultValues: {
       role: '',
-      studentDetails: {
-        rollNumber: '',
-        departmentId: '',
-        programId: '',
-        batchId: '',
-        sectionId: '',
-      },
       facultyDetails: {
         departmentId: '',
         designation: '',
@@ -111,15 +90,7 @@ export default function RoleManagementForm({
           form.setValue('role', currentRole);
 
           // Set role-specific details based on current role
-          if (currentRole === 'student' && data.student) {
-            form.setValue('studentDetails', {
-              rollNumber: data.student.rollNumber || '',
-              departmentId: String(data.student.departmentId || ''),
-              programId: String(data.student.programId || ''),
-              batchId: String(data.student.batchId || ''),
-              sectionId: data.student.sectionId || '',
-            });
-          } else if (
+          if (
             (currentRole === 'teacher' || currentRole === 'department_admin') &&
             data.faculty
           ) {
@@ -160,150 +131,52 @@ export default function RoleManagementForm({
     fetchDepartments();
   }, [userId, mode, form]);
 
-  const fetchPrograms = async (departmentId: string) => {
-    try {
-      setFetchingPrograms(true);
-      const response = await fetch(`/api/departments/${departmentId}/programs`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch programs');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setPrograms(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching programs:', error);
-      toast.error('Failed to fetch programs');
-    } finally {
-      setFetchingPrograms(false);
-    }
-  };
-
-  const fetchBatches = async (programId: string) => {
-    try {
-      setFetchingBatches(true);
-      const response = await fetch(`/api/programs/${programId}/batches`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch batches');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setBatches(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching batches:', error);
-      toast.error('Failed to fetch batches');
-    } finally {
-      setFetchingBatches(false);
-    }
-  };
-
-  const fetchSections = async (batchId: string) => {
-    try {
-      setFetchingSections(true);
-      const response = await fetch(`/api/batches/${batchId}/sections`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch sections');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setSections(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching sections:', error);
-      toast.error('Failed to fetch sections');
-    } finally {
-      setFetchingSections(false);
-    }
-  };
-
-  // Watch for department, program, and batch changes
-  const selectedDepartmentId = form.watch('studentDetails.departmentId');
-  const selectedProgramId = form.watch('studentDetails.programId');
-  const selectedBatchId = form.watch('studentDetails.batchId');
-
-  useEffect(() => {
-    if (selectedDepartmentId) {
-      fetchPrograms(selectedDepartmentId);
-    } else {
-      setPrograms([]);
-      form.setValue('studentDetails.programId', '');
-    }
-  }, [selectedDepartmentId]);
-
-  useEffect(() => {
-    if (selectedProgramId) {
-      fetchBatches(selectedProgramId);
-    } else {
-      setBatches([]);
-      form.setValue('studentDetails.batchId', '');
-    }
-  }, [selectedProgramId]);
-
-  useEffect(() => {
-    if (selectedBatchId) {
-      fetchSections(selectedBatchId);
-    } else {
-      setSections([]);
-      form.setValue('studentDetails.sectionId', '');
-    }
-  }, [selectedBatchId]);
-
   const onSubmit = async (values: RoleForm) => {
     setIsLoading(true);
     try {
-      // Validate role-specific details
-      if (values.role === 'student' && !values.studentDetails) {
-        toast.error('Student details are required for student role');
-        setIsLoading(false);
-        return;
+      // Create request body based on role
+      const requestBody: any = {
+        roles: [values.role],
+      };
+
+      // Add role-specific details only if they are required
+      switch (values.role) {
+        case 'teacher':
+        case 'department_admin':
+          if (
+            !values.facultyDetails?.departmentId ||
+            !values.facultyDetails?.designation
+          ) {
+            toast.error('Please fill in all required faculty details');
+            setIsLoading(false);
+            return;
+          }
+          requestBody.facultyDetails = values.facultyDetails;
+          break;
+
+        case 'sub_admin':
+          // No additional details needed for sub_admin
+          break;
       }
 
-      if (
-        (values.role === 'teacher' || values.role === 'department_admin') &&
-        !values.facultyDetails
-      ) {
-        toast.error(
-          'Faculty details are required for teacher/department admin role'
-        );
-        setIsLoading(false);
-        return;
-      }
+      console.log('Submitting form with data:', requestBody);
 
       const response = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          roles: [values.role],
-          studentDetails:
-            values.role === 'student' ? values.studentDetails : undefined,
-          facultyDetails:
-            values.role === 'teacher' || values.role === 'department_admin'
-              ? values.facultyDetails
-              : undefined,
-        }),
+        body: JSON.stringify(requestBody),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to assign role';
-
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          errorMessage = errorText || errorMessage;
-        }
-
-        throw new Error(errorMessage);
-      }
 
       const responseData = await response.json();
 
-      if (responseData.error) {
-        throw new Error(responseData.error);
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to assign role');
+      }
+
+      if (!responseData.success) {
+        throw new Error(responseData.error || 'Failed to assign role');
       }
 
       toast.success(
@@ -342,29 +215,14 @@ export default function RoleManagementForm({
                 name='role'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>
+                      Role <span className='text-red-500'>*</span>
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
                         // Clear role-specific details when role changes
-                        if (value !== 'student') {
-                          form.setValue('studentDetails', {
-                            rollNumber: '',
-                            departmentId: '',
-                            programId: '',
-                            batchId: '',
-                            sectionId: '',
-                          });
-                        }
-                        if (
-                          value !== 'teacher' &&
-                          value !== 'department_admin'
-                        ) {
-                          form.setValue('facultyDetails', {
-                            departmentId: '',
-                            designation: '',
-                          });
-                        }
+                        form.setValue('facultyDetails', null);
                       }}
                       value={field.value}
                     >
@@ -377,7 +235,6 @@ export default function RoleManagementForm({
                           Department Admin
                         </SelectItem>
                         <SelectItem value='teacher'>Teacher</SelectItem>
-                        <SelectItem value='student'>Student</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -385,158 +242,18 @@ export default function RoleManagementForm({
                 )}
               />
 
-              {form.watch('role') === 'student' && (
-                <div className='space-y-4'>
-                  <h3 className='text-lg font-medium'>Student Details</h3>
-                  <FormField
-                    control={form.control}
-                    name='studentDetails.rollNumber'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Roll Number</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder='Enter roll number' />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='studentDetails.departmentId'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Department</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            form.setValue('studentDetails.programId', '');
-                            form.setValue('studentDetails.batchId', '');
-                          }}
-                          value={field.value}
-                          disabled={fetchingDepartments}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select department' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {departments.map((dept) => (
-                              <SelectItem
-                                key={dept.id}
-                                value={dept.id.toString()}
-                              >
-                                {dept.name} ({dept.code})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='studentDetails.programId'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Program</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            form.setValue('studentDetails.batchId', '');
-                          }}
-                          value={field.value}
-                          disabled={fetchingPrograms || !selectedDepartmentId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select program' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {programs.map((program) => (
-                              <SelectItem
-                                key={program.id}
-                                value={program.id.toString()}
-                              >
-                                {program.name} ({program.code})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='studentDetails.batchId'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Batch</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            form.setValue('studentDetails.sectionId', '');
-                          }}
-                          value={field.value}
-                          disabled={fetchingBatches || !selectedProgramId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select batch' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {batches.map((batch) => (
-                              <SelectItem key={batch.id} value={batch.id}>
-                                {batch.name} ({batch.code})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='studentDetails.sectionId'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Section</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={fetchingSections || !selectedBatchId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select section' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sections.map((section) => (
-                              <SelectItem
-                                key={section.id}
-                                value={section.id.toString()}
-                              >
-                                {section.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
               {(form.watch('role') === 'teacher' ||
                 form.watch('role') === 'department_admin') && (
-                <div className='space-y-4'>
+                <div className='space-y-4 border rounded-lg p-4'>
                   <h3 className='text-lg font-medium'>Faculty Details</h3>
                   <FormField
                     control={form.control}
                     name='facultyDetails.departmentId'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Department</FormLabel>
+                        <FormLabel>
+                          Department <span className='text-red-500'>*</span>
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -565,9 +282,11 @@ export default function RoleManagementForm({
                     name='facultyDetails.designation'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Designation</FormLabel>
+                        <FormLabel>
+                          Designation <span className='text-red-500'>*</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder='Enter designation' />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
