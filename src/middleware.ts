@@ -5,12 +5,12 @@ import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 
 // Dashboard routes based on user roles
 const dashboardRoutes = {
-  student: '/student/dashboard',
-  teacher: '/faculty/dashboard',
-  super_admin: '/admin/dashboard',
-  sub_admin: '/admin/dashboard',
-  department_admin: '/department/dashboard',
-  child_admin: '/department/dashboard',
+  student: '/student',
+  teacher: '/faculty',
+  super_admin: '/admin',
+  sub_admin: '/admin',
+  department_admin: '/department',
+  child_admin: '/department',
 };
 
 // Auth routes that should redirect to dashboard if user is logged in
@@ -153,9 +153,12 @@ export async function middleware(request: NextRequest) {
 
   // Handle auth routes (login, forgot-password, etc.)
   if (authRoutes.some((route) => path.startsWith(route))) {
+    console.log('token', token);
     if (token) {
       // If user has token and trying to access auth routes, verify and redirect to dashboard
       const { isValid, userRole } = await verifyToken(token);
+
+      console.log('role', userRole);
 
       if (isValid && userRole) {
         const dashboard = getUserDashboard(userRole);
@@ -183,6 +186,7 @@ export async function middleware(request: NextRequest) {
 
   // Verify token
   const { isValid, userRole } = await verifyToken(token);
+  console.log('isValid', userRole);
 
   if (!isValid || !userRole) {
     return createLoginRedirect(request, `Invalid token for route: ${path}`);
