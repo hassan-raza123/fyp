@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const courseId = parseInt(params.id);
+    const courseId = await Promise.resolve(parseInt(params.id));
 
     if (isNaN(courseId)) {
       return NextResponse.json({ error: 'Invalid course ID' }, { status: 400 });
@@ -15,17 +15,18 @@ export async function GET(
     const clos = await prisma.clos.findMany({
       where: {
         courseId: courseId,
+        status: 'active',
       },
       orderBy: {
         code: 'asc',
       },
     });
 
-    return NextResponse.json(clos);
+    return NextResponse.json({ success: true, data: clos });
   } catch (error) {
     console.error('Error fetching CLOs:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch CLOs' },
+      { success: false, error: 'Failed to fetch CLOs' },
       { status: 500 }
     );
   }
@@ -35,25 +36,34 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const courseId = Number(params.id);
-  if (isNaN(courseId))
-    return NextResponse.json(
-      { success: false, error: 'Invalid course id' },
-      { status: 400 }
-    );
+  try {
+    const courseId = await Promise.resolve(parseInt(params.id));
+    if (isNaN(courseId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid course id' },
+        { status: 400 }
+      );
+    }
 
-  const { code, description, bloomLevel, status } = await req.json();
+    const { code, description, bloomLevel, status } = await req.json();
 
-  if (!code || !description) {
+    if (!code || !description) {
+      return NextResponse.json(
+        { success: false, error: 'Code and description are required' },
+        { status: 400 }
+      );
+    }
+
+    const clo = await prisma.clos.create({
+      data: { code, description, bloomLevel, status, courseId },
+    });
+
+    return NextResponse.json({ success: true, data: clo });
+  } catch (error) {
+    console.error('Error creating CLO:', error);
     return NextResponse.json(
-      { success: false, error: 'Code and description are required' },
-      { status: 400 }
+      { success: false, error: 'Failed to create CLO' },
+      { status: 500 }
     );
   }
-
-  const clo = await prisma.clos.create({
-    data: { code, description, bloomLevel, status, courseId },
-  });
-
-  return NextResponse.json({ success: true, data: clo });
 }

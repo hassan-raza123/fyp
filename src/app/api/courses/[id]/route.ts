@@ -22,7 +22,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = await Promise.resolve(parseInt(params.id));
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function GET(
             code: true,
           },
         },
-        prerequisites: {
+        courses_A: {
           select: {
             id: true,
             code: true,
@@ -113,10 +113,11 @@ export async function PUT(
   try {
     const body = await request.json();
     const validatedData = updateCourseSchema.parse(body);
+    const id = await Promise.resolve(parseInt(params.id));
 
     // Check if course exists
     const existingCourse = await prisma.courses.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id },
     });
 
     if (!existingCourse) {
@@ -131,7 +132,7 @@ export async function PUT(
       const codeExists = await prisma.courses.findFirst({
         where: {
           code: validatedData.code,
-          id: { not: parseInt(params.id) },
+          id: { not: id },
         },
       });
 
@@ -162,10 +163,10 @@ export async function PUT(
     const { prerequisites, programIds, ...updateData } = validatedData;
 
     const course = await prisma.courses.update({
-      where: { id: parseInt(params.id) },
+      where: { id },
       data: {
         ...updateData,
-        prerequisites: prerequisites
+        courses_A: prerequisites
           ? {
               set: [], // Clear existing prerequisites
               connect: prerequisites.map((id) => ({ id })),
@@ -186,7 +187,7 @@ export async function PUT(
             code: true,
           },
         },
-        prerequisites: {
+        courses_A: {
           select: {
             id: true,
             code: true,
@@ -238,7 +239,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = await Promise.resolve(parseInt(params.id));
 
     if (isNaN(id)) {
       return NextResponse.json(
