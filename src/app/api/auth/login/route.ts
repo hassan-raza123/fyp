@@ -40,14 +40,18 @@ const loginSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(
+  userType: 'student' | 'teacher' | 'admin' | 'department_admin'
+): string {
   switch (userType) {
     case 'student':
       return 'student';
     case 'teacher':
       return 'teacher';
+    case 'department_admin':
+      return 'department_admin';
     case 'admin':
-      return 'super_admin'; // Default to super_admin for admin login
+      return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
@@ -257,6 +261,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Get the actual admin role from userRoles
+      const actualRole = userRoles.find(isAdminRole) as AllRoles;
+      if (!actualRole) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Invalid admin role',
+          },
+          { status: 403 }
+        );
+      }
+
       // For admin users, always send OTP
       const otp = generateOTP();
       const hashedOTP = await bcrypt.hash(otp, 10);
@@ -293,6 +309,7 @@ export async function POST(request: NextRequest) {
           email: email,
           userType: userType,
           otpSent: true,
+          actualRole: actualRole, // Pass the actual role to use after OTP verification
         },
       });
     }

@@ -156,12 +156,12 @@ export default function LoginForm() {
         return 'Faculty';
       case 'student':
         return 'Student';
+      case 'department_admin':
+        return 'Department Admin';
       case 'super_admin':
         return 'Super Admin';
       case 'sub_admin':
         return 'Sub Admin';
-      case 'department_admin':
-        return 'Department Admin';
       case 'child_admin':
         return 'Child Admin';
       default:

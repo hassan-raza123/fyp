@@ -1,10 +1,10 @@
-export type BaseUserRole = 'student' | 'teacher';
+export type BaseUserType = 'student' | 'teacher' | 'admin' | 'department_admin';
 export type AdminRole =
   | 'super_admin'
   | 'sub_admin'
   | 'department_admin'
   | 'child_admin';
-export type AllRoles = BaseUserRole | AdminRole;
+export type AllRoles = BaseUserType | AdminRole;
 
 export interface IUser {
   id: number;
