@@ -51,6 +51,8 @@ import {
 import { LucideProps } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { logout } from '@/app/actions/auth';
+import { useAuth } from '@/hooks/useAuth';
+import { roleBasedNavigation } from '@/config/navigation';
 
 interface SidebarNavLinkProps {
   item: {
@@ -148,128 +150,6 @@ const SidebarNavLink = ({
   );
 };
 
-const navigationSections = [
-  {
-    title: 'DASHBOARD',
-    items: [
-      { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
-      {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: BarChart2,
-        href: '/admin/analytics',
-      },
-    ],
-  },
-  {
-    title: 'STUDENT MANAGEMENT',
-    items: [
-      {
-        id: 'students',
-        label: 'Students',
-        icon: Users,
-        href: '/admin/students',
-      },
-      // {
-      //   id: 'attendance',
-      //   label: 'Attendance',
-      //   icon: Calendar,
-      //   href: '/admin/attendance',
-      // },
-      { id: 'batches', label: 'Batches', icon: Layers, href: '/admin/batches' },
-      // {
-      //   id: 'sessions',
-      //   label: 'Sessions',
-      //   icon: Calendar,
-      //   href: '/admin/sessions',
-      // },
-    ],
-  },
-  {
-    title: 'ACADEMIC STRUCTURE',
-    items: [
-      {
-        id: 'departments',
-        label: 'Departments',
-        icon: Building2,
-        href: '/admin/departments',
-      },
-      {
-        id: 'programs',
-        label: 'Programs',
-        icon: GraduationCap,
-        href: '/admin/programs',
-      },
-      {
-        id: 'courses',
-        label: 'Courses',
-        icon: BookOpen,
-        href: '/admin/courses',
-      },
-      {
-        id: 'course-offerings',
-        label: 'Course Offerings',
-        icon: BookCheck,
-        href: '/admin/course-offerings',
-      },
-      {
-        id: 'semesters',
-        label: 'Semesters',
-        icon: Calendar,
-        href: '/admin/semesters',
-      },
-      {
-        id: 'sections',
-        label: 'Sections',
-        icon: Users,
-        href: '/admin/sections',
-      },
-    ],
-  },
-  {
-    title: 'LEARNING OUTCOMES',
-    items: [
-      { id: 'plos', label: 'PLOs', icon: Target, href: '/admin/plos' },
-      { id: 'clos', label: 'CLOs', icon: FileText, href: '/admin/clos' },
-      {
-        id: 'clo-plo-mappings',
-        label: 'CLO-PLO Mappings',
-        icon: Link,
-        href: '/admin/clo-plo-mappings',
-      },
-    ],
-  },
-  // {
-  //   title: 'ASSESSMENT & RESULTS',
-  //   items: [
-  //     {
-  //       id: 'assessments',
-  //       label: 'Assessments',
-  //       icon: FileText,
-  //       href: '/admin/assessments',
-  //     },
-  //     {
-  //       id: 'results',
-  //       label: 'Results',
-  //       icon: BarChart2,
-  //       href: '/admin/results',
-  //     },
-  //   ],
-  // },
-  {
-    title: 'SYSTEM',
-    items: [
-      { id: 'users', label: 'Users', icon: Users, href: '/admin/users' },
-      {
-        id: 'settings',
-        label: 'Settings',
-        icon: Settings2,
-        href: '/admin/settings',
-      },
-    ],
-  },
-];
-
 export default function DashboardLayout({
   children,
 }: {
@@ -278,6 +158,8 @@ export default function DashboardLayout({
   // Core States
   const router = useRouter();
   const pathname = usePathname();
+  const { user, loading, role } = useAuth();
+  console.log(user);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isDarkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -285,6 +167,11 @@ export default function DashboardLayout({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  // Get navigation items based on user role
+  const navigationSections =
+    roleBasedNavigation[role as keyof typeof roleBasedNavigation] ||
+    roleBasedNavigation.student;
 
   // Refs for click outside
   const searchRef = useRef<HTMLDivElement | null>(null);
@@ -519,14 +406,14 @@ export default function DashboardLayout({
                     isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}
                 >
-                  Admin User
+                  {user?.userData.firstName} {user?.userData.lastName}
                 </p>
                 <p
                   className={`text-xs truncate ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}
                 >
-                  admin@example.com
+                  {user?.email}
                 </p>
               </div>
             )}
