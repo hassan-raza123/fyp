@@ -44,13 +44,13 @@ export default function NavbarClient() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex items-center justify-between h-16'>
           <div className='flex-shrink-0'>
-            <Link 
-              href='/' 
+            <Link
+              href='/'
               className={`text-2xl font-bold transition-colors duration-300 ${
                 isScrolled ? 'text-purple-600' : 'text-white'
               }`}
             >
-              UniTrack360
+              Smart Campus for MNSUET
             </Link>
           </div>
 
@@ -92,7 +92,9 @@ export default function NavbarClient() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 ${
-                isScrolled ? 'text-gray-900 hover:text-purple-600' : 'text-white hover:text-white/80'
+                isScrolled
+                  ? 'text-gray-900 hover:text-purple-600'
+                  : 'text-white hover:text-white/80'
               }`}
             >
               {isMobileMenuOpen ? (

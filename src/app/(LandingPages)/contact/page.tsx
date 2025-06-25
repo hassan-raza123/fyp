@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { Mail, MapPin, Phone } from 'lucide-react'
-import NavbarClient from '@/components/landing-page/NavbarClient'
-import Footer from '@/components/landing-page/Footer'
-import ContactForm from '@/components/forms/ContactForm'
+import { Mail, MapPin, Phone } from 'lucide-react';
+import NavbarClient from '@/components/landing-page/NavbarClient';
+import Footer from '@/components/landing-page/Footer';
+import ContactForm from '@/components/forms/ContactForm';
 
 export default function Contact() {
   return (
@@ -15,10 +15,14 @@ export default function Contact() {
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
           <div className='max-w-3xl mx-auto text-center'>
             <h1 className='text-4xl font-bold text-white mb-6 lg:text-5xl'>
-              Get in Touch with <span className='bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>UniTrack360</span>
+              Get in Touch with{' '}
+              <span className='bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
+                Smart Campus for MNSUET
+              </span>
             </h1>
             <p className='text-xl text-white/80 max-w-2xl mx-auto leading-relaxed'>
-              Have questions? We&apos;re here to help you implement and get the most out of UniTrack360.
+              Have questions? We&apos;re here to help you implement and get the
+              most out of Smart Campus for MNSUET.
             </p>
           </div>
         </div>
@@ -52,9 +56,7 @@ export default function Contact() {
                   <MapPin className='h-6 w-6 text-purple-600' />
                 </div>
                 <div>
-                  <h3 className='font-semibold text-gray-900 mb-1'>
-                    Location
-                  </h3>
+                  <h3 className='font-semibold text-gray-900 mb-1'>Location</h3>
                   <p className='text-gray-600'>
                     MNS University of Engineering and Technology
                     <br />
@@ -68,8 +70,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className='font-semibold text-gray-900 mb-1'>Email</h3>
-                  <a 
-                    href="mailto:itzhassanraza276@gmail.com"
+                  <a
+                    href='mailto:itzhassanraza276@gmail.com'
                     className='text-gray-600 hover:text-purple-600 transition-colors'
                   >
                     itzhassanraza276@gmail.com
@@ -92,8 +94,14 @@ export default function Contact() {
                   Visit Us
                 </h3>
                 <div className='space-y-2 text-gray-600'>
-                  <p>We&apos;re located at MNS University of Engineering and Technology, Multan.</p>
-                  <p>Feel free to stop by during office hours or schedule an appointment.</p>
+                  <p>
+                    We&apos;re located at MNS University of Engineering and
+                    Technology, Multan.
+                  </p>
+                  <p>
+                    Feel free to stop by during office hours or schedule an
+                    appointment.
+                  </p>
                 </div>
               </div>
             </div>
@@ -103,5 +111,5 @@ export default function Contact() {
 
       <Footer />
     </div>
-  )
+  );
 }

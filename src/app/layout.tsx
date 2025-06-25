@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 // Metadata configuration
 export const metadata: Metadata = {
-  title: 'UniTrack360',
+  title: 'Smart Campus for MNSUET',
   description: 'Your comprehensive university management system',
 };
 

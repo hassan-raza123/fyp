@@ -51,7 +51,7 @@ interface Settings {
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({
     system: {
-      applicationName: 'UniTrack360',
+      applicationName: 'Smart Campus for MNSUET',
       academicYear: '2024',
       currentSemester: 'Spring',
       defaultLanguage: 'en',

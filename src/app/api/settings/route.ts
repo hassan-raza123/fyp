@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: {
           system: {
-            applicationName: 'UniTrack360',
+            applicationName: 'Smart Campus for MNSUET',
             academicYear: '2024',
             currentSemester: 'Spring',
             defaultLanguage: 'en',

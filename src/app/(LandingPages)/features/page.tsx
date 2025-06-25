@@ -20,7 +20,8 @@ const features = [
   {
     icon: <Users className='h-8 w-8 text-white' />,
     title: 'User Management',
-    description: 'Comprehensive user management system with role-based access control',
+    description:
+      'Comprehensive user management system with role-based access control',
     items: [
       'Multi-level role-based access control',
       'Comprehensive user profile management',
@@ -42,7 +43,8 @@ const features = [
   {
     icon: <Calendar className='h-8 w-8 text-white' />,
     title: 'Class Scheduling',
-    description: 'Intelligent scheduling system for optimal resource utilization',
+    description:
+      'Intelligent scheduling system for optimal resource utilization',
     items: [
       'Intelligent class scheduling with conflict detection',
       'Room capacity and availability management',
@@ -68,7 +70,7 @@ const features = [
     items: [
       'PLO (Program Learning Outcome) management',
       'CLO (Course Learning Outcome) creation and mapping',
-      'Bloom\'s taxonomy level assignment',
+      "Bloom's taxonomy level assignment",
       'SDG (Sustainable Development Goals) alignment',
     ],
   },
@@ -146,7 +148,9 @@ export default function FeaturesPage() {
               </span>
             </h1>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
-              Discover how UniTrack360&apos;s comprehensive features can transform your institution&apos;s management and educational processes.
+              Discover how Smart Campus for MNSUET&apos;s comprehensive features
+              can transform your institution&apos;s management and educational
+              processes.
             </p>
           </div>
         </div>
@@ -163,7 +167,9 @@ export default function FeaturesPage() {
               <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
                 {feature.icon}
               </div>
-              <h3 className='text-xl font-semibold text-gray-900 mb-2'>{feature.title}</h3>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>
+                {feature.title}
+              </h3>
               <p className='text-gray-600 mb-4'>{feature.description}</p>
               <ul className='space-y-2'>
                 {feature.items.map((item, itemIndex) => (
@@ -191,7 +197,9 @@ export default function FeaturesPage() {
               Ready to Transform Your Institution?
             </h2>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto'>
-              Experience the power of UniTrack360&apos;s comprehensive features and take your institution to the next level.
+              Experience the power of Smart Campus for MNSUET&apos;s
+              comprehensive features and take your institution to the next
+              level.
             </p>
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
               <Link
