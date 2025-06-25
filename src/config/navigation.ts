@@ -60,6 +60,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Layers,
           href: '/admin/batches',
         },
+        {
+          id: 'results',
+          label: 'Results',
+          icon: BarChart2,
+          href: '/student/results',
+        },
       ],
     },
     {
