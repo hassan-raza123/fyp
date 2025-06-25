@@ -39,7 +39,7 @@ interface CourseResponse {
     code: string;
   };
   status: course_status;
-  prerequisites: {
+  courses_A: {
     id: number;
     code: string;
     name: string;
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
             code: true,
           },
         },
-        prerequisites: {
+        courses_A: {
           select: {
             id: true,
             code: true,
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
     const course = await prisma.courses.create({
       data: {
         ...courseData,
-        prerequisites: prerequisites
+        courses_A: prerequisites
           ? {
               connect: prerequisites.map((id) => ({ id })),
             }
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
             code: true,
           },
         },
-        prerequisites: {
+        courses_A: {
           select: {
             id: true,
             code: true,
@@ -340,7 +340,7 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         ...updateData,
-        prerequisites: prerequisites
+        courses_A: prerequisites
           ? {
               set: [], // Clear existing prerequisites
               connect: prerequisites.map((id) => ({ id })),
@@ -361,7 +361,7 @@ export async function PUT(request: NextRequest) {
             code: true,
           },
         },
-        prerequisites: {
+        courses_A: {
           select: {
             id: true,
             code: true,

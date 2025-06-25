@@ -105,7 +105,7 @@ export default function AboutPage() {
             <h1 className='text-4xl font-bold text-white mb-6 lg:text-5xl'>
               About
               <span className='block bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
-                UniTrack360
+                Smart Campus for MNSUET
               </span>
             </h1>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
@@ -122,18 +122,29 @@ export default function AboutPage() {
             <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-6'>
               <Target className='h-8 w-8 text-white' />
             </div>
-            <h3 className='text-2xl font-bold text-gray-900 mb-4'>Our Mission</h3>
+            <h3 className='text-2xl font-bold text-gray-900 mb-4'>
+              Our Mission
+            </h3>
             <p className='text-gray-600 leading-relaxed'>
-              To revolutionize educational management through cutting-edge technology, making it more efficient, transparent, and outcome-focused. We aim to empower educational institutions with tools that enhance learning experiences and administrative efficiency.
+              To revolutionize educational management through cutting-edge
+              technology, making it more efficient, transparent, and
+              outcome-focused. We aim to empower educational institutions with
+              tools that enhance learning experiences and administrative
+              efficiency.
             </p>
           </div>
           <div className='bg-white rounded-xl shadow-lg p-8 border border-gray-100'>
             <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-6'>
               <Lightbulb className='h-8 w-8 text-white' />
             </div>
-            <h3 className='text-2xl font-bold text-gray-900 mb-4'>Our Vision</h3>
+            <h3 className='text-2xl font-bold text-gray-900 mb-4'>
+              Our Vision
+            </h3>
             <p className='text-gray-600 leading-relaxed'>
-              To be the global leader in educational management solutions, setting new standards for academic excellence and administrative efficiency. We envision a future where technology seamlessly enhances every aspect of education.
+              To be the global leader in educational management solutions,
+              setting new standards for academic excellence and administrative
+              efficiency. We envision a future where technology seamlessly
+              enhances every aspect of education.
             </p>
           </div>
         </div>
@@ -144,11 +155,10 @@ export default function AboutPage() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
             {stats.map((stat, index) => (
-              <div
-                key={index}
-                className='text-center'
-              >
-                <div className='text-4xl font-bold text-purple-600 mb-2'>{stat.value}</div>
+              <div key={index} className='text-center'>
+                <div className='text-4xl font-bold text-purple-600 mb-2'>
+                  {stat.value}
+                </div>
                 <div className='text-gray-600'>{stat.label}</div>
               </div>
             ))}
@@ -159,11 +169,9 @@ export default function AboutPage() {
       {/* Team Section */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
         <div className='text-center mb-16'>
-          <h2 className='text-4xl font-bold text-gray-900 mb-4'>
-            Our Team
-          </h2>
+          <h2 className='text-4xl font-bold text-gray-900 mb-4'>Our Team</h2>
           <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
-            Meet the brilliant minds behind UniTrack360
+            Meet the brilliant minds behind Smart Campus for MNSUET
           </p>
         </div>
 
@@ -180,16 +188,30 @@ export default function AboutPage() {
                     alt={teamMembers[0].name}
                     width={256}
                     height={256}
-                    className="object-cover w-full h-full"
+                    className='object-cover w-full h-full'
                   />
                 </div>
-                <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[0].name}</h3>
-                <p className='text-purple-600 font-medium mb-4'>{teamMembers[0].role}</p>
+                <h3 className='text-xl font-bold text-gray-900 mb-1'>
+                  {teamMembers[0].name}
+                </h3>
+                <p className='text-purple-600 font-medium mb-4'>
+                  {teamMembers[0].role}
+                </p>
                 <div className='flex justify-center space-x-4'>
-                  <a href={teamMembers[0].github} target='_blank' rel='noopener noreferrer' className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'>
+                  <a
+                    href={teamMembers[0].github}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'
+                  >
                     <Github className='h-5 w-5' />
                   </a>
-                  <a href={teamMembers[0].linkedin} target='_blank' rel='noopener noreferrer' className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'>
+                  <a
+                    href={teamMembers[0].linkedin}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'
+                  >
                     <Linkedin className='h-5 w-5' />
                   </a>
                 </div>
@@ -208,12 +230,16 @@ export default function AboutPage() {
                     alt={supervisor.name}
                     width={256}
                     height={256}
-                    className="object-cover w-full h-full"
+                    className='object-cover w-full h-full'
                   />
                 </div>
                 <div className='text-center'>
-                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>{supervisor.name}</h3>
-                  <p className='text-purple-600 font-semibold mb-2'>{supervisor.role}</p>
+                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>
+                    {supervisor.name}
+                  </h3>
+                  <p className='text-purple-600 font-semibold mb-2'>
+                    {supervisor.role}
+                  </p>
                   <p className='text-gray-600 mb-4'>
                     {supervisor.designation}
                     <br />
@@ -244,16 +270,30 @@ export default function AboutPage() {
                     alt={teamMembers[1].name}
                     width={256}
                     height={256}
-                    className="object-cover w-full h-full"
+                    className='object-cover w-full h-full'
                   />
                 </div>
-                <h3 className='text-xl font-bold text-gray-900 mb-1'>{teamMembers[1].name}</h3>
-                <p className='text-purple-600 font-medium mb-4'>{teamMembers[1].role}</p>
+                <h3 className='text-xl font-bold text-gray-900 mb-1'>
+                  {teamMembers[1].name}
+                </h3>
+                <p className='text-purple-600 font-medium mb-4'>
+                  {teamMembers[1].role}
+                </p>
                 <div className='flex justify-center space-x-4'>
-                  <a href={teamMembers[1].github} target='_blank' rel='noopener noreferrer' className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'>
+                  <a
+                    href={teamMembers[1].github}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'
+                  >
                     <Github className='h-5 w-5' />
                   </a>
-                  <a href={teamMembers[1].linkedin} target='_blank' rel='noopener noreferrer' className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'>
+                  <a
+                    href={teamMembers[1].linkedin}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='p-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors'
+                  >
                     <Linkedin className='h-5 w-5' />
                   </a>
                 </div>
@@ -265,10 +305,7 @@ export default function AboutPage() {
         {/* Bottom Row with Three Team Members */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
           {teamMembers.slice(2).map((member, index) => (
-            <div
-              key={index}
-              className='group relative'
-            >
+            <div key={index} className='group relative'>
               <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300'></div>
               <div className='relative bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300'>
                 <div className='p-6 flex flex-col items-center'>
@@ -278,11 +315,15 @@ export default function AboutPage() {
                       alt={member.name}
                       width={256}
                       height={256}
-                      className="object-cover w-full h-full"
+                      className='object-cover w-full h-full'
                     />
                   </div>
-                  <h3 className='text-xl font-bold text-gray-900 mb-1'>{member.name}</h3>
-                  <p className='text-purple-600 font-medium mb-4'>{member.role}</p>
+                  <h3 className='text-xl font-bold text-gray-900 mb-1'>
+                    {member.name}
+                  </h3>
+                  <p className='text-purple-600 font-medium mb-4'>
+                    {member.role}
+                  </p>
                   <div className='flex justify-center space-x-4'>
                     <a
                       href={member.github}
@@ -312,7 +353,9 @@ export default function AboutPage() {
       <div className='bg-gray-50 py-16'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
-            <h2 className='text-3xl font-bold text-gray-900 mb-4'>Our Values</h2>
+            <h2 className='text-3xl font-bold text-gray-900 mb-4'>
+              Our Values
+            </h2>
             <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
               The principles that guide everything we do
             </p>
@@ -327,7 +370,9 @@ export default function AboutPage() {
                 <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
                   {value.icon}
                 </div>
-                <h3 className='text-xl font-semibold text-gray-900 mb-2'>{value.title}</h3>
+                <h3 className='text-xl font-semibold text-gray-900 mb-2'>
+                  {value.title}
+                </h3>
                 <p className='text-gray-600'>{value.description}</p>
               </div>
             ))}
@@ -343,7 +388,7 @@ export default function AboutPage() {
               Join Us in Transforming Education
             </h2>
             <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto'>
-              Be part of the educational revolution with UniTrack360
+              Be part of the educational revolution with Smart Campus for MNSUET
             </p>
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
               <Link

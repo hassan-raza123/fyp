@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { ResultAnalytics } from '@/components/assessments/ResultAnalytics';
 import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';

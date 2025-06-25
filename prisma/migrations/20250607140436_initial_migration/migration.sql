@@ -267,7 +267,7 @@ CREATE TABLE `cloplomappings` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `cloId` INTEGER NOT NULL,
     `ploId` INTEGER NOT NULL,
-    `weight` DOUBLE NOT NULL DEFAULT 1.0,
+    `weight` DOUBLE NOT NULL DEFAULT 1,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -284,7 +284,7 @@ CREATE TABLE `closattainments` (
     `courseOfferingId` INTEGER NOT NULL,
     `totalStudents` INTEGER NOT NULL,
     `studentsAchieved` INTEGER NOT NULL,
-    `threshold` DOUBLE NOT NULL DEFAULT 60.0,
+    `threshold` DOUBLE NOT NULL DEFAULT 60,
     `attainmentPercent` DOUBLE NOT NULL,
     `calculatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `calculatedBy` INTEGER NOT NULL,
@@ -305,7 +305,7 @@ CREATE TABLE `ploattainments` (
     `semesterId` INTEGER NOT NULL,
     `totalStudents` INTEGER NOT NULL,
     `studentsAchieved` INTEGER NOT NULL,
-    `threshold` DOUBLE NOT NULL DEFAULT 60.0,
+    `threshold` DOUBLE NOT NULL DEFAULT 60,
     `attainmentPercent` DOUBLE NOT NULL,
     `calculatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `calculatedBy` INTEGER NOT NULL,
@@ -523,21 +523,6 @@ CREATE TABLE `cumulativegpa` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `passFailCriteria` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `courseOfferingId` INTEGER NOT NULL,
-    `minPassPercent` DOUBLE NOT NULL DEFAULT 50.0,
-    `minAttendance` DOUBLE NOT NULL DEFAULT 75.0,
-    `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `passFailCriteria_courseOfferingId_idx`(`courseOfferingId`),
-    UNIQUE INDEX `passFailCriteria_courseOfferingId_key`(`courseOfferingId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `sessions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `sectionId` INTEGER NOT NULL,
@@ -610,6 +595,8 @@ CREATE TABLE `datesheets` (
     INDEX `datesheets_semesterId_idx`(`semesterId`),
     INDEX `datesheets_examPeriod_idx`(`examPeriod`),
     INDEX `datesheets_status_idx`(`status`),
+    INDEX `datesheets_approvedBy_fkey`(`approvedBy`),
+    INDEX `datesheets_createdBy_fkey`(`createdBy`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -632,46 +619,6 @@ CREATE TABLE `examschedules` (
     INDEX `examschedules_semesterId_idx`(`semesterId`),
     INDEX `examschedules_courseOfferingId_idx`(`courseOfferingId`),
     INDEX `examschedules_examDate_idx`(`examDate`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `datesheetEntries` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `datesheetId` INTEGER NOT NULL,
-    `examScheduleId` INTEGER NOT NULL,
-    `dayOfExam` INTEGER NOT NULL,
-    `timeSlot` ENUM('morning', 'afternoon', 'evening') NOT NULL,
-    `paperCode` VARCHAR(191) NOT NULL,
-    `paperTitle` VARCHAR(191) NOT NULL,
-    `duration` INTEGER NOT NULL,
-    `totalMarks` INTEGER NOT NULL,
-    `passingMarks` INTEGER NOT NULL,
-    `notes` VARCHAR(191) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `datesheetEntries_datesheetId_idx`(`datesheetId`),
-    INDEX `datesheetEntries_examScheduleId_idx`(`examScheduleId`),
-    UNIQUE INDEX `datesheetEntries_datesheetId_examScheduleId_key`(`datesheetId`, `examScheduleId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `examAttendance` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `examScheduleId` INTEGER NOT NULL,
-    `studentId` INTEGER NOT NULL,
-    `attendanceStatus` ENUM('present', 'absent', 'late', 'left_early') NOT NULL,
-    `arrivalTime` DATETIME(3) NULL,
-    `departureTime` DATETIME(3) NULL,
-    `remarks` VARCHAR(191) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `examAttendance_examScheduleId_idx`(`examScheduleId`),
-    INDEX `examAttendance_studentId_idx`(`studentId`),
-    UNIQUE INDEX `examAttendance_examScheduleId_studentId_key`(`examScheduleId`, `studentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -794,39 +741,110 @@ CREATE TABLE `obereports` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_PermissionToRole` (
-    `A` INTEGER NOT NULL,
-    `B` INTEGER NOT NULL,
+CREATE TABLE `datesheetentries` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `datesheetId` INTEGER NOT NULL,
+    `examScheduleId` INTEGER NOT NULL,
+    `dayOfExam` INTEGER NOT NULL,
+    `timeSlot` ENUM('morning', 'afternoon', 'evening') NOT NULL,
+    `paperCode` VARCHAR(191) NOT NULL,
+    `paperTitle` VARCHAR(191) NOT NULL,
+    `duration` INTEGER NOT NULL,
+    `totalMarks` INTEGER NOT NULL,
+    `passingMarks` INTEGER NOT NULL,
+    `notes` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `_PermissionToRole_AB_unique`(`A`, `B`),
-    INDEX `_PermissionToRole_B_index`(`B`)
+    INDEX `datesheetEntries_datesheetId_idx`(`datesheetId`),
+    INDEX `datesheetEntries_examScheduleId_idx`(`examScheduleId`),
+    UNIQUE INDEX `datesheetEntries_datesheetId_examScheduleId_key`(`datesheetId`, `examScheduleId`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_CoursePrerequisites` (
-    `A` INTEGER NOT NULL,
-    `B` INTEGER NOT NULL,
+CREATE TABLE `examattendance` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `examScheduleId` INTEGER NOT NULL,
+    `studentId` INTEGER NOT NULL,
+    `attendanceStatus` ENUM('present', 'absent', 'late', 'left_early') NOT NULL,
+    `arrivalTime` DATETIME(3) NULL,
+    `departureTime` DATETIME(3) NULL,
+    `remarks` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `_CoursePrerequisites_AB_unique`(`A`, `B`),
-    INDEX `_CoursePrerequisites_B_index`(`B`)
+    INDEX `examAttendance_examScheduleId_idx`(`examScheduleId`),
+    INDEX `examAttendance_studentId_idx`(`studentId`),
+    UNIQUE INDEX `examAttendance_examScheduleId_studentId_key`(`examScheduleId`, `studentId`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_FacultyCourses` (
-    `A` INTEGER NOT NULL,
-    `B` INTEGER NOT NULL,
+CREATE TABLE `passfailcriteria` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `courseOfferingId` INTEGER NOT NULL,
+    `minPassPercent` DOUBLE NOT NULL DEFAULT 50,
+    `minAttendance` DOUBLE NOT NULL DEFAULT 75,
+    `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `_FacultyCourses_AB_unique`(`A`, `B`),
-    INDEX `_FacultyCourses_B_index`(`B`)
+    UNIQUE INDEX `passFailCriteria_courseOfferingId_key`(`courseOfferingId`),
+    INDEX `passFailCriteria_courseOfferingId_idx`(`courseOfferingId`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_ProgramToCourse` (
+CREATE TABLE `otps` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `email` VARCHAR(191) NOT NULL,
+    `userType` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `isUsed` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `otps_email_userType_idx`(`email`, `userType`),
+    INDEX `otps_expiresAt_idx`(`expiresAt`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_permissiontorole` (
     `A` INTEGER NOT NULL,
     `B` INTEGER NOT NULL,
 
-    UNIQUE INDEX `_ProgramToCourse_AB_unique`(`A`, `B`),
-    INDEX `_ProgramToCourse_B_index`(`B`)
+    UNIQUE INDEX `_permissiontorole_AB_unique`(`A`, `B`),
+    INDEX `_permissiontorole_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_courseprerequisites` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_courseprerequisites_AB_unique`(`A`, `B`),
+    INDEX `_courseprerequisites_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_facultycourses` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_facultycourses_AB_unique`(`A`, `B`),
+    INDEX `_facultycourses_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_programtocourse` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_programtocourse_AB_unique`(`A`, `B`),
+    INDEX `_programtocourse_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -854,13 +872,13 @@ ALTER TABLE `courseofferings` ADD CONSTRAINT `courseofferings_courseId_fkey` FOR
 ALTER TABLE `courseofferings` ADD CONSTRAINT `courseofferings_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `sections` ADD CONSTRAINT `sections_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `batches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `sections` ADD CONSTRAINT `sections_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `sections` ADD CONSTRAINT `sections_facultyId_fkey` FOREIGN KEY (`facultyId`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `sections` ADD CONSTRAINT `sections_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `batches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `faculties` ADD CONSTRAINT `faculties_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `departments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -899,13 +917,16 @@ ALTER TABLE `cloplomappings` ADD CONSTRAINT `cloplomappings_cloId_fkey` FOREIGN 
 ALTER TABLE `cloplomappings` ADD CONSTRAINT `cloplomappings_ploId_fkey` FOREIGN KEY (`ploId`) REFERENCES `plos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_cloId_fkey` FOREIGN KEY (`cloId`) REFERENCES `clos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `closattainments` ADD CONSTRAINT `closattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_ploId_fkey` FOREIGN KEY (`ploId`) REFERENCES `plos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -917,22 +938,19 @@ ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_programId_fkey` FORE
 ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ploattainments` ADD CONSTRAINT `ploattainments_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `ploscores` ADD CONSTRAINT `ploscores_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `ploscores` ADD CONSTRAINT `ploscores_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ploscores` ADD CONSTRAINT `ploscores_ploId_fkey` FOREIGN KEY (`ploId`) REFERENCES `plos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `assessments` ADD CONSTRAINT `assessments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ploscores` ADD CONSTRAINT `ploscores_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `assessments` ADD CONSTRAINT `assessments_conductedBy_fkey` FOREIGN KEY (`conductedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `assessments` ADD CONSTRAINT `assessments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -941,49 +959,46 @@ ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_assessmentId_fkey`
 ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_cloId_fkey` FOREIGN KEY (`cloId`) REFERENCES `clos`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_evaluatedBy_fkey` FOREIGN KEY (`evaluatedBy`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `studentassessmentitemresults` ADD CONSTRAINT `studentassessmentitemresults_studentAssessmentResultId_fkey` FOREIGN KEY (`studentAssessmentResultId`) REFERENCES `studentassessmentresults`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `studentassessmentresults` ADD CONSTRAINT `studentassessmentresults_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `studentassessmentitemresults` ADD CONSTRAINT `studentassessmentitemresults_assessmentItemId_fkey` FOREIGN KEY (`assessmentItemId`) REFERENCES `assessmentitems`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `detailedresults` ADD CONSTRAINT `detailedresults_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `studentassessmentitemresults` ADD CONSTRAINT `studentassessmentitemresults_studentAssessmentResultId_fkey` FOREIGN KEY (`studentAssessmentResultId`) REFERENCES `studentassessmentresults`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `detailedresults` ADD CONSTRAINT `detailedresults_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `detailedresults` ADD CONSTRAINT `detailedresults_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `gradescales` ADD CONSTRAINT `gradescales_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `studentgrades` ADD CONSTRAINT `studentgrades_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `studentgrades` ADD CONSTRAINT `studentgrades_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `studentgrades` ADD CONSTRAINT `studentgrades_calculatedBy_fkey` FOREIGN KEY (`calculatedBy`) REFERENCES `faculties`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `semestergpa` ADD CONSTRAINT `semestergpa_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `studentgrades` ADD CONSTRAINT `studentgrades_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `studentgrades` ADD CONSTRAINT `studentgrades_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `semestergpa` ADD CONSTRAINT `semestergpa_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `cumulativegpa` ADD CONSTRAINT `cumulativegpa_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `semestergpa` ADD CONSTRAINT `semestergpa_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `passFailCriteria` ADD CONSTRAINT `passFailCriteria_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `cumulativegpa` ADD CONSTRAINT `cumulativegpa_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `sessions` ADD CONSTRAINT `sessions_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `sections`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1001,40 +1016,28 @@ ALTER TABLE `attendances` ADD CONSTRAINT `attendances_studentSectionId_fkey` FOR
 ALTER TABLE `timetableslots` ADD CONSTRAINT `timetableslots_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `sections`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `datesheets` ADD CONSTRAINT `datesheets_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `datesheets` ADD CONSTRAINT `datesheets_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `datesheets` ADD CONSTRAINT `datesheets_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `datesheets` ADD CONSTRAINT `datesheets_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `examschedules` ADD CONSTRAINT `examschedules_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `datesheets` ADD CONSTRAINT `datesheets_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `examschedules` ADD CONSTRAINT `examschedules_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `datesheetEntries` ADD CONSTRAINT `datesheetEntries_datesheetId_fkey` FOREIGN KEY (`datesheetId`) REFERENCES `datesheets`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `examschedules` ADD CONSTRAINT `examschedules_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `datesheetEntries` ADD CONSTRAINT `datesheetEntries_examScheduleId_fkey` FOREIGN KEY (`examScheduleId`) REFERENCES `examschedules`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `examAttendance` ADD CONSTRAINT `examAttendance_examScheduleId_fkey` FOREIGN KEY (`examScheduleId`) REFERENCES `examschedules`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `examAttendance` ADD CONSTRAINT `examAttendance_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `transcripts` ADD CONSTRAINT `transcripts_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `transcripts` ADD CONSTRAINT `transcripts_generatedBy_fkey` FOREIGN KEY (`generatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `transcripts` ADD CONSTRAINT `transcripts_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `transcripts` ADD CONSTRAINT `transcripts_generatedBy_fkey` FOREIGN KEY (`generatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `transcripts` ADD CONSTRAINT `transcripts_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `notifications` ADD CONSTRAINT `notifications_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1046,16 +1049,19 @@ ALTER TABLE `auditlogs` ADD CONSTRAINT `auditlogs_userId_fkey` FOREIGN KEY (`use
 ALTER TABLE `passwordresets` ADD CONSTRAINT `passwordresets_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `coursefeedbacks` ADD CONSTRAINT `coursefeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `coursefeedbacks` ADD CONSTRAINT `coursefeedbacks_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `coursefeedbacks` ADD CONSTRAINT `coursefeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `facultyfeedbacks` ADD CONSTRAINT `facultyfeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `facultyfeedbacks` ADD CONSTRAINT `facultyfeedbacks_facultyId_fkey` FOREIGN KEY (`facultyId`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `facultyfeedbacks` ADD CONSTRAINT `facultyfeedbacks_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `obereports` ADD CONSTRAINT `obereports_generatedBy_fkey` FOREIGN KEY (`generatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `obereports` ADD CONSTRAINT `obereports_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1064,28 +1070,40 @@ ALTER TABLE `obereports` ADD CONSTRAINT `obereports_programId_fkey` FOREIGN KEY 
 ALTER TABLE `obereports` ADD CONSTRAINT `obereports_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `semesters`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `obereports` ADD CONSTRAINT `obereports_generatedBy_fkey` FOREIGN KEY (`generatedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `datesheetentries` ADD CONSTRAINT `datesheetEntries_datesheetId_fkey` FOREIGN KEY (`datesheetId`) REFERENCES `datesheets`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_PermissionToRole` ADD CONSTRAINT `_PermissionToRole_A_fkey` FOREIGN KEY (`A`) REFERENCES `permissions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `datesheetentries` ADD CONSTRAINT `datesheetEntries_examScheduleId_fkey` FOREIGN KEY (`examScheduleId`) REFERENCES `examschedules`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_PermissionToRole` ADD CONSTRAINT `_PermissionToRole_B_fkey` FOREIGN KEY (`B`) REFERENCES `roles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `examattendance` ADD CONSTRAINT `examAttendance_examScheduleId_fkey` FOREIGN KEY (`examScheduleId`) REFERENCES `examschedules`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_CoursePrerequisites` ADD CONSTRAINT `_CoursePrerequisites_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `examattendance` ADD CONSTRAINT `examAttendance_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_CoursePrerequisites` ADD CONSTRAINT `_CoursePrerequisites_B_fkey` FOREIGN KEY (`B`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `passfailcriteria` ADD CONSTRAINT `passFailCriteria_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_FacultyCourses` ADD CONSTRAINT `_FacultyCourses_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_permissiontorole` ADD CONSTRAINT `_permissiontorole_A_fkey` FOREIGN KEY (`A`) REFERENCES `permissions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_FacultyCourses` ADD CONSTRAINT `_FacultyCourses_B_fkey` FOREIGN KEY (`B`) REFERENCES `faculties`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_permissiontorole` ADD CONSTRAINT `_permissiontorole_B_fkey` FOREIGN KEY (`B`) REFERENCES `roles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_ProgramToCourse` ADD CONSTRAINT `_ProgramToCourse_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_courseprerequisites` ADD CONSTRAINT `_courseprerequisites_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_ProgramToCourse` ADD CONSTRAINT `_ProgramToCourse_B_fkey` FOREIGN KEY (`B`) REFERENCES `programs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_courseprerequisites` ADD CONSTRAINT `_courseprerequisites_B_fkey` FOREIGN KEY (`B`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_facultycourses` ADD CONSTRAINT `_facultycourses_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_facultycourses` ADD CONSTRAINT `_facultycourses_B_fkey` FOREIGN KEY (`B`) REFERENCES `faculties`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_programtocourse` ADD CONSTRAINT `_programtocourse_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_programtocourse` ADD CONSTRAINT `_programtocourse_B_fkey` FOREIGN KEY (`B`) REFERENCES `programs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

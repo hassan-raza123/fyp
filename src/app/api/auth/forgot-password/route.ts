@@ -81,15 +81,15 @@ export async function POST(request: NextRequest) {
     try {
       const mailOptions = {
         from: {
-          name: 'UniTrack360 Support',
+          name: 'Smart Campus for MNSUET Support',
           address: process.env.GMAIL_USER!,
         },
         to: email,
-        subject: 'Password Reset Request - UniTrack360',
+        subject: 'Password Reset Request - Smart Campus for MNSUET',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="color: #6B46C1; margin: 0;">UniTrack360</h1>
+              <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
               <p style="color: #4B5563; margin: 5px 0;">Password Reset Request</p>
             </div>
 
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
             <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
               <p>If you have any questions, please contact our support team.</p>
-              <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The UniTrack360 Team</p>
+              <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The Smart Campus for MNSUET Team</p>
             </div>
           </div>
         `,

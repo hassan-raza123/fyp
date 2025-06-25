@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 
-export default function OTPVerificationForm() {
+function OTPVerificationFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
@@ -244,5 +244,13 @@ export default function OTPVerificationForm() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function OTPVerificationForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OTPVerificationFormContent />
+    </Suspense>
   );
 }

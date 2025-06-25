@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { BookOpen, Clock, School } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Login | UniTrack360',
-  description: 'Login to access your UniTrack360 portal',
+  title: 'Login | Smart Campus for MNSUET',
+  description: 'Login to access your Smart Campus for MNSUET portal',
 };
 
 export default function AuthLayout({
@@ -22,8 +22,8 @@ export default function AuthLayout({
               <div className='w-20 h-20 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 mx-auto mb-6 flex items-center justify-center'>
                 <School className='w-12 h-12 text-white' />
               </div>
-              <h1 className='text-5xl font-bold text-white mb-6'>
-                UniTrack360
+              <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+                Smart Campus for MNSUET
               </h1>
               <p className='text-white/80 text-xl leading-relaxed'>
                 Your comprehensive OBE-based educational management system
@@ -46,9 +46,7 @@ export default function AuthLayout({
         </div>
 
         {/* Right Side - Login Form */}
-        <div className='w-full lg:w-1/2 p-8 lg:p-12'>
-          {children}
-        </div>
+        <div className='w-full lg:w-1/2 p-8 lg:p-12'>{children}</div>
       </div>
     </div>
   );

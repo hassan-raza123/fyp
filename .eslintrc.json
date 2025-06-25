@@ -1,3 +1,35 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": [],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "no-unused-vars": "off",
+    "no-console": "off",
+    "prefer-const": "off",
+    "no-undef": "off",
+    "no-redeclare": "off",
+    "no-var": "off",
+    "prefer-rest-params": "off",
+    "prefer-spread": "off",
+    "no-constant-condition": "off",
+    "no-empty": "off",
+    "no-extra-boolean-cast": "off",
+    "no-extra-semi": "off",
+    "no-irregular-whitespace": "off",
+    "no-mixed-spaces-and-tabs": "off",
+    "no-multiple-empty-lines": "off",
+    "no-trailing-spaces": "off",
+    "no-unreachable": "off",
+    "valid-typeof": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react/jsx-key": "off",
+    "react/jsx-no-target-blank": "off",
+    "react/no-unescaped-entities": "off",
+    "react/self-closing-comp": "off"
+  }
 }

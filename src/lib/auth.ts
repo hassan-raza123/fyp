@@ -198,5 +198,35 @@ export async function generatePasswordResetToken(userId: number) {
     },
   });
 
-  return resetToken.token;
+  return resetToken;
+}
+
+export async function requireAuth(request: NextRequest): Promise<{
+  success: boolean;
+  user?: TokenPayload;
+  error?: string;
+}> {
+  try {
+    const token = request.cookies.get('auth-token')?.value;
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'No token provided',
+      };
+    }
+
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+
+    return {
+      success: true,
+      user: parseJwtPayload(payload),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: 'Invalid token',
+    };
+  }
 }

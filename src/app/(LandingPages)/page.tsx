@@ -19,7 +19,8 @@ const features = [
   {
     icon: <Users className='h-6 w-6 text-white' />,
     title: 'Smart Attendance',
-    description: 'Real-time tracking with AI-powered insights and facial recognition',
+    description:
+      'Real-time tracking with AI-powered insights and facial recognition',
   },
   {
     icon: <Bell className='h-6 w-6 text-white' />,
@@ -114,7 +115,8 @@ export default function LandingPage() {
             </h1>
 
             <p className='text-xl text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed'>
-              Revolutionize attendance management with our AI-powered system. Save time, reduce errors, and gain valuable insights.
+              Revolutionize attendance management with our AI-powered system.
+              Save time, reduce errors, and gain valuable insights.
             </p>
 
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
@@ -156,7 +158,9 @@ export default function LandingPage() {
       {/* Features Section */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20'>
         <div className='text-center mb-16'>
-          <h2 className='text-4xl font-bold text-gray-900 mb-6'>Key Features</h2>
+          <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+            Key Features
+          </h2>
           <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
             Everything you need for modern attendance management
           </p>
@@ -171,7 +175,9 @@ export default function LandingPage() {
               <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
                 {feature.icon}
               </div>
-              <h3 className='text-xl font-semibold text-gray-900 mb-2'>{feature.title}</h3>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>
+                {feature.title}
+              </h3>
               <p className='text-gray-600'>{feature.description}</p>
             </div>
           ))}
@@ -182,7 +188,9 @@ export default function LandingPage() {
       <div className='py-20 bg-gray-50'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
-            <h2 className='text-4xl font-bold text-gray-900 mb-6'>Built for Everyone</h2>
+            <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+              Built for Everyone
+            </h2>
             <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
               Specialized features for every role in your institution
             </p>
@@ -195,7 +203,9 @@ export default function LandingPage() {
                 className='bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:scale-105 hover:shadow-xl transition-all duration-300'
               >
                 <div className='mb-6'>{role.icon}</div>
-                <h3 className='text-xl font-semibold text-gray-900 mb-4'>{role.title}</h3>
+                <h3 className='text-xl font-semibold text-gray-900 mb-4'>
+                  {role.title}
+                </h3>
                 <p className='text-gray-600 mb-6'>{role.description}</p>
                 <ul className='space-y-3'>
                   {role.features.map((feature, featureIndex) => (

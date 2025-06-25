@@ -5,12 +5,12 @@ import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 
 // Dashboard routes based on user roles
 const dashboardRoutes = {
-  student: '/student/dashboard',
-  teacher: '/faculty/dashboard',
-  super_admin: '/admin/dashboard',
-  sub_admin: '/admin/dashboard',
-  department_admin: '/department/dashboard',
-  child_admin: '/department/dashboard',
+  student: '/student',
+  teacher: '/faculty',
+  super_admin: '/admin',
+  sub_admin: '/admin',
+  department_admin: '/department',
+  child_admin: '/department',
 };
 
 // Auth routes that should redirect to dashboard if user is logged in
@@ -32,6 +32,7 @@ const publicApiRoutes = [
   '/api/auth/verify-otp',
   '/api/auth/verify',
   '/api/auth/resend-otp',
+  '/api/contact',
 ];
 
 // Function to get user's dashboard based on role
@@ -91,7 +92,7 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
 // Function to create redirect response with token cleanup
 function createLoginRedirect(request: NextRequest, reason: string) {
   const response = NextResponse.redirect(new URL('/login', request.url));
-  response.cookies.delete(AUTH_TOKEN_COOKIE);
+  // response.cookies.delete(AUTH_TOKEN_COOKIE);
   return response;
 }
 
@@ -164,7 +165,7 @@ export async function middleware(request: NextRequest) {
       } else {
         // Invalid token, clear it and allow access to auth route
         const response = NextResponse.next();
-        response.cookies.delete(AUTH_TOKEN_COOKIE);
+        // response.cookies.delete(AUTH_TOKEN_COOKIE);
         return response;
       }
     }

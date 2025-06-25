@@ -2,7 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Linkedin, Mail, Twitter, Github, Instagram, MapPin, Phone } from 'lucide-react';
+import {
+  Linkedin,
+  Mail,
+  Twitter,
+  Github,
+  Instagram,
+  MapPin,
+  Phone,
+} from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -14,13 +22,17 @@ export default function Footer() {
           <div className='col-span-1 md:col-span-2'>
             <div className='flex items-center space-x-3 mb-6'>
               <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center'>
-                <span className='text-xl font-bold text-white'>U</span>
+                <span className='text-xl font-bold text-white'>S</span>
               </div>
-              <h3 className='text-2xl font-bold text-white'>UniTrack360</h3>
+              <h3 className='text-2xl font-bold text-white'>
+                Smart Campus for MNSUET
+              </h3>
             </div>
             <p className='text-gray-400 max-w-md mb-6'>
-              Revolutionizing educational management with our comprehensive OBE-based system. 
-              Making attendance tracking, assessment management, and academic progress monitoring seamless and efficient.
+              Revolutionizing educational management with our comprehensive
+              OBE-based system. Making attendance tracking, assessment
+              management, and academic progress monitoring seamless and
+              efficient.
             </p>
             <div className='flex space-x-4'>
               <a
@@ -84,7 +96,6 @@ export default function Footer() {
                   Contact
                 </Link>
               </li>
-              
             </ul>
           </div>
 
@@ -94,13 +105,11 @@ export default function Footer() {
             <ul className='space-y-3'>
               <li className='flex items-center space-x-3'>
                 <MapPin className='h-5 w-5 text-purple-400' />
-                <span className='text-gray-400'>
-                  MNS UET, Multan, Pakistan
-                </span>
+                <span className='text-gray-400'>MNS UET, Multan, Pakistan</span>
               </li>
               <li className='flex items-center space-x-3'>
                 <Mail className='h-5 w-5 text-purple-400' />
-                <a 
+                <a
                   href='mailto:itzhassanraza276@gmail.com'
                   className='text-gray-400 hover:text-purple-400 transition-colors'
                 >
@@ -119,7 +128,8 @@ export default function Footer() {
         <div className='mt-12 pt-8 border-t border-gray-800'>
           <div className='flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0'>
             <p className='text-gray-400 text-sm'>
-              &copy; {new Date().getFullYear()} UniTrack360. All rights reserved.
+              &copy; {new Date().getFullYear()} Smart Campus for MNSUET. All
+              rights reserved.
             </p>
             <div className='flex space-x-6 text-sm'>
               <Link

@@ -63,17 +63,15 @@ function isAdminRole(role: string): boolean {
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'student':
-      return '/student/dashboard';
+      return '/student';
     case 'teacher':
-      return '/faculty/dashboard';
+      return '/faculty';
     case 'super_admin':
-      return '/admin/dashboard';
     case 'sub_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'department_admin':
-      return '/department/dashboard';
     case 'child_admin':
-      return '/sub-admin/dashboard';
+      return '/department';
     default:
       return '/login';
   }
@@ -176,6 +174,24 @@ export async function POST(
       );
     }
 
+    // For admin users, get their actual role
+    let actualRole: AllRoles;
+    if (userType === 'admin') {
+      const adminRole = userRoles.find(isAdminRole);
+      if (!adminRole) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'User does not have admin privileges',
+          },
+          { status: 403 }
+        );
+      }
+      actualRole = adminRole as AllRoles;
+    } else {
+      actualRole = mapUserTypeToRole(userType);
+    }
+
     // Verify OTP
     const otpRecord = await prisma.otps.findFirst({
       where: {
@@ -224,12 +240,12 @@ export async function POST(
       });
     }
 
-    // Create user data and token
-    const userData = createUserData(user, mapUserTypeToRole(userType));
+    // Create user data and token with actual role
+    const userData = createUserData(user, actualRole);
     const tokenPayload: TokenPayload = {
       userId: user.id,
       email: user.email,
-      role: mapUserTypeToRole(userType),
+      role: actualRole,
       userData,
     };
 
@@ -241,8 +257,8 @@ export async function POST(
       data: { last_login: new Date() },
     });
 
-    // Determine redirect path based on role
-    const redirectTo = getDashboardPath(mapUserTypeToRole(userType));
+    // Determine redirect path based on actual role
+    const redirectTo = getDashboardPath(actualRole);
 
     // Create response with token in cookie
     const response = NextResponse.json({
@@ -252,7 +268,7 @@ export async function POST(
         user: userData,
         redirectTo: redirectTo,
         token,
-        userType: mapUserTypeToRole(userType),
+        userType: actualRole,
       },
     });
 

@@ -40,14 +40,18 @@ const loginSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(
+  userType: 'student' | 'teacher' | 'admin' | 'department_admin'
+): string {
   switch (userType) {
     case 'student':
       return 'student';
     case 'teacher':
       return 'teacher';
+    case 'department_admin':
+      return 'department_admin';
     case 'admin':
-      return 'super_admin'; // Default to super_admin for admin login
+      return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
@@ -108,21 +112,21 @@ async function sendOTPEmail(email: string, otp: string): Promise<void> {
 
   await transporter.sendMail({
     from: {
-      name: 'UniTrack360 Support',
+      name: 'Smart Campus for MNSUET Support',
       address: process.env.GMAIL_USER!,
     },
     to: email,
-    subject: 'Your Login Verification Code - UniTrack360',
+    subject: 'Your Login Verification Code - Smart Campus for MNSUET',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">UniTrack360</h1>
+          <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
           <p style="color: #4B5563; margin: 5px 0;">Login Verification Code</p>
         </div>
 
         <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <p style="color: #111827; margin: 0 0 15px 0;">Hello,</p>
-          <p style="color: #4B5563; line-height: 1.5;">Your verification code for UniTrack360 login is:</p>
+          <p style="color: #4B5563; line-height: 1.5;">Your verification code for Smart Campus for MNSUET login is:</p>
           
           <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">
             ${otp}
@@ -134,7 +138,7 @@ async function sendOTPEmail(email: string, otp: string): Promise<void> {
 
         <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
           <p>If you have any questions, please contact our support team.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The UniTrack360 Team</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The Smart Campus for MNSUET Team</p>
         </div>
       </div>
     `,
@@ -257,6 +261,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Get the actual admin role from userRoles
+      const actualRole = userRoles.find(isAdminRole) as AllRoles;
+      if (!actualRole) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Invalid admin role',
+          },
+          { status: 403 }
+        );
+      }
+
       // For admin users, always send OTP
       const otp = generateOTP();
       const hashedOTP = await bcrypt.hash(otp, 10);
@@ -293,6 +309,7 @@ export async function POST(request: NextRequest) {
           email: email,
           userType: userType,
           otpSent: true,
+          actualRole: actualRole, // Pass the actual role to use after OTP verification
         },
       });
     }
@@ -446,18 +463,18 @@ export async function POST(request: NextRequest) {
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'super_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'sub_admin':
-      return '/admin/dashboard';
+      return '/admin';
     case 'department_admin':
-      return '/department/dashboard';
+      return '/department';
     case 'child_admin':
-      return '/sub-admin/dashboard';
+      return '/sub-admin';
     case 'teacher':
-      return '/faculty/dashboard';
+      return '/faculty';
     case 'student':
-      return '/student/dashboard';
+      return '/student';
     default:
-      return '/dashboard';
+      return '/';
   }
 }

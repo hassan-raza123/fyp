@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,7 +55,7 @@ interface Program {
   code: string;
 }
 
-export default function PLOsPage() {
+function PLOsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [plos, setPLOs] = useState<PLO[]>([]);
@@ -242,54 +242,57 @@ export default function PLOsPage() {
       : plos.filter((plo) => plo.program.id.toString() === selectedProgram);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='p-6'>
+        <div className='text-center py-4'>Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <div className='container mx-auto py-6'>
+    <div className='p-6'>
       <div className='flex justify-between items-center mb-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>Program Learning Outcomes</h1>
-          <p className='text-gray-500'>Manage all program learning outcomes</p>
-        </div>
-        <div className='flex gap-4'>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className='w-4 h-4 mr-2' />
-            Add PLO
-          </Button>
-          <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className='w-[200px]'>
-              <SelectValue placeholder='Filter by program' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Programs</SelectItem>
-              {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id.toString()}>
-                  {program.name} ({program.code})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <h1 className='text-2xl font-bold'>Program Learning Outcomes (PLOs)</h1>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className='w-4 h-4 mr-2' />
+          Add PLO
+        </Button>
       </div>
 
+      {/* Program Filter */}
+      <div className='mb-6'>
+        <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+          <SelectTrigger className='w-64'>
+            <SelectValue placeholder='Filter by program' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>All Programs</SelectItem>
+            {programs.map((program) => (
+              <SelectItem key={program.id} value={program.id.toString()}>
+                {program.name} ({program.code})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* PLOs Table */}
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Program</TableHead>
               <TableHead>Code</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Bloom's Level</TableHead>
+              <TableHead>Bloom Level</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Program</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredPLOs.map((plo) => (
               <TableRow key={plo.id}>
-                <TableCell>{plo.program.name}</TableCell>
-                <TableCell>{plo.code}</TableCell>
+                <TableCell className='font-medium'>{plo.code}</TableCell>
                 <TableCell>{plo.description}</TableCell>
                 <TableCell>{plo.bloomLevel || '-'}</TableCell>
                 <TableCell>
@@ -306,6 +309,9 @@ export default function PLOsPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
+                  {plo.program.name} ({plo.program.code})
+                </TableCell>
+                <TableCell>
                   <div className='flex space-x-2'>
                     <Button
                       variant='outline'
@@ -315,20 +321,11 @@ export default function PLOsPage() {
                       <Edit className='w-4 h-4' />
                     </Button>
                     <Button
-                      variant='destructive'
+                      variant='outline'
                       size='sm'
                       onClick={() => handleDeleteClick(plo)}
                     >
                       <Trash2 className='w-4 h-4' />
-                    </Button>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() =>
-                        router.push(`/admin/programs/${plo.program.id}/plos`)
-                      }
-                    >
-                      <BookOpen className='w-4 h-4' />
                     </Button>
                   </div>
                 </TableCell>
@@ -342,13 +339,13 @@ export default function PLOsPage() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create PLO</DialogTitle>
+            <DialogTitle>Create New PLO</DialogTitle>
             <DialogDescription>
               Add a new Program Learning Outcome
             </DialogDescription>
           </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
+          <div className='space-y-4'>
+            <div>
               <Label htmlFor='program'>Program</Label>
               <Select
                 value={formData.programId}
@@ -368,8 +365,8 @@ export default function PLOsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='code'>PLO Code</Label>
+            <div>
+              <Label htmlFor='code'>Code</Label>
               <Input
                 id='code'
                 value={formData.code}
@@ -379,7 +376,7 @@ export default function PLOsPage() {
                 placeholder='e.g., PLO1'
               />
             </div>
-            <div className='grid gap-2'>
+            <div>
               <Label htmlFor='description'>Description</Label>
               <Textarea
                 id='description'
@@ -387,11 +384,11 @@ export default function PLOsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder='Enter PLO description'
+                placeholder='Describe the learning outcome'
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='bloomLevel'>Bloom's Taxonomy Level</Label>
+            <div>
+              <Label htmlFor='bloomLevel'>Bloom Level</Label>
               <Select
                 value={formData.bloomLevel}
                 onValueChange={(value) =>
@@ -399,7 +396,7 @@ export default function PLOsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Bloom's level" />
+                  <SelectValue placeholder='Select bloom level' />
                 </SelectTrigger>
                 <SelectContent>
                   {bloomLevels.map((level) => (
@@ -410,7 +407,7 @@ export default function PLOsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
+            <div>
               <Label htmlFor='status'>Status</Label>
               <Select
                 value={formData.status}
@@ -419,7 +416,7 @@ export default function PLOsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder='Select status' />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='active'>Active</SelectItem>
@@ -447,22 +444,21 @@ export default function PLOsPage() {
           <DialogHeader>
             <DialogTitle>Edit PLO</DialogTitle>
             <DialogDescription>
-              Update Program Learning Outcome details
+              Update the Program Learning Outcome
             </DialogDescription>
           </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-code'>PLO Code</Label>
+          <div className='space-y-4'>
+            <div>
+              <Label htmlFor='edit-code'>Code</Label>
               <Input
                 id='edit-code'
                 value={formData.code}
                 onChange={(e) =>
                   setFormData({ ...formData, code: e.target.value })
                 }
-                placeholder='e.g., PLO1'
               />
             </div>
-            <div className='grid gap-2'>
+            <div>
               <Label htmlFor='edit-description'>Description</Label>
               <Textarea
                 id='edit-description'
@@ -470,11 +466,10 @@ export default function PLOsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder='Enter PLO description'
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-bloomLevel'>Bloom's Taxonomy Level</Label>
+            <div>
+              <Label htmlFor='edit-bloomLevel'>Bloom Level</Label>
               <Select
                 value={formData.bloomLevel}
                 onValueChange={(value) =>
@@ -482,7 +477,7 @@ export default function PLOsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Bloom's level" />
+                  <SelectValue placeholder='Select bloom level' />
                 </SelectTrigger>
                 <SelectContent>
                   {bloomLevels.map((level) => (
@@ -493,7 +488,7 @@ export default function PLOsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
+            <div>
               <Label htmlFor='edit-status'>Status</Label>
               <Select
                 value={formData.status}
@@ -502,7 +497,7 @@ export default function PLOsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder='Select status' />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='active'>Active</SelectItem>
@@ -524,7 +519,7 @@ export default function PLOsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete PLO Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -548,5 +543,13 @@ export default function PLOsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function PLOsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PLOsPageContent />
+    </Suspense>
   );
 }

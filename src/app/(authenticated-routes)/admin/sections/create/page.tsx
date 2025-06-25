@@ -21,7 +21,7 @@ import * as z from 'zod';
 const formSchema = z.object({
   name: z.string().min(1, 'Section name is required'),
   courseOfferingId: z.string().min(1, 'Course offering is required'),
-  facultyId: z.string().optional(),
+  facultyId: z.string().min(1, 'Faculty/Teacher is required'),
   batchId: z.string().min(1, 'Batch is required'),
   maxStudents: z.string().min(1, 'Maximum students is required'),
 });
@@ -148,7 +148,7 @@ export default function CreateSectionPage() {
       const requestBody = {
         ...values,
         courseOfferingId: parseInt(values.courseOfferingId),
-        facultyId: values.facultyId ? parseInt(values.facultyId) : null,
+        facultyId: parseInt(values.facultyId),
         maxStudents: parseInt(values.maxStudents),
       };
 
@@ -263,14 +263,14 @@ export default function CreateSectionPage() {
 
               <div className='space-y-2'>
                 <label htmlFor='facultyId' className='text-sm font-medium'>
-                  Faculty
+                  Faculty/Teacher <span className='text-red-500'>*</span>
                 </label>
                 <Select
                   onValueChange={(value) => form.setValue('facultyId', value)}
                   value={form.watch('facultyId')}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder='Select faculty (optional)' />
+                    <SelectValue placeholder='Select faculty' />
                   </SelectTrigger>
                   <SelectContent>
                     {faculties.map((faculty) => (
@@ -283,6 +283,11 @@ export default function CreateSectionPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {form.formState.errors.facultyId && (
+                  <p className='text-sm text-red-500'>
+                    {form.formState.errors.facultyId.message}
+                  </p>
+                )}
               </div>
 
               <div className='space-y-2'>

@@ -26,6 +26,13 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface CLO {
   id: number;
@@ -96,8 +103,9 @@ export default function CourseCLOsPage() {
   };
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line
+    if (courseId) {
+      fetchData();
+    }
   }, [courseId]);
 
   const handleCreateCLO = async () => {
@@ -248,14 +256,14 @@ export default function CourseCLOsPage() {
                       size='sm'
                       onClick={() => handleEditClick(clo)}
                     >
-                      <Edit className='w-4 h-4' />
+                      <Edit className='w-4 h-4 mr-2' /> Edit
                     </Button>
                     <Button
                       variant='destructive'
                       size='sm'
                       onClick={() => handleDeleteClick(clo)}
                     >
-                      <Trash2 className='w-4 h-4' />
+                      <Trash2 className='w-4 h-4 mr-2' /> Delete
                     </Button>
                   </div>
                 </TableCell>
@@ -269,12 +277,14 @@ export default function CourseCLOsPage() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create CLO</DialogTitle>
-            <DialogDescription>Add a new CLO for this course</DialogDescription>
+            <DialogTitle>Create New CLO</DialogTitle>
+            <DialogDescription>
+              Add a new Course Learning Outcome for this course.
+            </DialogDescription>
           </DialogHeader>
           <div className='grid gap-4 py-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='code'>CLO Code</Label>
+              <Label htmlFor='code'>Code</Label>
               <Input
                 id='code'
                 value={formData.code}
@@ -296,35 +306,42 @@ export default function CourseCLOsPage() {
               />
             </div>
             <div className='grid gap-2'>
-              <Label htmlFor='bloomLevel'>Bloom's Taxonomy Level</Label>
-              <select
-                className='border rounded px-2 py-1'
+              <Label htmlFor='bloomLevel'>Bloom's Level</Label>
+              <Select
                 value={formData.bloomLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, bloomLevel: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, bloomLevel: value })
                 }
               >
-                <option value=''>Select Bloom's level</option>
-                {bloomLevels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Bloom's Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bloomLevels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className='grid gap-2'>
               <Label htmlFor='status'>Status</Label>
-              <select
-                className='border rounded px-2 py-1'
+              <Select
                 value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as any })
+                onValueChange={(value: 'active' | 'inactive' | 'archived') =>
+                  setFormData({ ...formData, status: value })
                 }
               >
-                <option value='active'>Active</option>
-                <option value='inactive'>Inactive</option>
-                <option value='archived'>Archived</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder='Select Status' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='active'>Active</SelectItem>
+                  <SelectItem value='inactive'>Inactive</SelectItem>
+                  <SelectItem value='archived'>Archived</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -344,11 +361,13 @@ export default function CourseCLOsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit CLO</DialogTitle>
-            <DialogDescription>Update CLO details</DialogDescription>
+            <DialogDescription>
+              Modify the Course Learning Outcome details.
+            </DialogDescription>
           </DialogHeader>
           <div className='grid gap-4 py-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='edit-code'>CLO Code</Label>
+              <Label htmlFor='edit-code'>Code</Label>
               <Input
                 id='edit-code'
                 value={formData.code}
@@ -370,35 +389,42 @@ export default function CourseCLOsPage() {
               />
             </div>
             <div className='grid gap-2'>
-              <Label htmlFor='edit-bloomLevel'>Bloom's Taxonomy Level</Label>
-              <select
-                className='border rounded px-2 py-1'
+              <Label htmlFor='edit-bloomLevel'>Bloom's Level</Label>
+              <Select
                 value={formData.bloomLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, bloomLevel: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, bloomLevel: value })
                 }
               >
-                <option value=''>Select Bloom's level</option>
-                {bloomLevels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Bloom's Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bloomLevels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className='grid gap-2'>
               <Label htmlFor='edit-status'>Status</Label>
-              <select
-                className='border rounded px-2 py-1'
+              <Select
                 value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as any })
+                onValueChange={(value: 'active' | 'inactive' | 'archived') =>
+                  setFormData({ ...formData, status: value })
                 }
               >
-                <option value='active'>Active</option>
-                <option value='inactive'>Inactive</option>
-                <option value='archived'>Archived</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder='Select Status' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='active'>Active</SelectItem>
+                  <SelectItem value='inactive'>Inactive</SelectItem>
+                  <SelectItem value='archived'>Archived</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

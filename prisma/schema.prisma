@@ -876,6 +876,15 @@ model otps {
   @@index([expiresAt])
 }
 
+model Settings {
+  id            Int      @id @default(1)
+  system        Json
+  email         Json
+  notifications Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 enum user_status {
   active
   inactive

@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     const availableUsers = await prisma.$queryRaw`
       SELECT DISTINCT u.id, u.first_name, u.last_name, u.email
       FROM users u
-      LEFT JOIN user_roles ur ON u.id = ur.userId
-      LEFT JOIN faculty f ON u.id = f.userId
+      LEFT JOIN userroles ur ON u.id = ur.userId
+      LEFT JOIN faculties f ON u.id = f.userId
       WHERE (
         -- Users with no roles
         ur.id IS NULL
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       )
       AND u.id NOT IN (
         -- Exclude users who are active faculty in any department
-        SELECT userId FROM faculty WHERE status = 'active'
+        SELECT userId FROM faculties WHERE status = 'active'
       )
     `;
 
