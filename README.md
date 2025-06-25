@@ -98,7 +98,7 @@ src/
 └── styles/               # Global styles
 ```
 
-## 🔧 Environment Variables
+## Environment Variables
 
 ```env
 # Database
