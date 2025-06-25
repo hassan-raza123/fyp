@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,7 +55,7 @@ interface Program {
   code: string;
 }
 
-export default function PLOsPage() {
+function PLOsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [plos, setPLOs] = useState<PLO[]>([]);
@@ -548,5 +548,13 @@ export default function PLOsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function PLOsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PLOsPageContent />
+    </Suspense>
   );
 }
