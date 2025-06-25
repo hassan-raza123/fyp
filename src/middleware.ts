@@ -32,6 +32,7 @@ const publicApiRoutes = [
   '/api/auth/verify-otp',
   '/api/auth/verify',
   '/api/auth/resend-otp',
+  '/api/contact',
 ];
 
 // Function to get user's dashboard based on role
@@ -91,7 +92,7 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
 // Function to create redirect response with token cleanup
 function createLoginRedirect(request: NextRequest, reason: string) {
   const response = NextResponse.redirect(new URL('/login', request.url));
-  response.cookies.delete(AUTH_TOKEN_COOKIE);
+  // response.cookies.delete(AUTH_TOKEN_COOKIE);
   return response;
 }
 
@@ -153,12 +154,9 @@ export async function middleware(request: NextRequest) {
 
   // Handle auth routes (login, forgot-password, etc.)
   if (authRoutes.some((route) => path.startsWith(route))) {
-    console.log('token', token);
     if (token) {
       // If user has token and trying to access auth routes, verify and redirect to dashboard
       const { isValid, userRole } = await verifyToken(token);
-
-      console.log('role', userRole);
 
       if (isValid && userRole) {
         const dashboard = getUserDashboard(userRole);
@@ -167,7 +165,7 @@ export async function middleware(request: NextRequest) {
       } else {
         // Invalid token, clear it and allow access to auth route
         const response = NextResponse.next();
-        response.cookies.delete(AUTH_TOKEN_COOKIE);
+        // response.cookies.delete(AUTH_TOKEN_COOKIE);
         return response;
       }
     }
@@ -186,7 +184,6 @@ export async function middleware(request: NextRequest) {
 
   // Verify token
   const { isValid, userRole } = await verifyToken(token);
-  console.log('isValid', userRole);
 
   if (!isValid || !userRole) {
     return createLoginRedirect(request, `Invalid token for route: ${path}`);
