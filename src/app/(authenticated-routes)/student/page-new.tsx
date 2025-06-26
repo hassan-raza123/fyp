@@ -4,19 +4,12 @@ import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
   Calendar,
-  Clock,
   FileText,
-  GraduationCap,
   Target,
   Award,
   CheckCircle,
-  AlertCircle,
   TrendingUp,
-  BarChart3,
   User,
-  Clock3,
-  BookMarked,
-  Activity,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -25,17 +18,9 @@ interface StatCardProps {
   icon: React.ReactNode;
   change?: number;
   trend?: 'up' | 'down';
-  color?: string;
 }
 
-const StatCard = ({
-  title,
-  value,
-  icon,
-  change,
-  trend,
-  color = 'purple',
-}: StatCardProps) => (
+const StatCard = ({ title, value, icon, change, trend }: StatCardProps) => (
   <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
     <div className='flex items-center justify-between'>
       <div>
@@ -65,7 +50,7 @@ const StatCard = ({
           </div>
         )}
       </div>
-      <div className={`p-3 bg-${color}-50 dark:bg-${color}-900/20 rounded-lg`}>
+      <div className='p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
         {icon}
       </div>
     </div>
@@ -79,7 +64,6 @@ interface CourseCardProps {
   grade?: string;
   attendance: number;
   nextClass: string;
-  color: string;
 }
 
 const CourseCard = ({
@@ -89,7 +73,6 @@ const CourseCard = ({
   grade,
   attendance,
   nextClass,
-  color,
 }: CourseCardProps) => (
   <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
     <div className='flex items-start justify-between mb-4'>
@@ -103,9 +86,7 @@ const CourseCard = ({
         </p>
       </div>
       {grade && (
-        <div
-          className={`px-3 py-1 bg-${color}-100 dark:bg-${color}-900/30 text-${color}-800 dark:text-${color}-200 rounded-full text-sm font-medium`}
-        >
+        <div className='px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium'>
           {grade}
         </div>
       )}
@@ -132,7 +113,6 @@ interface AssignmentProps {
   course: string;
   dueDate: string;
   status: 'upcoming' | 'submitted' | 'overdue';
-  priority: 'high' | 'medium' | 'low';
 }
 
 const AssignmentItem = ({
@@ -140,7 +120,6 @@ const AssignmentItem = ({
   course,
   dueDate,
   status,
-  priority,
 }: AssignmentProps) => {
   const getStatusColor = () => {
     switch (status) {
@@ -153,29 +132,15 @@ const AssignmentItem = ({
     }
   };
 
-  const getPriorityColor = () => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500';
-      case 'medium':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-green-500';
-    }
-  };
-
   return (
     <div className='flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors'>
-      <div className='flex items-center space-x-3'>
-        <div className={`w-2 h-2 rounded-full ${getPriorityColor()}`}></div>
-        <div>
-          <p className='text-sm font-medium text-gray-900 dark:text-white'>
-            {title}
-          </p>
-          <p className='text-xs text-gray-500 dark:text-gray-400'>
-            {course} • Due {dueDate}
-          </p>
-        </div>
+      <div>
+        <p className='text-sm font-medium text-gray-900 dark:text-white'>
+          {title}
+        </p>
+        <p className='text-xs text-gray-500 dark:text-gray-400'>
+          {course} • Due {dueDate}
+        </p>
       </div>
       <span
         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}
@@ -207,20 +172,17 @@ interface StudentDashboardData {
     grade?: string;
     attendance: number;
     nextClass: string;
-    color: string;
   }>;
   assignments: Array<{
     title: string;
     course: string;
     dueDate: string;
     status: 'upcoming' | 'submitted' | 'overdue';
-    priority: 'high' | 'medium' | 'low';
   }>;
   recentActivities: Array<{
     id: string;
     summary: string;
     time: string;
-    type: string;
   }>;
 }
 
@@ -256,7 +218,6 @@ export default function StudentDashboard() {
             grade: 'A-',
             attendance: 95,
             nextClass: 'Today, 2:00 PM',
-            color: 'blue',
           },
           {
             courseCode: 'CS-302',
@@ -265,7 +226,6 @@ export default function StudentDashboard() {
             grade: 'A',
             attendance: 88,
             nextClass: 'Tomorrow, 10:00 AM',
-            color: 'green',
           },
           {
             courseCode: 'CS-303',
@@ -273,7 +233,6 @@ export default function StudentDashboard() {
             instructor: 'Dr. Emily Rodriguez',
             attendance: 90,
             nextClass: 'Wednesday, 3:30 PM',
-            color: 'purple',
           },
           {
             courseCode: 'MATH-201',
@@ -282,7 +241,6 @@ export default function StudentDashboard() {
             grade: 'B+',
             attendance: 85,
             nextClass: 'Thursday, 1:00 PM',
-            color: 'orange',
           },
           {
             courseCode: 'ENG-101',
@@ -290,7 +248,6 @@ export default function StudentDashboard() {
             instructor: 'Dr. Lisa Thompson',
             attendance: 94,
             nextClass: 'Friday, 11:00 AM',
-            color: 'pink',
           },
         ],
         assignments: [
@@ -299,35 +256,30 @@ export default function StudentDashboard() {
             course: 'CS-301',
             dueDate: 'Dec 15, 2024',
             status: 'upcoming',
-            priority: 'high',
           },
           {
             title: 'Database Design Report',
             course: 'CS-302',
             dueDate: 'Dec 12, 2024',
             status: 'upcoming',
-            priority: 'high',
           },
           {
             title: 'Software Requirements Document',
             course: 'CS-303',
             dueDate: 'Dec 10, 2024',
             status: 'submitted',
-            priority: 'medium',
           },
           {
             title: 'Linear Algebra Quiz',
             course: 'MATH-201',
             dueDate: 'Dec 8, 2024',
             status: 'overdue',
-            priority: 'high',
           },
           {
             title: 'Technical Report Draft',
             course: 'ENG-101',
             dueDate: 'Dec 20, 2024',
             status: 'upcoming',
-            priority: 'low',
           },
         ],
         recentActivities: [
@@ -335,31 +287,26 @@ export default function StudentDashboard() {
             id: '1',
             summary: 'Assignment submitted: Software Requirements Document',
             time: '2 hours ago',
-            type: 'submission',
           },
           {
             id: '2',
             summary: 'Grade updated: Database Systems (A)',
             time: '1 day ago',
-            type: 'grade',
           },
           {
             id: '3',
             summary: 'Attendance marked: Data Structures & Algorithms',
             time: '2 days ago',
-            type: 'attendance',
           },
           {
             id: '4',
             summary: 'New assignment posted: Final Project',
             time: '3 days ago',
-            type: 'assignment',
           },
           {
             id: '5',
             summary: 'Course registration confirmed: Technical Writing',
             time: '1 week ago',
-            type: 'registration',
           },
         ],
       };
@@ -420,19 +367,17 @@ export default function StudentDashboard() {
           title='Enrolled Courses'
           value={data.stats.enrolledCourses}
           icon={
-            <BookOpen className='w-6 h-6 text-blue-600 dark:text-blue-400' />
+            <BookOpen className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          color='blue'
         />
         <StatCard
           title='Average Grade'
           value={`${data.stats.averageGrade}%`}
           icon={
-            <Award className='w-6 h-6 text-green-600 dark:text-green-400' />
+            <Award className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
           change={5.2}
           trend='up'
-          color='green'
         />
         <StatCard
           title='Attendance Rate'
@@ -442,15 +387,13 @@ export default function StudentDashboard() {
           }
           change={2.1}
           trend='up'
-          color='purple'
         />
         <StatCard
           title='Completed Assignments'
           value={data.stats.completedAssignments}
           icon={
-            <FileText className='w-6 h-6 text-orange-600 dark:text-orange-400' />
+            <FileText className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          color='orange'
         />
       </div>
 
@@ -472,7 +415,6 @@ export default function StudentDashboard() {
                   grade={course.grade}
                   attendance={course.attendance}
                   nextClass={course.nextClass}
-                  color={course.color}
                 />
               ))}
             </div>
@@ -493,7 +435,6 @@ export default function StudentDashboard() {
                   course={assignment.course}
                   dueDate={assignment.dueDate}
                   status={assignment.status}
-                  priority={assignment.priority}
                 />
               ))}
             </div>
