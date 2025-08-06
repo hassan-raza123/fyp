@@ -99,6 +99,19 @@ function createLoginRedirect(request: NextRequest, reason: string) {
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
+  // Allow static files and images
+  if (
+    path.startsWith('/_next/') ||
+    path.startsWith('/favicon.ico') ||
+    path.startsWith('/logo.jpg') ||
+    path.startsWith('/team/') ||
+    path.match(
+      /\.(jpg|jpeg|png|gif|svg|ico|webp|avif|css|js|woff|woff2|ttf|eot)$/i
+    )
+  ) {
+    return NextResponse.next();
+  }
+
   // Allow public web routes
   if (
     publicWebRoutes.some(

@@ -46,11 +46,23 @@ export default function NavbarClient() {
           <div className='flex-shrink-0'>
             <Link
               href='/'
-              className={`text-2xl font-bold transition-colors duration-300 ${
-                isScrolled ? 'text-purple-600' : 'text-white'
-              }`}
+              className='flex items-center space-x-3 transition-all duration-300'
             >
-              Smart Campus for MNSUET
+              <img
+                src='/logo.jpg'
+                alt='Smart Campus Logo'
+                className='w-12 h-12 rounded-full shadow-md object-cover'
+                onError={(e) => {
+                  console.error('Logo failed to load:', e);
+                }}
+              />
+              <span
+                className={`text-xl font-bold transition-colors duration-300 ${
+                  isScrolled ? 'text-purple-600' : 'text-white'
+                }`}
+              >
+                Smart Campus
+              </span>
             </Link>
           </div>
 

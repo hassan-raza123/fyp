@@ -44,7 +44,7 @@ const teamMembers = [
     role: 'Backend Developer',
     github: 'https://github.com/member3',
     linkedin: 'https://linkedin.com/in/member3',
-    picture: '/images/ahmar.jpg',
+    picture: '/team/ahmar.jpg',
   },
   {
     name: 'Mueez Ahmed',
