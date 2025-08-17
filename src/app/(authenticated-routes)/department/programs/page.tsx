@@ -42,46 +42,18 @@ interface Program {
   };
 }
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-}
-
-export default function ProgramsPage() {
+export default function DepartmentProgramsPage() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [departmentId, setDepartmentId] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  useEffect(() => {
     fetchPrograms();
-  }, [search, departmentId, status, page]);
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
-    }
-  };
+  }, [search, status, page]);
 
   const fetchPrograms = async () => {
     try {
@@ -91,11 +63,11 @@ export default function ProgramsPage() {
         limit: '10',
       });
       if (search) params.append('search', search);
-      if (departmentId && departmentId !== 'all')
-        params.append('departmentId', departmentId);
       if (status && status !== 'all') params.append('status', status);
 
-      const response = await fetch(`/api/programs?${params.toString()}`);
+      const response = await fetch(
+        `/api/department/programs?${params.toString()}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch programs');
       }
@@ -116,7 +88,7 @@ export default function ProgramsPage() {
     if (!confirm('Are you sure you want to delete this program?')) return;
 
     try {
-      const response = await fetch(`/api/programs/${id}`, {
+      const response = await fetch(`/api/department/programs/${id}`, {
         method: 'DELETE',
       });
 
@@ -152,12 +124,12 @@ export default function ProgramsPage() {
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>Programs</h1>
+          <h1 className='text-3xl font-bold'>Department Programs</h1>
           <p className='text-muted-foreground'>
-            Manage academic programs and their details
+            Manage academic programs in your department
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/programs/new')}>
+        <Button onClick={() => router.push('/department/programs/new')}>
           <Plus className='mr-2 h-4 w-4' />
           Create Program
         </Button>
@@ -177,19 +149,6 @@ export default function ProgramsPage() {
             </div>
           </div>
           <div className='flex gap-4'>
-            <Select value={departmentId} onValueChange={setDepartmentId}>
-              <SelectTrigger className='w-[180px]'>
-                <SelectValue placeholder='Department' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Departments</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id.toString()}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className='w-[180px]'>
                 <SelectValue placeholder='Status' />
@@ -212,7 +171,6 @@ export default function ProgramsPage() {
               <TableHead>Program ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Code</TableHead>
-              <TableHead>Department</TableHead>
               <TableHead>Credit Hours</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>Courses</TableHead>
@@ -224,13 +182,13 @@ export default function ProgramsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className='text-center'>
+                <TableCell colSpan={9} className='text-center'>
                   Loading...
                 </TableCell>
               </TableRow>
             ) : programs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className='text-center'>
+                <TableCell colSpan={9} className='text-center'>
                   No programs found
                 </TableCell>
               </TableRow>
@@ -240,9 +198,6 @@ export default function ProgramsPage() {
                   <TableCell>{program.id}</TableCell>
                   <TableCell>{program.name}</TableCell>
                   <TableCell>{program.code}</TableCell>
-                  <TableCell>
-                    {program.department.name} ({program.department.code})
-                  </TableCell>
                   <TableCell>{program.totalCreditHours}</TableCell>
                   <TableCell>{program.duration} years</TableCell>
                   <TableCell>{program._count.courses}</TableCell>
@@ -254,7 +209,7 @@ export default function ProgramsPage() {
                         variant='outline'
                         size='sm'
                         onClick={() =>
-                          router.push(`/admin/programs/${program.id}`)
+                          router.push(`/department/programs/${program.id}`)
                         }
                       >
                         View
@@ -263,7 +218,7 @@ export default function ProgramsPage() {
                         variant='outline'
                         size='sm'
                         onClick={() =>
-                          router.push(`/admin/programs/${program.id}/edit`)
+                          router.push(`/department/programs/${program.id}/edit`)
                         }
                       >
                         Edit

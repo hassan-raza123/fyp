@@ -88,7 +88,7 @@ interface DashboardData {
     totalStudents: number;
     totalPrograms: number;
     totalCourses: number;
-    totalDepartments: number;
+    totalFaculty: number;
   };
   recentActivities: Array<{
     id: string;
@@ -101,9 +101,13 @@ interface DashboardData {
     startDate: string;
     endDate: string;
   };
+  departmentInfo: {
+    name: string;
+    code: string;
+  };
 }
 
-export default function AdminOverview() {
+export default function DepartmentOverview() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +115,7 @@ export default function AdminOverview() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/overview');
+        const response = await fetch('/api/department/overview');
         if (!response.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
@@ -153,10 +157,10 @@ export default function AdminOverview() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
-            Dashboard Overview
+            Department Dashboard
           </h1>
           <p className='text-gray-500 dark:text-gray-400'>
-            Welcome back! Here's what's happening.
+            Welcome to {data.departmentInfo.name} ({data.departmentInfo.code})
           </p>
         </div>
         <div className='flex items-center space-x-4'>
@@ -197,8 +201,8 @@ export default function AdminOverview() {
           trend='down'
         />
         <StatCard
-          title='Departments'
-          value={data.stats.totalDepartments}
+          title='Faculty Members'
+          value={data.stats.totalFaculty}
           icon={
             <Building2 className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }

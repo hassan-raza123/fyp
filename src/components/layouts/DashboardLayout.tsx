@@ -305,7 +305,12 @@ export default function DashboardLayout({
                     isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}
                 >
-                  Admin Panel
+                  {role === 'super_admin' && 'Super Admin Panel'}
+                  {role === 'sub_admin' && 'Admin Panel'}
+                  {role === 'department_admin' && 'Department Admin'}
+                  {role === 'teacher' && 'Faculty Panel'}
+                  {role === 'student' && 'Student Portal'}
+                  {!role && 'Admin Panel'}
                 </h1>
                 <div className='flex items-center space-x-1'>
                   <span
@@ -313,10 +318,20 @@ export default function DashboardLayout({
                       isDarkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}
                   >
-                    v2.0.1
+                    {role === 'super_admin' && 'Full Access'}
+                    {role === 'sub_admin' && 'Limited Admin'}
+                    {role === 'department_admin' && 'Dept. Access'}
+                    {role === 'teacher' && 'Faculty Access'}
+                    {role === 'student' && 'Student Access'}
+                    {!role && 'v2.0.1'}
                   </span>
                   <span className='px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm'>
-                    Beta
+                    {role === 'super_admin' && 'Super'}
+                    {role === 'sub_admin' && 'Admin'}
+                    {role === 'department_admin' && 'Dept'}
+                    {role === 'teacher' && 'Faculty'}
+                    {role === 'student' && 'Student'}
+                    {!role && 'Beta'}
                   </span>
                 </div>
               </div>

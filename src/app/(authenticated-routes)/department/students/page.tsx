@@ -44,11 +44,16 @@ interface Student {
     id: string;
     name: string;
   } | null;
+  program: {
+    id: number;
+    name: string;
+    code: string;
+  };
   status: 'active' | 'inactive';
   currentStudents: number;
 }
 
-export default function StudentsPage() {
+export default function DepartmentStudentsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
@@ -72,7 +77,7 @@ export default function StudentsPage() {
 
   const fetchBatches = async () => {
     try {
-      const response = await fetch('/api/batches?status=active');
+      const response = await fetch('/api/department/batches?status=active');
       if (!response.ok) {
         throw new Error('Failed to fetch batches');
       }
@@ -100,7 +105,7 @@ export default function StudentsPage() {
         search: searchQuery,
       });
 
-      const response = await fetch(`/api/students?${queryParams}`);
+      const response = await fetch(`/api/department/students?${queryParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch students');
       }
@@ -127,7 +132,7 @@ export default function StudentsPage() {
   };
 
   const handleEdit = (student: Student) => {
-    router.push(`/admin/students/${student.id}`);
+    router.push(`/department/students/${student.id}`);
   };
 
   const handleDelete = async () => {
@@ -135,9 +140,12 @@ export default function StudentsPage() {
     setDeleting(true);
 
     try {
-      const response = await fetch(`/api/students/${selectedStudent.id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/department/students/${selectedStudent.id}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {
@@ -173,12 +181,12 @@ export default function StudentsPage() {
     <div className='container mx-auto py-10'>
       <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>Students</h1>
+          <h1 className='text-3xl font-bold'>Department Students</h1>
           <p className='text-muted-foreground'>
-            Manage student accounts and information
+            Manage student accounts in your department
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/students/create')}>
+        <Button onClick={() => router.push('/department/students/create')}>
           <Plus className='h-4 w-4 mr-2' />
           Add Student
         </Button>
@@ -244,6 +252,7 @@ export default function StudentsPage() {
               <TableHead>Roll Number</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Program</TableHead>
               <TableHead>Batch</TableHead>
               <TableHead>Enrolled Sections</TableHead>
               <TableHead>Status</TableHead>
@@ -253,13 +262,13 @@ export default function StudentsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className='text-center'>
+                <TableCell colSpan={8} className='text-center'>
                   Loading...
                 </TableCell>
               </TableRow>
             ) : students.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className='text-center'>
+                <TableCell colSpan={8} className='text-center'>
                   No students found
                 </TableCell>
               </TableRow>
@@ -271,6 +280,9 @@ export default function StudentsPage() {
                     {student.user.firstName} {student.user.lastName}
                   </TableCell>
                   <TableCell>{student.user.email}</TableCell>
+                  <TableCell>
+                    {student.program.name} ({student.program.code})
+                  </TableCell>
                   <TableCell>{student.batch?.name || 'No Batch'}</TableCell>
                   <TableCell>{student.currentStudents}</TableCell>
                   <TableCell>

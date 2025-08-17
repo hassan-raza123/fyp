@@ -59,19 +59,11 @@ interface Course {
   }[];
 }
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-}
-
-export default function CoursesPage() {
+export default function DepartmentCoursesPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [departmentId, setDepartmentId] = useState<string>('all');
   const [type, setType] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
@@ -81,28 +73,8 @@ export default function CoursesPage() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  useEffect(() => {
     fetchCourses();
-  }, [search, departmentId, type, status, page]);
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
-    }
-  };
+  }, [search, type, status, page]);
 
   const fetchCourses = async () => {
     try {
@@ -112,12 +84,12 @@ export default function CoursesPage() {
         limit: '10',
       });
       if (search) params.append('search', search);
-      if (departmentId && departmentId !== 'all')
-        params.append('departmentId', departmentId);
       if (type && type !== 'all') params.append('type', type);
       if (status && status !== 'all') params.append('status', status);
 
-      const response = await fetch(`/api/courses?${params.toString()}`);
+      const response = await fetch(
+        `/api/department/courses?${params.toString()}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch courses');
       }
@@ -137,10 +109,14 @@ export default function CoursesPage() {
   const handleDelete = async () => {
     if (!selectedCourse) return;
     setIsDeleting(true);
+
     try {
-      const response = await fetch(`/api/courses/${selectedCourse.id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/department/courses/${selectedCourse.id}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -200,8 +176,8 @@ export default function CoursesPage() {
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-bold'>Courses</h1>
-        <Button onClick={() => router.push('/admin/courses/create')}>
+        <h1 className='text-3xl font-bold'>Department Courses</h1>
+        <Button onClick={() => router.push('/department/courses/create')}>
           <Plus className='mr-2 h-4 w-4' />
           Create Course
         </Button>
@@ -219,19 +195,6 @@ export default function CoursesPage() {
             />
           </div>
         </div>
-        <Select value={departmentId} onValueChange={setDepartmentId}>
-          <SelectTrigger className='w-[180px]'>
-            <SelectValue placeholder='Department' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='all'>All Departments</SelectItem>
-            {departments.map((dept) => (
-              <SelectItem key={dept.id} value={dept.id.toString()}>
-                {dept.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Course Type' />
@@ -263,7 +226,6 @@ export default function CoursesPage() {
             <TableRow>
               <TableHead>Code</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Department</TableHead>
               <TableHead>Credit Hours</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
@@ -275,9 +237,6 @@ export default function CoursesPage() {
               <TableRow key={course.id}>
                 <TableCell>{course.code}</TableCell>
                 <TableCell>{course.name}</TableCell>
-                <TableCell>
-                  {course.department.name} ({course.department.code})
-                </TableCell>
                 <TableCell>{course.creditHours}</TableCell>
                 <TableCell>{getTypeBadge(course.type)}</TableCell>
                 <TableCell>{getStatusBadge(course.status)}</TableCell>
@@ -286,7 +245,9 @@ export default function CoursesPage() {
                     <Button
                       variant='ghost'
                       size='icon'
-                      onClick={() => router.push(`/admin/courses/${course.id}`)}
+                      onClick={() =>
+                        router.push(`/department/courses/${course.id}`)
+                      }
                     >
                       <Eye className='h-4 w-4' />
                     </Button>
@@ -294,7 +255,7 @@ export default function CoursesPage() {
                       variant='ghost'
                       size='icon'
                       onClick={() =>
-                        router.push(`/admin/courses/${course.id}/edit`)
+                        router.push(`/department/courses/${course.id}/edit`)
                       }
                     >
                       <Edit className='h-4 w-4' />
