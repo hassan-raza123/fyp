@@ -35,19 +35,23 @@ export async function GET(request: NextRequest) {
 
     const departmentId = departmentAdmin.departmentAdmin.id;
 
-    // Get users who are not already faculty members
+    // Get users who are not already faculty members or students
     const availableUsers = await prisma.users.findMany({
       where: {
         AND: [
           {
-            OR: [{ role: 'teacher' }, { role: 'faculty' }],
+            userrole: {
+              role: {
+                name: {
+                  in: ['teacher', 'faculty'],
+                },
+              },
+            },
           },
           {
-            // Not already a faculty member
             faculty: null,
           },
           {
-            // Not already a student
             student: null,
           },
         ],
@@ -58,14 +62,32 @@ export async function GET(request: NextRequest) {
         last_name: true,
         email: true,
         phone_number: true,
-        role: true,
+        userrole: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ first_name: 'asc' }, { last_name: 'asc' }],
     });
 
+    // Format the response
+    const formattedUsers = availableUsers.map((user) => ({
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      phone_number: user.phone_number,
+      role: user.userrole?.role?.name || 'unknown',
+    }));
+
     return NextResponse.json({
       success: true,
-      data: availableUsers,
+      data: formattedUsers,
     });
   } catch (error) {
     console.error('Available users error:', error);

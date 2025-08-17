@@ -40,7 +40,7 @@ export async function GET(
     const facultyId = parseInt(params.id);
 
     // Get faculty member
-    const faculty = await prisma.faculty.findFirst({
+    const faculty = await prisma.faculties.findFirst({
       where: {
         id: facultyId,
         departmentId: departmentId, // Only allow access to faculty from admin's department
@@ -163,7 +163,7 @@ export async function PUT(
     const body = await request.json();
 
     // Check if faculty exists and belongs to admin's department
-    const existingFaculty = await prisma.faculty.findFirst({
+    const existingFaculty = await prisma.faculties.findFirst({
       where: {
         id: facultyId,
         departmentId: departmentId,
@@ -178,7 +178,7 @@ export async function PUT(
     }
 
     // Update faculty
-    const updatedFaculty = await prisma.faculty.update({
+    const updatedFaculty = await prisma.faculties.update({
       where: { id: facultyId },
       data: {
         employeeId: body.employeeId,
@@ -258,7 +258,7 @@ export async function DELETE(
     const facultyId = parseInt(params.id);
 
     // Check if faculty exists and belongs to admin's department
-    const existingFaculty = await prisma.faculty.findFirst({
+    const existingFaculty = await prisma.faculties.findFirst({
       where: {
         id: facultyId,
         departmentId: departmentId,
@@ -288,7 +288,7 @@ export async function DELETE(
     }
 
     // Delete faculty
-    await prisma.faculty.delete({
+    await prisma.faculties.delete({
       where: { id: facultyId },
     });
 

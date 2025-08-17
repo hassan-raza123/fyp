@@ -67,12 +67,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get total count
-    const totalCount = await prisma.faculty.count({
+    const totalCount = await prisma.faculties.count({
       where: whereClause,
     });
 
     // Get faculty with pagination
-    const faculty = await prisma.faculty.findMany({
+    const faculty = await prisma.faculties.findMany({
       where: whereClause,
       include: {
         user: {
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if faculty already exists
-    const existingFaculty = await prisma.faculty.findFirst({
+    const existingFaculty = await prisma.faculties.findFirst({
       where: {
         OR: [{ employeeId: body.employeeId }, { userId: body.userId }],
       },
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new faculty
-    const newFaculty = await prisma.faculty.create({
+    const newFaculty = await prisma.faculties.create({
       data: {
         employeeId: body.employeeId,
         designation: body.designation,

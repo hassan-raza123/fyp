@@ -48,7 +48,7 @@ export async function PATCH(
     }
 
     // Check if faculty exists and belongs to admin's department
-    const existingFaculty = await prisma.faculty.findFirst({
+    const existingFaculty = await prisma.faculties.findFirst({
       where: {
         id: facultyId,
         departmentId: departmentId,
@@ -63,7 +63,7 @@ export async function PATCH(
     }
 
     // Update faculty status
-    const updatedFaculty = await prisma.faculty.update({
+    const updatedFaculty = await prisma.faculties.update({
       where: { id: facultyId },
       data: {
         status: body.status,
