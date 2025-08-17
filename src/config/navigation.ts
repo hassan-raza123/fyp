@@ -379,6 +379,35 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Link,
           href: '/admin/clo-plo-mappings',
         },
+        {
+          id: 'plo-attainments',
+          label: 'PLO Attainments',
+          icon: TrendingUp,
+          href: '/admin/plo-attainments',
+        },
+      ],
+    },
+    {
+      title: 'ASSESSMENT & RESULTS',
+      items: [
+        {
+          id: 'assessments',
+          label: 'Assessments',
+          icon: ClipboardList,
+          href: '/admin/assessments',
+        },
+        {
+          id: 'results',
+          label: 'Results',
+          icon: BarChart2,
+          href: '/admin/results',
+        },
+        {
+          id: 'grades',
+          label: 'Grade Management',
+          icon: Award,
+          href: '/admin/grades',
+        },
       ],
     },
     {
@@ -390,10 +419,157 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Settings2,
           href: '/admin/settings',
         },
+        {
+          id: 'database',
+          label: 'Database',
+          icon: Database,
+          href: '/admin/database',
+        },
       ],
     },
   ],
   department_admin: [
+    {
+      title: 'DASHBOARD',
+      items: [
+        { id: 'overview', label: 'Overview', icon: Home, href: '/department' },
+        {
+          id: 'analytics',
+          label: 'Analytics',
+          icon: BarChart2,
+          href: '/department/analytics',
+        },
+      ],
+    },
+    {
+      title: 'USER MANAGEMENT',
+      items: [
+        {
+          id: 'faculty',
+          label: 'Department Faculty',
+          icon: FacultyIcon,
+          href: '/department/faculty',
+        },
+        {
+          id: 'students',
+          label: 'Department Students',
+          icon: GraduationCap,
+          href: '/department/students',
+        },
+        {
+          id: 'users',
+          label: 'Department Users',
+          icon: Users,
+          href: '/department/users',
+        },
+      ],
+    },
+    {
+      title: 'ACADEMIC STRUCTURE',
+      items: [
+        {
+          id: 'programs',
+          label: 'Department Programs',
+          icon: School,
+          href: '/department/programs',
+        },
+        {
+          id: 'courses',
+          label: 'Department Courses',
+          icon: BookOpen,
+          href: '/department/courses',
+        },
+        {
+          id: 'course-offerings',
+          label: 'Course Offerings',
+          icon: BookCheck,
+          href: '/department/course-offerings',
+        },
+        {
+          id: 'semesters',
+          label: 'Semesters',
+          icon: Calendar,
+          href: '/department/semesters',
+        },
+        {
+          id: 'sessions',
+          label: 'Academic Sessions',
+          icon: Clock,
+          href: '/department/sessions',
+        },
+        {
+          id: 'batches',
+          label: 'Department Batches',
+          icon: Layers,
+          href: '/department/batches',
+        },
+        {
+          id: 'sections',
+          label: 'Department Sections',
+          icon: UserCheck,
+          href: '/department/sections',
+        },
+      ],
+    },
+    {
+      title: 'LEARNING OUTCOMES',
+      items: [
+        {
+          id: 'plos',
+          label: 'Department PLOs',
+          icon: Target,
+          href: '/department/plos',
+        },
+        {
+          id: 'clos',
+          label: 'Department CLOs',
+          icon: FileText,
+          href: '/department/clos',
+        },
+        {
+          id: 'clo-plo-mappings',
+          label: 'CLO-PLO Mappings',
+          icon: Link,
+          href: '/department/clo-plo-mappings',
+        },
+        {
+          id: 'plo-attainments',
+          label: 'PLO Attainments',
+          icon: TrendingUp,
+          href: '/department/plo-attainments',
+        },
+      ],
+    },
+    {
+      title: 'ASSESSMENT & RESULTS',
+      items: [
+        {
+          id: 'assessments',
+          label: 'Department Assessments',
+          icon: ClipboardList,
+          href: '/department/assessments',
+        },
+        {
+          id: 'results',
+          label: 'Department Results',
+          icon: BarChart2,
+          href: '/department/results',
+        },
+      ],
+    },
+    {
+      title: 'SYSTEM',
+      items: [
+        {
+          id: 'settings',
+          label: 'Department Settings',
+          icon: Settings2,
+          href: '/department/settings',
+        },
+      ],
+    },
+  ],
+  department_child: [
     {
       title: 'DASHBOARD',
       items: [

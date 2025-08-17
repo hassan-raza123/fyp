@@ -61,7 +61,7 @@ interface SidebarNavLinkProps {
     icon: React.ForwardRefExoticComponent<
       Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
     >;
-    badge?: number;
+    badge?: string;
     href?: string;
   };
   isChild?: boolean;
@@ -307,7 +307,8 @@ export default function DashboardLayout({
                 >
                   {role === 'super_admin' && 'Super Admin Panel'}
                   {role === 'sub_admin' && 'Admin Panel'}
-                  {role === 'department_admin' && 'Department Admin'}
+                  {role === 'department_admin' && 'Department Admin Panel'}
+                  {role === 'department_child' && 'Department Helper Panel'}
                   {role === 'teacher' && 'Faculty Panel'}
                   {role === 'student' && 'Student Portal'}
                   {!role && 'Admin Panel'}
@@ -319,8 +320,9 @@ export default function DashboardLayout({
                     }`}
                   >
                     {role === 'super_admin' && 'Full Access'}
-                    {role === 'sub_admin' && 'Limited Admin'}
-                    {role === 'department_admin' && 'Dept. Access'}
+                    {role === 'sub_admin' && 'Full Access'}
+                    {role === 'department_admin' && 'Department Access'}
+                    {role === 'department_child' && 'Department Helper'}
                     {role === 'teacher' && 'Faculty Access'}
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
@@ -328,7 +330,8 @@ export default function DashboardLayout({
                   <span className='px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm'>
                     {role === 'super_admin' && 'Super'}
                     {role === 'sub_admin' && 'Admin'}
-                    {role === 'department_admin' && 'Dept'}
+                    {role === 'department_admin' && 'Dept Admin'}
+                    {role === 'department_child' && 'Dept Helper'}
                     {role === 'teacher' && 'Faculty'}
                     {role === 'student' && 'Student'}
                     {!role && 'Beta'}
