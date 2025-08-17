@@ -14,6 +14,8 @@ import {
   FileText,
   Target,
   Award,
+  AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -107,22 +109,52 @@ interface DashboardData {
   };
 }
 
+interface ApiError {
+  error: string;
+  status?: number;
+}
+
 export default function DepartmentOverview() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         const response = await fetch('/api/department/overview');
+        const responseData = await response.json();
+
         if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
+          // Check if it's a department assignment error
+          if (
+            responseData.error &&
+            responseData.error.includes('Department admin not found')
+          ) {
+            setError({
+              error: 'No department assigned',
+              status: response.status,
+            });
+          } else {
+            setError({
+              error: responseData.error || 'Failed to fetch dashboard data',
+              status: response.status,
+            });
+          }
+          return;
         }
-        const data = await response.json();
-        setData(data);
+
+        setData(responseData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError({
+          error:
+            err instanceof Error
+              ? err.message
+              : 'An error occurred while fetching data',
+        });
       } finally {
         setLoading(false);
       }
@@ -134,21 +166,83 @@ export default function DepartmentOverview() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4'></div>
+          <p className='text-gray-600 dark:text-gray-400'>
+            Loading department dashboard...
+          </p>
+        </div>
       </div>
     );
   }
 
+  // Handle department not assigned error
+  if (error && error.error === 'No department assigned') {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='max-w-md mx-auto text-center'>
+          <div className='bg-yellow-50 dark:bg-yellow-900/20 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <AlertTriangle className='w-10 h-10 text-yellow-600 dark:text-yellow-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            No Department Assigned
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400 mb-6'>
+            You don't have a department assigned yet. Please contact the system
+            administrator to assign you to a department.
+          </p>
+          <div className='bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400'>
+            <p className='font-medium mb-2'>What you can do:</p>
+            <ul className='text-left space-y-1'>
+              <li>• Contact your system administrator</li>
+              <li>• Request department assignment</li>
+              <li>• Check your user role and permissions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle other errors
   if (error) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='text-red-500'>Error: {error}</div>
+        <div className='max-w-md mx-auto text-center'>
+          <div className='bg-red-50 dark:bg-red-900/20 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <AlertTriangle className='w-10 h-10 text-red-600 dark:text-red-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            Something went wrong
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400 mb-6'>{error.error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className='px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!data) {
-    return null;
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-center'>
+          <div className='bg-gray-50 dark:bg-gray-800 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <UserCheck className='w-10 h-10 text-gray-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            No Data Available
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400'>
+            No dashboard data found. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
