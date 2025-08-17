@@ -16,6 +16,8 @@ import {
   Award,
   Download,
   Filter,
+  AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 
 // Chart components (you'll need to install and import these)
@@ -44,6 +46,11 @@ interface AnalyticsData {
     averageGPA: number;
     retentionRate: number;
   };
+}
+
+interface ApiError {
+  error: string;
+  status?: number;
 }
 
 const COLORS = ['#8B5CF6', '#6366F1', '#4F46E5', '#3730A3', '#312E81'];
@@ -96,17 +103,44 @@ const StatCard = ({ title, value, icon, change, trend }: StatCardProps) => (
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/analytics');
-        if (!response.ok) throw new Error('Failed to fetch analytics data');
-        const json = await response.json();
-        setData(json);
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/department/analytics');
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          // Check if it's a department assignment error
+          if (
+            responseData.error &&
+            responseData.error.includes('Department admin not found')
+          ) {
+            setError({
+              error: 'No department assigned',
+              status: response.status,
+            });
+          } else {
+            setError({
+              error: responseData.error || 'Failed to fetch analytics data',
+              status: response.status,
+            });
+          }
+          return;
+        }
+
+        setData(responseData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError({
+          error:
+            err instanceof Error
+              ? err.message
+              : 'An error occurred while fetching analytics data',
+        });
       } finally {
         setLoading(false);
       }
@@ -117,18 +151,84 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4'></div>
+          <p className='text-gray-600 dark:text-gray-400'>
+            Loading analytics dashboard...
+          </p>
+        </div>
       </div>
     );
   }
+
+  // Handle department not assigned error
+  if (error && error.error === 'No department assigned') {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='max-w-md mx-auto text-center'>
+          <div className='bg-yellow-50 dark:bg-yellow-900/20 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <AlertTriangle className='w-10 h-10 text-yellow-600 dark:text-yellow-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            No Department Assigned
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400 mb-6'>
+            You don't have a department assigned yet. Please contact the system
+            administrator to assign you to a department.
+          </p>
+          <div className='bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400'>
+            <p className='font-medium mb-2'>What you can do:</p>
+            <ul className='text-left space-y-1'>
+              <li>• Contact your system administrator</li>
+              <li>• Request department assignment</li>
+              <li>• Check your user role and permissions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle other errors
   if (error) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='text-red-500'>Error: {error}</div>
+        <div className='max-w-md mx-auto text-center'>
+          <div className='bg-red-50 dark:bg-red-900/20 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <AlertTriangle className='w-10 h-10 text-red-600 dark:text-red-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            Something went wrong
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400 mb-6'>{error.error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className='px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
-  if (!data) return null;
+
+  if (!data) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-center'>
+          <div className='bg-gray-50 dark:bg-gray-800 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center'>
+            <UserCheck className='w-10 h-10 text-gray-400' />
+          </div>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+            No Analytics Data Available
+          </h1>
+          <p className='text-gray-600 dark:text-gray-400'>
+            No analytics data found. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // GPA buckets for bar chart
   const gpaBuckets = [4, 3.5, 3, 2.5, 2, 0];
@@ -199,16 +299,16 @@ export default function AnalyticsPage() {
           icon={
             <BarChart2 className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          change={2}
-          trend='up'
+          change={-2}
+          trend='down'
         />
         <StatCard
           title='Retention Rate'
-          value={Math.round(data.stats.retentionRate * 100) + '%'}
+          value={data.stats.retentionRate + '%'}
           icon={
             <TrendingUp className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          change={3}
+          change={8}
           trend='up'
         />
       </div>
@@ -216,139 +316,72 @@ export default function AnalyticsPage() {
       {/* Charts Grid */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
         {/* Enrollment Trend */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+        <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
             Enrollment Trend
-          </h2>
-          <div className='h-[300px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <LineChart data={data.enrollmentTrend}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
-                <XAxis dataKey='month' stroke='#6B7280' />
-                <YAxis stroke='#6B7280' />
-                <Tooltip />
-                <Line
-                  type='monotone'
-                  dataKey='students'
-                  stroke='#8B5CF6'
-                  strokeWidth={2}
-                  dot={{ fill: '#8B5CF6' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          </h3>
+          <ResponsiveContainer width='100%' height={300}>
+            <LineChart data={data.enrollmentTrend}>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='month' />
+              <YAxis />
+              <Tooltip />
+              <Line
+                type='monotone'
+                dataKey='students'
+                stroke='#8B5CF6'
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
         {/* Program Distribution */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+        <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
             Program Distribution
-          </h2>
-          <div className='h-[300px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <PieChart>
-                <Pie
-                  data={data.programDistribution}
-                  cx='50%'
-                  cy='50%'
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill='#8884d8'
-                  paddingAngle={5}
-                  dataKey='value'
-                >
-                  {data.programDistribution.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className='grid grid-cols-2 gap-4 mt-4'>
-            {data.programDistribution.map((program, index) => (
-              <div key={program.name} className='flex items-center space-x-2'>
-                <div
-                  className='w-3 h-3 rounded-full'
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span className='text-sm text-gray-600 dark:text-gray-400'>
-                  {program.name}
-                </span>
-                <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                  {program.value}
-                </span>
-              </div>
-            ))}
-          </div>
+          </h3>
+          <ResponsiveContainer width='100%' height={300}>
+            <PieChart>
+              <Pie
+                data={data.programDistribution}
+                cx='50%'
+                cy='50%'
+                labelLine={false}
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+                outerRadius={80}
+                fill='#8884d8'
+                dataKey='value'
+              >
+                {data.programDistribution.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
+      </div>
 
-        {/* GPA Distribution */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-            GPA Distribution
-          </h2>
-          <div className='h-[300px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={gpaBarData}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
-                <XAxis dataKey='range' stroke='#6B7280' />
-                <YAxis stroke='#6B7280' />
-                <Tooltip />
-                <Bar dataKey='students' fill='#8B5CF6' />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Key Metrics */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-            Key Metrics
-          </h2>
-          <div className='space-y-4'>
-            <div className='flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
-              <div className='flex items-center space-x-3'>
-                <Calendar className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-                <span className='text-sm text-gray-600 dark:text-gray-400'>
-                  Current Semester
-                </span>
-              </div>
-              <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                -
-              </span>
-            </div>
-            <div className='flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
-              <div className='flex items-center space-x-3'>
-                <Target className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-                <span className='text-sm text-gray-600 dark:text-gray-400'>
-                  Program Success Rate
-                </span>
-              </div>
-              <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                {programCompletionPercent}%
-              </span>
-            </div>
-            <div className='flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
-              <div className='flex items-center space-x-3'>
-                <Award className='w-5 h-5 text-purple-600 dark:text-purple-400' />
-                <span className='text-sm text-gray-600 dark:text-gray-400'>
-                  Top Performing Program
-                </span>
-              </div>
-              <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                {data.programDistribution.length > 0
-                  ? data.programDistribution.reduce((a, b) =>
-                      a.value > b.value ? a : b
-                    ).name
-                  : '-'}
-              </span>
-            </div>
-          </div>
-        </div>
+      {/* GPA Distribution */}
+      <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
+        <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+          GPA Distribution
+        </h3>
+        <ResponsiveContainer width='100%' height={300}>
+          <BarChart data={gpaBarData}>
+            <CartesianGrid strokeDasharray='3 3' />
+            <XAxis dataKey='range' />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey='students' fill='#8B5CF6' />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
