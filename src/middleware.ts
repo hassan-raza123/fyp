@@ -7,10 +7,7 @@ import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 const dashboardRoutes = {
   student: '/student',
   teacher: '/faculty',
-  super_admin: '/admin',
-  sub_admin: '/admin',
-  department_admin: '/department',
-  child_admin: '/department',
+  admin: '/admin',
 };
 
 // Auth routes that should redirect to dashboard if user is logged in
@@ -66,9 +63,9 @@ async function verifyToken(token: string) {
 
 // Function to check if route is allowed for user role
 function isRouteAllowedForRole(path: string, userRole: string): boolean {
-  // Admin routes - only for super_admin and sub_admin
+  // Admin routes - only for admin
   if (path.startsWith('/admin')) {
-    return ['super_admin', 'sub_admin'].includes(userRole);
+    return userRole === 'admin';
   }
 
   // Faculty routes - only for teacher
@@ -79,11 +76,6 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
   // Student routes - only for student
   if (path.startsWith('/student')) {
     return userRole === 'student';
-  }
-
-  // Department routes - only for department_admin and child_admin
-  if (path.startsWith('/department')) {
-    return ['department_admin', 'child_admin'].includes(userRole);
   }
 
   return false;
@@ -206,8 +198,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute =
     path.startsWith('/admin') ||
     path.startsWith('/faculty') ||
-    path.startsWith('/student') ||
-    path.startsWith('/department');
+    path.startsWith('/student');
 
   if (isProtectedRoute) {
     // Check if user has permission for this route

@@ -34,16 +34,14 @@ const verifyOTPSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin'
-): AllRoles {
+function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
     case 'teacher':
       return 'teacher';
     case 'admin':
-      return 'super_admin'; // Default to super_admin for admin login
+      return 'department_admin'; // Database still uses department_admin
     default:
       throw new Error('Invalid user type');
   }
@@ -51,13 +49,7 @@ function mapUserTypeToRole(
 
 // Check if a role is an admin role
 function isAdminRole(role: string): boolean {
-  const adminRoles: string[] = [
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-  ];
-  return adminRoles.includes(role);
+  return role === 'department_admin';
 }
 
 function getDashboardPath(role: AllRoles): string {
@@ -66,12 +58,8 @@ function getDashboardPath(role: AllRoles): string {
       return '/student';
     case 'teacher':
       return '/faculty';
-    case 'super_admin':
-    case 'sub_admin':
+    case 'admin':
       return '/admin';
-    case 'department_admin':
-    case 'child_admin':
-      return '/department';
     default:
       return '/login';
   }
@@ -174,23 +162,22 @@ export async function POST(
       );
     }
 
-    // For admin users, get their actual role
-    let actualRole: AllRoles;
-    if (userType === 'admin') {
-      const adminRole = userRoles.find(isAdminRole);
-      if (!adminRole) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'User does not have admin privileges',
-          },
-          { status: 403 }
-        );
-      }
-      actualRole = adminRole as AllRoles;
-    } else {
-      actualRole = mapUserTypeToRole(userType);
+    // Map userType to database role name
+    const dbRole = mapUserTypeToRole(userType);
+
+    // Verify user has the correct role in database
+    if (!userRoles.includes(dbRole)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `User does not have ${userType} role`,
+        },
+        { status: 403 }
+      );
     }
+
+    // Use frontend role name (admin instead of department_admin)
+    const actualRole = userType as AllRoles;
 
     // Verify OTP
     const otpRecord = await prisma.otps.findFirst({

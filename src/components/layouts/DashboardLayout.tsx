@@ -305,13 +305,10 @@ export default function DashboardLayout({
                     isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}
                 >
-                  {role === 'super_admin' && 'Super Admin Panel'}
-                  {role === 'sub_admin' && 'Admin Panel'}
-                  {role === 'department_admin' && 'Department Admin Panel'}
-                  {role === 'department_child' && 'Department Helper Panel'}
+                  {role === 'admin' && 'Admin Panel'}
                   {role === 'teacher' && 'Faculty Panel'}
                   {role === 'student' && 'Student Portal'}
-                  {!role && 'Admin Panel'}
+                  {!role && 'Dashboard'}
                 </h1>
                 <div className='flex items-center space-x-1'>
                   <span
@@ -319,19 +316,13 @@ export default function DashboardLayout({
                       isDarkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}
                   >
-                    {role === 'super_admin' && 'Full Access'}
-                    {role === 'sub_admin' && 'Full Access'}
-                    {role === 'department_admin' && 'Department Access'}
-                    {role === 'department_child' && 'Department Helper'}
+                    {role === 'admin' && 'Admin Access'}
                     {role === 'teacher' && 'Faculty Access'}
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
                   <span className='px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm'>
-                    {role === 'super_admin' && 'Super'}
-                    {role === 'sub_admin' && 'Admin'}
-                    {role === 'department_admin' && 'Dept Admin'}
-                    {role === 'department_child' && 'Dept Helper'}
+                    {role === 'admin' && 'Admin'}
                     {role === 'teacher' && 'Faculty'}
                     {role === 'student' && 'Student'}
                     {!role && 'Beta'}

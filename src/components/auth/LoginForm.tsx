@@ -151,19 +151,11 @@ export default function LoginForm() {
   const getUserTypeDisplay = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
-        return 'Administrator';
+        return 'Admin';
       case 'teacher':
         return 'Faculty';
       case 'student':
         return 'Student';
-      case 'department_admin':
-        return 'Department Admin';
-      case 'super_admin':
-        return 'Super Admin';
-      case 'sub_admin':
-        return 'Sub Admin';
-      case 'child_admin':
-        return 'Child Admin';
       default:
         return String(type).charAt(0).toUpperCase() + String(type).slice(1);
     }
@@ -172,10 +164,6 @@ export default function LoginForm() {
   const getEmailPlaceholder = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
-      case 'super_admin':
-      case 'sub_admin':
-      case 'department_admin':
-      case 'child_admin':
         return 'admin@university.edu';
       case 'teacher':
         return 'faculty@university.edu';

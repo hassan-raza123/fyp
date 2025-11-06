@@ -40,18 +40,14 @@ const loginSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin' | 'department_admin'
-): string {
+function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
     case 'teacher':
       return 'teacher';
-    case 'department_admin':
-      return 'department_admin';
     case 'admin':
-      return 'super_admin';
+      return 'department_admin'; // Database still uses department_admin
     default:
       throw new Error('Invalid user type');
   }
@@ -59,13 +55,7 @@ function mapUserTypeToRole(
 
 // Check if a role is an admin role
 function isAdminRole(role: string): boolean {
-  const adminRoles: string[] = [
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-  ];
-  return adminRoles.includes(role);
+  return role === 'department_admin';
 }
 
 function createUserData(user: any, userType: AllRoles): UserData {
@@ -248,26 +238,12 @@ export async function POST(request: NextRequest) {
 
     // Handle admin users
     if (userType === 'admin') {
-      // Check if user has any admin role
-      const hasAdminRole = userRoles.some(isAdminRole);
-
-      if (!hasAdminRole) {
+      // Check if user has department admin role (database role name)
+      if (!userRoles.includes('department_admin')) {
         return NextResponse.json(
           {
             success: false,
             message: 'User does not have admin privileges',
-          },
-          { status: 403 }
-        );
-      }
-
-      // Get the actual admin role from userRoles
-      const actualRole = userRoles.find(isAdminRole) as AllRoles;
-      if (!actualRole) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Invalid admin role',
           },
           { status: 403 }
         );
@@ -309,7 +285,6 @@ export async function POST(request: NextRequest) {
           email: email,
           userType: userType,
           otpSent: true,
-          actualRole: actualRole, // Pass the actual role to use after OTP verification
         },
       });
     }
@@ -370,11 +345,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Verified student/teacher - direct login
-      const userData = createUserData(user, userType);
+      // Map database role to frontend role (admin maps to 'admin' in frontend)
+      const frontendRole = userType;
+      const userData = createUserData(user, frontendRole as AllRoles);
       const tokenPayload: TokenPayload = {
         userId: user.id,
         email: user.email,
-        role: userType,
+        role: frontendRole,
         userData,
       };
 
@@ -462,14 +439,8 @@ export async function POST(request: NextRequest) {
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
-    case 'super_admin':
+    case 'admin':
       return '/admin';
-    case 'sub_admin':
-      return '/admin';
-    case 'department_admin':
-      return '/department';
-    case 'child_admin':
-      return '/sub-admin';
     case 'teacher':
       return '/faculty';
     case 'student':

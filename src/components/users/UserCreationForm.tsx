@@ -15,19 +15,10 @@ import {
 } from '@/components/ui/select';
 
 // Define role types
-type RoleType =
-  | 'super_admin'
-  | 'sub_admin'
-  | 'department_admin'
-  | 'child_admin'
-  | 'teacher'
-  | 'student';
+type RoleType = 'admin' | 'teacher' | 'student';
 
 const roleOptions = [
-  { value: 'super_admin', label: 'Super Admin' },
-  { value: 'sub_admin', label: 'Sub Admin' },
-  { value: 'department_admin', label: 'Department Admin' },
-  { value: 'child_admin', label: 'Child Admin' },
+  { value: 'admin', label: 'Admin' },
   { value: 'teacher', label: 'Teacher' },
   { value: 'student', label: 'Student' },
 ];
@@ -174,64 +165,64 @@ export default function UserCreationForm() {
   };
 
   return (
-    <Card className='p-6'>
-      <form onSubmit={handleSubmit} className='space-y-6'>
+    <Card className="p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {errors.general && (
-          <div className='bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg'>
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
             {errors.general}
           </div>
         )}
 
         {/* Basic Information */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div className='space-y-2'>
-            <Label htmlFor='firstName'>First Name</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="firstName">First Name</Label>
             <Input
-              id='firstName'
-              name='firstName'
+              id="firstName"
+              name="firstName"
               value={formData.firstName}
               onChange={handleChange}
               required
               className={errors.firstName ? 'border-red-500' : ''}
             />
             {errors.firstName && (
-              <p className='text-red-500 text-sm mt-1'>{errors.firstName}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
             )}
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='lastName'>Last Name</Label>
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
             <Input
-              id='lastName'
-              name='lastName'
+              id="lastName"
+              name="lastName"
               value={formData.lastName}
               onChange={handleChange}
               required
               className={errors.lastName ? 'border-red-500' : ''}
             />
             {errors.lastName && (
-              <p className='text-red-500 text-sm mt-1'>{errors.lastName}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
             )}
           </div>
         </div>
 
-        <div className='space-y-2'>
-          <Label htmlFor='email'>Email</Label>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
           <Input
-            id='email'
-            name='email'
-            type='email'
+            id="email"
+            name="email"
+            type="email"
             value={formData.email}
             onChange={handleChange}
             required
             className={errors.email ? 'border-red-500' : ''}
           />
           {errors.email && (
-            <p className='text-red-500 text-sm mt-1'>{errors.email}</p>
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
           )}
         </div>
 
-        <div className='space-y-2'>
-          <Label htmlFor='role'>Role</Label>
+        <div className="space-y-2">
+          <Label htmlFor="role">Role</Label>
           <Select
             value={formData.role}
             onValueChange={(value) => {
@@ -242,7 +233,7 @@ export default function UserCreationForm() {
             }}
           >
             <SelectTrigger className={errors.role ? 'border-red-500' : ''}>
-              <SelectValue placeholder='Select a role' />
+              <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
               {roleOptions.map((role) => (
@@ -253,40 +244,40 @@ export default function UserCreationForm() {
             </SelectContent>
           </Select>
           {errors.role && (
-            <p className='text-red-500 text-sm mt-1'>{errors.role}</p>
+            <p className="text-red-500 text-sm mt-1">{errors.role}</p>
           )}
         </div>
 
         {/* Password Fields */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Password</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
             <Input
-              id='password'
-              name='password'
-              type='password'
+              id="password"
+              name="password"
+              type="password"
               value={formData.password}
               onChange={handleChange}
               required
               className={errors.password ? 'border-red-500' : ''}
             />
             {errors.password && (
-              <p className='text-red-500 text-sm mt-1'>{errors.password}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
             )}
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='confirmPassword'>Confirm Password</Label>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
-              id='confirmPassword'
-              name='confirmPassword'
-              type='password'
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
               className={errors.confirmPassword ? 'border-red-500' : ''}
             />
             {errors.confirmPassword && (
-              <p className='text-red-500 text-sm mt-1'>
+              <p className="text-red-500 text-sm mt-1">
                 {errors.confirmPassword}
               </p>
             )}
@@ -295,49 +286,49 @@ export default function UserCreationForm() {
 
         {/* Role-specific Fields */}
         {formData.role === 'teacher' && (
-          <div className='space-y-2'>
-            <Label htmlFor='departmentId'>Department</Label>
+          <div className="space-y-2">
+            <Label htmlFor="departmentId">Department</Label>
             <Input
-              id='departmentId'
-              name='departmentId'
+              id="departmentId"
+              name="departmentId"
               value={formData.departmentId}
               onChange={handleChange}
               required
               className={errors.departmentId ? 'border-red-500' : ''}
             />
             {errors.departmentId && (
-              <p className='text-red-500 text-sm mt-1'>{errors.departmentId}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.departmentId}</p>
             )}
           </div>
         )}
 
         {formData.role === 'student' && (
-          <div className='space-y-2'>
-            <Label htmlFor='rollNumber'>Roll Number</Label>
+          <div className="space-y-2">
+            <Label htmlFor="rollNumber">Roll Number</Label>
             <Input
-              id='rollNumber'
-              name='rollNumber'
+              id="rollNumber"
+              name="rollNumber"
               value={formData.rollNumber}
               onChange={handleChange}
               required
               className={errors.rollNumber ? 'border-red-500' : ''}
             />
             {errors.rollNumber && (
-              <p className='text-red-500 text-sm mt-1'>{errors.rollNumber}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.rollNumber}</p>
             )}
           </div>
         )}
 
-        <div className='flex justify-end gap-4'>
+        <div className="flex justify-end gap-4">
           <Button
-            type='button'
-            variant='outline'
+            type="button"
+            variant="outline"
             onClick={() => router.push('/dashboard/users')}
             disabled={isLoading}
           >
             Cancel
           </Button>
-          <Button type='submit' disabled={isLoading}>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Create User'}
           </Button>
         </div>

@@ -284,12 +284,12 @@ const departmentNavigation = [
   {
     title: 'DASHBOARD',
     items: [
-      { id: 'overview', label: 'Overview', icon: Home, href: '/department' },
+      { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
       {
         id: 'analytics',
         label: 'Analytics',
         icon: BarChart2,
-        href: '/department/analytics',
+        href: '/admin/analytics',
       },
     ],
   },
@@ -300,19 +300,19 @@ const departmentNavigation = [
         id: 'faculty',
         label: 'Department Faculty',
         icon: FacultyIcon,
-        href: '/department/faculty',
+        href: '/admin/faculty',
       },
       {
         id: 'students',
         label: 'Department Students',
         icon: GraduationCap,
-        href: '/department/students',
+        href: '/admin/students',
       },
       {
         id: 'users',
         label: 'Department Users',
         icon: Users,
-        href: '/department/users',
+        href: '/admin/users',
       },
     ],
   },
@@ -323,43 +323,43 @@ const departmentNavigation = [
         id: 'programs',
         label: 'Department Programs',
         icon: School,
-        href: '/department/programs',
+        href: '/admin/programs',
       },
       {
         id: 'courses',
         label: 'Department Courses',
         icon: BookOpen,
-        href: '/department/courses',
+        href: '/admin/courses',
       },
       {
         id: 'course-offerings',
         label: 'Course Offerings',
         icon: BookCheck,
-        href: '/department/course-offerings',
+        href: '/admin/course-offerings',
       },
       {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
-        href: '/department/semesters',
+        href: '/admin/semesters',
       },
       {
         id: 'sessions',
         label: 'Academic Sessions',
         icon: Clock,
-        href: '/department/sessions',
+        href: '/admin/sessions',
       },
       {
         id: 'batches',
         label: 'Department Batches',
         icon: Layers,
-        href: '/department/batches',
+        href: '/admin/batches',
       },
       {
         id: 'sections',
         label: 'Department Sections',
         icon: UserCheck,
-        href: '/department/sections',
+        href: '/admin/sections',
       },
     ],
   },
@@ -370,25 +370,25 @@ const departmentNavigation = [
         id: 'plos',
         label: 'Department PLOs',
         icon: Target,
-        href: '/department/plos',
+        href: '/admin/plos',
       },
       {
         id: 'clos',
         label: 'Department CLOs',
         icon: FileText,
-        href: '/department/clos',
+        href: '/admin/clos',
       },
       {
         id: 'clo-plo-mappings',
         label: 'CLO-PLO Mappings',
         icon: Link,
-        href: '/department/clo-plo-mappings',
+        href: '/admin/clo-plo-mappings',
       },
       {
         id: 'plo-attainments',
         label: 'PLO Attainments',
         icon: TrendingUp,
-        href: '/department/plo-attainments',
+        href: '/admin/plo-attainments',
       },
     ],
   },
@@ -399,13 +399,13 @@ const departmentNavigation = [
         id: 'assessments',
         label: 'Department Assessments',
         icon: ClipboardList,
-        href: '/department/assessments',
+        href: '/admin/assessments',
       },
       {
         id: 'results',
         label: 'Department Results',
         icon: BarChart2,
-        href: '/department/results',
+        href: '/admin/results',
       },
     ],
   },
@@ -416,20 +416,15 @@ const departmentNavigation = [
         id: 'settings',
         label: 'Department Settings',
         icon: Settings2,
-        href: '/department/settings',
+        href: '/admin/settings',
       },
     ],
   },
 ];
 
 export const roleBasedNavigation: RoleBasedNavigation = {
-  // Super Admin and Sub Admin share same navigation
-  super_admin: adminNavigation,
-  sub_admin: adminNavigation,
-
-  // Department Admin and Child Admin share same navigation
-  department_admin: departmentNavigation,
-  child_admin: departmentNavigation,
+  // Admin navigation (Department Admin)
+  admin: departmentNavigation,
 
   // Teacher has unique navigation
   teacher: [
