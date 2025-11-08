@@ -1,13 +1,19 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 
 export default function SettingsPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Faculty Settings</h1>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Settings</CardTitle>
@@ -22,4 +28,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
