@@ -147,12 +147,6 @@ const adminNavigation = [
     title: 'USER MANAGEMENT',
     items: [
       {
-        id: 'users',
-        label: 'All Users',
-        icon: Users,
-        href: '/admin/users',
-      },
-      {
         id: 'faculty',
         label: 'Faculty',
         icon: FacultyIcon,
@@ -169,12 +163,6 @@ const adminNavigation = [
   {
     title: 'ACADEMIC STRUCTURE',
     items: [
-      {
-        id: 'departments',
-        label: 'Departments',
-        icon: Building2,
-        href: '/admin/departments',
-      },
       {
         id: 'programs',
         label: 'Programs',
@@ -198,12 +186,6 @@ const adminNavigation = [
         label: 'Semesters',
         icon: Calendar,
         href: '/admin/semesters',
-      },
-      {
-        id: 'sessions',
-        label: 'Academic Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
       },
       {
         id: 'batches',
@@ -253,12 +235,6 @@ const adminNavigation = [
         icon: BarChart2,
         href: '/admin/results',
       },
-      {
-        id: 'grades',
-        label: 'Grade Management',
-        icon: Award,
-        href: '/admin/grades',
-      },
     ],
   },
   {
@@ -269,12 +245,6 @@ const adminNavigation = [
         label: 'System Settings',
         icon: Settings2,
         href: '/admin/settings',
-      },
-      {
-        id: 'database',
-        label: 'Database',
-        icon: Database,
-        href: '/admin/database',
       },
     ],
   },
@@ -308,12 +278,6 @@ const departmentNavigation = [
         icon: GraduationCap,
         href: '/admin/students',
       },
-      {
-        id: 'users',
-        label: 'Department Users',
-        icon: Users,
-        href: '/admin/users',
-      },
     ],
   },
   {
@@ -342,12 +306,6 @@ const departmentNavigation = [
         label: 'Semesters',
         icon: Calendar,
         href: '/admin/semesters',
-      },
-      {
-        id: 'sessions',
-        label: 'Academic Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
       },
       {
         id: 'batches',
