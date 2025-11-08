@@ -161,7 +161,7 @@ export default function CourseDetailsPage() {
           <p className="text-red-500 mb-4">{error}</p>
           <Button
             variant="outline"
-            onClick={() => router.push('/admin/courses')}
+            onClick={() => router.push('/student/courses')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
@@ -179,7 +179,7 @@ export default function CourseDetailsPage() {
           <p className="text-muted-foreground mb-4">Course not found</p>
           <Button
             variant="outline"
-            onClick={() => router.push('/admin/courses')}
+            onClick={() => router.push('/student/courses')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
@@ -197,7 +197,7 @@ export default function CourseDetailsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push('/admin/courses')}
+            onClick={() => router.push('/student/courses')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
