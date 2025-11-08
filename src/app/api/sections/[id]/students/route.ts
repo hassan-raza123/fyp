@@ -240,11 +240,6 @@ export async function DELETE(
       );
     }
 
-    // First, delete all attendances for this studentSection
-    await prisma.attendances.deleteMany({
-      where: { studentSectionId: enrollment.id },
-    });
-
     // Remove student from section
     await prisma.studentsections.delete({
       where: {

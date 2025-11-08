@@ -22,18 +22,12 @@ model users {
   email_verified      Boolean          @default(false)
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  attendances         attendances[]
   auditlogs           auditlogs[]
-  approvedDatesheets  datesheets[]     @relation("DatesheetApprover")
-  createdDatesheets   datesheets[]     @relation("DatesheetCreator")
   departmentAdmin     departments?     @relation("DepartmentAdmin")
   faculty             faculties?
-  notifications       notifications[]
-  reportsGenerated    obereports[]     @relation("ReportGenerator")
   passwordresets      passwordresets[]
   ploCalculated       ploattainments[] @relation("PLOAttainmentCalculator")
   student             students?
-  transcriptGenerated transcripts[]    @relation("TranscriptGenerator")
   userrole            userroles?
 }
 
@@ -101,7 +95,6 @@ model programs {
   totalCreditHours Int              @default(0)
   batches          batches[]
   gradeScales      gradescales[]
-  obeReports       obereports[]
   ploAttainments   ploattainments[]
   plos             plos[]
   department       departments      @relation(fields: [departmentId], references: [id])
@@ -145,12 +138,8 @@ model semesters {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   courseOfferings courseofferings[]
-  datesheets      datesheets[]
-  examSchedules   examschedules[]
-  obeReports      obereports[]
   ploAttainments  ploattainments[]
   semesterGPA     semestergpa[]
-  transcripts     transcripts[]
 }
 
 model batches {
@@ -182,11 +171,8 @@ model courseofferings {
   assessments      assessments[]
   closAttainments  closattainments[]
   llosAttainments  llosattainments[]
-  courseFeedbacks  coursefeedbacks[]
   course           courses                @relation(fields: [courseId], references: [id])
   semester         semesters              @relation(fields: [semesterId], references: [id])
-  examSchedules    examschedules[]
-  facultyFeedbacks facultyfeedbacks[]
   passfailcriteria passfailcriteria?
   ploScores        ploscores[]
   sections         sections[]
@@ -211,9 +197,7 @@ model sections {
   batch            batches              @relation(fields: [batchId], references: [id])
   courseOffering   courseofferings      @relation(fields: [courseOfferingId], references: [id])
   faculty          faculties?           @relation(fields: [facultyId], references: [id])
-  sessions         sessions[]
   studentsections  studentsections[]
-  timetableslots   timetableslots[]
 
   @@index([courseOfferingId])
   @@index([facultyId])
@@ -233,7 +217,6 @@ model faculties {
   llosCalculated   llosattainments[]          @relation("LLOAttainmentCalculator")
   department       departments                @relation(fields: [departmentId], references: [id])
   user             users                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  facultyFeedbacks facultyfeedbacks[]
   sections         sections[]
   evaluatedResults studentassessmentresults[] @relation("ResultEvaluator")
   gradesCalculated studentgrades[]            @relation("GradeCalculator")
@@ -252,10 +235,8 @@ model students {
   departmentId      Int
   programId         Int
   batchId           String?
-  courseFeedbacks   coursefeedbacks[]
   cumulativeGPA     cumulativegpa?
   detailedResults   detailedresults[]
-  examattendance    examattendance[]
   ploScores         ploscores[]
   semesterGPA       semestergpa[]
   assessmentResults studentassessmentresults[]
@@ -265,7 +246,6 @@ model students {
   program           programs                   @relation(fields: [programId], references: [id])
   user              users                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentsections   studentsections[]
-  transcripts       transcripts[]
 
   @@index([departmentId])
   @@index([programId])
@@ -280,7 +260,6 @@ model studentsections {
   status         studentsection_status @default(active)
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
-  attendances    attendances[]
   section        sections              @relation(fields: [sectionId], references: [id])
   student        students              @relation(fields: [studentId], references: [id])
 
@@ -647,144 +626,6 @@ model cumulativegpa {
   @@index([studentId])
 }
 
-model sessions {
-  id          Int            @id @default(autoincrement())
-  sectionId   Int
-  date        DateTime
-  startTime   DateTime
-  endTime     DateTime
-  topic       String?
-  remarks     String?
-  status      session_status @default(scheduled)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  attendances attendances[]
-  section     sections       @relation(fields: [sectionId], references: [id])
-
-  @@index([sectionId])
-}
-
-model attendances {
-  id               Int               @id @default(autoincrement())
-  studentSectionId Int
-  sessionId        Int
-  status           attendance_status
-  markedBy         Int
-  remarks          String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  user             users             @relation(fields: [markedBy], references: [id])
-  session          sessions          @relation(fields: [sessionId], references: [id])
-  studentsection   studentsections   @relation(fields: [studentSectionId], references: [id])
-
-  @@unique([studentSectionId, sessionId])
-  @@index([markedBy])
-  @@index([sessionId])
-  @@index([studentSectionId])
-}
-
-model timetableslots {
-  id         Int                  @id @default(autoincrement())
-  sectionId  Int
-  dayOfWeek  Int
-  startTime  DateTime             @db.Time(0)
-  endTime    DateTime             @db.Time(0)
-  roomNumber String?
-  status     timetableslot_status @default(active)
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
-  section    sections             @relation(fields: [sectionId], references: [id])
-
-  @@index([sectionId])
-}
-
-model datesheets {
-  id               Int                @id @default(autoincrement())
-  semesterId       Int
-  title            String
-  description      String?
-  examPeriod       exam_period
-  startDate        DateTime
-  endDate          DateTime
-  publishDate      DateTime?
-  isPublished      Boolean            @default(false)
-  isFinalized      Boolean            @default(false)
-  createdBy        Int
-  approvedBy       Int?
-  approvedAt       DateTime?
-  status           datesheet_status   @default(draft)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  datesheetentries datesheetentries[]
-  approver         users?             @relation("DatesheetApprover", fields: [approvedBy], references: [id])
-  creator          users              @relation("DatesheetCreator", fields: [createdBy], references: [id])
-  semester         semesters          @relation(fields: [semesterId], references: [id])
-
-  @@index([semesterId])
-  @@index([examPeriod])
-  @@index([status])
-  @@index([approvedBy], map: "datesheets_approvedBy_fkey")
-  @@index([createdBy], map: "datesheets_createdBy_fkey")
-}
-
-model examschedules {
-  id               Int                @id @default(autoincrement())
-  semesterId       Int
-  courseOfferingId Int
-  examType         exam_type
-  examDate         DateTime
-  startTime        DateTime           @db.Time(0)
-  endTime          DateTime           @db.Time(0)
-  roomNumber       String?
-  duration         Int
-  instructions     String?
-  status           exam_status        @default(scheduled)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  datesheetentries datesheetentries[]
-  examattendance   examattendance[]
-  courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
-  semester         semesters          @relation(fields: [semesterId], references: [id])
-
-  @@index([semesterId])
-  @@index([courseOfferingId])
-  @@index([examDate])
-}
-
-model transcripts {
-  id               Int               @id @default(autoincrement())
-  studentId        Int
-  semesterId       Int?
-  transcriptType   transcript_type
-  totalCGPA        Float?
-  totalCreditHours Int?
-  isOfficial       Boolean           @default(false)
-  generatedBy      Int
-  generatedAt      DateTime          @default(now())
-  filePath         String?
-  status           transcript_status @default(generated)
-  generator        users             @relation("TranscriptGenerator", fields: [generatedBy], references: [id])
-  semester         semesters?        @relation(fields: [semesterId], references: [id])
-  student          students          @relation(fields: [studentId], references: [id])
-
-  @@index([studentId])
-  @@index([semesterId])
-  @@index([generatedBy])
-}
-
-model notifications {
-  id        Int               @id @default(autoincrement())
-  userId    Int
-  title     String
-  message   String
-  isRead    Boolean           @default(false)
-  type      notification_type
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  user      users             @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
 
 model auditlogs {
   id        Int      @id @default(autoincrement())
@@ -813,99 +654,6 @@ model passwordresets {
   @@index([userId])
 }
 
-model coursefeedbacks {
-  id               Int             @id @default(autoincrement())
-  studentId        Int
-  courseOfferingId Int
-  rating           Int
-  comments         String?
-  suggestions      String?
-  isAnonymous      Boolean         @default(false)
-  submittedAt      DateTime        @default(now())
-  courseOffering   courseofferings @relation(fields: [courseOfferingId], references: [id])
-  student          students        @relation(fields: [studentId], references: [id])
-
-  @@unique([studentId, courseOfferingId])
-  @@index([studentId])
-  @@index([courseOfferingId])
-}
-
-model facultyfeedbacks {
-  id                   Int             @id @default(autoincrement())
-  facultyId            Int
-  courseOfferingId     Int
-  studentEngagement    Int
-  infrastructureRating Int
-  suggestions          String?
-  challenges           String?
-  submittedAt          DateTime        @default(now())
-  courseOffering       courseofferings @relation(fields: [courseOfferingId], references: [id])
-  faculty              faculties       @relation(fields: [facultyId], references: [id])
-
-  @@unique([facultyId, courseOfferingId])
-  @@index([facultyId])
-  @@index([courseOfferingId])
-}
-
-model obereports {
-  id          Int             @id @default(autoincrement())
-  reportType  obe_report_type
-  programId   Int?
-  semesterId  Int?
-  title       String
-  description String?
-  generatedBy Int
-  generatedAt DateTime        @default(now())
-  filePath    String?
-  status      report_status   @default(generated)
-  generator   users           @relation("ReportGenerator", fields: [generatedBy], references: [id])
-  program     programs?       @relation(fields: [programId], references: [id])
-  semester    semesters?      @relation(fields: [semesterId], references: [id])
-
-  @@index([programId])
-  @@index([semesterId])
-  @@index([generatedBy])
-}
-
-model datesheetentries {
-  id             Int                       @id @default(autoincrement())
-  datesheetId    Int
-  examScheduleId Int
-  dayOfExam      Int
-  timeSlot       datesheetentries_timeSlot
-  paperCode      String
-  paperTitle     String
-  duration       Int
-  totalMarks     Int
-  passingMarks   Int
-  notes          String?
-  createdAt      DateTime                  @default(now())
-  updatedAt      DateTime
-  datesheets     datesheets                @relation(fields: [datesheetId], references: [id], map: "datesheetEntries_datesheetId_fkey")
-  examschedules  examschedules             @relation(fields: [examScheduleId], references: [id], map: "datesheetEntries_examScheduleId_fkey")
-
-  @@unique([datesheetId, examScheduleId], map: "datesheetEntries_datesheetId_examScheduleId_key")
-  @@index([datesheetId], map: "datesheetEntries_datesheetId_idx")
-  @@index([examScheduleId], map: "datesheetEntries_examScheduleId_idx")
-}
-
-model examattendance {
-  id               Int                             @id @default(autoincrement())
-  examScheduleId   Int
-  studentId        Int
-  attendanceStatus examattendance_attendanceStatus
-  arrivalTime      DateTime?
-  departureTime    DateTime?
-  remarks          String?
-  createdAt        DateTime                        @default(now())
-  updatedAt        DateTime
-  examschedules    examschedules                   @relation(fields: [examScheduleId], references: [id], map: "examAttendance_examScheduleId_fkey")
-  students         students                        @relation(fields: [studentId], references: [id], map: "examAttendance_studentId_fkey")
-
-  @@unique([examScheduleId, studentId], map: "examAttendance_examScheduleId_studentId_key")
-  @@index([examScheduleId], map: "examAttendance_examScheduleId_idx")
-  @@index([studentId], map: "examAttendance_studentId_idx")
-}
 
 model passfailcriteria {
   id               Int                     @id @default(autoincrement())
@@ -1007,40 +755,10 @@ enum section_session_type {
   evening
 }
 
-enum session_status {
-  scheduled
-  in_progress
-  completed
-  cancelled
-}
-
-enum timetableslot_status {
-  active
-  inactive
-  suspended
-}
-
 enum studentsection_status {
   active
   inactive
   completed
-}
-
-enum attendance_status {
-  present
-  absent
-  late
-  leave
-  excused
-}
-
-enum notification_type {
-  system
-  attendance
-  course
-  announcement
-  alert
-  grade
 }
 
 enum course_type {
@@ -1115,75 +833,6 @@ enum gpa_status {
   final
 }
 
-enum transcript_type {
-  official
-  unofficial
-  semester
-  complete
-}
-
-enum transcript_status {
-  generated
-  issued
-  cancelled
-}
-
-enum exam_type {
-  mid_term
-  final_term
-  quiz
-  makeup
-  supplementary
-}
-
-enum exam_status {
-  scheduled
-  in_progress
-  completed
-  cancelled
-}
-
-enum exam_period {
-  mid_term
-  final_term
-  makeup
-  supplementary
-}
-
-enum datesheet_status {
-  draft
-  under_review
-  approved
-  published
-  finalized
-}
-
-enum obe_report_type {
-  clo_attainment
-  plo_attainment
-  program_assessment
-  semester_summary
-  course_wise
-}
-
-enum report_status {
-  generated
-  published
-  archived
-}
-
-enum examattendance_attendanceStatus {
-  present
-  absent
-  late
-  left_early
-}
-
-enum datesheetentries_timeSlot {
-  morning
-  afternoon
-  evening
-}
 
 enum passfailcriteria_status {
   active
