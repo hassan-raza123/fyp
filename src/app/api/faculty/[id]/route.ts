@@ -179,7 +179,7 @@ export async function DELETE(
     const userRoles = (existingFaculty.user.userrole || []) as UserRole[];
     const isDepartmentAdmin =
       Array.isArray(userRoles) &&
-      userRoles.some((ur) => ur.role.name === 'department_admin');
+      userRoles.some((ur) => ur.role.name === 'admin');
 
     // Store the user ID for later operations
     const userId = existingFaculty.userId;

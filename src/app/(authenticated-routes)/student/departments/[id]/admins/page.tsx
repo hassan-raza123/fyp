@@ -68,7 +68,7 @@ export default function DepartmentAdminsPage({
 
   const fetchAvailableAdmins = async () => {
     try {
-      const response = await fetch('/api/users?role=department_admin');
+      const response = await fetch('/api/users?role=admin');
       const data = await response.json();
 
       if (!response.ok) {

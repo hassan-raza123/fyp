@@ -71,24 +71,15 @@ export async function POST(
     }
 
     // Validate roles and role-specific details
-    const validRoles = ['sub_admin', 'department_admin', 'teacher', 'student'];
+    const validRoles = ['admin', 'teacher', 'student'];
     const hasStudentRole = roles.includes('student');
-    const hasFacultyRole =
-      roles.includes('teacher') || roles.includes('department_admin');
-    const hasSubAdminRole = roles.includes('sub_admin');
+    const hasFacultyRole = roles.includes('teacher') || roles.includes('admin');
 
     // Validate roles
     for (const role of roles) {
       if (!validRoles.includes(role)) {
         return NextResponse.json(
           { error: `Invalid role: ${role}` },
-          { status: 400 }
-        );
-      }
-
-      if (role === 'super_admin') {
-        return NextResponse.json(
-          { error: 'Super admin role cannot be assigned' },
           { status: 400 }
         );
       }
@@ -210,7 +201,7 @@ export async function POST(
             break;
 
           case 'teacher':
-          case 'department_admin':
+          case 'admin':
             if (facultyDetails) {
               const faculty = await tx.faculties.create({
                 data: {
@@ -222,8 +213,8 @@ export async function POST(
                 },
               });
 
-              // If it's a department admin, update the department's adminId
-              if (role === 'department_admin') {
+              // If it's an admin, update the department's adminId
+              if (role === 'admin') {
                 await tx.departments.update({
                   where: { id: parseInt(facultyDetails.departmentId) },
                   data: {
@@ -233,10 +224,6 @@ export async function POST(
                 });
               }
             }
-            break;
-
-          case 'sub_admin':
-            // No additional details needed for sub_admin
             break;
         }
 

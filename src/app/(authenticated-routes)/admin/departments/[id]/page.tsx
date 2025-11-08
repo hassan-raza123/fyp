@@ -155,7 +155,7 @@ export default function DepartmentDetailsPage({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          roles: ['department_admin'],
+          roles: ['admin'],
           facultyDetails: {
             departmentId: parseInt(id),
             designation: 'Department Admin',

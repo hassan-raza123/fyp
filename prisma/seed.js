@@ -130,39 +130,21 @@ async function main() {
 
     console.log('🔐 Creating roles...');
 
-    // Create roles with permissions
-    const superAdminRole = await prisma.roles.create({
-      data: {
-        name: 'super_admin',
-        description: 'Super Administrator with full access',
-        permissions: { connect: permissions.map((p) => ({ id: p.id })) },
-      },
-    });
-
+    // Create roles with permissions (only 3 roles now)
     const adminRole = await prisma.roles.create({
       data: {
         name: 'admin',
-        description: 'System Administrator',
+        description: 'Admin',
         permissions: {
-          connect: permissions.slice(1).map((p) => ({ id: p.id })),
-        },
-      },
-    });
-
-    const deptAdminRole = await prisma.roles.create({
-      data: {
-        name: 'department_admin',
-        description: 'Department Administrator',
-        permissions: {
-          connect: permissions.slice(2, 12).map((p) => ({ id: p.id })),
+          connect: permissions.map((p) => ({ id: p.id })),
         },
       },
     });
 
     const facultyRole = await prisma.roles.create({
       data: {
-        name: 'faculty',
-        description: 'Faculty Member',
+        name: 'teacher',
+        description: 'Teacher',
         permissions: {
           connect: permissions.slice(8, 14).map((p) => ({ id: p.id })),
         },
@@ -175,37 +157,22 @@ async function main() {
 
     console.log('👤 Creating users...');
 
-    // Create Super Admin
-    const superAdmin = await prisma.users.create({
+    // Create Admin (main admin user)
+    const admin = await prisma.users.create({
       data: {
         email: 'itzhassanraza276@gmail.com',
-        username: 'superadmin',
+        username: 'admin',
         password_hash: defaultPassword,
         first_name: 'Hassan',
         last_name: 'Raza',
         phone_number: '+92-300-1234567',
         status: 'active',
         email_verified: true,
-        userrole: { create: { roleId: superAdminRole.id } },
-      },
-    });
-
-    // Create Admin
-    const admin = await prisma.users.create({
-      data: {
-        email: 'admin@university.edu',
-        username: 'admin',
-        password_hash: defaultPassword,
-        first_name: 'System',
-        last_name: 'Administrator',
-        phone_number: '+92-300-2234567',
-        status: 'active',
-        email_verified: true,
         userrole: { create: { roleId: adminRole.id } },
       },
     });
 
-    // Create Department Admin
+    // Create Admin (additional admin)
     const deptAdmin = await prisma.users.create({
       data: {
         email: 'dept.admin@university.edu',
@@ -216,7 +183,7 @@ async function main() {
         phone_number: '+92-300-3234567',
         status: 'active',
         email_verified: true,
-        userrole: { create: { roleId: deptAdminRole.id } },
+        userrole: { create: { roleId: adminRole.id } },
       },
     });
 
@@ -339,7 +306,7 @@ async function main() {
           code: 'CS',
           description: 'Department of Computer Science & Software Engineering',
           status: 'active',
-          adminId: deptAdmin.id,
+          adminId: admin.id,
         },
       }),
       prisma.departments.create({
@@ -1293,7 +1260,7 @@ async function main() {
           studentsAchieved: studentsAchieved,
           threshold: 60.0,
           attainmentPercent: (studentsAchieved / totalStudents) * 100,
-          calculatedBy: superAdmin.id,
+          calculatedBy: admin.id,
           status: 'active',
         },
       });
@@ -1449,7 +1416,7 @@ async function main() {
             isPublished: true,
             isFinalized: index === 0, // Only finalize first one
             createdBy: admin.id,
-            approvedBy: superAdmin.id,
+            approvedBy: admin.id,
             approvedAt: new Date(),
             status: 'published',
           },
@@ -1673,7 +1640,7 @@ async function main() {
           title: 'BSCS Program Assessment Report 2024',
           description:
             'Comprehensive program assessment report for BSCS program',
-          generatedBy: superAdmin.id,
+          generatedBy: admin.id,
           filePath: '/reports/program_assessment_bscs_2024.pdf',
           status: 'published',
         },
@@ -1708,7 +1675,6 @@ async function main() {
 
     // Create Notifications
     const notificationUsers = [
-      superAdmin,
       admin,
       deptAdmin,
       ...facultyUsers.slice(0, 2),
@@ -1760,9 +1726,7 @@ async function main() {
     ];
 
     for (let i = 0; i < 20; i++) {
-      const user = [superAdmin, admin, deptAdmin, ...facultyUsers.slice(0, 2)][
-        i % 5
-      ];
+      const user = [admin, deptAdmin, ...facultyUsers.slice(0, 2)][i % 4];
       await prisma.auditlogs.create({
         data: {
           userId: user.id,
@@ -1802,13 +1766,8 @@ async function main() {
 
     // Print final summary and login credentials
     console.log('\n🔑 =============== LOGIN CREDENTIALS ===============');
-    console.log('Super Admin:');
+    console.log('Admin:');
     console.log('  Email: itzhassanraza276@gmail.com');
-    console.log('  Username: superadmin');
-    console.log('  Password: 11223344');
-    console.log('');
-    console.log('System Admin:');
-    console.log('  Email: admin@university.edu');
     console.log('  Username: admin');
     console.log('  Password: 11223344');
     console.log('');

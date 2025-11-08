@@ -47,7 +47,7 @@ function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
     case 'teacher':
       return 'teacher';
     case 'admin':
-      return 'department_admin'; // Database still uses department_admin
+      return 'admin';
     default:
       throw new Error('Invalid user type');
   }
@@ -55,7 +55,7 @@ function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
 
 // Check if a role is an admin role
 function isAdminRole(role: string): boolean {
-  return role === 'department_admin';
+  return role === 'admin';
 }
 
 function createUserData(user: any, userType: AllRoles): UserData {
@@ -238,8 +238,8 @@ export async function POST(request: NextRequest) {
 
     // Handle admin users
     if (userType === 'admin') {
-      // Check if user has department admin role (database role name)
-      if (!userRoles.includes('department_admin')) {
+      // Check if user has admin role
+      if (!userRoles.includes('admin')) {
         return NextResponse.json(
           {
             success: false,

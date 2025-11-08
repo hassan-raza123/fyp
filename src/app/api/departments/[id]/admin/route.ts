@@ -72,9 +72,9 @@ export async function PUT(
         );
       }
 
-      // Check if user has department_admin role
+      // Check if user has admin role
       const isDepartmentAdmin =
-        admin.userrole?.role.name === 'department_admin';
+        admin.userrole?.role.name === 'admin';
 
       if (!isDepartmentAdmin) {
         return NextResponse.json(

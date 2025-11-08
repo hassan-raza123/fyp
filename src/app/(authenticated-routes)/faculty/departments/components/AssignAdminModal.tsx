@@ -149,7 +149,7 @@ export function AssignAdminModal({
         },
         credentials: 'include',
         body: JSON.stringify({
-          roles: ['department_admin'],
+          roles: ['admin'],
           facultyDetails: {
             departmentId: department.id,
             designation: 'Department Admin',

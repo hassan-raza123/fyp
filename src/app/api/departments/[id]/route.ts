@@ -92,7 +92,7 @@ export async function GET(
           {
             userrole: {
               role: {
-                name: 'department_admin',
+                name: 'admin',
               },
             },
           },
@@ -367,7 +367,7 @@ export async function DELETE(
             },
           },
           role: {
-            name: 'department_admin',
+            name: 'admin',
           },
         },
       });

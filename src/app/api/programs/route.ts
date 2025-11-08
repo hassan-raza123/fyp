@@ -24,9 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
     const { success, user, error } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
+      'admin',
       'teacher',
       'student',
     ]);
@@ -127,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user has required role
     const userRoles = user?.role.split(',') || [];
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
+    const allowedRoles = ['admin'];
     const hasRequiredRole = userRoles.some((role: string) =>
       allowedRoles.includes(role)
     );

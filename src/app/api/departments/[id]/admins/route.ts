@@ -43,7 +43,7 @@ export async function GET(
         userrole: {
           some: {
             role: {
-              name: 'department_admin',
+              name: 'admin',
             },
           },
         },
@@ -154,7 +154,7 @@ export async function POST(
     }
 
     const isDepartmentAdmin = userToAssign.userrole.some(
-      (ur) => ur.role.name === 'department_admin'
+      (ur) => ur.role.name === 'admin'
     );
 
     if (!isDepartmentAdmin) {

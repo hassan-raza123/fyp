@@ -52,7 +52,7 @@ export default function CreateDepartmentPage() {
 
   const fetchDepartmentAdmins = async () => {
     try {
-      const response = await fetch('/api/users?role=department_admin');
+      const response = await fetch('/api/users?role=admin');
       const data = await response.json();
 
       if (!response.ok) {
@@ -91,19 +91,19 @@ export default function CreateDepartmentPage() {
   };
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold'>Create New Department</h1>
-        <Button variant='outline' onClick={() => router.back()}>
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Create New Department</h1>
+        <Button variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name='name'
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Department Name</FormLabel>
@@ -117,7 +117,7 @@ export default function CreateDepartmentPage() {
 
           <FormField
             control={form.control}
-            name='code'
+            name="code"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Department Code</FormLabel>
@@ -131,7 +131,7 @@ export default function CreateDepartmentPage() {
 
           <FormField
             control={form.control}
-            name='description'
+            name="description"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
@@ -145,7 +145,7 @@ export default function CreateDepartmentPage() {
 
           <FormField
             control={form.control}
-            name='status'
+            name="status"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
@@ -155,12 +155,12 @@ export default function CreateDepartmentPage() {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select status' />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value='active'>Active</SelectItem>
-                    <SelectItem value='inactive'>Inactive</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -170,7 +170,7 @@ export default function CreateDepartmentPage() {
 
           <FormField
             control={form.control}
-            name='adminId'
+            name="adminId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Head of Department</FormLabel>
@@ -182,11 +182,11 @@ export default function CreateDepartmentPage() {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select HOD' />
+                      <SelectValue placeholder="Select HOD" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value='none'>None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {departmentAdmins.map((admin) => (
                       <SelectItem key={admin.id} value={admin.id.toString()}>
                         {admin.name} ({admin.email})
@@ -199,15 +199,15 @@ export default function CreateDepartmentPage() {
             )}
           />
 
-          <div className='flex justify-end space-x-4'>
+          <div className="flex justify-end space-x-4">
             <Button
-              type='button'
-              variant='outline'
+              type="button"
+              variant="outline"
               onClick={() => router.back()}
             >
               Cancel
             </Button>
-            <Button type='submit'>Create Department</Button>
+            <Button type="submit">Create Department</Button>
           </div>
         </form>
       </Form>

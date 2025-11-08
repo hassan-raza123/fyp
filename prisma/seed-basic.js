@@ -4,12 +4,9 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. Insert all roles
+  // 1. Insert all roles (only 3 roles now)
   const roles = [
-    { name: 'super_admin', description: 'Super Admin' },
-    { name: 'sub_admin', description: 'Sub Admin' },
-    { name: 'department_admin', description: 'Department Admin' },
-    { name: 'child_admin', description: 'Child Admin' },
+    { name: 'admin', description: 'Admin' },
     { name: 'teacher', description: 'Teacher' },
     { name: 'student', description: 'Student' },
   ];
@@ -44,19 +41,19 @@ async function main() {
     });
   }
 
-  // 3. Assign super_admin role to user (if not already assigned)
-  const superAdminRole = await prisma.roles.findUnique({
-    where: { name: 'super_admin' },
+  // 3. Assign admin role to user (if not already assigned)
+  const adminRole = await prisma.roles.findUnique({
+    where: { name: 'admin' },
   });
-  if (user && superAdminRole) {
+  if (user && adminRole) {
     const existingUserRole = await prisma.userroles.findFirst({
-      where: { userId: user.id, roleId: superAdminRole.id },
+      where: { userId: user.id, roleId: adminRole.id },
     });
     if (!existingUserRole) {
       await prisma.userroles.create({
         data: {
           userId: user.id,
-          roleId: superAdminRole.id,
+          roleId: adminRole.id,
         },
       });
     }

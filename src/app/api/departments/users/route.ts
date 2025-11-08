@@ -11,12 +11,7 @@ import { student, faculty } from '@prisma/client';
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
-    const { success, user, error } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
-      'teacher',
-    ]);
+    const { success, user, error } = requireRole(request, ['admin', 'teacher']);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -30,7 +25,7 @@ export async function GET(request: NextRequest) {
         userrole: {
           role: {
             name: {
-              in: ['super_admin', 'sub_admin', 'department_admin', 'teacher'],
+              in: ['admin', 'teacher'],
             },
           },
         },
@@ -123,7 +118,7 @@ export async function POST(request: Request) {
     }
 
     // Validate role
-    const validRoles = ['sub_admin', 'department_admin', 'teacher', 'student'];
+    const validRoles = ['admin', 'teacher', 'student'];
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         {

@@ -41,7 +41,7 @@ function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
     case 'teacher':
       return 'teacher';
     case 'admin':
-      return 'department_admin'; // Database still uses department_admin
+      return 'admin';
     default:
       throw new Error('Invalid user type');
   }
@@ -49,7 +49,7 @@ function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
 
 // Check if a role is an admin role
 function isAdminRole(role: string): boolean {
-  return role === 'department_admin';
+  return role === 'admin';
 }
 
 function getDashboardPath(role: AllRoles): string {
@@ -176,7 +176,7 @@ export async function POST(
       );
     }
 
-    // Use frontend role name (admin instead of department_admin)
+    // Use admin role name
     const actualRole = userType as AllRoles;
 
     // Verify OTP

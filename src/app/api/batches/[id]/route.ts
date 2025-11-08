@@ -111,9 +111,7 @@ export async function PUT(
 
     // Check role
     const { success: roleSuccess, error: roleError } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
+      'admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(

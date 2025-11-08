@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
         -- Users with no roles
         ur.id IS NULL
         OR 
-        -- Users with department_admin role
-        ur.roleId IN (SELECT id FROM roles WHERE name = 'department_admin')
+        -- Users with admin role
+        ur.roleId IN (SELECT id FROM roles WHERE name = 'admin')
         OR
         -- Users who are faculty but not active in any department
         (f.id IS NOT NULL AND f.status = 'inactive')
