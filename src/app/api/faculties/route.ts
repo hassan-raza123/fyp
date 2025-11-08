@@ -13,10 +13,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Filter by department if admin
+    const whereClause: any = {
+      status: 'active',
+    };
+    if (user?.role === 'admin' && user?.departmentId) {
+      whereClause.departmentId = user.departmentId;
+    }
+
     const faculties = await prisma.faculties.findMany({
-      where: {
-        status: 'active',
-      },
+      where: whereClause,
       include: {
         user: {
           select: {
@@ -24,6 +30,7 @@ export async function GET(request: NextRequest) {
             first_name: true,
             last_name: true,
             email: true,
+            status: true,
           },
         },
         department: {
