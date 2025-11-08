@@ -153,10 +153,6 @@ export default function RoleManagementForm({
           }
           requestBody.facultyDetails = values.facultyDetails;
           break;
-
-        case 'sub_admin':
-          // No additional details needed for sub_admin
-          break;
       }
 
       console.log('Submitting form with data:', requestBody);

@@ -125,6 +125,7 @@ model courses {
   updatedAt       DateTime          @updatedAt
   departmentId    Int
   clos            clos[]
+  llos            llos[]
   courseOfferings courseofferings[]
   department      departments       @relation(fields: [departmentId], references: [id])
   courses_A       courses[]         @relation("courseprerequisites")
@@ -180,6 +181,7 @@ model courseofferings {
   updatedAt        DateTime               @updatedAt
   assessments      assessments[]
   closAttainments  closattainments[]
+  llosAttainments  llosattainments[]
   courseFeedbacks  coursefeedbacks[]
   course           courses                @relation(fields: [courseId], references: [id])
   semester         semesters              @relation(fields: [semesterId], references: [id])
@@ -196,18 +198,19 @@ model courseofferings {
 }
 
 model sections {
-  id               Int               @id @default(autoincrement())
+  id               Int                  @id @default(autoincrement())
   name             String
   courseOfferingId Int
   facultyId        Int?
   batchId          String
   maxStudents      Int
-  status           section_status    @default(active)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  batch            batches           @relation(fields: [batchId], references: [id])
-  courseOffering   courseofferings   @relation(fields: [courseOfferingId], references: [id])
-  faculty          faculties?        @relation(fields: [facultyId], references: [id])
+  sessionType      section_session_type @default(morning)
+  status           section_status       @default(active)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  batch            batches              @relation(fields: [batchId], references: [id])
+  courseOffering   courseofferings      @relation(fields: [courseOfferingId], references: [id])
+  faculty          faculties?           @relation(fields: [facultyId], references: [id])
   sessions         sessions[]
   studentsections  studentsections[]
   timetableslots   timetableslots[]
@@ -227,6 +230,7 @@ model faculties {
   updatedAt        DateTime                   @updatedAt
   assessments      assessments[]
   closCalculated   closattainments[]          @relation("CLOAttainmentCalculator")
+  llosCalculated   llosattainments[]          @relation("LLOAttainmentCalculator")
   department       departments                @relation(fields: [departmentId], references: [id])
   user             users                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   facultyFeedbacks facultyfeedbacks[]
@@ -295,6 +299,7 @@ model plos {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   cloMappings    cloplomappings[]
+  lloMappings    lloplomappings[]
   ploAttainments ploattainments[]
   program        programs         @relation(fields: [programId], references: [id])
   ploScores      ploscores[]
@@ -316,6 +321,23 @@ model clos {
   ploMappings     cloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   closAttainments closattainments[]
+
+  @@unique([code, courseId])
+  @@index([courseId])
+}
+
+model llos {
+  id              Int               @id @default(autoincrement())
+  code            String
+  description     String            @db.Text
+  courseId        Int
+  bloomLevel      String?
+  status          llo_status        @default(active)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ploMappings     lloplomappings[]
+  course          courses           @relation(fields: [courseId], references: [id])
+  llosAttainments llosattainments[]
 
   @@unique([code, courseId])
   @@index([courseId])
@@ -353,6 +375,42 @@ model closattainments {
 
   @@unique([cloId, courseOfferingId])
   @@index([cloId])
+  @@index([courseOfferingId])
+  @@index([calculatedBy])
+}
+
+model lloplomappings {
+  id        Int      @id @default(autoincrement())
+  lloId     Int
+  ploId     Int
+  weight    Float    @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  llo       llos     @relation(fields: [lloId], references: [id])
+  plo       plos     @relation(fields: [ploId], references: [id])
+
+  @@unique([lloId, ploId])
+  @@index([lloId])
+  @@index([ploId])
+}
+
+model llosattainments {
+  id                Int               @id @default(autoincrement())
+  lloId             Int
+  courseOfferingId  Int
+  totalStudents     Int
+  studentsAchieved  Int
+  threshold         Float             @default(60)
+  attainmentPercent Float
+  calculatedAt      DateTime          @default(now())
+  calculatedBy      Int
+  status            attainment_status @default(active)
+  calculator        faculties         @relation("LLOAttainmentCalculator", fields: [calculatedBy], references: [id])
+  llo               llos              @relation(fields: [lloId], references: [id])
+  courseOffering    courseofferings   @relation(fields: [courseOfferingId], references: [id])
+
+  @@unique([lloId, courseOfferingId])
+  @@index([lloId])
   @@index([courseOfferingId])
   @@index([calculatedBy])
 }
@@ -944,6 +1002,11 @@ enum section_status {
   completed
 }
 
+enum section_session_type {
+  morning
+  evening
+}
+
 enum session_status {
   scheduled
   in_progress
@@ -1023,6 +1086,12 @@ enum plo_status {
 }
 
 enum clo_status {
+  active
+  inactive
+  archived
+}
+
+enum llo_status {
   active
   inactive
   archived
