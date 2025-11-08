@@ -25,9 +25,12 @@ model users {
   auditlogs           auditlogs[]
   departmentAdmin     departments?     @relation("DepartmentAdmin")
   faculty             faculties?
+  notifications       notifications[]
   passwordresets      passwordresets[]
   ploCalculated       ploattainments[] @relation("PLOAttainmentCalculator")
+  reportsGenerated    obereports[]     @relation("ReportGenerator")
   student             students?
+  transcriptGenerated transcripts[]    @relation("TranscriptGenerator")
   userrole            userroles?
 }
 
@@ -95,6 +98,7 @@ model programs {
   totalCreditHours Int              @default(0)
   batches          batches[]
   gradeScales      gradescales[]
+  obeReports       obereports[]
   ploAttainments   ploattainments[]
   plos             plos[]
   department       departments      @relation(fields: [departmentId], references: [id])
@@ -138,8 +142,10 @@ model semesters {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   courseOfferings courseofferings[]
+  obeReports      obereports[]
   ploAttainments  ploattainments[]
   semesterGPA     semestergpa[]
+  transcripts     transcripts[]
 }
 
 model batches {
@@ -197,6 +203,7 @@ model sections {
   batch            batches              @relation(fields: [batchId], references: [id])
   courseOffering   courseofferings      @relation(fields: [courseOfferingId], references: [id])
   faculty          faculties?           @relation(fields: [facultyId], references: [id])
+  sessions         sessions[]
   studentsections  studentsections[]
 
   @@index([courseOfferingId])
@@ -246,6 +253,7 @@ model students {
   program           programs                   @relation(fields: [programId], references: [id])
   user              users                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentsections   studentsections[]
+  transcripts       transcripts[]
 
   @@index([departmentId])
   @@index([programId])
@@ -626,6 +634,76 @@ model cumulativegpa {
   @@index([studentId])
 }
 
+model sessions {
+  id          Int            @id @default(autoincrement())
+  sectionId   Int
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  topic       String?
+  remarks     String?
+  status      session_status @default(scheduled)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  section     sections       @relation(fields: [sectionId], references: [id])
+
+  @@index([sectionId])
+}
+
+model notifications {
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  isRead    Boolean           @default(false)
+  type      notification_type
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      users             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model obereports {
+  id          Int             @id @default(autoincrement())
+  reportType  obe_report_type
+  programId   Int?
+  semesterId  Int?
+  title       String
+  description String?
+  generatedBy Int
+  generatedAt DateTime        @default(now())
+  filePath    String?
+  status      report_status   @default(generated)
+  generator   users           @relation("ReportGenerator", fields: [generatedBy], references: [id])
+  program     programs?       @relation(fields: [programId], references: [id])
+  semester    semesters?      @relation(fields: [semesterId], references: [id])
+
+  @@index([programId])
+  @@index([semesterId])
+  @@index([generatedBy])
+}
+
+model transcripts {
+  id               Int               @id @default(autoincrement())
+  studentId        Int
+  semesterId       Int?
+  transcriptType   transcript_type
+  totalCGPA        Float?
+  totalCreditHours Int?
+  isOfficial       Boolean           @default(false)
+  generatedBy      Int
+  generatedAt      DateTime          @default(now())
+  filePath         String?
+  status           transcript_status @default(generated)
+  generator        users             @relation("TranscriptGenerator", fields: [generatedBy], references: [id])
+  semester         semesters?        @relation(fields: [semesterId], references: [id])
+  student          students          @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+  @@index([semesterId])
+  @@index([generatedBy])
+}
 
 model auditlogs {
   id        Int      @id @default(autoincrement())
@@ -837,4 +915,48 @@ enum gpa_status {
 enum passfailcriteria_status {
   active
   inactive
+}
+
+enum session_status {
+  scheduled
+  in_progress
+  completed
+  cancelled
+}
+
+enum notification_type {
+  system
+  course
+  announcement
+  alert
+  grade
+  result
+  assessment
+}
+
+enum obe_report_type {
+  clo_attainment
+  plo_attainment
+  program_assessment
+  semester_summary
+  course_wise
+}
+
+enum report_status {
+  generated
+  published
+  archived
+}
+
+enum transcript_type {
+  official
+  unofficial
+  semester
+  complete
+}
+
+enum transcript_status {
+  generated
+  issued
+  cancelled
 }
