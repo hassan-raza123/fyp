@@ -127,7 +127,7 @@ export default function StudentsPage() {
   };
 
   const handleEdit = (student: Student) => {
-    router.push(`/admin/students/${student.id}`);
+    router.push(`/faculty/students/${student.id}`);
   };
 
   const handleDelete = async () => {
@@ -178,10 +178,6 @@ export default function StudentsPage() {
             Manage student accounts and information
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/students/create')}>
-          <Plus className='h-4 w-4 mr-2' />
-          Add Student
-        </Button>
       </div>
 
       <div className='flex items-center gap-4 mb-6'>

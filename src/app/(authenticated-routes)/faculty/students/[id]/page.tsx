@@ -310,7 +310,7 @@ export default function StudentDetailsPage() {
       }
 
       toast.success('Student deleted successfully');
-      router.push('/admin/students');
+      router.push('/faculty/students');
     } catch (error) {
       console.error('Error deleting student:', error);
       toast.error(
@@ -411,7 +411,7 @@ export default function StudentDetailsPage() {
         <Button
           variant='ghost'
           size='icon'
-          onClick={() => router.push('/admin/students')}
+          onClick={() => router.push('/faculty/students')}
         >
           <ArrowLeft className='h-4 w-4' />
         </Button>

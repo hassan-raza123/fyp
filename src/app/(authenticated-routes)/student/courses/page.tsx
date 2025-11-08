@@ -20,16 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 
 interface Course {
   id: number;
@@ -76,9 +68,6 @@ export default function CoursesPage() {
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     fetchDepartments();
@@ -134,43 +123,16 @@ export default function CoursesPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedCourse) return;
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/courses/${selectedCourse.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete course');
-      }
-
-      toast.success('Course deleted successfully');
-      fetchCourses();
-    } catch (error) {
-      console.error('Error deleting course:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to delete course'
-      );
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-      setSelectedCourse(null);
-    }
-  };
-
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge variant='default'>Theory</Badge>;
+        return <Badge variant="default">Theory</Badge>;
       case 'LAB':
-        return <Badge variant='success'>Lab</Badge>;
+        return <Badge variant="success">Lab</Badge>;
       case 'PROJECT':
-        return <Badge variant='secondary'>Project</Badge>;
+        return <Badge variant="secondary">Project</Badge>;
       case 'THESIS':
-        return <Badge variant='destructive'>Thesis</Badge>;
+        return <Badge variant="destructive">Thesis</Badge>;
       default:
         return <Badge>{type}</Badge>;
     }
@@ -179,11 +141,11 @@ export default function CoursesPage() {
   const getStatusBadge = (status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED') => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge variant='success'>Active</Badge>;
+        return <Badge variant="success">Active</Badge>;
       case 'INACTIVE':
-        return <Badge variant='secondary'>Inactive</Badge>;
+        return <Badge variant="secondary">Inactive</Badge>;
       case 'ARCHIVED':
-        return <Badge variant='destructive'>Archived</Badge>;
+        return <Badge variant="destructive">Archived</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -191,40 +153,36 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>Loading...</div>
+      <div className="container mx-auto py-10">
+        <div className="text-center">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-bold'>Courses</h1>
-        <Button onClick={() => router.push('/admin/courses/create')}>
-          <Plus className='mr-2 h-4 w-4' />
-          Create Course
-        </Button>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">My Courses</h1>
       </div>
 
-      <div className='flex gap-4 mb-6'>
-        <div className='flex-1'>
-          <div className='relative'>
-            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder='Search courses...'
+              placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className='pl-8'
+              className="pl-8"
             />
           </div>
         </div>
         <Select value={departmentId} onValueChange={setDepartmentId}>
-          <SelectTrigger className='w-[180px]'>
-            <SelectValue placeholder='Department' />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Department" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>All Departments</SelectItem>
+            <SelectItem value="all">All Departments</SelectItem>
             {departments.map((dept) => (
               <SelectItem key={dept.id} value={dept.id.toString()}>
                 {dept.name}
@@ -233,31 +191,31 @@ export default function CoursesPage() {
           </SelectContent>
         </Select>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className='w-[180px]'>
-            <SelectValue placeholder='Course Type' />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Course Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>All Types</SelectItem>
-            <SelectItem value='THEORY'>Theory</SelectItem>
-            <SelectItem value='LAB'>Lab</SelectItem>
-            <SelectItem value='PROJECT'>Project</SelectItem>
-            <SelectItem value='THESIS'>Thesis</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="THEORY">Theory</SelectItem>
+            <SelectItem value="LAB">Lab</SelectItem>
+            <SelectItem value="PROJECT">Project</SelectItem>
+            <SelectItem value="THESIS">Thesis</SelectItem>
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className='w-[180px]'>
-            <SelectValue placeholder='Status' />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>All Status</SelectItem>
-            <SelectItem value='ACTIVE'>Active</SelectItem>
-            <SelectItem value='INACTIVE'>Inactive</SelectItem>
-            <SelectItem value='ARCHIVED'>Archived</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="ACTIVE">Active</SelectItem>
+            <SelectItem value="INACTIVE">Inactive</SelectItem>
+            <SelectItem value="ARCHIVED">Archived</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className='rounded-md border'>
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -282,32 +240,15 @@ export default function CoursesPage() {
                 <TableCell>{getTypeBadge(course.type)}</TableCell>
                 <TableCell>{getStatusBadge(course.status)}</TableCell>
                 <TableCell>
-                  <div className='flex gap-2'>
+                  <div className="flex gap-2">
                     <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() => router.push(`/admin/courses/${course.id}`)}
-                    >
-                      <Eye className='h-4 w-4' />
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      size='icon'
+                      variant="ghost"
+                      size="icon"
                       onClick={() =>
-                        router.push(`/admin/courses/${course.id}/edit`)
+                        router.push(`/student/courses/${course.id}`)
                       }
                     >
-                      <Edit className='h-4 w-4' />
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() => {
-                        setSelectedCourse(course);
-                        setShowDeleteDialog(true);
-                      }}
-                    >
-                      <Trash2 className='h-4 w-4' />
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -317,17 +258,17 @@ export default function CoursesPage() {
         </Table>
       </div>
 
-      <div className='flex justify-center mt-4'>
-        <div className='flex gap-2'>
+      <div className="flex justify-center mt-4">
+        <div className="flex gap-2">
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             Previous
           </Button>
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >
@@ -335,34 +276,6 @@ export default function CoursesPage() {
           </Button>
         </div>
       </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the
-              course "{selectedCourse?.name}" and all its associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Course'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
