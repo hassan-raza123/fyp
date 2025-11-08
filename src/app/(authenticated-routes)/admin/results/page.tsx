@@ -34,7 +34,7 @@ export default function ResultsPage() {
           </Card>
         </Link>
 
-        <Link href='/admin/results/evaluation'>
+        <Link href='/admin/results/result-evaluation'>
           <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -98,21 +98,6 @@ export default function ResultsPage() {
           </Card>
         </Link>
 
-        <Link href='/admin/results/reports'>
-          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <LineChart className='h-5 w-5' />
-                Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-gray-500'>
-                Generate and view detailed result reports
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
       </div>
 
       <div className='mt-8'>
@@ -125,7 +110,7 @@ export default function ResultsPage() {
             Enter New Marks
           </Link>
           <Link
-            href='/admin/results/evaluation'
+            href='/admin/results/result-evaluation'
             className='text-blue-600 hover:underline'
           >
             Evaluate Results

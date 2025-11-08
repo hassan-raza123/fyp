@@ -424,12 +424,6 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Users,
           href: '/faculty/students',
         },
-        {
-          id: 'attendance',
-          label: 'Attendance',
-          icon: UserCheck,
-          href: '/faculty/attendance',
-        },
       ],
     },
     {
@@ -490,12 +484,6 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'My Courses',
           icon: BookOpen,
           href: '/student/courses',
-        },
-        {
-          id: 'attendance',
-          label: 'My Attendance',
-          icon: UserCheck,
-          href: '/student/attendance',
         },
         {
           id: 'results',
