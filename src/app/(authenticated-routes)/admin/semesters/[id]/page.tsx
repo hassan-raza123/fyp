@@ -1,198 +1,221 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { ArrowLeft, Edit, Calendar, BookOpen } from 'lucide-react';
+import { format } from 'date-fns';
 import { semester_status } from '@prisma/client';
-import { use } from 'react';
 
-interface FormData {
+interface Semester {
+  id: number;
   name: string;
   startDate: string;
   endDate: string;
   status: semester_status;
+  description?: string;
+  _count: {
+    courseOfferings: number;
+  };
 }
 
-export default function EditSemesterPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function SemesterViewPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    startDate: '',
-    endDate: '',
-    status: semester_status.active,
-  });
+  const params = useParams();
+  const [semester, setSemester] = useState<Semester | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSemester();
-  }, [resolvedParams.id]);
+    if (params.id) {
+      fetchSemester();
+    }
+  }, [params.id]);
 
   const fetchSemester = async () => {
     try {
-      const response = await fetch(`/api/semesters?id=${resolvedParams.id}`);
+      setLoading(true);
+      const response = await fetch(`/api/semesters?id=${params.id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch semester');
       }
       const data = await response.json();
       if (data.success && data.data) {
-        const semester = data.data;
-        setFormData({
-          name: semester.name,
-          startDate: new Date(semester.startDate).toISOString().split('T')[0],
-          endDate: new Date(semester.endDate).toISOString().split('T')[0],
-          status: semester.status,
-        });
+        setSemester(data.data);
+      } else {
+        throw new Error(data.error || 'Failed to fetch semester');
       }
     } catch (error) {
       console.error('Error fetching semester:', error);
-      toast.error('Failed to fetch semester');
+      toast.error('Failed to fetch semester details');
       router.push('/admin/semesters');
-    } finally {
-      setInitialLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/semesters?id=${resolvedParams.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update semester');
-      }
-
-      toast.success('Semester updated successfully');
-      router.push('/admin/semesters');
-    } catch (error) {
-      console.error('Error updating semester:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to update semester'
-      );
     } finally {
       setLoading(false);
     }
   };
 
-  if (initialLoading) {
+  if (loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>Loading...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
+  if (!semester) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="text-center">
+          <p className="text-muted-foreground">Semester not found</p>
+          <Button
+            onClick={() => router.push('/admin/semesters')}
+            className="mt-4"
+          >
+            Back to Semesters
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const getStatusBadge = (status: semester_status) => {
+    switch (status) {
+      case semester_status.active:
+        return <Badge variant="default">Active</Badge>;
+      case semester_status.inactive:
+        return <Badge variant="secondary">Inactive</Badge>;
+      case semester_status.completed:
+        return <Badge variant="destructive">Completed</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
   return (
-    <div className='container mx-auto py-10'>
-      <div className='mb-6'>
-        <h1 className='text-3xl font-bold'>Edit Semester</h1>
-        <p className='text-muted-foreground'>Update semester information</p>
+    <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/admin/semesters')}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Semesters
+        </Button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold">{semester.name}</h1>
+              <p className="text-muted-foreground">Semester Details</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => router.push(`/admin/semesters/${semester.id}/edit`)}
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Semester
+          </Button>
+        </div>
       </div>
 
-      <Card className='p-6'>
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='name'>Semester Name</Label>
-              <Input
-                id='name'
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder='e.g., Fall 2024'
-              />
+      <div className="grid gap-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Semester Name
+              </label>
+              <p className="text-lg">{semester.name}</p>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Start Date
+                </label>
+                <p className="text-lg">
+                  {format(new Date(semester.startDate), 'MMMM d, yyyy')}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">
+                  End Date
+                </label>
+                <p className="text-lg">
+                  {format(new Date(semester.endDate), 'MMMM d, yyyy')}
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Status
+              </label>
+              <div className="mt-1">{getStatusBadge(semester.status)}</div>
+            </div>
+            {semester.description && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Description
+                </label>
+                <p className="text-lg">{semester.description}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-            <div className='space-y-2'>
-              <Label htmlFor='status'>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: semester_status) =>
-                  setFormData({ ...formData, status: value })
+        {/* Statistics */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Course Offerings
+            </CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {semester._count.courseOfferings}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total course offerings in this semester
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  router.push(
+                    `/admin/course-offerings?semesterId=${semester.id}`
+                  )
                 }
               >
-                <SelectTrigger id='status'>
-                  <SelectValue placeholder='Select status' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={semester_status.active}>Active</SelectItem>
-                  <SelectItem value={semester_status.inactive}>
-                    Inactive
-                  </SelectItem>
-                  <SelectItem value={semester_status.completed}>
-                    Completed
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='startDate'>Start Date</Label>
-              <Input
-                id='startDate'
-                type='date'
-                required
-                value={formData.startDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, startDate: e.target.value })
+                View Course Offerings
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  router.push(`/admin/sections?semesterId=${semester.id}`)
                 }
-              />
+              >
+                View Sections
+              </Button>
             </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='endDate'>End Date</Label>
-              <Input
-                id='endDate'
-                type='date'
-                required
-                value={formData.endDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, endDate: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          <div className='flex justify-end space-x-4'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => router.push('/admin/semesters')}
-            >
-              Cancel
-            </Button>
-            <Button type='submit' disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </form>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
