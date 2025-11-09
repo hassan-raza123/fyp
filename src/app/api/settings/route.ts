@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { system, email, notifications } = data;
+    const { system, email, notifications, obe } = data;
 
     // Update or create settings
     const settings = await prisma.settings.upsert({
@@ -78,12 +78,14 @@ export async function PUT(request: NextRequest) {
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
       create: {
         id: 1,
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
     });
 
