@@ -33,6 +33,7 @@ import {
   Filter,
   Download,
   Upload,
+  Bell,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -246,6 +247,29 @@ const adminNavigation = [
         label: 'Results',
         icon: BarChart2,
         href: '/admin/results',
+      },
+    ],
+  },
+  {
+    title: 'REPORTING & DOCUMENTATION',
+    items: [
+      {
+        id: 'reports',
+        label: 'OBE Reports',
+        icon: FileText,
+        href: '/admin/reports',
+      },
+      {
+        id: 'transcripts',
+        label: 'Transcripts',
+        icon: FileSpreadsheet,
+        href: '/admin/transcripts',
+      },
+      {
+        id: 'notifications',
+        label: 'Notifications',
+        icon: Bell,
+        href: '/admin/notifications',
       },
     ],
   },

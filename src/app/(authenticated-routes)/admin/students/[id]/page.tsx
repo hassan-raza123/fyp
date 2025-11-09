@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Loader2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Table,
@@ -407,22 +407,31 @@ export default function StudentDetailsPage() {
 
   return (
     <div className='container mx-auto py-10'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => router.push('/admin/students')}
-        >
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
-        <div>
-          <h1 className='text-3xl font-bold'>
-            {student.user.firstName} {student.user.lastName}
-          </h1>
-          <p className='text-muted-foreground'>
-            Roll Number: {student.rollNumber}
-          </p>
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-4'>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={() => router.push('/admin/students')}
+          >
+            <ArrowLeft className='h-4 w-4' />
+          </Button>
+          <div>
+            <h1 className='text-3xl font-bold'>
+              {student.user.firstName} {student.user.lastName}
+            </h1>
+            <p className='text-muted-foreground'>
+              Roll Number: {student.rollNumber}
+            </p>
+          </div>
         </div>
+        <Button
+          variant='outline'
+          onClick={() => router.push(`/admin/transcripts?studentId=${student.id}`)}
+        >
+          <FileText className='mr-2 h-4 w-4' />
+          Generate Transcript
+        </Button>
       </div>
 
       <div className='grid gap-6'>
