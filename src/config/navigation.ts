@@ -130,7 +130,6 @@ export interface RoleBasedNavigation {
   [key: string]: NavigationSection[];
 }
 
-// Shared navigation objects to avoid duplication
 const adminNavigation = [
   {
     title: 'DASHBOARD',
@@ -189,12 +188,6 @@ const adminNavigation = [
         href: '/admin/course-offerings',
       },
       {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
-      },
-      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
@@ -217,8 +210,18 @@ const adminNavigation = [
   {
     title: 'LEARNING OUTCOMES',
     items: [
-      { id: 'plos', label: 'PLOs', icon: Target, href: '/admin/plos' },
-      { id: 'clos', label: 'CLOs', icon: FileText, href: '/admin/clos' },
+      {
+        id: 'plos',
+        label: 'PLOs',
+        icon: Target,
+        href: '/admin/plos',
+      },
+      {
+        id: 'clos',
+        label: 'CLOs',
+        icon: FileText,
+        href: '/admin/clos',
+      },
       {
         id: 'clo-plo-mappings',
         label: 'CLO-PLO Mappings',
@@ -251,170 +254,11 @@ const adminNavigation = [
     ],
   },
   {
-    title: 'REPORTING & DOCUMENTATION',
-    items: [
-      {
-        id: 'reports',
-        label: 'OBE Reports',
-        icon: FileText,
-        href: '/admin/reports',
-      },
-      {
-        id: 'transcripts',
-        label: 'Transcripts',
-        icon: FileSpreadsheet,
-        href: '/admin/transcripts',
-      },
-      {
-        id: 'notifications',
-        label: 'Notifications',
-        icon: Bell,
-        href: '/admin/notifications',
-      },
-    ],
-  },
-  {
     title: 'SYSTEM',
     items: [
       {
         id: 'settings',
-        label: 'System Settings',
-        icon: Settings2,
-        href: '/admin/settings',
-      },
-    ],
-  },
-];
-
-const departmentNavigation = [
-  {
-    title: 'DASHBOARD',
-    items: [
-      { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
-      {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: BarChart2,
-        href: '/admin/analytics',
-      },
-    ],
-  },
-  {
-    title: 'USER MANAGEMENT',
-    items: [
-      {
-        id: 'faculty',
-        label: 'Department Faculty',
-        icon: FacultyIcon,
-        href: '/admin/faculty',
-      },
-      {
-        id: 'students',
-        label: 'Department Students',
-        icon: GraduationCap,
-        href: '/admin/students',
-      },
-    ],
-  },
-  {
-    title: 'ACADEMIC STRUCTURE',
-    items: [
-      {
-        id: 'departments',
-        label: 'Departments',
-        icon: Building2,
-        href: '/admin/departments',
-      },
-      {
-        id: 'programs',
-        label: 'Department Programs',
-        icon: School,
-        href: '/admin/programs',
-      },
-      {
-        id: 'courses',
-        label: 'Department Courses',
-        icon: BookOpen,
-        href: '/admin/courses',
-      },
-      {
-        id: 'course-offerings',
-        label: 'Course Offerings',
-        icon: BookCheck,
-        href: '/admin/course-offerings',
-      },
-      {
-        id: 'semesters',
-        label: 'Semesters',
-        icon: Calendar,
-        href: '/admin/semesters',
-      },
-      {
-        id: 'batches',
-        label: 'Department Batches',
-        icon: Layers,
-        href: '/admin/batches',
-      },
-      {
-        id: 'sections',
-        label: 'Department Sections',
-        icon: UserCheck,
-        href: '/admin/sections',
-      },
-    ],
-  },
-  {
-    title: 'LEARNING OUTCOMES',
-    items: [
-      {
-        id: 'plos',
-        label: 'Department PLOs',
-        icon: Target,
-        href: '/admin/plos',
-      },
-      {
-        id: 'clos',
-        label: 'Department CLOs',
-        icon: FileText,
-        href: '/admin/clos',
-      },
-      {
-        id: 'clo-plo-mappings',
-        label: 'CLO-PLO Mappings',
-        icon: Link,
-        href: '/admin/clo-plo-mappings',
-      },
-      {
-        id: 'plo-attainments',
-        label: 'PLO Attainments',
-        icon: TrendingUp,
-        href: '/admin/results/plo-attainments',
-      },
-    ],
-  },
-  {
-    title: 'ASSESSMENT & RESULTS',
-    items: [
-      {
-        id: 'assessments',
-        label: 'Department Assessments',
-        icon: ClipboardList,
-        href: '/admin/assessments',
-      },
-      {
-        id: 'results',
-        label: 'Department Results',
-        icon: BarChart2,
-        href: '/admin/results',
-      },
-    ],
-  },
-  {
-    title: 'SYSTEM',
-    items: [
-      {
-        id: 'settings',
-        label: 'Department Settings',
+        label: 'Settings',
         icon: Settings2,
         href: '/admin/settings',
       },
@@ -423,8 +267,8 @@ const departmentNavigation = [
 ];
 
 export const roleBasedNavigation: RoleBasedNavigation = {
-  // Admin navigation (Department Admin)
-  admin: departmentNavigation,
+  // Admin navigation
+  admin: adminNavigation,
 
   // Teacher has unique navigation
   teacher: [
