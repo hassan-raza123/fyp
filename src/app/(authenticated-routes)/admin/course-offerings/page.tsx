@@ -222,14 +222,26 @@ export default function CourseOfferingsPage() {
                     </TableCell>
                     <TableCell>{offering._count.sections}</TableCell>
                     <TableCell>
-                      <Button
-                        variant='ghost'
-                        onClick={() =>
-                          router.push(`/admin/course-offerings/${offering.id}`)
-                        }
-                      >
-                        View Details
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/admin/course-offerings/${offering.id}`)
+                          }
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/admin/course-offerings/${offering.id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

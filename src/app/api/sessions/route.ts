@@ -99,19 +99,36 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('sectionId');
 
-    if (!sectionId) {
-      return NextResponse.json(
-        { success: false, error: 'Section ID is required' },
-        { status: 400 }
-      );
+    const where: any = {};
+    if (sectionId) {
+      where.sectionId = Number(sectionId);
     }
 
     const sessions = await prisma.sessions.findMany({
-      where: {
-        sectionId: Number(sectionId),
+      where,
+      include: {
+        section: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+                semester: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        date: 'asc',
+        date: 'desc',
       },
     });
 
@@ -124,4 +141,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

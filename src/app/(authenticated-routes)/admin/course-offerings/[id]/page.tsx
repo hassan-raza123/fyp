@@ -319,6 +319,15 @@ export default function CourseOfferingDetailsPage({
         >
           View Semester Details
         </Button>
+        <Button
+          variant='outline'
+          onClick={() =>
+            router.push(`/admin/course-offerings/${courseOffering.id}/edit`)
+          }
+        >
+          <Edit className='mr-2 h-4 w-4' />
+          Edit Course Offering
+        </Button>
         <Button variant='destructive' onClick={() => setShowDeleteDialog(true)}>
           <Trash2 className='mr-2 h-4 w-4' />
           Delete Course Offering

@@ -188,6 +188,12 @@ const adminNavigation = [
         href: '/admin/course-offerings',
       },
       {
+        id: 'sessions',
+        label: 'Sessions',
+        icon: Clock,
+        href: '/admin/sessions',
+      },
+      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
