@@ -51,37 +51,15 @@ interface Department {
 export default function ProgramsPage() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [departmentId, setDepartmentId] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  useEffect(() => {
     fetchPrograms();
-  }, [search, departmentId, status, page]);
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
-    }
-  };
+  }, [search, status, page]);
 
   const fetchPrograms = async () => {
     try {
@@ -91,8 +69,7 @@ export default function ProgramsPage() {
         limit: '10',
       });
       if (search) params.append('search', search);
-      if (departmentId && departmentId !== 'all')
-        params.append('departmentId', departmentId);
+      // Department filter removed - API automatically uses current department
       if (status && status !== 'all') params.append('status', status);
 
       const response = await fetch(`/api/programs?${params.toString()}`);
@@ -177,19 +154,7 @@ export default function ProgramsPage() {
             </div>
           </div>
           <div className='flex gap-4'>
-            <Select value={departmentId} onValueChange={setDepartmentId}>
-              <SelectTrigger className='w-[180px]'>
-                <SelectValue placeholder='Department' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Departments</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id.toString()}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Department filter removed - automatically uses current department from Settings */}
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className='w-[180px]'>
                 <SelectValue placeholder='Status' />

@@ -40,12 +40,12 @@ export default function EditProgramPage() {
   const params = useParams();
   const programId = params.id as string;
   const [loading, setLoading] = useState(true);
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Program | null>(null);
 
   useEffect(() => {
     fetchProgram();
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, [programId]);
 
   const fetchProgram = async () => {
@@ -69,21 +69,41 @@ export default function EditProgramPage() {
     }
   };
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) throw new Error('Failed to fetch departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      } else {
-        throw new Error(data.error || 'Failed to fetch departments');
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
+      }
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id;
+      
+      setCurrentDepartmentId(deptId);
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to fetch departments'
-      );
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
@@ -94,12 +114,16 @@ export default function EditProgramPage() {
     setLoading(true);
 
     try {
+      // Always use current department from settings
       const response = await fetch(`/api/programs/${programId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          departmentId: currentDepartmentId || formData.departmentId, // Use current department
+        }),
       });
 
       if (!response.ok) {
@@ -191,26 +215,21 @@ export default function EditProgramPage() {
               />
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='departmentId'>Department</Label>
-              <Select
-                value={formData.departmentId?.toString() || ''}
-                onValueChange={(value) =>
-                  handleSelectChange('departmentId', value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select department' />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                      {dept.name} ({dept.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Department is automatically set from Settings */}
+            {currentDepartmentId && (
+              <div className='space-y-2'>
+                <Label htmlFor='departmentId'>Department</Label>
+                <Input
+                  id='departmentId'
+                  value='Current Department (from Settings)'
+                  disabled
+                  className='bg-gray-50'
+                />
+                <p className='text-xs text-gray-500'>
+                  Department is configured in System Settings
+                </p>
+              </div>
+            )}
 
             <div className='space-y-2'>
               <Label htmlFor='totalCreditHours'>Total Credit Hours</Label>

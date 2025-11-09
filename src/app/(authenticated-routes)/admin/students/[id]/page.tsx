@@ -140,7 +140,7 @@ export default function StudentDetailsPage() {
   const [saving, setSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [student, setStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -162,14 +162,15 @@ export default function StudentDetailsPage() {
   useEffect(() => {
     fetchStudent();
     fetchBatches();
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, [id]);
 
   useEffect(() => {
-    if (formData.departmentId) {
-      fetchPrograms(formData.departmentId);
+    if (currentDepartmentId) {
+      fetchPrograms(currentDepartmentId);
+      setFormData((prev) => ({ ...prev, departmentId: currentDepartmentId }));
     }
-  }, [formData.departmentId]);
+  }, [currentDepartmentId]);
 
   const fetchStudent = async () => {
     try {
@@ -221,28 +222,52 @@ export default function StudentDetailsPage() {
     }
   };
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch departments');
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
       }
-      setDepartments(data.data);
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to fetch departments'
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(
+        `/api/departments/by-code?code=${departmentCode}`
       );
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id.toString();
+
+      setCurrentDepartmentId(deptId);
+    } catch (error) {
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
   const fetchPrograms = async (departmentId: string) => {
     try {
-      const response = await fetch(`/api/departments/${departmentId}/programs`);
+      // Fetch programs for current department
+      const response = await fetch(
+        `/api/programs?departmentId=${departmentId}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch programs');
       }
@@ -250,7 +275,7 @@ export default function StudentDetailsPage() {
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch programs');
       }
-      setPrograms(data.data);
+      setPrograms(data.data || []);
     } catch (error) {
       console.error('Error fetching programs:', error);
       toast.error(
@@ -374,9 +399,9 @@ export default function StudentDetailsPage() {
 
   if (loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-[50vh]'>
-          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     );
@@ -384,9 +409,9 @@ export default function StudentDetailsPage() {
 
   if (!student) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-[50vh]'>
-          <p className='text-muted-foreground'>Student not found</p>
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center h-[50vh]">
+          <p className="text-muted-foreground">Student not found</p>
         </div>
       </div>
     );
@@ -406,67 +431,69 @@ export default function StudentDetailsPage() {
   };
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex items-center justify-between mb-6'>
-        <div className='flex items-center gap-4'>
+    <div className="container mx-auto py-10">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
           <Button
-            variant='ghost'
-            size='icon'
+            variant="ghost"
+            size="icon"
             onClick={() => router.push('/admin/students')}
           >
-            <ArrowLeft className='h-4 w-4' />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className='text-3xl font-bold'>
+            <h1 className="text-3xl font-bold">
               {student.user.firstName} {student.user.lastName}
             </h1>
-            <p className='text-muted-foreground'>
+            <p className="text-muted-foreground">
               Roll Number: {student.rollNumber}
             </p>
           </div>
         </div>
         <Button
-          variant='outline'
-          onClick={() => router.push(`/admin/transcripts?studentId=${student.id}`)}
+          variant="outline"
+          onClick={() =>
+            router.push(`/admin/transcripts?studentId=${student.id}`)
+          }
         >
-          <FileText className='mr-2 h-4 w-4' />
+          <FileText className="mr-2 h-4 w-4" />
           Generate Transcript
         </Button>
       </div>
 
-      <div className='grid gap-6'>
+      <div className="grid gap-6">
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between'>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Student Information</CardTitle>
-            <div className='flex gap-2'>
+            <div className="flex gap-2">
               <Button
-                variant='outline'
-                size='sm'
+                variant="outline"
+                size="sm"
                 onClick={() => setEditing(!editing)}
                 disabled={saving}
               >
-                <Pencil className='h-4 w-4 mr-2' />
+                <Pencil className="h-4 w-4 mr-2" />
                 {editing ? 'Cancel' : 'Edit'}
               </Button>
               <Button
-                variant='destructive'
-                size='sm'
+                variant="destructive"
+                size="sm"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={editing || saving}
               >
-                <Trash2 className='h-4 w-4 mr-2' />
+                <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {editing ? (
-              <form onSubmit={handleSubmit} className='space-y-6'>
-                <div className='grid grid-cols-2 gap-6'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='firstName'>First Name</Label>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
                     <Input
-                      id='firstName'
+                      id="firstName"
                       value={formData.firstName}
                       onChange={(e) =>
                         setFormData({ ...formData, firstName: e.target.value })
@@ -475,10 +502,10 @@ export default function StudentDetailsPage() {
                     />
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='lastName'>Last Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
                     <Input
-                      id='lastName'
+                      id="lastName"
                       value={formData.lastName}
                       onChange={(e) =>
                         setFormData({ ...formData, lastName: e.target.value })
@@ -487,11 +514,11 @@ export default function StudentDetailsPage() {
                     />
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='email'>Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id='email'
-                      type='email'
+                      id="email"
+                      type="email"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
@@ -500,10 +527,10 @@ export default function StudentDetailsPage() {
                     />
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='rollNumber'>Roll Number</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="rollNumber">Roll Number</Label>
                     <Input
-                      id='rollNumber'
+                      id="rollNumber"
                       value={formData.rollNumber}
                       onChange={(e) =>
                         setFormData({ ...formData, rollNumber: e.target.value })
@@ -512,41 +539,33 @@ export default function StudentDetailsPage() {
                     />
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='departmentId'>Department</Label>
-                    <Select
-                      value={formData.departmentId}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, departmentId: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select department' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((department) => (
-                          <SelectItem
-                            key={department.id}
-                            value={department.id.toString()}
-                          >
-                            {department.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Department is automatically set from Settings */}
+                  {currentDepartmentId && (
+                    <div className="space-y-2">
+                      <Label htmlFor="departmentId">Department</Label>
+                      <Input
+                        id="departmentId"
+                        value="Current Department (from Settings)"
+                        disabled
+                        className="bg-gray-50"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Department is configured in System Settings
+                      </p>
+                    </div>
+                  )}
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='programId'>Program</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="programId">Program</Label>
                     <Select
                       value={formData.programId}
                       onValueChange={(value) =>
                         setFormData({ ...formData, programId: value })
                       }
-                      disabled={!formData.departmentId}
+                      disabled={!currentDepartmentId}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder='Select program' />
+                        <SelectValue placeholder="Select program" />
                       </SelectTrigger>
                       <SelectContent>
                         {programs.map((program) => (
@@ -561,8 +580,8 @@ export default function StudentDetailsPage() {
                     </Select>
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='batchId'>Batch</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="batchId">Batch</Label>
                     <Select
                       value={formData.batchId}
                       onValueChange={(value) =>
@@ -570,7 +589,7 @@ export default function StudentDetailsPage() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder='Select batch' />
+                        <SelectValue placeholder="Select batch" />
                       </SelectTrigger>
                       <SelectContent>
                         {batches.map((batch) => (
@@ -582,8 +601,8 @@ export default function StudentDetailsPage() {
                     </Select>
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='status'>Status</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
                     <Select
                       value={formData.status}
                       onValueChange={(value: 'active' | 'inactive') =>
@@ -591,29 +610,29 @@ export default function StudentDetailsPage() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder='Select status' />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value='active'>Active</SelectItem>
-                        <SelectItem value='inactive'>Inactive</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className='flex justify-end gap-4'>
+                <div className="flex justify-end gap-4">
                   <Button
-                    type='button'
-                    variant='outline'
+                    type="button"
+                    variant="outline"
                     onClick={() => setEditing(false)}
                     disabled={saving}
                   >
                     Cancel
                   </Button>
-                  <Button type='submit' disabled={saving}>
+                  <Button type="submit" disabled={saving}>
                     {saving ? (
                       <>
-                        <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Saving...
                       </>
                     ) : (
@@ -623,64 +642,64 @@ export default function StudentDetailsPage() {
                 </div>
               </form>
             ) : (
-              <div className='grid grid-cols-2 gap-6'>
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Name
                   </h3>
-                  <p className='mt-1'>
+                  <p className="mt-1">
                     {student.user.firstName} {student.user.lastName}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Email
                   </h3>
-                  <p className='mt-1'>{student.user.email}</p>
+                  <p className="mt-1">{student.user.email}</p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Roll Number
                   </h3>
-                  <p className='mt-1'>{student.rollNumber}</p>
+                  <p className="mt-1">{student.rollNumber}</p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Department
                   </h3>
-                  <p className='mt-1'>
+                  <p className="mt-1">
                     {student.department?.name || 'Not assigned'}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Program
                   </h3>
-                  <p className='mt-1'>
+                  <p className="mt-1">
                     {student.program?.name || 'Not assigned'}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Batch
                   </h3>
-                  <p className='mt-1'>
+                  <p className="mt-1">
                     {student.batch?.name || 'Not assigned'}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className="text-sm font-medium text-muted-foreground">
                     Status
                   </h3>
                   <Badge
                     className={`mt-1 ${getStatusColor(student.status)}`}
-                    variant='secondary'
+                    variant="secondary"
                   >
                     {student.status}
                   </Badge>
@@ -692,12 +711,12 @@ export default function StudentDetailsPage() {
 
         <Card>
           <CardHeader>
-            <div className='flex items-center justify-between'>
+            <div className="flex items-center justify-between">
               <CardTitle>Enrolled Sections</CardTitle>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button>
-                    <Plus className='w-4 h-4 mr-2' />
+                    <Plus className="w-4 h-4 mr-2" />
                     Add Section
                   </Button>
                 </DialogTrigger>
@@ -708,11 +727,11 @@ export default function StudentDetailsPage() {
                   <Form {...form}>
                     <form
                       onSubmit={form.handleSubmit(onSubmit)}
-                      className='space-y-4'
+                      className="space-y-4"
                     >
                       <FormField
                         control={form.control}
-                        name='sectionId'
+                        name="sectionId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section</FormLabel>
@@ -722,7 +741,7 @@ export default function StudentDetailsPage() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder='Select a section' />
+                                  <SelectValue placeholder="Select a section" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -743,8 +762,8 @@ export default function StudentDetailsPage() {
                         )}
                       />
                       <Button
-                        type='submit'
-                        className='w-full'
+                        type="submit"
+                        className="w-full"
                         disabled={addSection.isPending}
                       >
                         {addSection.isPending ? 'Adding...' : 'Add Section'}
@@ -756,7 +775,7 @@ export default function StudentDetailsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className='rounded-md border'>
+            <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -769,7 +788,7 @@ export default function StudentDetailsPage() {
                 <TableBody>
                   {student.studentsections.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className='text-center'>
+                      <TableCell colSpan={4} className="text-center">
                         No sections enrolled
                       </TableCell>
                     </TableRow>
@@ -786,8 +805,8 @@ export default function StudentDetailsPage() {
                         </TableCell>
                         <TableCell>
                           <Button
-                            variant='ghost'
-                            size='sm'
+                            variant="ghost"
+                            size="sm"
                             onClick={async () => {
                               try {
                                 const response = await fetch(
@@ -834,7 +853,7 @@ export default function StudentDetailsPage() {
               Are you sure you want to delete this student? This action cannot
               be undone.
               {student.sections.length > 0 && (
-                <span className='block text-red-500 mt-2'>
+                <span className="block text-red-500 mt-2">
                   Warning: This student is enrolled in {student.sections.length}{' '}
                   section(s). You must remove them from all sections before
                   deleting.
@@ -844,14 +863,14 @@ export default function StudentDetailsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant='outline'
+              variant="outline"
               onClick={() => setShowDeleteDialog(false)}
               disabled={deleting}
             >
               Cancel
             </Button>
             <Button
-              variant='destructive'
+              variant="destructive"
               onClick={handleDelete}
               disabled={deleting || student.sections.length > 0}
             >
