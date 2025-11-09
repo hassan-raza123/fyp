@@ -2,8 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { ResultAnalytics } from '@/components/assessments/ResultAnalytics';
-import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';
-import { ResultModeration } from '@/components/assessments/ResultModeration';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface Section {
   id: number;
@@ -11,6 +19,7 @@ interface Section {
   courseOffering: {
     course: {
       code: string;
+      name: string;
     };
     semester: {
       name: string;
@@ -27,25 +36,31 @@ interface Assessment {
 
 const AnalyticsPage = () => {
   const [sections, setSections] = useState<Section[]>([]);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [selectedAssessment, setSelectedAssessment] = useState<number | null>(
-    null
-  );
+  const [selectedAssessment, setSelectedAssessment] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch sections on component mount
   useEffect(() => {
     const fetchSections = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('/api/sections');
+        const response = await fetch('/api/sections?status=active');
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        setSections(data);
+        if (data.success) {
+          setSections(data.data);
+        } else {
+          setSections(data);
+        }
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
+        toast.error('Failed to load sections');
+      } finally {
+        setLoading(false);
       }
     };
     fetchSections();
@@ -53,88 +68,128 @@ const AnalyticsPage = () => {
 
   // Fetch assessments when section is selected
   useEffect(() => {
-    if (!selectedSection) return;
+    if (!selectedSection) {
+      setAssessments([]);
+      setSelectedAssessment('');
+      return;
+    }
 
     const fetchAssessments = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `/api/sections/${selectedSection}/assessments`
-        );
-        if (!response.ok) throw new Error('Failed to fetch assessments');
-        const data = await response.json();
-        setAssessments(data);
+        const section = sections.find((s) => s.id.toString() === selectedSection);
+        if (section) {
+          const response = await fetch(
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
+          );
+          if (!response.ok) throw new Error('Failed to fetch assessments');
+          const data = await response.json();
+          setAssessments(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         setError('Failed to load assessments');
         console.error(err);
+        toast.error('Failed to load assessments');
       } finally {
         setLoading(false);
       }
     };
 
     fetchAssessments();
-  }, [selectedSection]);
+  }, [selectedSection, sections]);
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>Result Analytics</h1>
-
-      {/* Section Selection */}
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>Select Section</label>
-        <select
-          className='w-full max-w-md p-2 border rounded'
-          value={selectedSection || ''}
-          onChange={(e) => setSelectedSection(Number(e.target.value))}
-        >
-          <option value=''>Select a section</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.courseOffering.course.code} - {section.name} (
-              {section.courseOffering.semester.name})
-            </option>
-          ))}
-        </select>
+    <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Result Analytics</h1>
+        <p className="text-muted-foreground">
+          View detailed analytics and performance metrics for assessments
+        </p>
       </div>
 
-      {/* Assessment Selection */}
-      {selectedSection && (
-        <div className='mb-6'>
-          <label className='block text-sm font-medium mb-2'>
-            Select Assessment
-          </label>
-          <select
-            className='w-full max-w-md p-2 border rounded'
-            value={selectedAssessment || ''}
-            onChange={(e) => setSelectedAssessment(Number(e.target.value))}
-          >
-            <option value=''>Select an assessment</option>
-            {assessments.map((assessment) => (
-              <option key={assessment.id} value={assessment.id}>
-                {assessment.title} ({assessment.type})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <Card className="p-6 mb-6">
+        <CardHeader>
+          <CardTitle>Select Section and Assessment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="section">Section *</Label>
+              <Select
+                value={selectedSection}
+                onValueChange={setSelectedSection}
+                disabled={loading}
+              >
+                <SelectTrigger id="section">
+                  <SelectValue placeholder="Select a section" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id.toString()}>
+                      {section.courseOffering.course.code} - {section.name} (
+                      {section.courseOffering.semester.name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedSection && (
+              <div className="space-y-2">
+                <Label htmlFor="assessment">Assessment *</Label>
+                <Select
+                  value={selectedAssessment}
+                  onValueChange={setSelectedAssessment}
+                  disabled={loading || assessments.length === 0}
+                >
+                  <SelectTrigger id="assessment">
+                    <SelectValue placeholder="Select an assessment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assessments.map((assessment) => (
+                      <SelectItem
+                        key={assessment.id}
+                        value={assessment.id.toString()}
+                      >
+                        {assessment.title} ({assessment.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {assessments.length === 0 && !loading && (
+                  <p className="text-sm text-muted-foreground">
+                    No assessments found for this section
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <Card className="p-4 mb-6 border-red-200 bg-red-50">
+          <p className="text-red-700">{error}</p>
+        </Card>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading...</div>
+        <Card className="p-6">
+          <div className="text-center py-4">Loading...</div>
+        </Card>
       ) : selectedSection && selectedAssessment ? (
-        <div className='space-y-6'>
-          <ResultAnalytics
-            sectionId={selectedSection}
-            assessmentId={selectedAssessment}
-          />
-        </div>
+        <ResultAnalytics
+          sectionId={parseInt(selectedSection)}
+          assessmentId={parseInt(selectedAssessment)}
+        />
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a section and assessment to view analytics
-        </div>
+        <Card className="p-6">
+          <div className="text-center text-muted-foreground py-4">
+            {!selectedSection || !selectedAssessment
+              ? 'Please select a section and assessment to view analytics'
+              : 'No data available'}
+          </div>
+        </Card>
       )}
     </div>
   );
