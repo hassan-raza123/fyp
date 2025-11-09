@@ -178,10 +178,18 @@ export default function StudentsPage() {
             Manage student accounts and information
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/students/create')}>
-          <Plus className='h-4 w-4 mr-2' />
-          Add Student
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/students/bulk-import')}
+          >
+            Bulk Import
+          </Button>
+          <Button onClick={() => router.push('/admin/students/create')}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Student
+          </Button>
+        </div>
       </div>
 
       <div className='flex items-center gap-4 mb-6'>

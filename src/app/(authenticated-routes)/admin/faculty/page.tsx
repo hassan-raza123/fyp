@@ -158,7 +158,7 @@ export default function FacultyPage() {
             Manage faculty members in your department
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/users?role=teacher')}>
+        <Button onClick={() => router.push('/admin/faculty/create')}>
           <Plus className="h-4 w-4 mr-2" />
           Add Faculty
         </Button>
@@ -231,23 +231,35 @@ export default function FacultyPage() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() =>
                               router.push(`/admin/faculty/${faculty.id}`)
                             }
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              router.push(`/admin/faculty/${faculty.id}/edit`)
+                            }
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={() => {
                               setSelectedFaculty(faculty);
                               setShowDeleteDialog(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </TableCell>
