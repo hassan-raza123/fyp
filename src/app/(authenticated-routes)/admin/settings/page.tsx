@@ -133,7 +133,14 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error('Failed to save settings');
       const data = await response.json();
       if (data.success) {
-        toast.success('Settings saved successfully');
+        // Check if department was configured
+        if (settings.system.departmentCode && settings.system.departmentName) {
+          toast.success(
+            `Settings saved successfully! Department "${settings.system.departmentName}" (${settings.system.departmentCode}) has been configured. All system operations will now use this department.`
+          );
+        } else {
+          toast.success('Settings saved successfully');
+        }
       } else {
         throw new Error(data.error || 'Failed to save settings');
       }

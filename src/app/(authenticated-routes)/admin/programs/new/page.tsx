@@ -16,12 +16,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { programs_status } from '@prisma/client';
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-}
-
 interface FormData {
   name: string;
   code: string;
@@ -35,7 +29,7 @@ interface FormData {
 export default function NewProgramPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     code: '',
@@ -47,24 +41,48 @@ export default function NewProgramPage() {
   });
 
   useEffect(() => {
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, []);
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) throw new Error('Failed to fetch departments');
-      const data = await response.json();
-      if (data.success && data.data.length > 0) {
-        setDepartments(data.data);
-        setFormData((prev) => ({
-          ...prev,
-          departmentId: data.data[0].id.toString(),
-        }));
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
+      }
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id.toString();
+      
+      setCurrentDepartmentId(deptId);
+      setFormData((prev) => ({
+        ...prev,
+        departmentId: deptId,
+      }));
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
@@ -78,7 +96,7 @@ export default function NewProgramPage() {
       return false;
     }
     if (!formData.departmentId) {
-      toast.error('Please select a department');
+      toast.error('Department not configured. Please set in Settings.');
       return false;
     }
     if (
@@ -183,26 +201,21 @@ export default function NewProgramPage() {
               />
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='department'>Department</Label>
-              <Select
-                value={formData.departmentId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, departmentId: value })
-                }
-              >
-                <SelectTrigger id='department'>
-                  <SelectValue placeholder='Select department' />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                      {dept.name} ({dept.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Department is automatically set from Settings */}
+            {currentDepartmentId && (
+              <div className='space-y-2'>
+                <Label htmlFor='department'>Department</Label>
+                <Input
+                  id='department'
+                  value='Current Department (from Settings)'
+                  disabled
+                  className='bg-gray-50'
+                />
+                <p className='text-xs text-gray-500'>
+                  Department is configured in System Settings
+                </p>
+              </div>
+            )}
 
             <div className='space-y-2'>
               <Label htmlFor='totalCreditHours'>Total Credit Hours</Label>

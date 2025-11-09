@@ -28,16 +28,10 @@ const createFacultySchema = z.object({
   status: z.enum(['active', 'inactive']),
 });
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-}
-
 export default function CreateFacultyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: '',
@@ -51,22 +45,48 @@ export default function CreateFacultyPage() {
   });
 
   useEffect(() => {
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, []);
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
       }
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id.toString();
+      
+      setCurrentDepartmentId(deptId);
+      setFormData((prev) => ({
+        ...prev,
+        departmentId: deptId,
+      }));
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to load departments');
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
@@ -263,31 +283,21 @@ export default function CreateFacultyPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="departmentId">Department *</Label>
-                <Select
-                  value={formData.departmentId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, departmentId: value })
-                  }
-                >
-                  <SelectTrigger
-                    className={errors.departmentId ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id.toString()}>
-                        {dept.name} ({dept.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.departmentId && (
-                  <p className="text-sm text-red-500">{errors.departmentId}</p>
-                )}
-              </div>
+              {/* Department is automatically set from Settings */}
+              {currentDepartmentId && (
+                <div className="space-y-2">
+                  <Label htmlFor="departmentId">Department</Label>
+                  <Input
+                    id="departmentId"
+                    value="Current Department (from Settings)"
+                    disabled
+                    className="bg-gray-50"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Department is configured in System Settings
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status *</Label>

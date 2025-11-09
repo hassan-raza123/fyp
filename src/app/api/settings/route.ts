@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { syncDepartmentFromSettings } from '@/lib/department-utils';
 
 // GET /api/settings
 export async function GET(request: NextRequest) {
@@ -90,6 +91,11 @@ export async function PUT(request: NextRequest) {
         ...(obe && { obe }),
       },
     });
+
+    // If department name and code are provided in settings, create/update department
+    if (system?.departmentCode && system?.departmentName) {
+      await syncDepartmentFromSettings();
+    }
 
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
