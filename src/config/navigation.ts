@@ -164,12 +164,6 @@ const adminNavigation = [
     title: 'ACADEMIC STRUCTURE',
     items: [
       {
-        id: 'departments',
-        label: 'Departments',
-        icon: Building2,
-        href: '/admin/departments',
-      },
-      {
         id: 'programs',
         label: 'Programs',
         icon: School,

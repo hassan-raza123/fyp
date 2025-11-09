@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
             currentSemester: 'Spring',
             defaultLanguage: 'en',
             timeZone: 'UTC',
+            departmentName: '',
+            departmentCode: '',
           },
           email: {
             smtpHost: '',

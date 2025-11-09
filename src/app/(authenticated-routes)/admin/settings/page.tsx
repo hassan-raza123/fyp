@@ -29,6 +29,8 @@ interface Settings {
     currentSemester: string;
     defaultLanguage: string;
     timeZone: string;
+    departmentName: string;
+    departmentCode: string;
   };
   email: {
     smtpHost: string;
@@ -67,6 +69,8 @@ export default function SettingsPage() {
       currentSemester: 'Spring',
       defaultLanguage: 'en',
       timeZone: 'UTC',
+      departmentName: '',
+      departmentCode: '',
     },
     email: {
       smtpHost: '',
@@ -277,6 +281,53 @@ export default function SettingsPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Department Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Department Information</CardTitle>
+            <CardDescription>
+              Configure your department name and code. This will be used throughout the system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <Label>Department Name</Label>
+                <Input
+                  value={settings.system.departmentName}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      system: {
+                        ...settings.system,
+                        departmentName: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder='e.g., Computer Science'
+                />
+              </div>
+              <div className='space-y-2'>
+                <Label>Department Code</Label>
+                <Input
+                  value={settings.system.departmentCode}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      system: {
+                        ...settings.system,
+                        departmentCode: e.target.value.toUpperCase(),
+                      },
+                    })
+                  }
+                  placeholder='e.g., CS'
+                  maxLength={10}
+                />
               </div>
             </div>
           </CardContent>
