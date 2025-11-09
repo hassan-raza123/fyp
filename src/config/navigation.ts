@@ -188,6 +188,12 @@ const adminNavigation = [
         href: '/admin/course-offerings',
       },
       {
+        id: 'sessions',
+        label: 'Sessions',
+        icon: Clock,
+        href: '/admin/sessions',
+      },
+      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
@@ -254,11 +260,34 @@ const adminNavigation = [
     ],
   },
   {
+    title: 'REPORTING & DOCUMENTATION',
+    items: [
+      {
+        id: 'reports',
+        label: 'OBE Reports',
+        icon: FileText,
+        href: '/admin/reports',
+      },
+      {
+        id: 'transcripts',
+        label: 'Transcripts',
+        icon: FileSpreadsheet,
+        href: '/admin/transcripts',
+      },
+      {
+        id: 'notifications',
+        label: 'Notifications',
+        icon: Bell,
+        href: '/admin/notifications',
+      },
+    ],
+  },
+  {
     title: 'SYSTEM',
     items: [
       {
         id: 'settings',
-        label: 'Settings',
+        label: 'System Settings',
         icon: Settings2,
         href: '/admin/settings',
       },
