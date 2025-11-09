@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_offering_status } from '@prisma/client';
 import { requireAuth } from '@/lib/api-utils';
+import { getCurrentDepartmentId } from '@/lib/department-utils';
 
 const createOfferingSchema = z.object({
   courseId: z.number(),
@@ -27,6 +28,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not configured in settings' },
+        { status: 400 }
+      );
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
@@ -36,8 +46,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const page = parseInt(searchParams.get('page') || '1');
 
-    // Build query conditions
-    const where: any = {};
+    // Build query conditions - automatically filter by current department
+    const where: any = {
+      course: {
+        departmentId: currentDepartmentId,
+      },
+    };
 
     if (courseId) {
       where.courseId = parseInt(courseId);
@@ -53,8 +67,16 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { course: { name: { contains: search } } },
-        { course: { code: { contains: search } } },
+        {
+          course: {
+            name: { contains: search, departmentId: currentDepartmentId },
+          },
+        },
+        {
+          course: {
+            code: { contains: search, departmentId: currentDepartmentId },
+          },
+        },
         { semester: { name: { contains: search } } },
       ];
     }
