@@ -4,6 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';
 import { ResultModeration } from '@/components/assessments/ResultModeration';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface CourseOffering {
   id: number;
@@ -26,7 +37,9 @@ interface Student {
   id: number;
   rollNumber: string;
   user: {
-    name: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
   };
 }
 
@@ -45,22 +58,13 @@ interface AssessmentItem {
   cloId: number;
 }
 
-interface Marks {
-  [studentId: number]: {
-    [itemId: number]: number;
-  };
-}
-
 const MarksEntryPage = () => {
   const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [selectedAssessment, setSelectedAssessment] = useState<number | null>(
-    null
-  );
-  const [marks, setMarks] = useState<Marks>({});
+  const [selectedAssessment, setSelectedAssessment] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,13 +72,18 @@ const MarksEntryPage = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections');
+        const response = await fetch('/api/sections?status=active');
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        setSections(data);
+        if (data.success) {
+          setSections(data.data);
+        } else {
+          setSections(data);
+        }
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
+        toast.error('Failed to load sections');
       }
     };
     fetchSections();
@@ -82,10 +91,16 @@ const MarksEntryPage = () => {
 
   // Fetch students and assessments when section is selected
   useEffect(() => {
-    if (!selectedSection) return;
+    if (!selectedSection) {
+      setStudents([]);
+      setAssessments([]);
+      setSelectedAssessment('');
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch students in the section
         const studentsResponse = await fetch(
@@ -95,170 +110,168 @@ const MarksEntryPage = () => {
         const studentsData = await studentsResponse.json();
         setStudents(studentsData);
 
-        // Fetch assessments for the section
-        const assessmentsResponse = await fetch(
-          `/api/sections/${selectedSection}/assessments`
+        // Fetch assessments for the section's course offering
+        const section = sections.find(
+          (s) => s.id.toString() === selectedSection
         );
-        if (!assessmentsResponse.ok)
-          throw new Error('Failed to fetch assessments');
-        const assessmentsData = await assessmentsResponse.json();
-        setAssessments(assessmentsData);
-
-        // Initialize marks object
-        const initialMarks: Marks = {};
-        studentsData.forEach((student: Student) => {
-          initialMarks[student.id] = {};
-          assessmentsData.forEach((assessment: Assessment) => {
-            assessment.assessmentItems.forEach((item: AssessmentItem) => {
-              initialMarks[student.id][item.id] = 0;
-            });
-          });
-        });
-        setMarks(initialMarks);
+        if (section) {
+          const assessmentsResponse = await fetch(
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
+          );
+          if (!assessmentsResponse.ok)
+            throw new Error('Failed to fetch assessments');
+          const assessmentsData = await assessmentsResponse.json();
+          setAssessments(Array.isArray(assessmentsData) ? assessmentsData : []);
+        }
       } catch (err) {
         setError('Failed to load data');
         console.error(err);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedSection]);
-
-  const handleMarkChange = (
-    studentId: number,
-    itemId: number,
-    value: number
-  ) => {
-    setMarks((prev: Marks) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [itemId]: value,
-      },
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedSection || !selectedAssessment) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch('/api/assessment-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sectionId: selectedSection,
-          marks: Object.entries(marks).map(([studentId, itemMarks]) => ({
-            studentId: parseInt(studentId),
-            assessmentId: selectedAssessment,
-            items: Object.entries(itemMarks).map(([itemId, mark]) => ({
-              itemId: parseInt(itemId),
-              marks: mark,
-              totalMarks:
-                assessments
-                  .find((a) => a.id === selectedAssessment)
-                  ?.assessmentItems.find((item) => item.id === parseInt(itemId))
-                  ?.marks || 0,
-            })),
-          })),
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to save marks');
-
-      alert('Marks saved successfully!');
-      router.refresh();
-    } catch (err) {
-      setError('Failed to save marks');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedSection, sections]);
 
   const selectedAssessmentData = assessments.find(
-    (a) => a.id === selectedAssessment
+    (a) => a.id.toString() === selectedAssessment
   );
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>Marks Entry</h1>
-
-      {/* Section Selection */}
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>Select Section</label>
-        <select
-          className='w-full max-w-md p-2 border rounded'
-          value={selectedSection || ''}
-          onChange={(e) => setSelectedSection(Number(e.target.value))}
-        >
-          <option value=''>Select a section</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.courseOffering.course.code} - {section.name} (
-              {section.courseOffering.semester.name})
-            </option>
-          ))}
-        </select>
+    <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Marks Entry</h1>
+        <p className="text-muted-foreground">
+          Enter student marks for assessments
+        </p>
       </div>
 
-      {/* Assessment Selection */}
-      {selectedSection && (
-        <div className='mb-6'>
-          <label className='block text-sm font-medium mb-2'>
-            Select Assessment
-          </label>
-          <select
-            className='w-full max-w-md p-2 border rounded'
-            value={selectedAssessment || ''}
-            onChange={(e) => setSelectedAssessment(Number(e.target.value))}
-          >
-            <option value=''>Select an assessment</option>
-            {assessments.map((assessment) => (
-              <option key={assessment.id} value={assessment.id}>
-                {assessment.title} ({assessment.type})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <Card className="p-6 mb-6">
+        <CardHeader>
+          <CardTitle>Select Section and Assessment</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="section">Section *</Label>
+              <Select
+                value={selectedSection}
+                onValueChange={setSelectedSection}
+              >
+                <SelectTrigger id="section">
+                  <SelectValue placeholder="Select a section" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id.toString()}>
+                      {section.courseOffering.course.code} - {section.name} (
+                      {section.courseOffering.semester.name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedSection && (
+              <div className="space-y-2">
+                <Label htmlFor="assessment">Assessment *</Label>
+                <Select
+                  value={selectedAssessment}
+                  onValueChange={setSelectedAssessment}
+                  disabled={assessments.length === 0}
+                >
+                  <SelectTrigger id="assessment">
+                    <SelectValue placeholder="Select an assessment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assessments.map((assessment) => (
+                      <SelectItem
+                        key={assessment.id}
+                        value={assessment.id.toString()}
+                      >
+                        {assessment.title} ({assessment.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {assessments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No assessments found for this section
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <Card className="p-4 mb-6 border-red-200 bg-red-50">
+          <p className="text-red-700">{error}</p>
+        </Card>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading...</div>
+        <Card className="p-6">
+          <div className="text-center py-4">Loading...</div>
+        </Card>
       ) : selectedSection && selectedAssessment && selectedAssessmentData ? (
-        <div className='space-y-6'>
-          <BulkMarksEntry
-            sectionId={selectedSection}
-            assessmentId={selectedAssessment}
-            assessment={selectedAssessmentData}
-            students={students}
-            onSuccess={() => {
-              // Refresh data or show success message
-              router.refresh();
-            }}
-          />
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Bulk Marks Entry</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BulkMarksEntry
+                sectionId={parseInt(selectedSection)}
+                assessmentId={parseInt(selectedAssessment)}
+                assessment={selectedAssessmentData}
+                students={students.map((s) => ({
+                  ...s,
+                  user: {
+                    name:
+                      s.user.name || `${s.user.firstName} ${s.user.lastName}`,
+                  },
+                }))}
+                onSuccess={() => {
+                  toast.success('Marks saved successfully');
+                  router.refresh();
+                }}
+              />
+            </CardContent>
+          </Card>
 
-          <div className='mt-8'>
-            <h2 className='text-xl font-semibold mb-4'>Result Moderation</h2>
-            <ResultModeration
-              sectionId={selectedSection}
-              assessmentId={selectedAssessment}
-              students={students}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Result Moderation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResultModeration
+                sectionId={parseInt(selectedSection)}
+                assessmentId={parseInt(selectedAssessment)}
+                students={students.map((s) => ({
+                  ...s,
+                  user: {
+                    name:
+                      s.user.name || `${s.user.firstName} ${s.user.lastName}`,
+                  },
+                }))}
+              />
+            </CardContent>
+          </Card>
         </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a section and assessment to enter marks
-        </div>
+        <Card className="p-6">
+          <div className="text-center text-muted-foreground py-4">
+            {!selectedSection
+              ? 'Please select a section to enter marks'
+              : !selectedAssessment
+              ? 'Please select an assessment to enter marks'
+              : 'No data available'}
+          </div>
+        </Card>
       )}
     </div>
   );

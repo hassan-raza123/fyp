@@ -2,6 +2,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface CourseOffering {
   id: number;
@@ -24,7 +45,9 @@ interface Student {
   id: number;
   rollNumber: string;
   user: {
-    name: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
   };
 }
 
@@ -44,16 +67,12 @@ interface AssessmentResult {
   totalMarks: number;
   obtainedMarks: number;
   percentage: number;
-  items: {
-    itemId: number;
-    marks: number;
-  }[];
 }
 
 const ResultEvaluationPage = () => {
   const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [results, setResults] = useState<Record<number, AssessmentResult[]>>(
@@ -66,13 +85,18 @@ const ResultEvaluationPage = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections');
+        const response = await fetch('/api/sections?status=active');
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        setSections(data);
+        if (data.success) {
+          setSections(data.data);
+        } else {
+          setSections(data);
+        }
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
+        toast.error('Failed to load sections');
       }
     };
     fetchSections();
@@ -80,10 +104,16 @@ const ResultEvaluationPage = () => {
 
   // Fetch students, assessments, and results when section is selected
   useEffect(() => {
-    if (!selectedSection) return;
+    if (!selectedSection) {
+      setStudents([]);
+      setAssessments([]);
+      setResults({});
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch students in the section
         const studentsResponse = await fetch(
@@ -93,36 +123,52 @@ const ResultEvaluationPage = () => {
         const studentsData = await studentsResponse.json();
         setStudents(studentsData);
 
-        // Fetch assessments for the section
-        const assessmentsResponse = await fetch(
-          `/api/sections/${selectedSection}/assessments`
-        );
-        if (!assessmentsResponse.ok)
-          throw new Error('Failed to fetch assessments');
-        const assessmentsData = await assessmentsResponse.json();
-        setAssessments(assessmentsData);
-
-        // Fetch results for each student
-        const resultsData: Record<number, AssessmentResult[]> = {};
-        for (const student of studentsData) {
-          const resultsResponse = await fetch(
-            `/api/students/${student.id}/results?sectionId=${selectedSection}`
+        // Fetch assessments for the section's course offering
+        const section = sections.find((s) => s.id.toString() === selectedSection);
+        if (section) {
+          const assessmentsResponse = await fetch(
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
           );
-          if (!resultsResponse.ok) throw new Error('Failed to fetch results');
-          const studentResults = await resultsResponse.json();
-          resultsData[student.id] = studentResults;
+          if (!assessmentsResponse.ok)
+            throw new Error('Failed to fetch assessments');
+          const assessmentsData = await assessmentsResponse.json();
+          setAssessments(Array.isArray(assessmentsData) ? assessmentsData : []);
+
+          // Fetch results for each student
+          const resultsData: Record<number, AssessmentResult[]> = {};
+          for (const student of studentsData) {
+            try {
+              const resultsResponse = await fetch(
+                `/api/assessment-results?studentId=${student.id}&sectionId=${selectedSection}`
+              );
+              if (resultsResponse.ok) {
+                const studentResults = await resultsResponse.json();
+                if (studentResults.success) {
+                  resultsData[student.id] = studentResults.data || [];
+                } else {
+                  resultsData[student.id] = Array.isArray(studentResults)
+                    ? studentResults
+                    : [];
+                }
+              }
+            } catch (err) {
+              console.error(`Error fetching results for student ${student.id}:`, err);
+              resultsData[student.id] = [];
+            }
+          }
+          setResults(resultsData);
         }
-        setResults(resultsData);
       } catch (err) {
         setError('Failed to load data');
         console.error(err);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedSection]);
+  }, [selectedSection, sections]);
 
   const handleStatusChange = async (
     studentId: number,
@@ -147,9 +193,12 @@ const ResultEvaluationPage = () => {
           result.id === resultId ? { ...result, status: newStatus } : result
         ),
       }));
+
+      toast.success('Status updated successfully');
     } catch (err) {
       setError('Failed to update status');
       console.error(err);
+      toast.error('Failed to update status');
     }
   };
 
@@ -176,139 +225,194 @@ const ResultEvaluationPage = () => {
           result.id === resultId ? { ...result, remarks } : result
         ),
       }));
+
+      toast.success('Remarks updated successfully');
     } catch (err) {
       setError('Failed to update remarks');
       console.error(err);
+      toast.error('Failed to update remarks');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'published':
+        return <Badge variant="default">Published</Badge>;
+      case 'evaluated':
+        return <Badge variant="default">Evaluated</Badge>;
+      case 'pending':
+        return <Badge variant="secondary">Pending</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
     }
   };
 
   return (
-    <div className='p-6'>
-      <h2 className='text-xl font-semibold mb-4'>Result Evaluation</h2>
-
-      {/* Section Selection */}
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>Select Section</label>
-        <select
-          className='w-full max-w-md p-2 border rounded'
-          value={selectedSection || ''}
-          onChange={(e) => setSelectedSection(Number(e.target.value))}
-        >
-          <option value=''>Select a section</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.courseOffering.course.code} - {section.name} (
-              {section.courseOffering.semester.name})
-            </option>
-          ))}
-        </select>
+    <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Result Evaluation</h1>
+        <p className="text-muted-foreground">
+          Review and moderate assessment results
+        </p>
       </div>
 
+      <Card className="p-6 mb-6">
+        <CardHeader>
+          <CardTitle>Select Section</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="section">Section *</Label>
+            <Select value={selectedSection} onValueChange={setSelectedSection}>
+              <SelectTrigger id="section">
+                <SelectValue placeholder="Select a section" />
+              </SelectTrigger>
+              <SelectContent>
+                {sections.map((section) => (
+                  <SelectItem
+                    key={section.id}
+                    value={section.id.toString()}
+                  >
+                    {section.courseOffering.course.code} - {section.name} (
+                    {section.courseOffering.semester.name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <Card className="p-4 mb-6 border-red-200 bg-red-50">
+          <p className="text-red-700">{error}</p>
+        </Card>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading...</div>
+        <Card className="p-6">
+          <div className="text-center py-4">Loading...</div>
+        </Card>
       ) : selectedSection && students.length > 0 ? (
-        <div className='overflow-x-auto'>
-          <table className='min-w-full bg-white border'>
-            <thead>
-              <tr>
-                <th className='border p-2'>Roll No</th>
-                <th className='border p-2'>Student Name</th>
-                {assessments.map((assessment) => (
-                  <th key={assessment.id} className='border p-2'>
-                    {assessment.title}
-                    <br />
-                    <span className='text-sm text-gray-500'>
-                      ({assessment.type})
-                    </span>
-                  </th>
-                ))}
-                <th className='border p-2'>Status</th>
-                <th className='border p-2'>Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.id}>
-                  <td className='border p-2'>{student.rollNumber}</td>
-                  <td className='border p-2'>{student.user.name}</td>
-                  {assessments.map((assessment) => {
-                    const result = results[student.id]?.find(
-                      (r) => r.assessmentId === assessment.id
-                    );
-                    return (
-                      <td key={assessment.id} className='border p-2'>
-                        {result ? (
-                          <div>
-                            <div>
-                              {result.obtainedMarks} / {result.totalMarks}
-                            </div>
-                            <div className='text-sm text-gray-500'>
-                              {result.percentage.toFixed(1)}%
-                            </div>
-                          </div>
-                        ) : (
-                          'N/A'
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className='border p-2'>
-                    {results[student.id]?.map((result) => (
-                      <select
-                        key={result.id}
-                        value={result.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            student.id,
-                            result.id,
-                            e.target.value as
-                              | 'pending'
-                              | 'evaluated'
-                              | 'published'
-                              | 'draft'
-                          )
-                        }
-                        className='w-full p-1 border rounded'
-                      >
-                        <option value='pending'>Pending</option>
-                        <option value='evaluated'>Evaluated</option>
-                        <option value='published'>Published</option>
-                        <option value='draft'>Draft</option>
-                      </select>
+        <Card>
+          <CardHeader>
+            <CardTitle>Assessment Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Roll No</TableHead>
+                    <TableHead>Student Name</TableHead>
+                    {assessments.map((assessment) => (
+                      <TableHead key={assessment.id}>
+                        <div>{assessment.title}</div>
+                        <div className="text-xs text-muted-foreground font-normal">
+                          {assessment.type}
+                        </div>
+                      </TableHead>
                     ))}
-                  </td>
-                  <td className='border p-2'>
-                    {results[student.id]?.map((result) => (
-                      <textarea
-                        key={result.id}
-                        value={result.remarks}
-                        onChange={(e) =>
-                          handleRemarksChange(
-                            student.id,
-                            result.id,
-                            e.target.value
-                          )
-                        }
-                        className='w-full p-1 border rounded'
-                        rows={2}
-                        placeholder='Add remarks...'
-                      />
-                    ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">
+                        {student.rollNumber}
+                      </TableCell>
+                      <TableCell>
+                        {student.user.name ||
+                          `${student.user.firstName} ${student.user.lastName}`}
+                      </TableCell>
+                      {assessments.map((assessment) => {
+                        const result = results[student.id]?.find(
+                          (r) => r.assessmentId === assessment.id
+                        );
+                        return (
+                          <TableCell key={assessment.id}>
+                            {result ? (
+                              <div>
+                                <div className="font-medium">
+                                  {result.obtainedMarks} / {result.totalMarks}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {result.percentage.toFixed(1)}%
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell>
+                        {results[student.id]?.map((result) => (
+                          <Select
+                            key={result.id}
+                            value={result.status}
+                            onValueChange={(value: any) =>
+                              handleStatusChange(
+                                student.id,
+                                result.id,
+                                value
+                              )
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="evaluated">Evaluated</SelectItem>
+                              <SelectItem value="published">Published</SelectItem>
+                              <SelectItem value="draft">Draft</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ))}
+                      </TableCell>
+                      <TableCell>
+                        {results[student.id]?.map((result) => (
+                          <Textarea
+                            key={result.id}
+                            value={result.remarks || ''}
+                            onChange={(e) =>
+                              handleRemarksChange(
+                                student.id,
+                                result.id,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Add remarks..."
+                            rows={2}
+                            className="min-w-[200px]"
+                          />
+                        ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       ) : selectedSection ? (
-        <div className='text-center py-4'>
-          No students found in this section
-        </div>
-      ) : null}
+        <Card className="p-6">
+          <div className="text-center text-muted-foreground py-4">
+            No students found in this section
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-6">
+          <div className="text-center text-muted-foreground py-4">
+            Please select a section to view results
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

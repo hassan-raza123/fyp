@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Edit2, FileText, Trash2 } from 'lucide-react';
+import { Edit2, FileText, Trash2, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,15 @@ interface Assessment {
   totalMarks: number;
   dueDate: string;
   weightage: number;
+  courseOffering?: {
+    course: {
+      code: string;
+      name: string;
+    };
+    semester: {
+      name: string;
+    };
+  };
 }
 
 export function AssessmentList() {
@@ -120,6 +129,11 @@ export function AssessmentList() {
               <span>{assessment.title}</span>
               <div className='flex gap-2'>
                 <Button variant='ghost' size='icon' asChild>
+                  <Link href={`/admin/assessments/${assessment.id}`}>
+                    <Eye className='h-4 w-4' />
+                  </Link>
+                </Button>
+                <Button variant='ghost' size='icon' asChild>
                   <Link href={`/admin/assessments/${assessment.id}/edit`}>
                     <Edit2 className='h-4 w-4' />
                   </Link>
@@ -139,10 +153,24 @@ export function AssessmentList() {
                 </Button>
               </div>
             </CardTitle>
-            <CardDescription>{assessment.type}</CardDescription>
+            <CardDescription>
+              {assessment.type}
+              {assessment.courseOffering && (
+                <span className="ml-2 text-xs">
+                  • {assessment.courseOffering.course.code} (
+                  {assessment.courseOffering.semester.name})
+                </span>
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className='space-y-2'>
+              {assessment.courseOffering && (
+                <p className='text-sm font-medium'>
+                  {assessment.courseOffering.course.code} -{' '}
+                  {assessment.courseOffering.course.name}
+                </p>
+              )}
               <p className='text-sm text-muted-foreground'>
                 {assessment.description}
               </p>

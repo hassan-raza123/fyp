@@ -26,12 +26,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const courseOfferingId = searchParams.get('courseOfferingId');
+
+    const where: any = {};
+    if (courseOfferingId) {
+      where.courseOfferingId = parseInt(courseOfferingId);
+    }
+
     const assessments = await prisma.assessments.findMany({
+      where,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
         assessmentItems: true,
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            semester: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 

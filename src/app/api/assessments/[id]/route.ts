@@ -64,6 +64,28 @@ export async function GET(
       where: {
         id: parseInt(params.id),
       },
+      include: {
+        assessmentItems: {
+          orderBy: {
+            questionNo: 'asc',
+          },
+        },
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            semester: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!assessment) {
