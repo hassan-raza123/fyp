@@ -46,7 +46,6 @@ export default function EditFacultyPage() {
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [faculty, setFaculty] = useState<Faculty | null>(null);
   const [formData, setFormData] = useState({
     designation: '',
@@ -56,7 +55,6 @@ export default function EditFacultyPage() {
   useEffect(() => {
     if (params.id) {
       fetchFaculty();
-      fetchDepartments();
     }
   }, [params.id]);
 
@@ -83,21 +81,6 @@ export default function EditFacultyPage() {
       router.push('/admin/faculty');
     } finally {
       setInitialLoading(false);
-    }
-  };
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
     }
   };
 
@@ -144,7 +127,10 @@ export default function EditFacultyPage() {
       <div className="container mx-auto py-10">
         <div className="text-center">
           <p className="text-muted-foreground">Faculty not found</p>
-          <Button onClick={() => router.push('/admin/faculty')} className="mt-4">
+          <Button
+            onClick={() => router.push('/admin/faculty')}
+            className="mt-4"
+          >
             Back to Faculty
           </Button>
         </div>
@@ -193,7 +179,11 @@ export default function EditFacultyPage() {
 
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input value={faculty.user.email} disabled className="bg-gray-50" />
+                <Input
+                  value={faculty.user.email}
+                  disabled
+                  className="bg-gray-50"
+                />
                 <p className="text-xs text-muted-foreground">
                   Email cannot be changed
                 </p>
@@ -269,4 +259,3 @@ export default function EditFacultyPage() {
     </div>
   );
 }
-
