@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
     // Check if user has admin role
     const userRole = session.user.role;
-    const isAdmin = ['super_admin', 'sub_admin'].includes(userRole);
+    const isAdmin = userRole === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json(

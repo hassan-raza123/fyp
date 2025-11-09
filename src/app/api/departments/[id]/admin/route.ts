@@ -23,7 +23,7 @@ export async function PUT(
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -73,12 +73,11 @@ export async function PUT(
       }
 
       // Check if user has admin role
-      const isDepartmentAdmin =
-        admin.userrole?.role.name === 'admin';
+      const hasAdminRole = admin.userrole?.role.name === 'admin';
 
-      if (!isDepartmentAdmin) {
+      if (!hasAdminRole) {
         return NextResponse.json(
-          { success: false, error: 'User is not a department admin' },
+          { success: false, error: 'User is not an admin' },
           { status: 400 }
         );
       }

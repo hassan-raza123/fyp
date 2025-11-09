@@ -15,7 +15,7 @@ export async function POST(
     }
 
     // Check if user has admin role
-    if (authUser?.role !== 'super_admin' && authUser?.role !== 'sub_admin') {
+    if (authUser?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

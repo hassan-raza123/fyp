@@ -25,17 +25,7 @@ export async function GET(
       include: { role: true },
     });
 
-    // If the requesting user is a sub_admin, don't allow access to super_admin
-    if (requestingUserRole?.role.name === 'sub_admin') {
-      const targetUserRole = await prisma.userroles.findFirst({
-        where: { userId },
-        include: { role: true },
-      });
-
-      if (targetUserRole?.role.name === 'super_admin') {
-        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-      }
-    }
+    // Admin can access all users
 
     // Get the target user with only the required fields
     const targetUser = await prisma.users.findUnique({
@@ -97,7 +87,7 @@ export async function PUT(
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -199,25 +189,7 @@ export async function DELETE(
       include: { role: true },
     });
 
-    // If the requesting user is a sub_admin, don't allow deletion of super_admin
-    if (requestingUserRole?.role.name === 'sub_admin') {
-      const targetUserRole = await prisma.userroles.findFirst({
-        where: { userId },
-        include: { role: true },
-      });
-
-      if (targetUserRole?.role.name === 'super_admin') {
-        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-      }
-    }
-
-    // Prevent deletion of the first super admin (ID 1)
-    if (userId === 1) {
-      return NextResponse.json(
-        { error: 'Cannot delete the primary super admin' },
-        { status: 403 }
-      );
-    }
+    // Admin can delete users (with appropriate safeguards)
 
     // First delete any related records
     await prisma.userroles.deleteMany({

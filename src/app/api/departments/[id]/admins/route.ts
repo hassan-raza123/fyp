@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 // Validation schema for assigning department admin
 const assignAdminSchema = z.object({
@@ -24,33 +22,27 @@ export async function GET(
     }
 
     // Check if user has admin role
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const user = await prisma.users.findUnique({
+      where: { id: Number(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
 
-    const isAdmin = user?.userrole.some(
-      (ur) => ur.role.name === 'super_admin' || ur.role.name === 'sub_admin'
-    );
+    const isAdmin = user?.userrole?.role.name === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get department admins
-    const admins = await prisma.user.findMany({
+    // Get department admins - users with admin role assigned to this department
+    const admins = await prisma.users.findMany({
       where: {
         userrole: {
-          some: {
-            role: {
-              name: 'admin',
-            },
+          role: {
+            name: 'admin',
           },
         },
-        department: {
-          some: {
-            id: parseInt(params.id),
-          },
+        departmentAdmin: {
+          id: parseInt(params.id),
         },
       },
       select: {
@@ -58,12 +50,9 @@ export async function GET(
         first_name: true,
         last_name: true,
         email: true,
-        department: {
-          where: {
-            id: parseInt(params.id),
-          },
+        departmentAdmin: {
           select: {
-            isHead: true,
+            id: true,
           },
         },
       },
@@ -74,7 +63,7 @@ export async function GET(
       id: admin.id,
       name: `${admin.first_name} ${admin.last_name}`,
       email: admin.email,
-      isHead: admin.department[0]?.isHead || false,
+      isHead: admin.departmentAdmin?.id === parseInt(params.id),
     }));
 
     return NextResponse.json(formattedAdmins);
@@ -99,14 +88,12 @@ export async function POST(
     }
 
     // Check if user has admin role
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const user = await prisma.users.findUnique({
+      where: { id: Number(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
 
-    const isAdmin = user?.userrole.some(
-      (ur) => ur.role.name === 'super_admin' || ur.role.name === 'sub_admin'
-    );
+    const isAdmin = user?.userrole?.role.name === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -128,7 +115,7 @@ export async function POST(
     const { userId, isHead } = validationResult.data;
 
     // Check if department exists
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -139,8 +126,8 @@ export async function POST(
       );
     }
 
-    // Check if user exists and has department admin role
-    const userToAssign = await prisma.user.findUnique({
+    // Check if user exists and has admin role
+    const userToAssign = await prisma.users.findUnique({
       where: { id: userId },
       include: {
         userrole: {
@@ -153,36 +140,20 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isDepartmentAdmin = userToAssign.userrole.some(
-      (ur) => ur.role.name === 'admin'
-    );
+    const hasAdminRole = userToAssign.userrole?.role.name === 'admin';
 
-    if (!isDepartmentAdmin) {
+    if (!hasAdminRole) {
       return NextResponse.json(
-        { error: 'User is not a department admin' },
+        { error: 'User is not an admin' },
         { status: 400 }
       );
     }
 
-    // If setting as head, unset current head
-    if (isHead) {
-      await prisma.department.update({
-        where: { id: parseInt(params.id) },
-        data: {
-          user: {
-            disconnect: true,
-          },
-        },
-      });
-    }
-
     // Assign admin to department
-    await prisma.department.update({
+    await prisma.departments.update({
       where: { id: parseInt(params.id) },
       data: {
-        user: {
-          connect: { id: userId },
-        },
+        adminId: userId,
       },
     });
 

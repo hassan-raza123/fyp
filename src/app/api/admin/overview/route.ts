@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = getUserFromRequest(request);
 
-    if (!user || user.role !== 'super_admin') {
+    if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

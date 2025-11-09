@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 // DELETE /api/departments/[id]/admins/[adminId] - Remove department admin
 export async function DELETE(
@@ -17,21 +15,19 @@ export async function DELETE(
     }
 
     // Check if user has admin role
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const user = await prisma.users.findUnique({
+      where: { id: Number(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
 
-    const isAdmin = user?.userrole.some(
-      (ur) => ur.role.name === 'super_admin' || ur.role.name === 'sub_admin'
-    );
+    const isAdmin = user?.userrole?.role.name === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Check if department exists
-    const department = await prisma.department.findUnique({
+    const department = await prisma.departments.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -43,14 +39,10 @@ export async function DELETE(
     }
 
     // Check if admin exists and is assigned to department
-    const admin = await prisma.user.findUnique({
+    const admin = await prisma.users.findUnique({
       where: { id: parseInt(params.adminId) },
       include: {
-        department: {
-          where: {
-            id: parseInt(params.id),
-          },
-        },
+        departmentAdmin: true,
       },
     });
 
@@ -58,7 +50,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
     }
 
-    if (admin.department.length === 0) {
+    if (
+      !admin.departmentAdmin ||
+      admin.departmentAdmin.id !== parseInt(params.id)
+    ) {
       return NextResponse.json(
         { error: 'Admin is not assigned to this department' },
         { status: 400 }
@@ -66,12 +61,10 @@ export async function DELETE(
     }
 
     // Remove admin from department
-    await prisma.department.update({
+    await prisma.departments.update({
       where: { id: parseInt(params.id) },
       data: {
-        user: {
-          disconnect: { id: parseInt(params.adminId) },
-        },
+        adminId: null,
       },
     });
 

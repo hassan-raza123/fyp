@@ -183,7 +183,7 @@ export async function PUT(
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -298,7 +298,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authResult = await requireRole(request, ['super_admin', 'sub_admin']);
+    const authResult = await requireRole(request, ['admin']);
     if (!authResult.success) {
       return NextResponse.json(
         { success: false, error: authResult.error },
