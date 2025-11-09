@@ -60,25 +60,39 @@ interface CourseResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
-    const departmentId = searchParams.get('departmentId');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
     const programId = searchParams.get('programId');
 
-    const where: Prisma.coursesWhereInput = {};
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Department not configured. Please set department in Settings.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const where: Prisma.coursesWhereInput = {
+      departmentId: currentDepartmentId, // Always filter by current department
+    };
 
     if (search) {
       where.OR = [
         { code: { contains: search } },
         { name: { contains: search } },
       ];
-    }
-    if (departmentId && departmentId !== 'all') {
-      where.departmentId = parseInt(departmentId);
     }
     if (type && type !== 'all') {
       where.type = type as course_type;
@@ -200,16 +214,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+
+    // Get current department ID from settings (override any departmentId from form)
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Department not configured. Please set department in Settings.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Extract prerequisites and programIds from validated data
-    const { prerequisites, programIds, ...courseData } = validatedData;
+    const { prerequisites, programIds, departmentId, ...courseData } =
+      validatedData;
     console.log('Course data to create:', JSON.stringify(courseData, null, 2));
     console.log('Prerequisites:', prerequisites);
     console.log('Program IDs:', programIds);
 
-    // Create the course with related data
+    // Create the course with related data (always use current department from settings)
     const course = await prisma.courses.create({
       data: {
         ...courseData,
+        department: {
+          connect: { id: currentDepartmentId }, // Always use current department from settings
+        },
         courses_A: prerequisites
           ? {
               connect: prerequisites.map((id) => ({ id })),

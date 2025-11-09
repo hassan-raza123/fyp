@@ -26,6 +26,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Department not configured. Please set department in Settings.',
+        },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -38,6 +54,7 @@ export async function GET(request: NextRequest) {
 
     const where = {
       AND: [
+        { departmentId: currentDepartmentId }, // Always filter by current department
         status ? { status } : {},
         batchId ? { batchId } : {},
         search

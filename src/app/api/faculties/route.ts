@@ -13,13 +13,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Filter by department if admin
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not configured. Please set department in Settings.' },
+        { status: 400 }
+      );
+    }
+
+    // Always filter by current department
     const whereClause: any = {
       status: 'active',
+      departmentId: currentDepartmentId,
     };
-    if (user?.role === 'admin' && user?.departmentId) {
-      whereClause.departmentId = user.departmentId;
-    }
 
     const faculties = await prisma.faculties.findMany({
       where: whereClause,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 import { getUserFromRequest } from '@/lib/api-utils';
+import { getCurrentDepartmentId } from '@/lib/department-utils';
 
 function getActivitySummary(activity: any) {
   // Try to parse details JSON
@@ -43,17 +44,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get total students count
-    const totalStudents = await prisma.students.count();
+    // Get current department ID from settings
+    const departmentId = await getCurrentDepartmentId();
+    if (!departmentId) {
+      return NextResponse.json(
+        {
+          error:
+            'Department not configured. Please set department in Settings.',
+        },
+        { status: 400 }
+      );
+    }
 
-    // Get total programs count
-    const totalPrograms = await prisma.programs.count();
+    // Get total students count for current department
+    const totalStudents = await prisma.students.count({
+      where: { departmentId },
+    });
 
-    // Get total courses count
-    const totalCourses = await prisma.courses.count();
+    // Get total programs count for current department
+    const totalPrograms = await prisma.programs.count({
+      where: { departmentId },
+    });
 
-    // Get total departments count
-    const totalDepartments = await prisma.departments.count();
+    // Get total courses count for current department
+    const totalCourses = await prisma.courses.count({
+      where: { departmentId },
+    });
 
     // Get recent activities from audit logs
     const recentActivities = await prisma.auditlogs.findMany({
@@ -83,8 +99,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get program distribution
+    // Get program distribution for current department
     const programDistribution = await prisma.programs.findMany({
+      where: { departmentId },
       select: {
         name: true,
         _count: {
@@ -101,13 +118,14 @@ export async function GET(request: NextRequest) {
       _count: true,
     });
 
-    // Calculate enrollment trend (last 6 months)
+    // Calculate enrollment trend (last 6 months) for current department
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const enrollmentTrend = await prisma.students.groupBy({
       by: ['createdAt'],
       where: {
+        departmentId,
         createdAt: {
           gte: sixMonthsAgo,
         },
@@ -120,7 +138,9 @@ export async function GET(request: NextRequest) {
         totalStudents,
         totalPrograms,
         totalCourses,
-        totalDepartments,
+        totalFaculty: await prisma.faculties.count({
+          where: { departmentId },
+        }),
       },
       recentActivities: recentActivities.map((activity) => ({
         id: activity.id,
