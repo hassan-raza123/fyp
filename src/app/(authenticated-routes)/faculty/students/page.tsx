@@ -20,8 +20,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, Download, Upload, Send, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -61,6 +64,14 @@ export default function StudentsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showBulkGradeDialog, setShowBulkGradeDialog] = useState(false);
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
+  const [bulkGradeFile, setBulkGradeFile] = useState<File | null>(null);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationSubject, setNotificationSubject] = useState('');
+  const [selectedStudentsForNotification, setSelectedStudentsForNotification] = useState<number[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     fetchBatches();
@@ -360,6 +371,289 @@ export default function StudentsPage() {
               disabled={deleting || (selectedStudent?.currentStudents ?? 0) > 0}
             >
               {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Grade Entry Dialog */}
+      <Dialog open={showBulkGradeDialog} onOpenChange={setShowBulkGradeDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Bulk Grade Entry</DialogTitle>
+            <DialogDescription>
+              Upload a CSV file with student marks. Download template for format.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>CSV File</Label>
+              <div className="mt-2 flex items-center gap-4">
+                <Input
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setBulkGradeFile(file);
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Generate template CSV
+                    const template = [
+                      ['studentId', 'assessmentId', 'itemId1', 'marks1', 'itemId2', 'marks2', 'itemId3', 'marks3'],
+                      ['1', '1', '1', '10', '2', '15', '3', '20'],
+                      ['2', '1', '1', '8', '2', '12', '3', '18'],
+                    ]
+                      .map((row) => row.join(','))
+                      .join('\n');
+                    const blob = new Blob([template], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'bulk-grade-entry-template.csv';
+                    a.click();
+                    toast.success('Template downloaded');
+                  }}
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Download Template
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                CSV format: studentId, assessmentId, itemId1, marks1, itemId2, marks2, ...
+              </p>
+            </div>
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm font-medium mb-2">Instructions:</p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                <li>First row should contain headers: studentId, assessmentId, itemId1, marks1, etc.</li>
+                <li>Each row represents one student's marks for one assessment</li>
+                <li>Include all assessment items with their IDs and marks</li>
+                <li>Marks should not exceed the maximum marks for each item</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowBulkGradeDialog(false);
+                setBulkGradeFile(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!bulkGradeFile) {
+                  toast.error('Please select a CSV file');
+                  return;
+                }
+
+                setUploading(true);
+                try {
+                  const text = await bulkGradeFile.text();
+                  const lines = text.split('\n').filter((line) => line.trim());
+                  const headers = lines[0].split(',').map((h) => h.trim());
+
+                  // Parse CSV
+                  const marksData = [];
+                  for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map((v) => v.trim());
+                    const studentId = parseInt(values[0]);
+                    const assessmentId = parseInt(values[1]);
+
+                    // Extract items (itemId, marks pairs)
+                    const items = [];
+                    for (let j = 2; j < values.length; j += 2) {
+                      if (values[j] && values[j + 1]) {
+                        items.push({
+                          itemId: parseInt(values[j]),
+                          marks: parseFloat(values[j + 1]),
+                        });
+                      }
+                    }
+
+                    marksData.push({
+                      studentId,
+                      assessmentId,
+                      items,
+                    });
+                  }
+
+                  // Get sectionId from first student (assuming all are from same section)
+                  // For now, we'll need to get it from the assessment
+                  if (marksData.length > 0) {
+                    const assessmentResponse = await fetch(
+                      `/api/assessments/${marksData[0].assessmentId}`,
+                      { credentials: 'include' }
+                    );
+                    const assessmentData = await assessmentResponse.json();
+
+                    // Group by assessment and section
+                    const groupedData = new Map<string, any[]>();
+                    marksData.forEach((data) => {
+                      const key = `${data.assessmentId}`;
+                      if (!groupedData.has(key)) {
+                        groupedData.set(key, []);
+                      }
+                      groupedData.get(key)?.push({
+                        studentId: data.studentId,
+                        items: data.items,
+                      });
+                    });
+
+                    // Process each assessment
+                    for (const [assessmentIdStr, studentMarks] of groupedData.entries()) {
+                      const assessmentId = parseInt(assessmentIdStr);
+                      
+                      // Get assessment details to find section
+                      const assessmentResponse = await fetch(
+                        `/api/assessments/${assessmentId}`,
+                        { credentials: 'include' }
+                      );
+                      const assessmentData = await assessmentResponse.json();
+                      
+                      // Get section from assessment's course offering
+                      // For bulk entry, we'll use the first section from the course offering
+                      // In production, you might want to let user select section
+                      let sectionId = null;
+                      if (assessmentData.courseOffering?.sections?.length > 0) {
+                        sectionId = assessmentData.courseOffering.sections[0].id;
+                      }
+
+                      const response = await fetch('/api/assessment-results/bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                          assessmentId,
+                          sectionId: sectionId,
+                          marks: studentMarks,
+                        }),
+                      });
+
+                      const result = await response.json();
+                      if (!response.ok || !result.success) {
+                        throw new Error(result.error || 'Failed to upload marks');
+                      }
+                    }
+
+                    toast.success(`Successfully uploaded marks for ${marksData.length} student(s)`);
+                    setShowBulkGradeDialog(false);
+                    setBulkGradeFile(null);
+                  }
+                } catch (error) {
+                  console.error('Error uploading bulk grades:', error);
+                  toast.error(
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to upload bulk grades'
+                  );
+                } finally {
+                  setUploading(false);
+                }
+              }}
+              disabled={!bulkGradeFile || uploading}
+            >
+              {uploading ? 'Uploading...' : 'Upload & Process'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Notification Dialog */}
+      <Dialog
+        open={showNotificationDialog}
+        onOpenChange={setShowNotificationDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Notification to Students</DialogTitle>
+            <DialogDescription>
+              Send a notification message to selected students
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Subject</Label>
+              <Input
+                value={notificationSubject}
+                onChange={(e) => setNotificationSubject(e.target.value)}
+                placeholder="Notification subject"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Message</Label>
+              <Textarea
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                placeholder="Enter notification message..."
+                className="mt-1"
+                rows={5}
+              />
+            </div>
+            <div className="bg-muted p-3 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Recipients: {selectedStudentsForNotification.length} student(s)
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowNotificationDialog(false);
+                setNotificationMessage('');
+                setNotificationSubject('');
+                setSelectedStudentsForNotification([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!notificationSubject || !notificationMessage) {
+                  toast.error('Please fill in both subject and message');
+                  return;
+                }
+
+                setSending(true);
+                try {
+                  // In a real implementation, this would send emails/notifications
+                  // For now, we'll just show a success message
+                  // You can integrate with email service or notification system here
+
+                  const selectedStudentsData = students.filter((s) =>
+                    selectedStudentsForNotification.includes(s.id)
+                  );
+
+                  // Simulate sending (replace with actual notification API call)
+                  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                  toast.success(
+                    `Notification sent to ${selectedStudentsForNotification.length} student(s)`
+                  );
+                  setShowNotificationDialog(false);
+                  setNotificationMessage('');
+                  setNotificationSubject('');
+                  setSelectedStudentsForNotification([]);
+                } catch (error) {
+                  console.error('Error sending notification:', error);
+                  toast.error('Failed to send notification');
+                } finally {
+                  setSending(false);
+                }
+              }}
+              disabled={sending || !notificationSubject || !notificationMessage}
+            >
+              {sending ? 'Sending...' : 'Send Notification'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -129,17 +129,12 @@ export function AssessmentList() {
               <span>{assessment.title}</span>
               <div className='flex gap-2'>
                 <Button variant='ghost' size='icon' asChild>
-                  <Link href={`/admin/assessments/${assessment.id}`}>
+                  <Link href={`/faculty/assessments/${assessment.id}`}>
                     <Eye className='h-4 w-4' />
                   </Link>
                 </Button>
                 <Button variant='ghost' size='icon' asChild>
-                  <Link href={`/admin/assessments/${assessment.id}/edit`}>
-                    <Edit2 className='h-4 w-4' />
-                  </Link>
-                </Button>
-                <Button variant='ghost' size='icon' asChild>
-                  <Link href={`/admin/assessments/${assessment.id}/items`}>
+                  <Link href={`/faculty/assessments/${assessment.id}/items`}>
                     <FileText className='h-4 w-4' />
                   </Link>
                 </Button>

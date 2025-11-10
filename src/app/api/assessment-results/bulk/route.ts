@@ -1,15 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { assessmentitems } from '@prisma/client';
+import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Get logged-in faculty ID
+    const facultyId = await getFacultyIdFromRequest(request);
+    if (!facultyId) {
+      return NextResponse.json(
+        { success: false, error: 'Faculty not found or unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { sectionId, assessmentId, marks } = body;
 
-    if (!sectionId || !assessmentId || !marks || !Array.isArray(marks)) {
+    if (!assessmentId || !marks || !Array.isArray(marks)) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { success: false, error: 'Invalid request data' },
         { status: 400 }
       );
     }
@@ -24,8 +34,16 @@ export async function POST(request: Request) {
 
     if (!assessment) {
       return NextResponse.json(
-        { error: 'Assessment not found' },
+        { success: false, error: 'Assessment not found' },
         { status: 404 }
+      );
+    }
+
+    // Verify assessment belongs to faculty
+    if (assessment.conductedBy !== facultyId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Assessment does not belong to you' },
+        { status: 403 }
       );
     }
 
@@ -52,7 +70,7 @@ export async function POST(request: Request) {
 
     if (validationErrors.length > 0) {
       return NextResponse.json(
-        { error: 'Validation failed', details: validationErrors },
+        { success: false, error: 'Validation failed', details: validationErrors },
         { status: 400 }
       );
     }
@@ -112,11 +130,15 @@ export async function POST(request: Request) {
       return createdResults;
     });
 
-    return NextResponse.json(results);
+    return NextResponse.json({
+      success: true,
+      message: `Successfully entered marks for ${results.length} student(s)`,
+      data: results,
+    });
   } catch (error) {
     console.error('Error in bulk marks entry:', error);
     return NextResponse.json(
-      { error: 'Failed to process marks entry' },
+      { success: false, error: 'Failed to process marks entry' },
       { status: 500 }
     );
   }

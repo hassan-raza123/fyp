@@ -10,10 +10,11 @@ export async function POST(
     console.log('Received data:', data);
     const { questionNo, description, marks, cloId } = data;
 
-    if (!cloId || isNaN(Number(cloId))) {
-      console.log('Validation failed: cloId is required and must be a number');
+    // CLO ID is optional
+    if (cloId && isNaN(Number(cloId))) {
+      console.log('Validation failed: cloId must be a valid number');
       return NextResponse.json(
-        { error: 'cloId is required and must be a valid number' },
+        { error: 'cloId must be a valid number' },
         { status: 400 }
       );
     }
@@ -23,7 +24,7 @@ export async function POST(
       questionNo,
       description,
       marks,
-      cloId: Number(cloId),
+      ...(cloId && { cloId: Number(cloId) }),
     };
 
     console.log('Creating assessment item with data:', itemData);
@@ -69,33 +70,3 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const itemId = searchParams.get('itemId');
-
-    if (!itemId) {
-      return NextResponse.json(
-        { error: 'Item ID is required' },
-        { status: 400 }
-      );
-    }
-
-    await prisma.assessmentitems.delete({
-      where: {
-        id: parseInt(itemId),
-      },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting assessment item:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete assessment item' },
-      { status: 500 }
-    );
-  }
-}

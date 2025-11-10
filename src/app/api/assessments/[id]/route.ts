@@ -7,18 +7,19 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { title, description, dueDate, totalMarks, instructions } = body;
+    const { title, description, dueDate, totalMarks, instructions, weightage } = body;
 
     const assessment = await prisma.assessments.update({
       where: {
         id: parseInt(params.id),
       },
       data: {
-        title,
-        description,
-        dueDate: new Date(dueDate),
-        totalMarks: parseInt(totalMarks),
-        instructions,
+        ...(title && { title }),
+        ...(description && { description }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(totalMarks && { totalMarks: parseInt(totalMarks) }),
+        ...(instructions && { instructions }),
+        ...(weightage && { weightage: Number(weightage) }),
       },
     });
 
@@ -26,6 +27,40 @@ export async function PUT(
   } catch (error) {
     console.error('[ASSESSMENT_UPDATE]', error);
     return new NextResponse('Internal error', { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json();
+    const { status } = body;
+
+    if (!status) {
+      return NextResponse.json(
+        { error: 'Status is required' },
+        { status: 400 }
+      );
+    }
+
+    const assessment = await prisma.assessments.update({
+      where: {
+        id: parseInt(params.id),
+      },
+      data: {
+        status: status as any,
+      },
+    });
+
+    return NextResponse.json(assessment);
+  } catch (error) {
+    console.error('[ASSESSMENT_STATUS_UPDATE]', error);
+    return NextResponse.json(
+      { error: 'Failed to update assessment status' },
+      { status: 500 }
+    );
   }
 }
 
@@ -66,6 +101,15 @@ export async function GET(
       },
       include: {
         assessmentItems: {
+          include: {
+            clo: {
+              select: {
+                id: true,
+                code: true,
+                description: true,
+              },
+            },
+          },
           orderBy: {
             questionNo: 'asc',
           },
@@ -80,6 +124,15 @@ export async function GET(
             },
             semester: {
               select: {
+                name: true,
+              },
+            },
+            sections: {
+              where: {
+                status: 'active',
+              },
+              select: {
+                id: true,
                 name: true,
               },
             },
