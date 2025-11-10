@@ -86,24 +86,25 @@ const ActivityItem = ({ summary, user, time, icon }: ActivityItemProps) => (
 interface DashboardData {
   stats: {
     totalStudents: number;
-    totalPrograms: number;
     totalCourses: number;
-    totalDepartments: number;
+    totalSections: number;
+    activeAssessments: number;
   };
   recentActivities: Array<{
     id: string;
     summary: string;
     createdAt: string;
     user: string;
+    course?: string;
   }>;
   currentSemester: {
     name: string;
-    startDate: string;
-    endDate: string;
-  };
+    startDate: string | null;
+    endDate: string | null;
+  } | null;
 }
 
-export default function AdminOverview() {
+export default function FacultyOverview() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,12 +112,18 @@ export default function AdminOverview() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/overview');
+        const response = await fetch('/api/faculty/overview', {
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
-        const data = await response.json();
-        setData(data);
+        const result = await response.json();
+        if (result.success) {
+          setData(result.data);
+        } else {
+          throw new Error(result.error || 'Failed to fetch dashboard data');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -153,10 +160,10 @@ export default function AdminOverview() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
-            Dashboard Overview
+            Faculty Dashboard
           </h1>
           <p className='text-gray-500 dark:text-gray-400'>
-            Welcome back! Here's what's happening.
+            Welcome back! Here's your teaching overview.
           </p>
         </div>
         <div className='flex items-center space-x-4'>
@@ -170,37 +177,31 @@ export default function AdminOverview() {
       {/* Stats Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <StatCard
-          title='Total Students'
+          title='My Students'
           value={data.stats.totalStudents.toLocaleString()}
           icon={
             <Users className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          change={12}
-          trend='up'
         />
         <StatCard
-          title='Active Programs'
-          value={data.stats.totalPrograms}
-          icon={
-            <GraduationCap className='w-6 h-6 text-purple-600 dark:text-purple-400' />
-          }
-          change={8}
-          trend='up'
-        />
-        <StatCard
-          title='Total Courses'
+          title='My Courses'
           value={data.stats.totalCourses}
           icon={
             <BookOpen className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
-          change={-3}
-          trend='down'
         />
         <StatCard
-          title='Departments'
-          value={data.stats.totalDepartments}
+          title='My Sections'
+          value={data.stats.totalSections}
           icon={
-            <Building2 className='w-6 h-6 text-purple-600 dark:text-purple-400' />
+            <GraduationCap className='w-6 h-6 text-purple-600 dark:text-purple-400' />
+          }
+        />
+        <StatCard
+          title='Active Assessments'
+          value={data.stats.activeAssessments}
+          icon={
+            <Target className='w-6 h-6 text-purple-600 dark:text-purple-400' />
           }
         />
       </div>
@@ -223,11 +224,15 @@ export default function AdminOverview() {
               data.recentActivities.map((activity) => (
                 <ActivityItem
                   key={activity.id}
-                  summary={activity.summary}
+                  summary={
+                    activity.course
+                      ? `${activity.summary} - ${activity.course}`
+                      : activity.summary
+                  }
                   user={activity.user}
                   time={new Date(activity.createdAt).toLocaleString()}
                   icon={
-                    <Users className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+                    <FileText className='w-5 h-5 text-purple-600 dark:text-purple-400' />
                   }
                 />
               ))

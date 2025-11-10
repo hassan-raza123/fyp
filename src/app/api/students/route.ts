@@ -52,9 +52,49 @@ export async function GET(request: NextRequest) {
     const batchId = searchParams.get('batchId');
     const search = searchParams.get('search');
 
+    // If user is faculty, only show students from their sections
+    let studentIds: number[] | null = null;
+    if (user?.role === 'teacher') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        // Get student IDs from faculty's sections
+        const studentSections = await prisma.studentsections.findMany({
+          where: {
+            section: {
+              facultyId: facultyId,
+              status: 'active',
+            },
+          },
+          select: {
+            studentId: true,
+          },
+        });
+
+        studentIds = [
+          ...new Set(studentSections.map((ss) => ss.studentId)),
+        ];
+
+        if (studentIds.length === 0) {
+          // Faculty has no students, return empty result
+          return NextResponse.json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              totalPages: 0,
+            },
+          });
+        }
+      }
+    }
+
     const where = {
       AND: [
         { departmentId: currentDepartmentId }, // Always filter by current department
+        studentIds ? { id: { in: studentIds } } : {}, // Filter by faculty's students if faculty
         status ? { status } : {},
         batchId ? { batchId } : {},
         search

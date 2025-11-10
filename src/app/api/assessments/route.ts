@@ -34,6 +34,18 @@ export async function GET(request: NextRequest) {
       where.courseOfferingId = parseInt(courseOfferingId);
     }
 
+    // If user is faculty, only show their assessments
+    if (user?.role === 'teacher') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.conductedBy = facultyId;
+      } else {
+        // Faculty not found, return empty
+        return NextResponse.json([]);
+      }
+    }
+
     const assessments = await prisma.assessments.findMany({
       where,
       orderBy: {

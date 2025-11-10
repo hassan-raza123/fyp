@@ -60,8 +60,19 @@ interface CourseResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    // Import getCurrentDepartmentId
+    // Check authentication
+    const { requireAuth } = await import('@/lib/api-utils');
+    const { success, user } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Import getCurrentDepartmentId and getFacultyIdFromRequest
     const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -87,6 +98,47 @@ export async function GET(request: NextRequest) {
     const where: Prisma.coursesWhereInput = {
       departmentId: currentDepartmentId, // Always filter by current department
     };
+
+    // If user is faculty, only show courses assigned to them via sections
+    if (user?.role === 'teacher') {
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        // Get course IDs from faculty's sections
+        const facultySections = await prisma.sections.findMany({
+          where: {
+            facultyId: facultyId,
+            status: 'active',
+          },
+          include: {
+            courseOffering: {
+              select: {
+                courseId: true,
+              },
+            },
+          },
+        });
+
+        const assignedCourseIds = [
+          ...new Set(facultySections.map((s) => s.courseOffering.courseId)),
+        ];
+
+        if (assignedCourseIds.length > 0) {
+          where.id = { in: assignedCourseIds };
+        } else {
+          // Faculty has no assigned courses, return empty result
+          return NextResponse.json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              totalPages: 0,
+            },
+          });
+        }
+      }
+    }
 
     if (search) {
       where.OR = [
