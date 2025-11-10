@@ -14,8 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, BarChart2, TrendingUp, Users, Target, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -110,12 +111,62 @@ interface Section {
   };
 }
 
+interface SectionAnalytics {
+  section: {
+    id: number;
+    name: string;
+    course: {
+      code: string;
+      name: string;
+    };
+    semester: {
+      name: string;
+    };
+    totalStudents: number;
+  };
+  averagePerformance: number;
+  totalAssessments: number;
+  completionRates: Array<{
+    assessmentId: number;
+    assessmentTitle: string;
+    assessmentType: string;
+    dueDate: string | null;
+    totalStudents: number;
+    submittedCount: number;
+    evaluatedCount: number;
+    submissionRate: number;
+    evaluationRate: number;
+  }>;
+  studentPerformance: Array<{
+    studentId: number;
+    studentName: string;
+    rollNumber: string;
+    averagePercentage: number;
+    completedAssessments: number;
+    totalAssessments: number;
+    completionRate: number;
+  }>;
+  performanceDistribution: Array<{
+    range: string;
+    count: number;
+  }>;
+  cloAttainmentSummary: Array<{
+    cloCode: string;
+    cloDescription: string;
+    attainmentPercent: number;
+    threshold: number;
+    status: string;
+  }>;
+}
+
 export default function SectionDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const queryClient = useQueryClient();
   const [section, setSection] = useState<Section | null>(null);
+  const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('students');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -145,7 +196,25 @@ export default function SectionDetailsPage() {
 
   useEffect(() => {
     fetchSection();
+    fetchAnalytics();
   }, [params.id]);
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch(`/api/sections/${params.id}/analytics`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setAnalytics(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+  };
 
   // Fetch students from the same batch
   const { data: students } = useQuery<Student[]>({
@@ -384,81 +453,363 @@ export default function SectionDetailsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Enrolled Students</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Roll Number</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className='w-[100px]'>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {section.studentsections.map((enrollment) => (
-                  <TableRow key={enrollment.id}>
-                    <TableCell>
-                      {enrollment.student.user.first_name}{' '}
-                      {enrollment.student.user.last_name}
-                    </TableCell>
-                    <TableCell>{enrollment.student.rollNumber}</TableCell>
-                    <TableCell>{enrollment.student.user.email}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          enrollment.status === 'active'
-                            ? 'default'
-                            : 'secondary'
-                        }
-                      >
-                        {enrollment.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              'Are you sure you want to remove this student from the section?'
-                            )
-                          ) {
-                            removeStudentMutation.mutate(
-                              enrollment.student.id.toString()
-                            );
-                          }
-                        }}
-                        disabled={removeStudentMutation.isPending}
-                      >
-                        {removeStudentMutation.isPending ? (
-                          <Loader2 className='w-4 h-4 animate-spin' />
-                        ) : (
-                          <Trash2 className='w-4 h-4 text-red-500' />
-                        )}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {section.studentsections.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className='text-center text-gray-500'
-                    >
-                      No students enrolled
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="students">Students</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="students" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Enrolled Students</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Roll Number</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className='w-[100px]'>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {section.studentsections.map((enrollment) => (
+                      <TableRow key={enrollment.id}>
+                        <TableCell>
+                          {enrollment.student.user.first_name}{' '}
+                          {enrollment.student.user.last_name}
+                        </TableCell>
+                        <TableCell>{enrollment.student.rollNumber}</TableCell>
+                        <TableCell>{enrollment.student.user.email}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              enrollment.status === 'active'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                          >
+                            {enrollment.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant='ghost'
+                            size='icon'
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  'Are you sure you want to remove this student from the section?'
+                                )
+                              ) {
+                                removeStudentMutation.mutate(
+                                  enrollment.student.id.toString()
+                                );
+                              }
+                            }}
+                            disabled={removeStudentMutation.isPending}
+                          >
+                            {removeStudentMutation.isPending ? (
+                              <Loader2 className='w-4 h-4 animate-spin' />
+                            ) : (
+                              <Trash2 className='w-4 h-4 text-red-500' />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {section.studentsections.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className='text-center text-gray-500'
+                        >
+                          No students enrolled
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-4">
+            {analytics ? (
+              <>
+                {/* Performance Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Avg Performance</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.averagePerformance.toFixed(1)}%
+                          </p>
+                        </div>
+                        <TrendingUp className="w-8 h-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Students</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.section.totalStudents}
+                          </p>
+                        </div>
+                        <Users className="w-8 h-8 text-blue-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Assessments</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.totalAssessments}
+                          </p>
+                        </div>
+                        <FileText className="w-8 h-8 text-purple-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">CLOs Attained</p>
+                          <p className="text-2xl font-bold">
+                            {analytics.cloAttainmentSummary.filter(c => c.status === 'attained').length} / {analytics.cloAttainmentSummary.length}
+                          </p>
+                        </div>
+                        <Target className="w-8 h-8 text-orange-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Student Performance Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Student Performance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Student Name</TableHead>
+                          <TableHead>Roll Number</TableHead>
+                          <TableHead>Avg Performance</TableHead>
+                          <TableHead>Completed</TableHead>
+                          <TableHead>Completion Rate</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analytics.studentPerformance.map((student) => (
+                          <TableRow key={student.studentId}>
+                            <TableCell className="font-medium">
+                              {student.studentName}
+                            </TableCell>
+                            <TableCell>{student.rollNumber}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  student.averagePercentage >= 70
+                                    ? 'default'
+                                    : student.averagePercentage >= 50
+                                    ? 'secondary'
+                                    : 'destructive'
+                                }
+                              >
+                                {student.averagePercentage.toFixed(1)}%
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {student.completedAssessments} / {student.totalAssessments}
+                            </TableCell>
+                            <TableCell>
+                              {student.completionRate.toFixed(1)}%
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  router.push(`/faculty/students/${student.studentId}`)
+                                }
+                              >
+                                View Details
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                {/* Assessment Completion Rates */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Assessment Completion Rates</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Assessment</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Due Date</TableHead>
+                          <TableHead>Submitted</TableHead>
+                          <TableHead>Evaluated</TableHead>
+                          <TableHead>Submission Rate</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analytics.completionRates.map((assessment) => (
+                          <TableRow key={assessment.assessmentId}>
+                            <TableCell className="font-medium">
+                              {assessment.assessmentTitle}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{assessment.assessmentType}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {assessment.dueDate
+                                ? new Date(assessment.dueDate).toLocaleDateString()
+                                : 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              {assessment.submittedCount} / {assessment.totalStudents}
+                            </TableCell>
+                            <TableCell>
+                              {assessment.evaluatedCount} / {assessment.totalStudents}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-blue-600 h-2 rounded-full"
+                                    style={{
+                                      width: `${assessment.submissionRate}%`,
+                                    }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm">
+                                  {assessment.submissionRate.toFixed(1)}%
+                                </span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading performance data...</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            {analytics ? (
+              <>
+                {/* Performance Distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Performance Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.performanceDistribution.map((range) => (
+                        <div key={range.range} className="flex items-center gap-4">
+                          <div className="w-24 text-sm font-medium">{range.range}</div>
+                          <div className="flex-1 bg-gray-200 rounded-full h-4">
+                            <div
+                              className="bg-purple-600 h-4 rounded-full"
+                              style={{
+                                width: `${(range.count / analytics.section.totalStudents) * 100}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="w-12 text-sm text-right">{range.count}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* CLO Attainment Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>CLO Attainment Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {analytics.cloAttainmentSummary.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>CLO Code</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Attainment</TableHead>
+                            <TableHead>Threshold</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {analytics.cloAttainmentSummary.map((clo, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{clo.cloCode}</TableCell>
+                              <TableCell>{clo.cloDescription}</TableCell>
+                              <TableCell>{clo.attainmentPercent.toFixed(1)}%</TableCell>
+                              <TableCell>{clo.threshold}%</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    clo.status === 'attained' ? 'default' : 'destructive'
+                                  }
+                                >
+                                  {clo.status === 'attained' ? 'Attained' : 'Not Attained'}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No CLO attainment data available
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading analytics...</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
