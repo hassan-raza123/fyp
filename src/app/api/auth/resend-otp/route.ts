@@ -13,7 +13,7 @@ const resendOTPSchema = z.object({
     .max(255, 'Email is too long')
     .trim()
     .toLowerCase(),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),

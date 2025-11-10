@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     // If user is faculty, only show their assessments
-    if (user?.role === 'teacher') {
+    if (user?.role === 'faculty') {
       const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {

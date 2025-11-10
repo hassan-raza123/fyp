@@ -293,8 +293,8 @@ export const roleBasedNavigation: RoleBasedNavigation = {
   // Admin navigation
   admin: adminNavigation,
 
-  // Teacher has unique navigation
-  teacher: [
+  // Faculty has unique navigation
+  faculty: [
     {
       title: 'DASHBOARD',
       items: [

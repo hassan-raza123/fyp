@@ -33,19 +33,19 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
-    case 'teacher':
-      return 'teacher';
+    case 'faculty':
+      return 'faculty';
     case 'admin':
       return 'admin';
     default:
@@ -76,7 +76,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
     };
   }
 
-  if (userType === 'teacher' && user.faculty) {
+  if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
       departmentId: user.faculty.departmentId,
@@ -290,7 +290,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle students and teachers
-    if (userType === 'student' || userType === 'teacher') {
+    if (userType === 'student' || userType === 'faculty') {
       // Check if user has the specific role
       const requestedRole = mapUserTypeToRole(userType);
       if (!userRoles.includes(requestedRole)) {
@@ -441,7 +441,7 @@ function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'admin':
       return '/admin';
-    case 'teacher':
+    case 'faculty':
       return '/faculty';
     case 'student':
       return '/student';

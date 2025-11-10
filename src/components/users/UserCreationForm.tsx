@@ -15,11 +15,11 @@ import {
 } from '@/components/ui/select';
 
 // Define role types
-type RoleType = 'admin' | 'teacher' | 'student';
+type RoleType = 'admin' | 'faculty' | 'student';
 
 const roleOptions = [
   { value: 'admin', label: 'Admin' },
-  { value: 'teacher', label: 'Teacher' },
+  { value: 'faculty', label: 'Faculty' },
   { value: 'student', label: 'Student' },
 ];
 
@@ -85,8 +85,8 @@ export default function UserCreationForm() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.role === 'teacher' && !formData.departmentId) {
-      newErrors.departmentId = 'Department is required for teachers';
+    if (formData.role === 'faculty' && !formData.departmentId) {
+      newErrors.departmentId = 'Department is required for faculty';
     }
 
     if (formData.role === 'student' && !formData.rollNumber) {
@@ -131,7 +131,7 @@ export default function UserCreationForm() {
           rollNumber:
             formData.role === 'student' ? formData.rollNumber : undefined,
           designation:
-            formData.role === 'teacher' ? formData.designation : undefined,
+            formData.role === 'faculty' ? formData.designation : undefined,
         }),
       });
 
@@ -285,7 +285,7 @@ export default function UserCreationForm() {
         </div>
 
         {/* Role-specific Fields */}
-        {formData.role === 'teacher' && (
+        {formData.role === 'faculty' && (
           <div className="space-y-2">
             <Label htmlFor="departmentId">Department</Label>
             <Input

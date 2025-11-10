@@ -68,9 +68,9 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
     return userRole === 'admin';
   }
 
-  // Faculty routes - only for teacher
+  // Faculty routes - only for faculty
   if (path.startsWith('/faculty')) {
-    return userRole === 'teacher';
+    return userRole === 'faculty';
   }
 
   // Student routes - only for student

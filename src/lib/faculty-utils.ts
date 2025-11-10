@@ -17,7 +17,7 @@ export async function getFacultyIdFromRequest(
     }
 
     // Check if user is a faculty member
-    if (user.role !== 'teacher') {
+    if (user.role !== 'faculty') {
       return null;
     }
 
@@ -51,7 +51,7 @@ export async function getFacultyFromRequest(request: NextRequest) {
     }
 
     // Check if user is a faculty member
-    if (user.role !== 'teacher') {
+    if (user.role !== 'faculty') {
       return null;
     }
 

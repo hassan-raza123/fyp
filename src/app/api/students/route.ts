@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
     // If user is faculty, only show students from their sections
     let studentIds: number[] | null = null;
-    if (user?.role === 'teacher') {
+    if (user?.role === 'faculty') {
       const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {

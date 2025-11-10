@@ -4,7 +4,7 @@ import { requireRole, getUserFromRequest } from '@/lib/api-utils';
 // Example API route that requires authentication
 export async function GET(request: NextRequest) {
   // Check if user is authenticated and has required role
-  const { success, user, error } = requireRole(request, ['admin', 'teacher']);
+  const { success, user, error } = requireRole(request, ['admin', 'faculty']);
 
   if (!success) {
     return NextResponse.json({ error }, { status: 401 });

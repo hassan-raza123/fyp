@@ -72,13 +72,15 @@ export default function CreateFacultyPage() {
       }
 
       // Get department ID by code
-      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      const deptResponse = await fetch(
+        `/api/departments/by-code?code=${departmentCode}`
+      );
       if (!deptResponse.ok) {
         throw new Error('Department not found');
       }
       const deptData = await deptResponse.json();
       const deptId = deptData.id.toString();
-      
+
       setCurrentDepartmentId(deptId);
       setFormData((prev) => ({
         ...prev,
@@ -135,14 +137,14 @@ export default function CreateFacultyPage() {
 
       const userId = userData.data.id;
 
-      // Assign teacher role
+      // Assign faculty role (teacher role in database)
       const roleResponse = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          roles: ['teacher'],
+          roles: ['faculty'],
           facultyDetails: {
             departmentId: formData.departmentId,
             designation: formData.designation,
@@ -320,9 +322,9 @@ export default function CreateFacultyPage() {
 
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> A user account will be created automatically
-                with default password: <strong>11223344</strong>. Faculty member
-                can login and change their password.
+                <strong>Note:</strong> A user account will be created
+                automatically with default password: <strong>11223344</strong>.
+                Faculty member can login and change their password.
               </p>
             </div>
 
@@ -352,4 +354,3 @@ export default function CreateFacultyPage() {
     </div>
   );
 }
-

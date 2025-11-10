@@ -71,9 +71,9 @@ export async function POST(
     }
 
     // Validate roles and role-specific details
-    const validRoles = ['admin', 'teacher', 'student'];
+    const validRoles = ['admin', 'faculty', 'student'];
     const hasStudentRole = roles.includes('student');
-    const hasFacultyRole = roles.includes('teacher') || roles.includes('admin');
+    const hasFacultyRole = roles.includes('faculty') || roles.includes('admin');
 
     // Validate roles
     for (const role of roles) {
@@ -114,7 +114,7 @@ export async function POST(
         return NextResponse.json(
           {
             error:
-              'Faculty details are required for teacher/department admin role',
+              'Faculty details are required for faculty/admin role',
           },
           { status: 400 }
         );
@@ -200,7 +200,7 @@ export async function POST(
             }
             break;
 
-          case 'teacher':
+          case 'faculty':
           case 'admin':
             if (facultyDetails) {
               const faculty = await tx.faculties.create({

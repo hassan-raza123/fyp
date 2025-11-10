@@ -263,7 +263,7 @@ export default function CreateSectionPage() {
 
               <div className='space-y-2'>
                 <label htmlFor='facultyId' className='text-sm font-medium'>
-                  Faculty/Teacher <span className='text-red-500'>*</span>
+                  Faculty <span className='text-red-500'>*</span>
                 </label>
                 <Select
                   onValueChange={(value) => form.setValue('facultyId', value)}

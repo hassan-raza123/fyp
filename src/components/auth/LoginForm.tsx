@@ -152,7 +152,7 @@ export default function LoginForm() {
     switch (type) {
       case 'admin':
         return 'Admin';
-      case 'teacher':
+      case 'faculty':
         return 'Faculty';
       case 'student':
         return 'Student';
@@ -165,7 +165,7 @@ export default function LoginForm() {
     switch (type) {
       case 'admin':
         return 'admin@university.edu';
-      case 'teacher':
+      case 'faculty':
         return 'faculty@university.edu';
       case 'student':
         return 'student@university.edu';
@@ -191,7 +191,7 @@ export default function LoginForm() {
 
       {/* User Type Selector */}
       <div className='flex rounded-2xl bg-gray-100 p-1.5 mb-8'>
-        {(['student', 'teacher', 'admin'] as const).map((type) => (
+        {(['student', 'faculty', 'admin'] as const).map((type) => (
           <button
             key={type}
             type='button'

@@ -67,11 +67,11 @@ async function seedDatabase() {
   });
 
   await prisma.roles.upsert({
-    where: { name: 'teacher' },
+    where: { name: 'faculty' },
     update: {},
     create: {
-      name: 'teacher',
-      description: 'Faculty/Teacher',
+      name: 'faculty',
+      description: 'Faculty',
     },
   });
 

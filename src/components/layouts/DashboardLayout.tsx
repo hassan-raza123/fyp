@@ -325,7 +325,7 @@ export default function DashboardLayout({
                   }`}
                 >
                   {role === 'admin' && 'Admin Panel'}
-                  {role === 'teacher' && 'Faculty Panel'}
+                  {role === 'faculty' && 'Faculty Panel'}
                   {role === 'student' && 'Student Portal'}
                   {!role && 'Dashboard'}
                 </h1>
@@ -336,13 +336,13 @@ export default function DashboardLayout({
                     }`}
                   >
                     {role === 'admin' && 'Admin Access'}
-                    {role === 'teacher' && 'Faculty Access'}
+                    {role === 'faculty' && 'Faculty Access'}
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
                   <span className="px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
                     {role === 'admin' && 'Admin'}
-                    {role === 'teacher' && 'Faculty'}
+                    {role === 'faculty' && 'Faculty'}
                     {role === 'student' && 'Student'}
                     {!role && 'Beta'}
                   </span>

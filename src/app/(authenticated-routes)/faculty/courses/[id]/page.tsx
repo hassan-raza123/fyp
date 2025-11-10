@@ -316,7 +316,7 @@ export default function CourseDetailsPage() {
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">No teachers assigned</p>
+              <p className="text-muted-foreground">No faculty assigned</p>
             )}
           </div>
         </Card>

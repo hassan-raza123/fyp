@@ -91,7 +91,7 @@ export default function RoleManagementForm({
 
           // Set role-specific details based on current role
           if (
-            (currentRole === 'teacher' || currentRole === 'admin') &&
+            (currentRole === 'faculty' || currentRole === 'admin') &&
             data.faculty
           ) {
             form.setValue('facultyDetails', {
@@ -227,7 +227,7 @@ export default function RoleManagementForm({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="teacher">Teacher</SelectItem>
+                        <SelectItem value="faculty">Faculty</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -235,7 +235,7 @@ export default function RoleManagementForm({
                 )}
               />
 
-              {(form.watch('role') === 'teacher' ||
+              {(form.watch('role') === 'faculty' ||
                 form.watch('role') === 'admin') && (
                 <div className="space-y-4 border rounded-lg p-4">
                   <h3 className="text-lg font-medium">Faculty Details</h3>

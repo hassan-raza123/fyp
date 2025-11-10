@@ -1,6 +1,6 @@
-export type BaseUserType = 'student' | 'teacher' | 'admin';
+export type BaseUserType = 'student' | 'faculty' | 'admin';
 export type AdminRole = 'admin';
-export type AllRoles = 'student' | 'teacher' | 'admin';
+export type AllRoles = 'student' | 'faculty' | 'admin';
 
 export interface IUser {
   id: number;

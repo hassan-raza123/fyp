@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Check authentication and role
     const { success, user, error } = requireRole(request, [
       'admin',
-      'teacher',
+      'faculty',
       'student',
     ]);
     if (!success) {

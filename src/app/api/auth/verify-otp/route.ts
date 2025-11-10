@@ -23,7 +23,7 @@ const verifyOTPSchema = z.object({
     .max(255, 'Email is too long')
     .trim()
     .toLowerCase(),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -34,12 +34,12 @@ const verifyOTPSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'teacher' | 'admin'): string {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
-    case 'teacher':
-      return 'teacher';
+    case 'faculty':
+      return 'faculty';
     case 'admin':
       return 'admin';
     default:
@@ -56,7 +56,7 @@ function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'student':
       return '/student';
-    case 'teacher':
+    case 'faculty':
       return '/faculty';
     case 'admin':
       return '/admin';
@@ -83,7 +83,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
     };
   }
 
-  if (userType === 'teacher' && user.faculty) {
+  if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
       departmentId: user.faculty.departmentId || 0, // Handle null case
