@@ -21,7 +21,7 @@ import * as z from 'zod';
 const formSchema = z.object({
   name: z.string().min(1, 'Section name is required'),
   courseOfferingId: z.string().min(1, 'Course offering is required'),
-  facultyId: z.string().min(1, 'Faculty/Teacher is required'),
+  facultyId: z.string().min(1, 'Faculty is required'),
   batchId: z.string().min(1, 'Batch is required'),
   maxStudents: z.string().min(1, 'Maximum students is required'),
 });

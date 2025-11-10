@@ -48,7 +48,7 @@ const features = [
     items: [
       'Intelligent class scheduling with conflict detection',
       'Room capacity and availability management',
-      'Teacher workload management',
+      'Faculty workload management',
       'Interactive schedule visualization',
     ],
   },
@@ -113,7 +113,7 @@ const features = [
     description: 'Full mobile support for all users',
     items: [
       'Responsive design for all devices',
-      'Teacher-focused mobile attendance marking',
+      'Faculty-focused mobile attendance marking',
       'Student portal for mobile access',
       'Real-time notifications',
     ],

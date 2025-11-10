@@ -289,7 +289,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Handle students and teachers
+    // Handle students and faculty
     if (userType === 'student' || userType === 'faculty') {
       // Check if user has the specific role
       const requestedRole = mapUserTypeToRole(userType);
@@ -344,7 +344,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Verified student/teacher - direct login
+      // Verified student/faculty - direct login
       // Map database role to frontend role (admin maps to 'admin' in frontend)
       const frontendRole = userType;
       const userData = createUserData(user, frontendRole as AllRoles);

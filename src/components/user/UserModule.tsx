@@ -12,7 +12,7 @@ export function UserModule() {
       <Tabs defaultValue="students" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="teachers">Faculty</TabsTrigger>
+          <TabsTrigger value="faculty">Faculty</TabsTrigger>
           <TabsTrigger value="administrators">Administrators</TabsTrigger>
         </TabsList>
         
@@ -20,7 +20,7 @@ export function UserModule() {
           <StudentManagement />
         </TabsContent>
         
-        <TabsContent value="teachers">
+        <TabsContent value="faculty">
           <div className="p-4">
             <h2 className="text-xl font-semibold">Faculty Management</h2>
             <p className="text-muted-foreground">Faculty management functionality coming soon...</p>

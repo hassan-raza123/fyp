@@ -42,7 +42,14 @@ interface Course {
     code: string;
     description: string;
   }[];
-  teachers: {
+  faculty: {
+    faculty: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }[];
+  teachers?: {
     teacher: {
       id: number;
       name: string;
@@ -92,7 +99,7 @@ export default function CourseDetailsPage() {
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
-          teachers: data.data.teachers || [],
+          faculty: data.data.faculty || data.data.teachers || [],
           programs: data.data.programs || [],
         });
       } else {
@@ -304,14 +311,14 @@ export default function CourseDetailsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Assigned Teachers</h2>
+          <h2 className="text-xl font-semibold mb-4">Assigned Faculty</h2>
           <div className="space-y-4">
-            {course.teachers && course.teachers.length > 0 ? (
-              course.teachers.map((teacher) => (
-                <div key={teacher.teacher?.id}>
-                  <p className="font-medium">{teacher.teacher?.name}</p>
+            {(course.faculty || course.teachers) && (course.faculty || course.teachers)?.length > 0 ? (
+              (course.faculty || course.teachers)?.map((facultyMember, index) => (
+                <div key={facultyMember.faculty?.id || facultyMember.teacher?.id || index}>
+                  <p className="font-medium">{facultyMember.faculty?.name || facultyMember.teacher?.name}</p>
                   <p className="text-muted-foreground">
-                    {teacher.teacher?.email}
+                    {facultyMember.faculty?.email || facultyMember.teacher?.email}
                   </p>
                 </div>
               ))

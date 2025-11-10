@@ -137,7 +137,7 @@ export default function CreateFacultyPage() {
 
       const userId = userData.data.id;
 
-      // Assign faculty role (teacher role in database)
+      // Assign faculty role
       const roleResponse = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: {

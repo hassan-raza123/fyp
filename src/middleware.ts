@@ -6,7 +6,7 @@ import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 // Dashboard routes based on user roles
 const dashboardRoutes = {
   student: '/student',
-  teacher: '/faculty',
+  faculty: '/faculty',
   admin: '/admin',
 };
 

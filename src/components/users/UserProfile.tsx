@@ -31,7 +31,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
     firstName: 'John',
     lastName: 'Doe',
     email: 'john.doe@example.com',
-    role: 'TEACHER',
+    role: 'FACULTY',
     status: 'active',
     phone: '+1 234 567 890',
     address: '123 Main St, City, Country',

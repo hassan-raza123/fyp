@@ -11,8 +11,8 @@ export interface StudentData {
   batch: string;
 }
 
-// Teacher specific data
-export interface TeacherData {
+// Faculty specific data
+export interface FacultyData {
   employeeId: string;
   departmentId: string;
   designation: string;
@@ -28,7 +28,7 @@ export interface BaseUserData {
 }
 
 // Combined user data type
-export type UserData = BaseUserData & Partial<StudentData & TeacherData>;
+export type UserData = BaseUserData & Partial<StudentData & FacultyData>;
 
 // API response types
 export interface LoginSuccess {
