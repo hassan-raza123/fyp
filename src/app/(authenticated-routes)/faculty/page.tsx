@@ -23,6 +23,8 @@ import {
   Eye,
   AlertTriangle,
   Star,
+  CheckCircle2,
+  TrendingDown,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -175,7 +177,18 @@ interface DashboardData {
       assessment: string;
       percentage: number;
     }>;
+    averageClassPerformance: number;
   };
+  recentGradingActivity: Array<{
+    assessmentId: number;
+    assessmentTitle: string;
+    course: {
+      code: string;
+      name: string;
+    };
+    evaluatedAt: string | null;
+    status: string;
+  }>;
 }
 
 export default function FacultyOverview() {
@@ -488,6 +501,23 @@ export default function FacultyOverview() {
           </CardHeader>
           <CardContent>
             <div className='space-y-4'>
+              {/* Average Class Performance */}
+              <div className='p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-sm font-medium'>Average Class Performance</p>
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      Across all assessments
+                    </p>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-2xl font-bold text-blue-600'>
+                      {data.studentAlerts.averageClassPerformance.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {data.studentAlerts.atRiskStudents.length > 0 && (
                 <div>
                   <p className='text-sm font-medium mb-2 text-red-600 flex items-center gap-1'>
@@ -549,6 +579,72 @@ export default function FacultyOverview() {
         </Card>
       </div>
 
+      {/* Recent Grading Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <CheckCircle2 className='w-5 h-5 text-green-600' />
+            Recent Grading Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.recentGradingActivity.length === 0 ? (
+            <p className='text-sm text-muted-foreground text-center py-4'>
+              No recent grading activity
+            </p>
+          ) : (
+            <div className='space-y-3'>
+              {data.recentGradingActivity.map((activity) => (
+                <div
+                  key={activity.assessmentId}
+                  className='p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer'
+                  onClick={() =>
+                    router.push(`/faculty/assessments/${activity.assessmentId}`)
+                  }
+                >
+                  <div className='flex items-start justify-between'>
+                    <div className='flex-1'>
+                      <p className='font-medium text-sm'>
+                        {activity.assessmentTitle}
+                      </p>
+                      <p className='text-xs text-muted-foreground mt-1'>
+                        {activity.course.code} - {activity.course.name}
+                      </p>
+                      {activity.evaluatedAt && (
+                        <p className='text-xs text-muted-foreground mt-1'>
+                          Evaluated:{' '}
+                          {new Date(activity.evaluatedAt).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <Badge
+                      variant={
+                        activity.status === 'published'
+                          ? 'default'
+                          : 'secondary'
+                      }
+                      className='ml-2'
+                    >
+                      {activity.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {data.pendingWork.pendingEvaluations > 0 && (
+            <Button
+              variant='outline'
+              className='w-full mt-4'
+              onClick={() => router.push('/faculty/results/result-evaluation')}
+            >
+              <FileText className='w-4 h-4 mr-2' />
+              View Pending Evaluations ({data.pendingWork.pendingEvaluations})
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Quick Actions & Recent Activity */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         {/* Quick Actions */}
@@ -592,6 +688,14 @@ export default function FacultyOverview() {
               >
                 <Award className='w-4 h-4 mr-2' />
                 Manage Grades
+              </Button>
+              <Button
+                variant='outline'
+                className='w-full justify-start'
+                onClick={() => router.push('/faculty/analytics')}
+              >
+                <BarChart2 className='w-4 h-4 mr-2' />
+                Generate Report
               </Button>
             </div>
           </CardContent>

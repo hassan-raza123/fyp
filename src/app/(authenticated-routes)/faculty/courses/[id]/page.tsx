@@ -284,17 +284,34 @@ export default function CourseDetailsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Course Learning Outcomes
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">
+              Course Learning Outcomes
+            </h2>
+            {course.clos && course.clos.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/faculty/courses/${courseId}/clos`)}
+              >
+                View All CLOs
+              </Button>
+            )}
+          </div>
           <div className="space-y-4">
             {course.clos && course.clos.length > 0 ? (
-              course.clos.map((clo) => (
-                <div key={clo.id}>
-                  <p className="font-medium">{clo.code}</p>
-                  <p className="text-muted-foreground">{clo.description}</p>
-                </div>
-              ))
+              <>
+                {course.clos.slice(0, 3).map((clo) => (
+                  <div key={clo.id}>
+                    <p className="font-medium">{clo.code}</p>
+                    <p className="text-muted-foreground">{clo.description}</p>
+                  </div>
+                ))}
+                {course.clos.length > 3 && (
+                  <p className="text-sm text-muted-foreground">
+                    +{course.clos.length - 3} more CLOs
+                  </p>
+                )}
+              </>
             ) : (
               <p className="text-muted-foreground">
                 No learning outcomes defined
@@ -350,6 +367,168 @@ export default function CourseDetailsPage() {
             )}
           </div>
         </Card>
+      </div>
+
+      {/* Course Offerings & Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <Card className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Course Offerings</h2>
+            <Button
+              variant="outline"
+              onClick={() =>
+                router.push(`/faculty/courses/${courseId}/offerings`)
+              }
+            >
+              View All Offerings
+            </Button>
+          </div>
+          <CourseOfferingsPreview courseId={courseId as string} />
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Course Analytics</h2>
+            <Button
+              variant="outline"
+              onClick={() =>
+                router.push(`/faculty/courses/${courseId}/analytics`)
+              }
+            >
+              View Analytics
+            </Button>
+          </div>
+          <CourseAnalyticsPreview courseId={courseId as string} />
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Course Offerings Preview Component
+function CourseOfferingsPreview({ courseId }: { courseId: string }) {
+  const [offerings, setOfferings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOfferings = async () => {
+      try {
+        const response = await fetch(
+          `/api/courses/${courseId}/offerings`,
+          { credentials: 'include' }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setOfferings(data.data.slice(0, 3)); // Show first 3
+        }
+      } catch (error) {
+        console.error('Error fetching offerings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOfferings();
+  }, [courseId]);
+
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">Loading...</p>;
+  }
+
+  if (offerings.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No course offerings found
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {offerings.map((offering) => (
+        <div
+          key={offering.id}
+          className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+        >
+          <p className="font-medium text-sm">{offering.semester.name}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {offering.sections.length} section(s) •{' '}
+            {offering.totalAssessments} assessment(s)
+          </p>
+        </div>
+      ))}
+      {offerings.length >= 3 && (
+        <p className="text-xs text-muted-foreground text-center">
+          + More offerings available
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Course Analytics Preview Component
+function CourseAnalyticsPreview({ courseId }: { courseId: string }) {
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetch(
+          `/api/courses/${courseId}/analytics`,
+          { credentials: 'include' }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setAnalytics(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [courseId]);
+
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">Loading...</p>;
+  }
+
+  if (!analytics) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No analytics data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="p-3 bg-muted rounded-lg">
+        <p className="text-sm font-medium">Overall Performance</p>
+        <p className="text-2xl font-bold mt-1">
+          {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {analytics.overallPerformance.attainedCLOs} /{' '}
+          {analytics.overallPerformance.totalCLOs} CLOs attained
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <p className="text-muted-foreground">Total Students</p>
+          <p className="font-medium">
+            {analytics.overallPerformance.totalStudents}
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Assessments</p>
+          <p className="font-medium">
+            {analytics.overallPerformance.totalAssessments}
+          </p>
+        </div>
       </div>
     </div>
   );

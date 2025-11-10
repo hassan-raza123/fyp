@@ -341,6 +341,102 @@ export async function GET(request: NextRequest) {
       take: 5,
     });
 
+    // Get recent grading activity (last graded assessments)
+    // First get all evaluated results
+    const allEvaluatedResults = await prisma.studentassessmentresults.findMany({
+      where: {
+        assessment: {
+          conductedBy: facultyId,
+          courseOfferingId: {
+            in: courseOfferingIds,
+          },
+        },
+        evaluatedAt: {
+          not: null,
+        },
+        status: {
+          in: ['evaluated', 'published'],
+        },
+      },
+      include: {
+        assessment: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        evaluatedAt: 'desc',
+      },
+    });
+
+    // Group by assessment and get latest evaluation time
+    const assessmentMap = new Map<
+      number,
+      {
+        assessmentId: number;
+        assessmentTitle: string;
+        courseCode: string;
+        courseName: string;
+        evaluatedAt: Date | null;
+        status: string;
+      }
+    >();
+
+    allEvaluatedResults.forEach((result) => {
+      if (!assessmentMap.has(result.assessmentId)) {
+        assessmentMap.set(result.assessmentId, {
+          assessmentId: result.assessmentId,
+          assessmentTitle: result.assessment.title,
+          courseCode: result.assessment.courseOffering.course.code,
+          courseName: result.assessment.courseOffering.course.name,
+          evaluatedAt: result.evaluatedAt,
+          status: result.status,
+        });
+      }
+    });
+
+    const recentGradingActivity = Array.from(assessmentMap.values())
+      .sort((a, b) => {
+        if (!a.evaluatedAt) return 1;
+        if (!b.evaluatedAt) return -1;
+        return b.evaluatedAt.getTime() - a.evaluatedAt.getTime();
+      })
+      .slice(0, 5);
+
+    // Calculate average class performance
+    const allResults = await prisma.studentassessmentresults.findMany({
+      where: {
+        assessment: {
+          conductedBy: facultyId,
+          courseOfferingId: {
+            in: courseOfferingIds,
+          },
+        },
+        status: {
+          in: ['evaluated', 'published'],
+        },
+      },
+      select: {
+        percentage: true,
+      },
+    });
+
+    const averageClassPerformance =
+      allResults.length > 0
+        ? allResults.reduce((sum, r) => sum + r.percentage, 0) /
+          allResults.length
+        : 0;
+
     return NextResponse.json({
       success: true,
       data: {
