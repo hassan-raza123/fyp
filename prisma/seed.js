@@ -56,6 +56,8 @@ async function seedDatabase() {
   const defaultPassword = await bcrypt.hash('11223344', 10);
 
   // 1. Create Roles
+  // Note: We create all roles (admin, faculty, student) even though we only create an admin user
+  // because the admin will need these roles to exist when creating faculty and student users later
   console.log('📋 Creating roles...');
   await prisma.roles.upsert({
     where: { name: 'admin' },
