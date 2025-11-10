@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         courseOffering: {
           include: {
             course: true,
+            semester: true,
           },
         },
       },
@@ -33,16 +34,20 @@ export async function GET(request: NextRequest) {
       ...new Set(sections.map((s) => s.courseOffering.courseId)),
     ];
 
-    // Get total students from faculty's sections
-    const totalStudents = await prisma.studentsections.count({
+    // Get total students from faculty's sections (count distinct students)
+    const studentSections = await prisma.studentsections.findMany({
       where: {
         section: {
           facultyId: facultyId,
           status: 'active',
         },
       },
-      distinct: ['studentId'],
+      select: {
+        studentId: true,
+      },
     });
+    const uniqueStudentIds = new Set(studentSections.map((ss) => ss.studentId));
+    const totalStudents = uniqueStudentIds.size;
 
     // Get total courses (unique courses from sections)
     const totalCourses = courseIds.length;
@@ -91,6 +96,251 @@ export async function GET(request: NextRequest) {
     // Get current semester (if any active section has a semester)
     const currentSemester = sections[0]?.courseOffering?.semester || null;
 
+    // Get upcoming assessments (due in next 7 days)
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    const now = new Date();
+
+    const upcomingAssessments = await prisma.assessments.findMany({
+      where: {
+        conductedBy: facultyId,
+        status: 'active',
+        dueDate: {
+          gte: now,
+          lte: sevenDaysFromNow,
+        },
+      },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        dueDate: 'asc',
+      },
+      take: 5,
+    });
+
+    // Get overdue assessments
+    const overdueAssessments = await prisma.assessments.findMany({
+      where: {
+        conductedBy: facultyId,
+        status: 'active',
+        dueDate: {
+          lt: now,
+        },
+      },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      take: 5,
+    });
+
+    // Get course offering IDs for faculty's sections
+    const courseOfferingIds = sections.map((s) => s.courseOfferingId);
+
+    // Get pending evaluations count (assessments with pending results)
+    const pendingEvaluations = await prisma.studentassessmentresults.count({
+      where: {
+        assessment: {
+          conductedBy: facultyId,
+          courseOfferingId: {
+            in: courseOfferingIds,
+          },
+        },
+        status: 'pending',
+      },
+    });
+
+    // Get assessments without any results (pending marks entry)
+    const assessmentsWithResults =
+      await prisma.studentassessmentresults.findMany({
+        where: {
+          assessment: {
+            conductedBy: facultyId,
+            courseOfferingId: {
+              in: courseOfferingIds,
+            },
+          },
+        },
+        select: {
+          assessmentId: true,
+        },
+        distinct: ['assessmentId'],
+      });
+
+    const assessedIds = assessmentsWithResults.map((r) => r.assessmentId);
+    const pendingMarksEntry = await prisma.assessments.count({
+      where: {
+        conductedBy: facultyId,
+        courseOfferingId: {
+          in: courseOfferingIds,
+        },
+        status: 'active',
+        id: {
+          notIn: assessedIds.length > 0 ? assessedIds : [-1], // Use -1 if empty to get all
+        },
+      },
+    });
+
+    // Get CLO attainments summary
+    const cloAttainments = await prisma.closattainments.findMany({
+      where: {
+        calculator: {
+          id: facultyId,
+        },
+        status: 'active',
+      },
+      include: {
+        clo: {
+          select: {
+            code: true,
+            description: true,
+          },
+        },
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        calculatedAt: 'desc',
+      },
+      take: 10,
+    });
+
+    // Calculate overall CLO attainment percentage
+    const totalCLOs = cloAttainments.length;
+    const attainedCLOs = cloAttainments.filter(
+      (clo) => clo.attainmentPercent >= clo.threshold
+    ).length;
+    const overallCLOAttainment =
+      totalCLOs > 0 ? (attainedCLOs / totalCLOs) * 100 : 0;
+
+    // Get courses with low CLO attainment (< threshold)
+    const lowAttainmentCourses = cloAttainments
+      .filter((clo) => clo.attainmentPercent < clo.threshold)
+      .map((clo) => ({
+        courseCode: clo.courseOffering.course.code,
+        courseName: clo.courseOffering.course.name,
+        cloCode: clo.clo.code,
+        attainment: clo.attainmentPercent,
+        threshold: clo.threshold,
+      }));
+
+    // Get student performance alerts (students with low performance)
+    // Get students from faculty's sections with low grades
+    const studentResults = await prisma.studentassessmentresults.findMany({
+      where: {
+        assessment: {
+          conductedBy: facultyId,
+          courseOfferingId: {
+            in: courseOfferingIds,
+          },
+        },
+        percentage: {
+          lt: 50, // Below 50%
+        },
+      },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
+        assessment: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        percentage: 'asc',
+      },
+      take: 5,
+    });
+
+    // Get top performers
+    const topPerformers = await prisma.studentassessmentresults.findMany({
+      where: {
+        assessment: {
+          conductedBy: facultyId,
+          courseOfferingId: {
+            in: courseOfferingIds,
+          },
+        },
+        percentage: {
+          gte: 85, // Above 85%
+        },
+      },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
+        assessment: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        percentage: 'desc',
+      },
+      take: 5,
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -108,6 +358,61 @@ export async function GET(request: NextRequest) {
               endDate: currentSemester.endDate?.toISOString() || null,
             }
           : null,
+        upcomingAssessments: upcomingAssessments.map((assessment) => ({
+          id: assessment.id,
+          title: assessment.title,
+          type: assessment.type,
+          dueDate: assessment.dueDate?.toISOString() || null,
+          course: {
+            code: assessment.courseOffering.course.code,
+            name: assessment.courseOffering.course.name,
+          },
+        })),
+        overdueAssessments: overdueAssessments.map((assessment) => ({
+          id: assessment.id,
+          title: assessment.title,
+          type: assessment.type,
+          dueDate: assessment.dueDate?.toISOString() || null,
+          course: {
+            code: assessment.courseOffering.course.code,
+            name: assessment.courseOffering.course.name,
+          },
+        })),
+        pendingWork: {
+          pendingEvaluations,
+          pendingMarksEntry,
+          totalPending: pendingEvaluations + pendingMarksEntry,
+        },
+        cloAttainmentSummary: {
+          overallAttainment: overallCLOAttainment,
+          totalCLOs,
+          attainedCLOs,
+          lowAttainmentCourses: lowAttainmentCourses.slice(0, 5), // Top 5
+        },
+        studentAlerts: {
+          atRiskStudents: studentResults.map((result) => ({
+            studentId: result.studentId,
+            studentName: `${result.student.user.first_name} ${result.student.user.last_name}`,
+            rollNumber: result.student.rollNumber,
+            course: {
+              code: result.assessment.courseOffering.course.code,
+              name: result.assessment.courseOffering.course.name,
+            },
+            assessment: result.assessment.title,
+            percentage: result.percentage,
+          })),
+          topPerformers: topPerformers.map((result) => ({
+            studentId: result.studentId,
+            studentName: `${result.student.user.first_name} ${result.student.user.last_name}`,
+            rollNumber: result.student.rollNumber,
+            course: {
+              code: result.assessment.courseOffering.course.code,
+              name: result.assessment.courseOffering.course.name,
+            },
+            assessment: result.assessment.title,
+            percentage: result.percentage,
+          })),
+        },
       },
     });
   } catch (error) {
@@ -122,4 +427,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
