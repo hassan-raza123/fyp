@@ -104,8 +104,11 @@ export async function GET(
     }> = [];
 
     // Extract unique faculty from all course offerings' sections
-    const facultyMap = new Map<number, { id: number; name: string; email: string }>();
-    
+    const facultyMap = new Map<
+      number,
+      { id: number; name: string; email: string }
+    >();
+
     course.courseOfferings?.forEach((offering) => {
       offering.sections?.forEach((section) => {
         if (section.faculty) {
@@ -130,7 +133,6 @@ export async function GET(
     const transformedCourse = {
       ...course,
       faculty: facultyList,
-      teachers: facultyList, // Keep for backward compatibility
     };
 
     return NextResponse.json({

@@ -57,13 +57,6 @@ interface Course {
       email: string;
     };
   }[];
-  teachers?: {
-    teacher: {
-      id: number;
-      name: string;
-      email: string;
-    };
-  }[];
   programs: {
     program: {
       id: number;
@@ -109,7 +102,7 @@ export default function CourseDetailsPage() {
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
-          faculty: data.data.faculty || data.data.teachers || [],
+          faculty: data.data.faculty || [],
           programs: data.data.programs || [],
         });
       } else {
@@ -366,28 +359,15 @@ export default function CourseDetailsPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Assigned Faculty</h2>
           <div className="space-y-4">
-            {(course.faculty || course.teachers) &&
-            (course.faculty || course.teachers)?.length > 0 ? (
-              (course.faculty || course.teachers)?.map(
-                (facultyMember, index) => (
-                  <div
-                    key={
-                      facultyMember.faculty?.id ||
-                      facultyMember.teacher?.id ||
-                      index
-                    }
-                  >
-                    <p className="font-medium">
-                      {facultyMember.faculty?.name ||
-                        facultyMember.teacher?.name}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {facultyMember.faculty?.email ||
-                        facultyMember.teacher?.email}
-                    </p>
-                  </div>
-                )
-              )
+            {course.faculty && course.faculty.length > 0 ? (
+              course.faculty.map((facultyMember, index) => (
+                <div key={facultyMember.faculty?.id || index}>
+                  <p className="font-medium">{facultyMember.faculty?.name}</p>
+                  <p className="text-muted-foreground">
+                    {facultyMember.faculty?.email}
+                  </p>
+                </div>
+              ))
             ) : (
               <p className="text-muted-foreground">No faculty assigned</p>
             )}
