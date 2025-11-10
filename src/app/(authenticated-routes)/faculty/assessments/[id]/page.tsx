@@ -14,7 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Calendar, FileText, Users, BarChart3, Send, Clock } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  FileText,
+  Users,
+  BarChart3,
+  Send,
+  Clock,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -29,6 +37,220 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+
+// Submission List Component
+function SubmissionList({ assessmentId }: { assessmentId: number }) {
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [assessmentId]);
+
+  const fetchSubmissions = async () => {
+    try {
+      const response = await fetch(
+        `/api/assessments/${assessmentId}/analytics`,
+        {
+          credentials: 'include',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch submissions');
+      const result = await response.json();
+      if (result.success) {
+        setSubmissions(result.data.studentResults || []);
+      }
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <p className="text-muted-foreground">Loading submissions...</p>;
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Roll Number</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Submitted At</TableHead>
+          <TableHead>Marks</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {submissions.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={5} className="text-center">
+              No submissions yet
+            </TableCell>
+          </TableRow>
+        ) : (
+          submissions.map((submission) => (
+            <TableRow key={submission.studentId}>
+              <TableCell>{submission.rollNumber}</TableCell>
+              <TableCell>{submission.studentName}</TableCell>
+              <TableCell>
+                <Badge
+                  variant={
+                    submission.status === 'published'
+                      ? 'default'
+                      : submission.status === 'evaluated'
+                      ? 'secondary'
+                      : 'outline'
+                  }
+                >
+                  {submission.status}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {submission.submittedAt
+                  ? format(new Date(submission.submittedAt), 'PPP')
+                  : 'Not submitted'}
+              </TableCell>
+              <TableCell>
+                {submission.obtainedMarks} / {submission.totalMarks} (
+                {submission.percentage.toFixed(1)}%)
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+// Results Overview Component
+function ResultsOverview({ assessmentId }: { assessmentId: number }) {
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchResults();
+  }, [assessmentId]);
+
+  const fetchResults = async () => {
+    try {
+      const response = await fetch(
+        `/api/assessments/${assessmentId}/analytics`,
+        {
+          credentials: 'include',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch results');
+      const result = await response.json();
+      if (result.success) {
+        setAnalytics(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching results:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <p className="text-muted-foreground">Loading results...</p>;
+  }
+
+  if (!analytics) {
+    return <p className="text-muted-foreground">No results available</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Students
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {analytics.overall.totalStudents}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Average Marks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {analytics.overall.averageMarks.toFixed(1)} /{' '}
+              {analytics.overall.totalMarks}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Average %</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {analytics.overall.averagePercentage.toFixed(1)}%
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {analytics.overall.totalStudents > 0
+                ? (
+                    (analytics.gradeDistribution
+                      .filter((g: any) => g.grade !== 'F')
+                      .reduce((sum: number, g: any) => sum + g.count, 0) /
+                      analytics.overall.totalStudents) *
+                    100
+                  ).toFixed(1)
+                : 0}
+              %
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Grade Distribution</h3>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Grade</TableHead>
+              <TableHead>Count</TableHead>
+              <TableHead>Percentage</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {analytics.gradeDistribution.map((grade: any) => (
+              <TableRow key={grade.grade}>
+                <TableCell>
+                  <Badge variant="outline">{grade.grade}</Badge>
+                </TableCell>
+                <TableCell>{grade.count}</TableCell>
+                <TableCell>
+                  {analytics.overall.totalStudents > 0
+                    ? (
+                        (grade.count / analytics.overall.totalStudents) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  %
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
 
 interface Assessment {
   id: number;
@@ -205,17 +427,11 @@ export default function AssessmentDetailsPage() {
               Unpublish
             </Button>
           )}
-          <Button
-            variant="outline"
-            onClick={() => setShowExtendDialog(true)}
-          >
+          <Button variant="outline" onClick={() => setShowExtendDialog(true)}>
             <Clock className="w-4 h-4 mr-2" />
             Extend Due Date
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowReminderDialog(true)}
-          >
+          <Button variant="outline" onClick={() => setShowReminderDialog(true)}>
             <Send className="w-4 h-4 mr-2" />
             Send Reminder
           </Button>
@@ -245,7 +461,9 @@ export default function AssessmentDetailsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Type</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Type
+                  </p>
                   <p className="text-lg">
                     {assessment.type
                       .replace(/_/g, ' ')
@@ -253,10 +471,14 @@ export default function AssessmentDetailsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </p>
                   <Badge
                     variant={
-                      assessment.status === 'published' ? 'default' : 'secondary'
+                      assessment.status === 'published'
+                        ? 'default'
+                        : 'secondary'
                     }
                   >
                     {assessment.status}
@@ -339,11 +561,11 @@ export default function AssessmentDetailsPage() {
                         <TableCell>{item.marks}</TableCell>
                         <TableCell>
                           {item.clo ? (
-                            <Badge variant="outline">
-                              {item.clo.code}
-                            </Badge>
+                            <Badge variant="outline">{item.clo.code}</Badge>
                           ) : (
-                            <span className="text-muted-foreground">No CLO</span>
+                            <span className="text-muted-foreground">
+                              No CLO
+                            </span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -361,9 +583,7 @@ export default function AssessmentDetailsPage() {
               <CardTitle>Student Submissions</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Submissions view coming soon...
-              </p>
+              <SubmissionList assessmentId={assessment.id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -374,9 +594,7 @@ export default function AssessmentDetailsPage() {
               <CardTitle>Results Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Results overview coming soon...
-              </p>
+              <ResultsOverview assessmentId={assessment.id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -437,7 +655,10 @@ export default function AssessmentDetailsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowExtendDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowExtendDialog(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleExtendDueDate}>Extend</Button>
@@ -451,7 +672,8 @@ export default function AssessmentDetailsPage() {
           <DialogHeader>
             <DialogTitle>Send Reminder to Students</DialogTitle>
             <DialogDescription>
-              Send a reminder message to all students enrolled in this assessment
+              Send a reminder message to all students enrolled in this
+              assessment
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -479,4 +701,3 @@ export default function AssessmentDetailsPage() {
     </div>
   );
 }
-

@@ -271,6 +271,7 @@ export async function GET(
           totalMarks: r.totalMarks,
           percentage: r.percentage,
           status: r.status,
+          submittedAt: r.submittedAt,
         })),
       },
     });
