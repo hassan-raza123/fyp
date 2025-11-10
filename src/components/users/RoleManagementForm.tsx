@@ -141,7 +141,7 @@ export default function RoleManagementForm({
 
       // Add role-specific details only if they are required
       switch (values.role) {
-        case 'teacher':
+        case 'faculty':
         case 'admin':
           if (
             !values.facultyDetails?.departmentId ||

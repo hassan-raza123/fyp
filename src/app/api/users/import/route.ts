@@ -70,11 +70,11 @@ export async function POST(request: NextRequest) {
                 updatedAt: new Date(),
               },
             },
-            ...(record.role === 'teacher' && {
+            ...(record.role === 'faculty' && {
               faculty: {
                 create: {
                   departmentId: Number(record.departmentId),
-                  designation: record.designation || 'Teacher',
+                  designation: record.designation || 'Faculty',
                   status: 'active',
                   updatedAt: new Date(),
                 },
