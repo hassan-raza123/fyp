@@ -97,6 +97,22 @@ export default function ResultsPage() {
             </CardContent>
           </Card>
         </Link>
+
+        <Link href="/faculty/results/grade-management">
+          <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Grade Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">
+                Calculate, review, and manage student final grades
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="mt-8">

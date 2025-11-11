@@ -59,6 +59,8 @@ import {
   Cell,
   Legend,
 } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface AnalyticsData {
   performance: {
@@ -135,7 +137,7 @@ interface AnalyticsData {
   };
   assessment: Array<{
     assessmentId: number;
-  title: string;
+    title: string;
     type: string;
     difficulty: 'easy' | 'medium' | 'hard' | null;
     averageScore: number | null;
@@ -150,7 +152,14 @@ interface AnalyticsData {
   }>;
 }
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00', '#0088fe'];
+const COLORS = [
+  '#8884d8',
+  '#82ca9d',
+  '#ffc658',
+  '#ff7300',
+  '#00ff00',
+  '#0088fe',
+];
 
 const AnalyticsPage = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -187,10 +196,10 @@ const AnalyticsPage = () => {
     } catch (error) {
       toast.error('Failed to load analytics');
       console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExport = (format: 'csv' | 'pdf') => {
     if (!data) return;
@@ -201,27 +210,41 @@ const AnalyticsPage = () => {
 
       // Performance Analytics
       csvRows.push('Performance Analytics');
-      csvRows.push('Course Code,Course Name,Total Students,Total Assessments,Average %');
+      csvRows.push(
+        'Course Code,Course Name,Total Students,Total Assessments,Average %'
+      );
       data.performance.overall.forEach((course) => {
         csvRows.push(
-          `${course.courseCode},${course.courseName},${course.totalStudents},${course.totalAssessments},${course.averagePercentage.toFixed(2)}`
+          `${course.courseCode},${course.courseName},${course.totalStudents},${
+            course.totalAssessments
+          },${course.averagePercentage.toFixed(2)}`
         );
       });
 
       csvRows.push('\nSection Comparison');
-      csvRows.push('Section Name,Course,Semester,Enrollment,Assessments,Average %');
+      csvRows.push(
+        'Section Name,Course,Semester,Enrollment,Assessments,Average %'
+      );
       data.performance.sectionComparison.forEach((section) => {
         csvRows.push(
-          `${section.sectionName},${section.course.code} - ${section.course.name},${section.semester},${section.enrollment},${section.assessmentCount},${section.averagePercentage.toFixed(2)}`
+          `${section.sectionName},${section.course.code} - ${
+            section.course.name
+          },${section.semester},${section.enrollment},${
+            section.assessmentCount
+          },${section.averagePercentage.toFixed(2)}`
         );
       });
 
       // CLO Analytics
       csvRows.push('\nCLO Analytics');
-      csvRows.push('CLO Code,Description,Latest Attainment,Average Attainment,Trend');
+      csvRows.push(
+        'CLO Code,Description,Latest Attainment,Average Attainment,Trend'
+      );
       data.clo.trends.forEach((clo) => {
         csvRows.push(
-          `${clo.cloCode},"${clo.description}",${clo.latest || 0},${clo.average.toFixed(2)},${clo.trend}`
+          `${clo.cloCode},"${clo.description}",${
+            clo.latest || 0
+          },${clo.average.toFixed(2)},${clo.trend}`
         );
       });
 
@@ -230,7 +253,9 @@ const AnalyticsPage = () => {
       csvRows.push('Roll Number,Name,Average %,Total Assessments');
       data.student.topPerformers.forEach((student) => {
         csvRows.push(
-          `${student.rollNumber},"${student.name}",${student.average.toFixed(2)},${student.totalAssessments}`
+          `${student.rollNumber},"${student.name}",${student.average.toFixed(
+            2
+          )},${student.totalAssessments}`
         );
       });
 
@@ -238,16 +263,24 @@ const AnalyticsPage = () => {
       csvRows.push('Roll Number,Name,Average %,Total Assessments');
       data.student.atRiskStudents.forEach((student) => {
         csvRows.push(
-          `${student.rollNumber},"${student.name}",${student.average.toFixed(2)},${student.totalAssessments}`
+          `${student.rollNumber},"${student.name}",${student.average.toFixed(
+            2
+          )},${student.totalAssessments}`
         );
       });
 
       // Assessment Analytics
       csvRows.push('\nAssessment Analytics');
-      csvRows.push('Assessment Title,Type,Difficulty,Average Score,Average %,Total Students');
+      csvRows.push(
+        'Assessment Title,Type,Difficulty,Average Score,Average %,Total Students'
+      );
       data.assessment.forEach((assessment) => {
         csvRows.push(
-          `"${assessment.title}",${assessment.type},${assessment.difficulty || 'N/A'},${assessment.averageScore?.toFixed(2) || 'N/A'},${assessment.averagePercentage?.toFixed(2) || 'N/A'},${assessment.totalStudents}`
+          `"${assessment.title}",${assessment.type},${
+            assessment.difficulty || 'N/A'
+          },${assessment.averageScore?.toFixed(2) || 'N/A'},${
+            assessment.averagePercentage?.toFixed(2) || 'N/A'
+          },${assessment.totalStudents}`
         );
       });
 
@@ -256,15 +289,305 @@ const AnalyticsPage = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `analytics_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute(
+        'download',
+        `analytics_${new Date().toISOString().split('T')[0]}.csv`
+      );
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       toast.success('CSV exported successfully');
     } else {
-      // PDF export - would require a PDF library like jsPDF
-      toast.info('PDF export requires additional setup. Please use CSV export for now.');
+      // PDF export using jsPDF
+      try {
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        // Title
+        doc.setFontSize(18);
+        doc.text('Analytics Report', 14, yPos);
+        yPos += 10;
+
+        // Date
+        doc.setFontSize(10);
+        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, yPos);
+        yPos += 15;
+
+        // Performance Analytics
+        doc.setFontSize(14);
+        doc.text('Performance Analytics', 14, yPos);
+        yPos += 8;
+
+        // Overall Course Performance Table
+        const performanceData = data.performance.overall.map((course) => [
+          course.courseCode,
+          course.courseName,
+          course.totalStudents.toString(),
+          course.totalAssessments.toString(),
+          `${course.averagePercentage.toFixed(1)}%`,
+        ]);
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [
+            [
+              'Course Code',
+              'Course Name',
+              'Students',
+              'Assessments',
+              'Average %',
+            ],
+          ],
+          body: performanceData,
+          theme: 'striped',
+          headStyles: { fillColor: [136, 132, 216] },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+
+        // Section Comparison Table
+        if (data.performance.sectionComparison.length > 0) {
+          doc.setFontSize(14);
+          doc.text('Section Comparison', 14, yPos);
+          yPos += 8;
+
+          const sectionData = data.performance.sectionComparison.map(
+            (section) => [
+              section.sectionName,
+              `${section.course.code} - ${section.course.name}`,
+              section.semester,
+              section.enrollment.toString(),
+              section.assessmentCount.toString(),
+              `${section.averagePercentage.toFixed(1)}%`,
+            ]
+          );
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [
+              [
+                'Section',
+                'Course',
+                'Semester',
+                'Enrollment',
+                'Assessments',
+                'Average %',
+              ],
+            ],
+            body: sectionData,
+            theme: 'striped',
+            headStyles: { fillColor: [136, 132, 216] },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 15;
+        }
+
+        // CLO Analytics
+        if (data.clo.trends.length > 0) {
+          doc.addPage();
+          yPos = 20;
+          doc.setFontSize(14);
+          doc.text('CLO Analytics', 14, yPos);
+          yPos += 8;
+
+          const cloData = data.clo.trends.map((clo) => [
+            clo.cloCode,
+            clo.description.substring(0, 50) +
+              (clo.description.length > 50 ? '...' : ''),
+            `${(clo.latest || 0).toFixed(1)}%`,
+            `${clo.average.toFixed(1)}%`,
+            clo.trend,
+          ]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [['CLO Code', 'Description', 'Latest', 'Average', 'Trend']],
+            body: cloData,
+            theme: 'striped',
+            headStyles: { fillColor: [130, 202, 157] },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 15;
+
+          // Weak CLOs
+          if (data.clo.weakCLOs.length > 0) {
+            doc.setFontSize(12);
+            doc.text('Weak CLOs & Suggestions', 14, yPos);
+            yPos += 8;
+
+            const weakCLOData = data.clo.suggestions.map((suggestion) => [
+              suggestion.cloCode,
+              `${suggestion.currentAttainment.toFixed(1)}%`,
+              suggestion.suggestion.substring(0, 60) +
+                (suggestion.suggestion.length > 60 ? '...' : ''),
+            ]);
+
+            autoTable(doc, {
+              startY: yPos,
+              head: [['CLO Code', 'Attainment', 'Suggestion']],
+              body: weakCLOData,
+              theme: 'striped',
+              headStyles: { fillColor: [239, 68, 68] },
+            });
+
+            yPos = (doc as any).lastAutoTable.finalY + 15;
+          }
+        }
+
+        // Student Analytics
+        if (
+          data.student.topPerformers.length > 0 ||
+          data.student.atRiskStudents.length > 0
+        ) {
+          doc.addPage();
+          yPos = 20;
+          doc.setFontSize(14);
+          doc.text('Student Analytics', 14, yPos);
+          yPos += 8;
+
+          // Top Performers
+          if (data.student.topPerformers.length > 0) {
+            doc.setFontSize(12);
+            doc.text('Top Performers', 14, yPos);
+            yPos += 8;
+
+            const topPerformersData = data.student.topPerformers.map(
+              (student) => [
+                student.rollNumber,
+                student.name,
+                `${student.average.toFixed(1)}%`,
+                student.totalAssessments.toString(),
+              ]
+            );
+
+            autoTable(doc, {
+              startY: yPos,
+              head: [['Roll Number', 'Name', 'Average %', 'Assessments']],
+              body: topPerformersData,
+              theme: 'striped',
+              headStyles: { fillColor: [34, 197, 94] },
+            });
+
+            yPos = (doc as any).lastAutoTable.finalY + 15;
+          }
+
+          // At-Risk Students
+          if (data.student.atRiskStudents.length > 0) {
+            doc.setFontSize(12);
+            doc.text('At-Risk Students', 14, yPos);
+            yPos += 8;
+
+            const atRiskData = data.student.atRiskStudents.map((student) => [
+              student.rollNumber,
+              student.name,
+              `${student.average.toFixed(1)}%`,
+              student.totalAssessments.toString(),
+            ]);
+
+            autoTable(doc, {
+              startY: yPos,
+              head: [['Roll Number', 'Name', 'Average %', 'Assessments']],
+              body: atRiskData,
+              theme: 'striped',
+              headStyles: { fillColor: [239, 68, 68] },
+            });
+
+            yPos = (doc as any).lastAutoTable.finalY + 15;
+          }
+
+          // Performance Distribution
+          doc.setFontSize(12);
+          doc.text('Performance Distribution', 14, yPos);
+          yPos += 8;
+
+          const distributionData = [
+            [
+              'Excellent (≥85%)',
+              data.student.distribution.excellent.toString(),
+            ],
+            ['Good (70-84%)', data.student.distribution.good.toString()],
+            ['Average (50-69%)', data.student.distribution.average.toString()],
+            ['Poor (<50%)', data.student.distribution.poor.toString()],
+          ];
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [['Category', 'Count']],
+            body: distributionData,
+            theme: 'striped',
+            headStyles: { fillColor: [136, 132, 216] },
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 15;
+
+          // Grade Distribution
+          doc.setFontSize(12);
+          doc.text('Grade Distribution', 14, yPos);
+          yPos += 8;
+
+          const gradeDistData = Object.entries(
+            data.student.gradeDistribution
+          ).map(([grade, count]) => [grade, count.toString()]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [['Grade', 'Count']],
+            body: gradeDistData,
+            theme: 'striped',
+            headStyles: { fillColor: [136, 132, 216] },
+          });
+        }
+
+        // Assessment Analytics
+        if (data.assessment.length > 0) {
+          doc.addPage();
+          yPos = 20;
+          doc.setFontSize(14);
+          doc.text('Assessment Analytics', 14, yPos);
+          yPos += 8;
+
+          const assessmentData = data.assessment.map((assessment) => [
+            assessment.title.substring(0, 40) +
+              (assessment.title.length > 40 ? '...' : ''),
+            assessment.type.replace(/_/g, ' '),
+            assessment.difficulty || 'N/A',
+            assessment.averageScore !== null
+              ? assessment.averageScore.toFixed(1)
+              : 'N/A',
+            assessment.averagePercentage !== null
+              ? `${assessment.averagePercentage.toFixed(1)}%`
+              : 'N/A',
+            assessment.totalStudents.toString(),
+          ]);
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [
+              [
+                'Assessment',
+                'Type',
+                'Difficulty',
+                'Avg Score',
+                'Avg %',
+                'Students',
+              ],
+            ],
+            body: assessmentData,
+            theme: 'striped',
+            headStyles: { fillColor: [255, 198, 88] },
+          });
+        }
+
+        // Save PDF
+        doc.save(
+          `analytics_report_${new Date().toISOString().split('T')[0]}.pdf`
+        );
+        toast.success('PDF exported successfully');
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        toast.error('Failed to generate PDF. Please try again.');
+      }
     }
   };
 
@@ -292,10 +615,12 @@ const AnalyticsPage = () => {
     average: course.averagePercentage,
   }));
 
-  const sectionChartData = data.performance.sectionComparison.map((section) => ({
-    name: section.sectionName,
-    average: section.averagePercentage,
-  }));
+  const sectionChartData = data.performance.sectionComparison.map(
+    (section) => ({
+      name: section.sectionName,
+      average: section.averagePercentage,
+    })
+  );
 
   const cloTrendData = data.clo.trends.map((clo) => ({
     name: clo.cloCode,
@@ -393,7 +718,12 @@ const AnalyticsPage = () => {
             <Button
               variant="outline"
               onClick={() =>
-                setFilters({ courseId: '', sectionId: '', startDate: '', endDate: '' })
+                setFilters({
+                  courseId: '',
+                  sectionId: '',
+                  startDate: '',
+                  endDate: '',
+                })
               }
             >
               Clear Filters
@@ -463,7 +793,9 @@ const AnalyticsPage = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis domain={[0, 100]} />
-                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                  <Tooltip
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                   <Bar dataKey="average" fill="#8884d8" />
                 </BarChart>
               </ResponsiveContainer>
@@ -523,7 +855,9 @@ const AnalyticsPage = () => {
                 <CardTitle className="text-sm">Total CLOs</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.clo.trends.length}</div>
+                <div className="text-2xl font-bold">
+                  {data.clo.trends.length}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -544,8 +878,10 @@ const AnalyticsPage = () => {
                 <div className="text-2xl font-bold">
                   {data.clo.trends.length > 0
                     ? (
-                        data.clo.trends.reduce((sum, c) => sum + (c.latest || 0), 0) /
-                        data.clo.trends.length
+                        data.clo.trends.reduce(
+                          (sum, c) => sum + (c.latest || 0),
+                          0
+                        ) / data.clo.trends.length
                       ).toFixed(1)
                     : 0}
                   %
@@ -564,7 +900,9 @@ const AnalyticsPage = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis domain={[0, 100]} />
-                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                  <Tooltip
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                   <Legend />
                   <Bar dataKey="latest" fill="#8884d8" name="Latest" />
                   <Bar dataKey="average" fill="#82ca9d" name="Average" />
@@ -649,7 +987,7 @@ const AnalyticsPage = () => {
                 </div>
               </CardContent>
             </Card>
-        </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Card>
@@ -658,8 +996,8 @@ const AnalyticsPage = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
+                  <PieChart>
+                    <Pie
                       data={distributionData}
                       cx="50%"
                       cy="50%"
@@ -667,20 +1005,20 @@ const AnalyticsPage = () => {
                       label={({ name, percent }) =>
                         `${name}: ${(percent * 100).toFixed(0)}%`
                       }
-                  outerRadius={80}
+                      outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                >
+                    >
                       {distributionData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
@@ -694,10 +1032,10 @@ const AnalyticsPage = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                <Tooltip />
+                    <Tooltip />
                     <Bar dataKey="count" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
