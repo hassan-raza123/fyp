@@ -146,6 +146,14 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // Send notification to faculty
+    const { notifyGradeCalculationCompleted } = await import('@/lib/notification-utils');
+    await notifyGradeCalculationCompleted(
+      courseOffering.course.code,
+      calculatedGrades.length,
+      facultyId
+    );
+
     return NextResponse.json({
       success: true,
       message: `Successfully calculated grades for ${calculatedGrades.length} student(s)`,

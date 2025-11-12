@@ -147,7 +147,28 @@ export async function POST(request: NextRequest) {
           conductedBy: faculty.id,
           status: assessment_status.active,
         },
+        include: {
+          courseOffering: {
+            include: {
+              course: {
+                select: {
+                  code: true,
+                },
+              },
+            },
+          },
+        },
       });
+
+      // Send notification to faculty
+      const { notifyAssessmentCreated } = await import('@/lib/notification-utils');
+      await notifyAssessmentCreated(
+        assessment.id,
+        assessment.title,
+        assessment.courseOffering.course.code,
+        faculty.id
+      );
+
       return NextResponse.json(assessment);
     } catch (err) {
       console.error('Error creating assessment (prisma):', err);

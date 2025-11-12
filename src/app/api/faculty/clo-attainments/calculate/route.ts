@@ -127,6 +127,27 @@ export async function POST(req: NextRequest) {
       )
     );
 
+    // Send notification to faculty
+    const courseOfferingWithCourse = await prisma.courseofferings.findUnique({
+      where: { id: courseOfferingId },
+      include: {
+        course: {
+          select: {
+            code: true,
+          },
+        },
+      },
+    });
+
+    if (courseOfferingWithCourse) {
+      const { notifyCLOAttainmentCalculated } = await import('@/lib/notification-utils');
+      await notifyCLOAttainmentCalculated(
+        courseOfferingWithCourse.course.code,
+        calculatedAttainments.length,
+        facultyId
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: `Successfully calculated CLO attainments for ${calculatedAttainments.length} CLO(s)`,
