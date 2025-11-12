@@ -191,16 +191,46 @@ export default function AssessmentAnalyticsPage() {
           <CardTitle>Performance by CLO</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.cloPerformance}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="cloCode" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="averagePercentage" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-4">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data.cloPerformance}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="cloCode" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="averagePercentage" fill="#82ca9d" name="Average %" />
+              </BarChart>
+            </ResponsiveContainer>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>CLO Code</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total Marks</TableHead>
+                  <TableHead>Avg Obtained</TableHead>
+                  <TableHead>Average %</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.cloPerformance.map((clo) => (
+                  <TableRow key={clo.cloId}>
+                    <TableCell>
+                      <Badge variant="outline">{clo.cloCode}</Badge>
+                    </TableCell>
+                    <TableCell>{clo.itemCount}</TableCell>
+                    <TableCell>{clo.totalMarks}</TableCell>
+                    <TableCell>
+                      {clo.totalMarks > 0
+                        ? (clo.totalObtained / (data.overall.totalStudents || 1)).toFixed(1)
+                        : '0'}
+                    </TableCell>
+                    <TableCell>{clo.averagePercentage.toFixed(1)}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

@@ -377,13 +377,32 @@ export default function AssessmentDetailsPage() {
       return;
     }
     try {
-      // In production, this would send actual notifications
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success('Reminders sent to all students');
+      const response = await fetch(
+        `/api/assessments/${params.id}/send-reminders`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ message: reminderMessage }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send reminders');
+      }
+
+      const result = await response.json();
+      toast.success(
+        result.message || `Reminders sent to ${result.data?.studentsNotified || 0} student(s)`
+      );
       setShowReminderDialog(false);
       setReminderMessage('');
     } catch (error) {
-      toast.error('Failed to send reminders');
+      console.error('Error sending reminders:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to send reminders'
+      );
     }
   };
 
@@ -607,24 +626,159 @@ export default function AssessmentDetailsPage() {
             <CardContent>
               <div className="space-y-4">
                 {assessment.assessmentItems.length > 0 ? (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">
-                      CLOs Covered by Assessment Items:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
+                  <>
+                    {/* CLO Summary */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">
+                        CLOs Covered by Assessment Items:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from(
+                          new Set(
+                            assessment.assessmentItems
+                              .filter((item) => item.clo)
+                              .map((item) => item.clo!.code)
+                          )
+                        ).map((cloCode) => (
+                          <Badge key={cloCode} variant="outline">
+                            {cloCode}
+                          </Badge>
+                        ))}
+                        {assessment.assessmentItems.filter((item) => !item.clo).length > 0 && (
+                          <Badge variant="secondary">
+                            {assessment.assessmentItems.filter((item) => !item.clo).length} Unmapped
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* CLO-wise Breakdown */}
+                    <div className="space-y-4">
+                      <p className="text-sm font-medium">CLO-wise Marks Distribution:</p>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>CLO Code</TableHead>
+                            <TableHead>Items Count</TableHead>
+                            <TableHead>Total Marks</TableHead>
+                            <TableHead>Percentage of Assessment</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Array.from(
+                            new Map(
+                              assessment.assessmentItems
+                                .filter((item) => item.clo)
+                                .map((item) => [
+                                  item.clo!.code,
+                                  {
+                                    code: item.clo!.code,
+                                    items: [] as any[],
+                                  },
+                                ])
+                            ).values()
+                          ).map((cloGroup) => {
+                            const cloItems = assessment.assessmentItems.filter(
+                              (item) => item.clo?.code === cloGroup.code
+                            );
+                            const totalMarks = cloItems.reduce(
+                              (sum, item) => sum + item.marks,
+                              0
+                            );
+                            const percentage =
+                              assessment.totalMarks > 0
+                                ? ((totalMarks / assessment.totalMarks) * 100).toFixed(1)
+                                : '0';
+
+                            return (
+                              <TableRow key={cloGroup.code}>
+                                <TableCell>
+                                  <Badge variant="outline">{cloGroup.code}</Badge>
+                                </TableCell>
+                                <TableCell>{cloItems.length}</TableCell>
+                                <TableCell>{totalMarks}</TableCell>
+                                <TableCell>{percentage}%</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          {assessment.assessmentItems.filter((item) => !item.clo).length > 0 && (
+                            <TableRow>
+                              <TableCell>
+                                <Badge variant="secondary">Unmapped</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {assessment.assessmentItems.filter((item) => !item.clo).length}
+                              </TableCell>
+                              <TableCell>
+                                {assessment.assessmentItems
+                                  .filter((item) => !item.clo)
+                                  .reduce((sum, item) => sum + item.marks, 0)}
+                              </TableCell>
+                              <TableCell>
+                                {assessment.totalMarks > 0
+                                  ? (
+                                      (assessment.assessmentItems
+                                        .filter((item) => !item.clo)
+                                        .reduce((sum, item) => sum + item.marks, 0) /
+                                        assessment.totalMarks) *
+                                      100
+                                    ).toFixed(1)
+                                  : '0'}
+                                %
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Items per CLO */}
+                    <div className="space-y-4">
+                      <p className="text-sm font-medium">Items by CLO:</p>
                       {Array.from(
                         new Set(
                           assessment.assessmentItems
                             .filter((item) => item.clo)
                             .map((item) => item.clo!.code)
                         )
-                      ).map((cloCode) => (
-                        <Badge key={cloCode} variant="outline">
-                          {cloCode}
-                        </Badge>
-                      ))}
+                      ).map((cloCode) => {
+                        const cloItems = assessment.assessmentItems.filter(
+                          (item) => item.clo?.code === cloCode
+                        );
+                        return (
+                          <Card key={cloCode}>
+                            <CardHeader>
+                              <CardTitle className="text-base">
+                                <Badge variant="outline" className="mr-2">
+                                  {cloCode}
+                                </Badge>
+                                {cloItems.length} item(s) -{' '}
+                                {cloItems.reduce((sum, item) => sum + item.marks, 0)} marks
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2">
+                                {cloItems.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="flex items-center justify-between p-2 border rounded"
+                                  >
+                                    <div>
+                                      <span className="font-medium">{item.questionNo}:</span>{' '}
+                                      <span className="text-sm text-muted-foreground">
+                                        {item.description}
+                                      </span>
+                                    </div>
+                                    <Badge variant="secondary">{item.marks} marks</Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
-                  </div>
+                  </>
                 ) : (
                   <p className="text-muted-foreground">
                     No items added yet. Add items to see CLO coverage.
