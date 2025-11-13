@@ -223,10 +223,22 @@ const adminNavigation = [
         href: '/admin/clos',
       },
       {
+        id: 'llos',
+        label: 'LLOs',
+        icon: FileText,
+        href: '/admin/llos',
+      },
+      {
         id: 'clo-plo-mappings',
         label: 'CLO-PLO Mappings',
         icon: Link,
         href: '/admin/clo-plo-mappings',
+      },
+      {
+        id: 'llo-plo-mappings',
+        label: 'LLO-PLO Mappings',
+        icon: Link,
+        href: '/admin/llo-plo-mappings',
       },
       {
         id: 'plo-attainments',

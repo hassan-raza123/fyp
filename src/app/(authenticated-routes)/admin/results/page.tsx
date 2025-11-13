@@ -98,6 +98,22 @@ export default function ResultsPage() {
           </Card>
         </Link>
 
+        <Link href='/admin/results/llo-attainments'>
+          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Target className='h-5 w-5' />
+                LLO Attainments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-gray-500'>
+                Calculate and view Lab Learning Outcome achievements
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
       </div>
 
       <div className='mt-8'>
@@ -126,6 +142,12 @@ export default function ResultsPage() {
             className='text-blue-600 hover:underline'
           >
             Calculate PLOs
+          </Link>
+          <Link
+            href='/admin/results/llo-attainments'
+            className='text-blue-600 hover:underline'
+          >
+            Calculate LLOs
           </Link>
         </div>
       </div>
