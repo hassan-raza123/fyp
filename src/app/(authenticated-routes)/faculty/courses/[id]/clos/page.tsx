@@ -194,6 +194,7 @@ export default function CourseCLOsPage() {
         <TabsList>
           <TabsTrigger value="list">CLO List</TabsTrigger>
           <TabsTrigger value="attainments">CLO Attainments</TabsTrigger>
+          <TabsTrigger value="plo-mappings">CLO-PLO Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
