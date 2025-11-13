@@ -229,143 +229,58 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call with dummy data
     const fetchData = async () => {
-      // Simulate loading delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const dummyData: StudentDashboardData = {
-        studentInfo: {
-          name: 'Ahmed Hassan',
-          studentId: '2021-CS-123',
-          program: 'Bachelor of Computer Science',
-          semester: 'Fall 2024',
-          cgpa: 3.75,
-        },
-        stats: {
-          enrolledCourses: 5,
-          averageGrade: 85.2,
-          attendanceRate: 92.5,
-          completedAssignments: 18,
-        },
-        courses: [
-          {
-            courseCode: 'CS-301',
-            courseName: 'Data Structures & Algorithms',
-            instructor: 'Dr. Sarah Johnson',
-            grade: 'A-',
-            attendance: 95,
-            nextClass: 'Today, 2:00 PM',
-            color: 'blue',
-          },
-          {
-            courseCode: 'CS-302',
-            courseName: 'Database Systems',
-            instructor: 'Prof. Michael Chen',
-            grade: 'A',
-            attendance: 88,
-            nextClass: 'Tomorrow, 10:00 AM',
-            color: 'green',
-          },
-          {
-            courseCode: 'CS-303',
-            courseName: 'Software Engineering',
-            instructor: 'Dr. Emily Rodriguez',
-            attendance: 90,
-            nextClass: 'Wednesday, 3:30 PM',
-            color: 'purple',
-          },
-          {
-            courseCode: 'MATH-201',
-            courseName: 'Linear Algebra',
-            instructor: 'Prof. David Kim',
-            grade: 'B+',
-            attendance: 85,
-            nextClass: 'Thursday, 1:00 PM',
-            color: 'orange',
-          },
-          {
-            courseCode: 'ENG-101',
-            courseName: 'Technical Writing',
-            instructor: 'Dr. Lisa Thompson',
-            attendance: 94,
-            nextClass: 'Friday, 11:00 AM',
-            color: 'pink',
-          },
-        ],
-        assignments: [
-          {
-            title: 'Final Project Submission',
-            course: 'CS-301',
-            dueDate: 'Dec 15, 2024',
-            status: 'upcoming',
-            priority: 'high',
-          },
-          {
-            title: 'Database Design Report',
-            course: 'CS-302',
-            dueDate: 'Dec 12, 2024',
-            status: 'upcoming',
-            priority: 'high',
-          },
-          {
-            title: 'Software Requirements Document',
-            course: 'CS-303',
-            dueDate: 'Dec 10, 2024',
-            status: 'submitted',
-            priority: 'medium',
-          },
-          {
-            title: 'Linear Algebra Quiz',
-            course: 'MATH-201',
-            dueDate: 'Dec 8, 2024',
-            status: 'overdue',
-            priority: 'high',
-          },
-          {
-            title: 'Technical Report Draft',
-            course: 'ENG-101',
-            dueDate: 'Dec 20, 2024',
-            status: 'upcoming',
-            priority: 'low',
-          },
-        ],
-        recentActivities: [
-          {
-            id: '1',
-            summary: 'Assignment submitted: Software Requirements Document',
-            time: '2 hours ago',
-            type: 'submission',
-          },
-          {
-            id: '2',
-            summary: 'Grade updated: Database Systems (A)',
-            time: '1 day ago',
-            type: 'grade',
-          },
-          {
-            id: '3',
-            summary: 'Attendance marked: Data Structures & Algorithms',
-            time: '2 days ago',
-            type: 'attendance',
-          },
-          {
-            id: '4',
-            summary: 'New assignment posted: Final Project',
-            time: '3 days ago',
-            type: 'assignment',
-          },
-          {
-            id: '5',
-            summary: 'Course registration confirmed: Technical Writing',
-            time: '1 week ago',
-            type: 'registration',
-          },
-        ],
-      };
-
-      setData(dummyData);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await fetch('/api/student/overview', {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+          // Transform API data to match component interface
+          const transformedData: StudentDashboardData = {
+            studentInfo: result.data.studentInfo,
+            stats: result.data.stats,
+            courses: result.data.courses.map((course: any, index: number) => ({
+              courseCode: course.code,
+              courseName: course.name,
+              instructor: course.instructor,
+              grade: course.grade || undefined,
+              attendance: 0, // TODO: Implement attendance
+              nextClass: 'N/A', // TODO: Implement next class
+              color: ['blue', 'green', 'purple', 'orange', 'pink'][index % 5],
+            })),
+            assignments: result.data.assignments.map((assignment: any) => ({
+              title: assignment.title,
+              course: assignment.course,
+              dueDate: assignment.dueDate 
+                ? new Date(assignment.dueDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'No due date',
+              status: assignment.status,
+              priority: assignment.priority,
+            })),
+            recentActivities: result.data.recentActivities,
+          };
+          
+          setData(transformedData);
+        } else {
+          throw new Error(result.error || 'Failed to fetch data');
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Keep loading state or show error
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

@@ -58,15 +58,20 @@ export function AssessmentList() {
   const [courseOfferingFilter, setCourseOfferingFilter] =
     useState<string>('all');
   const [courseOfferings, setCourseOfferings] = useState<any[]>([]);
+  const [isStudentRoute, setIsStudentRoute] = useState(false);
 
   const fetchAssessments = async () => {
     try {
-      const response = await fetch('/api/assessments');
+      const apiUrl = isStudentRoute ? '/api/student/assessments' : '/api/assessments';
+      
+      const response = await fetch(apiUrl, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch assessments');
       }
       const data = await response.json();
-      const assessmentsList = Array.isArray(data) ? data : [];
+      const assessmentsList = data.success ? data.data : (Array.isArray(data) ? data : []);
       setAssessments(assessmentsList);
       setFilteredAssessments(assessmentsList);
     } catch (error) {
@@ -80,8 +85,13 @@ export function AssessmentList() {
   };
 
   useEffect(() => {
+    // Check if we're on student route
+    const studentRoute = window.location.pathname.startsWith('/student');
+    setIsStudentRoute(studentRoute);
     fetchAssessments();
-    fetchCourseOfferings();
+    if (!studentRoute) {
+      fetchCourseOfferings();
+    }
   }, []);
 
   const fetchCourseOfferings = async () => {
@@ -325,25 +335,29 @@ export function AssessmentList() {
                   <span>{assessment.title}</span>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/faculty/assessments/${assessment.id}`}>
+                      <Link href={isStudentRoute ? `/student/assessments/${assessment.id}` : `/faculty/assessments/${assessment.id}`}>
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link
-                        href={`/faculty/assessments/${assessment.id}/items`}
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(assessment.id)}
-                      disabled={deletingId === assessment.id}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!isStudentRoute && (
+                      <>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link
+                            href={`/faculty/assessments/${assessment.id}/items`}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(assessment.id)}
+                          disabled={deletingId === assessment.id}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardTitle>
                 <CardDescription className="flex items-center gap-2 flex-wrap">
