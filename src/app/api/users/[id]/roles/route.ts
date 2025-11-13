@@ -213,15 +213,24 @@ export async function POST(
                 },
               });
 
-              // If it's an admin, update the department's adminId
+              // If it's an admin, update the department's adminId only if it's not already set
+              // This allows multiple admins to exist, but keeps the first one as department admin
               if (role === 'admin') {
-                await tx.departments.update({
+                const department = await tx.departments.findUnique({
                   where: { id: parseInt(facultyDetails.departmentId) },
-                  data: {
-                    adminId: userId,
-                    updatedAt: new Date(),
-                  },
+                  select: { adminId: true },
                 });
+                
+                // Only update adminId if department doesn't have an admin yet
+                if (!department?.adminId) {
+                  await tx.departments.update({
+                    where: { id: parseInt(facultyDetails.departmentId) },
+                    data: {
+                      adminId: userId,
+                      updatedAt: new Date(),
+                    },
+                  });
+                }
               }
             }
             break;
