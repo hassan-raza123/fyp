@@ -7,6 +7,8 @@ import {
   Target,
   Award,
   FileText,
+  Download,
+  Eye,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -26,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface Grade {
   id: number;
@@ -49,10 +53,13 @@ interface Grade {
 }
 
 export default function ResultsPage() {
+  const router = useRouter();
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSemester, setSelectedSemester] = useState<string>('all');
   const [semesters, setSemesters] = useState<any[]>([]);
+  const [cgpa, setCgpa] = useState<number>(0);
+  const [semesterGPAs, setSemesterGPAs] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     fetchSemesters();
@@ -96,6 +103,7 @@ export default function ResultsPage() {
       const result = await response.json();
       if (result.success) {
         setGrades(result.data);
+        calculateGPAs(result.data);
       }
     } catch (error) {
       console.error('Error fetching grades:', error);
@@ -105,6 +113,85 @@ export default function ResultsPage() {
     }
   };
 
+  const calculateGPAs = (gradesData: Grade[]) => {
+    // Calculate CGPA (overall)
+    let totalQualityPoints = 0;
+    let totalCreditHours = 0;
+    gradesData.forEach((grade) => {
+      totalQualityPoints += grade.qualityPoints;
+      totalCreditHours += grade.creditHours;
+    });
+    const overallCGPA = totalCreditHours > 0 ? totalQualityPoints / totalCreditHours : 0;
+    setCgpa(overallCGPA);
+
+    // Calculate semester-wise GPA
+    const semesterMap = new Map<string, { qualityPoints: number; creditHours: number }>();
+    gradesData.forEach((grade) => {
+      const semesterName = grade.courseOffering.semester.name;
+      const existing = semesterMap.get(semesterName) || { qualityPoints: 0, creditHours: 0 };
+      semesterMap.set(semesterName, {
+        qualityPoints: existing.qualityPoints + grade.qualityPoints,
+        creditHours: existing.creditHours + grade.creditHours,
+      });
+    });
+
+    const semesterGPAMap = new Map<string, number>();
+    semesterMap.forEach((data, semester) => {
+      const gpa = data.creditHours > 0 ? data.qualityPoints / data.creditHours : 0;
+      semesterGPAMap.set(semester, gpa);
+    });
+    setSemesterGPAs(semesterGPAMap);
+  };
+
+  const exportToCSV = () => {
+    if (grades.length === 0) {
+      toast.error('No grades to export');
+      return;
+    }
+
+    const headers = [
+      'Course Code',
+      'Course Name',
+      'Semester',
+      'Credit Hours',
+      'Obtained Marks',
+      'Total Marks',
+      'Percentage',
+      'Grade',
+      'GPA Points',
+      'Quality Points',
+    ];
+
+    const rows = grades.map((grade) => [
+      grade.courseOffering.course.code,
+      grade.courseOffering.course.name,
+      grade.courseOffering.semester.name,
+      grade.creditHours.toString(),
+      grade.obtainedMarks.toFixed(1),
+      grade.totalMarks.toFixed(1),
+      grade.percentage.toFixed(1),
+      grade.grade,
+      grade.gpaPoints.toFixed(2),
+      grade.qualityPoints.toFixed(2),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `grades_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Grades exported successfully');
+  };
+
   const getGradeBadgeColor = (grade: string) => {
     if (['A+', 'A'].includes(grade)) return 'bg-green-100 text-green-800';
     if (['B+', 'B'].includes(grade)) return 'bg-blue-100 text-blue-800';
@@ -112,9 +199,59 @@ export default function ResultsPage() {
     return 'bg-red-100 text-red-800';
   };
 
+  // Get unique semesters from grades for display
+  const uniqueSemesters = Array.from(
+    new Set(grades.map((g) => g.courseOffering.semester.name))
+  );
+
   return (
     <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>My Results</h1>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-bold'>My Results</h1>
+        {grades.length > 0 && (
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className='h-4 w-4 mr-2' />
+            Export to CSV
+          </Button>
+        )}
+      </div>
+
+      {/* CGPA and Semester GPAs Summary */}
+      {grades.length > 0 && (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
+                Overall CGPA
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='text-3xl font-bold'>{cgpa.toFixed(2)}</div>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Cumulative Grade Point Average
+              </p>
+            </CardContent>
+          </Card>
+          {uniqueSemesters.slice(0, 3).map((semester) => {
+            const semesterGPA = semesterGPAs.get(semester) || 0;
+            return (
+              <Card key={semester}>
+                <CardHeader>
+                  <CardTitle className='text-sm font-medium text-muted-foreground'>
+                    {semester} GPA
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-3xl font-bold'>{semesterGPA.toFixed(2)}</div>
+                  <p className='text-xs text-muted-foreground mt-1'>
+                    Semester Grade Point Average
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-6'>
         <Link href='/student/results/clo-attainments'>
@@ -204,6 +341,7 @@ export default function ResultsPage() {
                     <TableHead>Grade</TableHead>
                     <TableHead>GPA Points</TableHead>
                     <TableHead>Quality Points</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,6 +367,20 @@ export default function ResultsPage() {
                       </TableCell>
                       <TableCell>{grade.gpaPoints.toFixed(2)}</TableCell>
                       <TableCell>{grade.qualityPoints.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            router.push(
+                              `/student/courses/${grade.courseOffering.course.id}`
+                            )
+                          }
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Details
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
