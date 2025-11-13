@@ -362,6 +362,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
       title: 'SYSTEM',
       items: [
         {
+          id: 'sessions',
+          label: 'Class Sessions',
+          icon: Calendar,
+          href: '/faculty/sessions',
+        },
+        {
           id: 'notifications',
           label: 'Notifications',
           icon: Bell,

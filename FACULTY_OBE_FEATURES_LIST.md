@@ -637,38 +637,45 @@ Yeh list un sab features/modules ki hai jo faculty side per implement karne hain
 
 ### 📋 13. ADDITIONAL FEATURES
 
-#### Attendance Management (Optional)
+#### ⚠️ Attendance Management (Optional - Requires Schema Update)
 
 - [ ] **Attendance Tracking**
-  - Mark attendance per session
-  - View attendance reports
-  - Attendance statistics
-  - Absentee alerts
+  - ⚠️ Mark attendance per session (requires attendance table in schema)
+  - ⚠️ View attendance reports (requires attendance table)
+  - ⚠️ Attendance statistics (requires attendance table)
+  - ⚠️ Absentee alerts (requires attendance table)
 
-#### Session Management (Optional)
+**Note:** Attendance management requires a new `attendance` table in the database schema. Currently, the schema only has `minAttendance` in `passfailcriteria` but no attendance tracking table.
 
-- [ ] **Class Sessions**
-  - Create/edit sessions
-  - Session attendance
-  - Session notes
-  - Topic coverage
+#### ✅ Session Management (Optional)
 
-#### Reports Generation
+- [x] **Class Sessions** ✅
+  - ✅ Create/edit sessions (`/faculty/sessions`)
+  - ✅ Session notes (remarks field)
+  - ✅ Topic coverage (topic field)
+  - ✅ Session status management (scheduled, in_progress, completed, cancelled)
+  - ✅ Section-wise session filtering
+  - ✅ Session date and time tracking
+  - ⚠️ Session attendance (requires attendance table - see above)
 
-- [ ] **Custom Reports**
-  - Course performance report
-  - CLO attainment report
-  - Student progress report
-  - Assessment analysis report
-  - Export to PDF/Excel
+#### ⚠️ Reports Generation (Partially Implemented)
 
-#### Communication
+- [x] **Custom Reports** (Admin-only currently)
+  - ⚠️ Course performance report (available via analytics, but no dedicated report generation)
+  - ⚠️ CLO attainment report (available via CLO attainments page, but no PDF/Excel export)
+  - ⚠️ Student progress report (available via student details, but no dedicated report)
+  - ⚠️ Assessment analysis report (available via assessment analytics, but no PDF/Excel export)
+  - ⚠️ Export to PDF/Excel (not implemented - requires PDF/Excel generation library)
 
-- [ ] **Student Communication**
-  - Send messages to students
-  - Announcements
-  - Grade notifications
-  - Feedback requests
+**Note:** Reports can be viewed in the analytics pages, but dedicated report generation with PDF/Excel export is not yet implemented. This would require adding a PDF/Excel generation library (like `pdfkit` or `xlsx`).
+
+#### ✅ Communication (Partially Implemented)
+
+- [x] **Student Communication** ✅
+  - ✅ Send messages to students (via notifications - `/faculty/students` page has send notification dialog)
+  - ✅ Announcements (via assessment reminders - `/api/assessments/[id]/send-reminders`)
+  - ✅ Grade notifications (automatic when grades are published)
+  - ⚠️ Feedback requests (can be added via notifications system)
 
 ---
 

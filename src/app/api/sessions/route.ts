@@ -100,6 +100,18 @@ export async function GET(request: NextRequest) {
     const sectionId = searchParams.get('sectionId');
 
     const where: any = {};
+    
+    // If user is faculty, filter by their sections
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.section = {
+          facultyId: facultyId,
+        };
+      }
+    }
+
     if (sectionId) {
       where.sectionId = Number(sectionId);
     }
