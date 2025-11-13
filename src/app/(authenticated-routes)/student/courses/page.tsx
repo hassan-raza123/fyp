@@ -35,6 +35,9 @@ interface Course {
     code: string;
   };
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  currentSection?: string;
+  currentInstructor?: string;
+  currentSemester?: string;
   prerequisites: {
     prerequisite: {
       id: number;
@@ -51,10 +54,9 @@ interface Course {
   }[];
 }
 
-interface Department {
+interface Semester {
   id: number;
   name: string;
-  code: string;
 }
 
 export default function CoursesPage() {
@@ -64,13 +66,35 @@ export default function CoursesPage() {
   const [search, setSearch] = useState('');
   const [type, setType] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
+  const [semesterId, setSemesterId] = useState<string>('all');
+  const [semesters, setSemesters] = useState<Semester[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchCourses();
-  }, [search, type, status, page]);
+    fetchSemesters();
+  }, []);
 
+  useEffect(() => {
+    fetchCourses();
+  }, [search, type, status, semesterId, page]);
+
+
+  const fetchSemesters = async () => {
+    try {
+      const response = await fetch('/api/semesters', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setSemesters(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching semesters:', error);
+    }
+  };
 
   const fetchCourses = async () => {
     try {
@@ -82,6 +106,7 @@ export default function CoursesPage() {
       if (search) params.append('search', search);
       if (type && type !== 'all') params.append('type', type);
       if (status && status !== 'all') params.append('status', status);
+      if (semesterId && semesterId !== 'all') params.append('semesterId', semesterId);
 
       const response = await fetch(`/api/student/courses?${params.toString()}`, {
         credentials: 'include',
@@ -179,6 +204,19 @@ export default function CoursesPage() {
             <SelectItem value="ARCHIVED">Archived</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={semesterId} onValueChange={setSemesterId}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Semester" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Semesters</SelectItem>
+            {semesters.map((semester) => (
+              <SelectItem key={semester.id} value={semester.id.toString()}>
+                {semester.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
@@ -187,7 +225,9 @@ export default function CoursesPage() {
             <TableRow>
               <TableHead>Code</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Department</TableHead>
+              <TableHead>Section</TableHead>
+              <TableHead>Instructor</TableHead>
+              <TableHead>Semester</TableHead>
               <TableHead>Credit Hours</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
@@ -197,8 +237,11 @@ export default function CoursesPage() {
           <TableBody>
             {courses.map((course) => (
               <TableRow key={course.id}>
-                <TableCell>{course.code}</TableCell>
+                <TableCell className="font-medium">{course.code}</TableCell>
                 <TableCell>{course.name}</TableCell>
+                <TableCell>{course.currentSection || 'N/A'}</TableCell>
+                <TableCell>{course.currentInstructor || 'TBA'}</TableCell>
+                <TableCell>{course.currentSemester || 'N/A'}</TableCell>
                 <TableCell>{course.creditHours}</TableCell>
                 <TableCell>{getTypeBadge(course.type)}</TableCell>
                 <TableCell>{getStatusBadge(course.status)}</TableCell>

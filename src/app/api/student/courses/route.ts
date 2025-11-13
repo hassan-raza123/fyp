@@ -18,12 +18,20 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
+    const semesterId = searchParams.get('semesterId');
 
     // Get student's enrolled sections
     const studentSections = await prisma.studentsections.findMany({
       where: {
         studentId: studentId,
         status: 'active',
+        ...(semesterId && {
+          section: {
+            courseOffering: {
+              semesterId: parseInt(semesterId),
+            },
+          },
+        }),
       },
       include: {
         section: {
@@ -57,6 +65,22 @@ export async function GET(request: NextRequest) {
                     },
                   },
                 },
+                semester: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            faculty: {
+              include: {
+                user: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                  },
+                },
               },
             },
           },
@@ -64,14 +88,23 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get unique courses from enrolled sections
+    // Get unique courses from enrolled sections with section and instructor info
     const courseMap = new Map();
     studentSections.forEach((ss) => {
       const course = ss.section.courseOffering.course;
+      const section = ss.section;
+      const faculty = section.faculty;
+      const facultyName = faculty
+        ? `${faculty.user.first_name} ${faculty.user.last_name}`
+        : 'TBA';
+      
       if (!courseMap.has(course.id)) {
         courseMap.set(course.id, {
           ...course,
           sections: [],
+          currentSection: section.name,
+          currentInstructor: facultyName,
+          currentSemester: ss.section.courseOffering.semester.name,
         });
       }
       courseMap.get(course.id).sections.push(ss.section);
