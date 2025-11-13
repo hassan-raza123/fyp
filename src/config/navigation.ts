@@ -419,6 +419,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/student/courses',
         },
         {
+          id: 'assessments',
+          label: 'My Assessments',
+          icon: ClipboardList,
+          href: '/student/assessments',
+        },
+        {
           id: 'results',
           label: 'My Results',
           icon: BarChart2,
@@ -426,9 +432,32 @@ export const roleBasedNavigation: RoleBasedNavigation = {
         },
         {
           id: 'clo-attainments',
-          label: 'My CLO Attainments',
+          label: 'CLO Attainments',
           icon: Target,
           href: '/student/results/clo-attainments',
+        },
+        {
+          id: 'plo-attainments',
+          label: 'PLO Attainments',
+          icon: TrendingUp,
+          href: '/student/results/plo-attainments',
+        },
+      ],
+    },
+    {
+      title: 'DOCUMENTS & TOOLS',
+      items: [
+        {
+          id: 'transcript',
+          label: 'Transcript',
+          icon: FileSpreadsheet,
+          href: '/student/transcript',
+        },
+        {
+          id: 'calendar',
+          label: 'Academic Calendar',
+          icon: Calendar,
+          href: '/student/calendar',
         },
       ],
     },
@@ -436,8 +465,20 @@ export const roleBasedNavigation: RoleBasedNavigation = {
       title: 'SYSTEM',
       items: [
         {
+          id: 'notifications',
+          label: 'Notifications',
+          icon: Bell,
+          href: '/student/notifications',
+        },
+        {
+          id: 'messages',
+          label: 'Messages',
+          icon: MessageSquare,
+          href: '/student/messages',
+        },
+        {
           id: 'settings',
-          label: 'Student Settings',
+          label: 'Settings',
           icon: Settings2,
           href: '/student/settings',
         },
