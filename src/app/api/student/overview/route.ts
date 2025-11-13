@@ -225,6 +225,7 @@ export async function GET(request: NextRequest) {
         grade: courseGrade?.grade || null,
         sectionName: section.name,
         creditHours: course.creditHours,
+        courseId: course.id, // Add courseId for linking
       };
     });
 
