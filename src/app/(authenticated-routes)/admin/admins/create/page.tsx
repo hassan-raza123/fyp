@@ -50,37 +50,27 @@ export default function CreateAdminPage() {
 
   const fetchCurrentDepartment = async () => {
     try {
-      // Get settings to find department code
-      const settingsResponse = await fetch('/api/settings');
-      if (!settingsResponse.ok) {
-        throw new Error('Failed to fetch settings');
+      // Get current admin's department
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
       }
-      const settingsData = await settingsResponse.json();
-      if (!settingsData.success || !settingsData.data) {
-        throw new Error('Settings not found');
+      
+      const checkData = await checkResponse.json();
+      if (!checkData.success) {
+        throw new Error(checkData.error || 'Failed to fetch department');
       }
 
-      const systemSettings =
-        typeof settingsData.data.system === 'string'
-          ? JSON.parse(settingsData.data.system)
-          : settingsData.data.system;
-
-      const departmentCode = systemSettings?.departmentCode;
-      if (!departmentCode) {
-        toast.error('Please configure department in Settings first');
+      if (!checkData.hasDepartment || !checkData.department) {
+        toast.error('Please select your department first in the dashboard');
+        router.push('/admin');
         return;
       }
 
-      // Get department ID by code
-      const deptResponse = await fetch(
-        `/api/departments/by-code?code=${departmentCode}`
-      );
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
-      }
-      const deptData = await deptResponse.json();
-      const deptId = deptData.id.toString();
-
+      const deptId = checkData.department.id.toString();
       setCurrentDepartmentId(deptId);
       setFormData((prev) => ({
         ...prev,
@@ -88,7 +78,7 @@ export default function CreateAdminPage() {
       }));
     } catch (error) {
       console.error('Error fetching current department:', error);
-      toast.error('Failed to load department. Please configure in Settings.');
+      toast.error('Failed to load department. Please try again.');
     }
   };
 

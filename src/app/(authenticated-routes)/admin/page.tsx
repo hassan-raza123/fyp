@@ -28,6 +28,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 interface StatCardProps {
@@ -122,62 +129,59 @@ export default function AdminOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDepartmentModal, setShowDepartmentModal] = useState(false);
-  const [departmentName, setDepartmentName] = useState('');
-  const [departmentCode, setDepartmentCode] = useState('');
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
+  const [departments, setDepartments] = useState<
+    Array<{ id: number; name: string; code: string }>
+  >([]);
   const [isSavingDepartment, setIsSavingDepartment] = useState(false);
 
-  // Check if department is configured
+  // Check if admin has a department assigned
   useEffect(() => {
     const checkDepartment = async () => {
       try {
-        const settingsResponse = await fetch('/api/settings', {
+        // First check if admin has a department assigned
+        const checkResponse = await fetch('/api/admin/check-department', {
           credentials: 'include',
         });
 
-        // If response is not ok, show modal (might be 401, 500, etc.)
-        if (!settingsResponse.ok) {
-          console.warn('Settings API returned error:', settingsResponse.status);
-          setShowDepartmentModal(true);
-          setLoading(false);
-          return;
+        if (!checkResponse.ok) {
+          throw new Error('Failed to check department');
         }
 
-        const settingsData = await settingsResponse.json();
+        const checkData = await checkResponse.json();
 
-        // If API returned error, show modal
-        if (!settingsData.success) {
-          console.warn('Settings API returned error:', settingsData.error);
-          setShowDepartmentModal(true);
-          setLoading(false);
-          return;
+        if (!checkData.success) {
+          throw new Error(checkData.error || 'Failed to check department');
         }
 
-        if (settingsData.data) {
-          const systemSettings =
-            typeof settingsData.data.system === 'string'
-              ? JSON.parse(settingsData.data.system)
-              : settingsData.data.system;
+        // If admin doesn't have a department, show selection modal
+        if (!checkData.hasDepartment) {
+          // Fetch all departments for selection
+          const deptResponse = await fetch('/api/departments', {
+            credentials: 'include',
+          });
 
-          const deptCode = systemSettings?.departmentCode;
-          const deptName = systemSettings?.departmentName;
-
-          // If department is not configured, show modal
-          if (!deptCode || !deptName) {
-            setShowDepartmentModal(true);
-            setLoading(false);
-          } else {
-            // Department is configured, fetch dashboard data
-            fetchDashboardData();
+          if (!deptResponse.ok) {
+            throw new Error('Failed to fetch departments');
           }
-        } else {
-          // No settings data, show modal
-          setShowDepartmentModal(true);
+
+          const deptData = await deptResponse.json();
+          if (deptData.success && deptData.data) {
+            setDepartments(deptData.data);
+            setShowDepartmentModal(true);
+          } else {
+            throw new Error('No departments available');
+          }
           setLoading(false);
+        } else {
+          // Admin has department, fetch dashboard data
+          fetchDashboardData();
         }
       } catch (err) {
         console.error('Error checking department:', err);
-        // On any error (network, etc.), show modal to configure department
-        setShowDepartmentModal(true);
+        setError(
+          err instanceof Error ? err.message : 'Failed to check department'
+        );
         setLoading(false);
       }
     };
@@ -203,92 +207,45 @@ export default function AdminOverview() {
   };
 
   const handleSaveDepartment = async () => {
-    if (!departmentName.trim() || !departmentCode.trim()) {
-      toast.error('Please enter both department name and code');
+    if (!selectedDepartmentId) {
+      toast.error('Please select a department');
       return;
     }
 
     setIsSavingDepartment(true);
     try {
-      // First, get current settings
-      const settingsResponse = await fetch('/api/settings', {
-        credentials: 'include',
-      });
-      if (!settingsResponse.ok) {
-        throw new Error('Failed to fetch settings');
-      }
-      const settingsData = await settingsResponse.json();
-
-      let currentSettings =
-        settingsData.success && settingsData.data
-          ? settingsData.data
-          : {
-              system: {
-                applicationName: 'Smart Campus for MNSUET',
-                academicYear: '2024',
-                currentSemester: 'Spring',
-                defaultLanguage: 'en',
-                timeZone: 'UTC',
-                departmentName: '',
-                departmentCode: '',
-              },
-              email: {
-                smtpHost: '',
-                smtpPort: '',
-                smtpUsername: '',
-                smtpPassword: '',
-                fromEmail: '',
-                fromName: '',
-              },
-              notifications: {
-                enabled: true,
-                channels: {
-                  email: true,
-                  push: false,
-                  sms: false,
-                },
-              },
-            };
-
-      // Update system settings with department info
-      const systemSettings =
-        typeof currentSettings.system === 'string'
-          ? JSON.parse(currentSettings.system)
-          : currentSettings.system;
-
-      systemSettings.departmentName = departmentName.trim();
-      systemSettings.departmentCode = departmentCode.trim().toUpperCase();
-
-      // Save settings
-      const saveResponse = await fetch('/api/settings', {
-        method: 'PUT',
+      // Assign department to admin
+      const assignResponse = await fetch('/api/admin/assign-department', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          ...currentSettings,
-          system: systemSettings,
+          departmentId: parseInt(selectedDepartmentId),
         }),
       });
 
-      if (!saveResponse.ok) {
-        throw new Error('Failed to save department');
+      if (!assignResponse.ok) {
+        throw new Error('Failed to assign department');
       }
 
-      const saveData = await saveResponse.json();
-      if (saveData.success) {
+      const assignData = await assignResponse.json();
+      if (assignData.success) {
+        const selectedDept = departments.find(
+          (d) => d.id.toString() === selectedDepartmentId
+        );
         toast.success(
-          `Department "${departmentName}" (${departmentCode}) configured successfully!`
+          `Department "${selectedDept?.name}" (${selectedDept?.code}) assigned successfully!`
         );
         setShowDepartmentModal(false);
         // Now fetch dashboard data
         fetchDashboardData();
       } else {
-        throw new Error(saveData.error || 'Failed to save department');
+        throw new Error(assignData.error || 'Failed to assign department');
       }
     } catch (err) {
-      console.error('Error saving department:', err);
+      console.error('Error assigning department:', err);
       toast.error(
-        err instanceof Error ? err.message : 'Failed to save department'
+        err instanceof Error ? err.message : 'Failed to assign department'
       );
     } finally {
       setIsSavingDepartment(false);
@@ -339,42 +296,41 @@ export default function AdminOverview() {
           <div className="space-y-4 py-4">
             <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
               <p className="text-sm text-purple-800 dark:text-purple-200">
-                <strong>Important:</strong> You need to set up your department
-                information first. This will be used throughout the system for
-                all operations.
+                <strong>Important:</strong> Please select your department to
+                continue. This will be used throughout the system for all
+                operations.
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="departmentName">
-                  Department Name <span className="text-red-500">*</span>
+                <Label htmlFor="department">
+                  Select Department <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="departmentName"
-                  placeholder="e.g., Computer Science"
-                  value={departmentName}
-                  onChange={(e) => setDepartmentName(e.target.value)}
+                <Select
+                  value={selectedDepartmentId}
+                  onValueChange={setSelectedDepartmentId}
                   disabled={isSavingDepartment}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="departmentCode">
-                  Department Code <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="departmentCode"
-                  placeholder="e.g., CS"
-                  value={departmentCode}
-                  onChange={(e) =>
-                    setDepartmentCode(e.target.value.toUpperCase())
-                  }
-                  maxLength={10}
-                  disabled={isSavingDepartment}
-                />
+                >
+                  <SelectTrigger id="department">
+                    <SelectValue placeholder="Choose your department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.length === 0 ? (
+                      <SelectItem value="none" disabled>
+                        No departments available
+                      </SelectItem>
+                    ) : (
+                      departments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id.toString()}>
+                          {dept.name} ({dept.code})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Short code for your department (max 10 characters)
+                  Select the department you will be managing
                 </p>
               </div>
             </div>
@@ -383,14 +339,10 @@ export default function AdminOverview() {
           <DialogFooter>
             <Button
               onClick={handleSaveDepartment}
-              disabled={
-                isSavingDepartment ||
-                !departmentName.trim() ||
-                !departmentCode.trim()
-              }
+              disabled={isSavingDepartment || !selectedDepartmentId}
               className="w-full sm:w-auto"
             >
-              {isSavingDepartment ? 'Saving...' : 'Save & Continue'}
+              {isSavingDepartment ? 'Assigning...' : 'Select & Continue'}
             </Button>
           </DialogFooter>
         </DialogContent>
