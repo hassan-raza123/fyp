@@ -508,7 +508,18 @@ export async function GET(request: NextRequest) {
             assessment: result.assessment.title,
             percentage: result.percentage,
           })),
+          averageClassPerformance,
         },
+        recentGradingActivity: recentGradingActivity.map((activity) => ({
+          assessmentId: activity.assessmentId,
+          assessmentTitle: activity.assessmentTitle,
+          course: {
+            code: activity.courseCode,
+            name: activity.courseName,
+          },
+          evaluatedAt: activity.evaluatedAt?.toISOString() || null,
+          status: activity.status,
+        })),
       },
     });
   } catch (error) {
