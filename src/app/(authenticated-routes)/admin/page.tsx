@@ -134,6 +134,13 @@ export default function AdminOverview() {
     Array<{ id: number; name: string; code: string }>
   >([]);
   const [isSavingDepartment, setIsSavingDepartment] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newDepartment, setNewDepartment] = useState({
+    name: '',
+    code: '',
+    description: '',
+  });
+  const [isCreatingDepartment, setIsCreatingDepartment] = useState(false);
 
   // Check if admin has a department assigned
   useEffect(() => {
@@ -168,9 +175,15 @@ export default function AdminOverview() {
           const deptData = await deptResponse.json();
           if (deptData.success && deptData.data) {
             setDepartments(deptData.data);
+            // If no departments exist, show create form by default
+            if (deptData.data.length === 0) {
+              setShowCreateForm(true);
+            }
             setShowDepartmentModal(true);
           } else {
-            throw new Error('No departments available');
+            // No departments, show create form
+            setShowCreateForm(true);
+            setShowDepartmentModal(true);
           }
           setLoading(false);
         } else {
@@ -206,6 +219,76 @@ export default function AdminOverview() {
     }
   };
 
+  const handleCreateDepartment = async () => {
+    if (!newDepartment.name.trim() || !newDepartment.code.trim()) {
+      toast.error('Please enter department name and code');
+      return;
+    }
+
+    setIsCreatingDepartment(true);
+    try {
+      // Create new department
+      const createResponse = await fetch('/api/departments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: newDepartment.name.trim(),
+          code: newDepartment.code.trim(),
+          description: newDepartment.description.trim() || null,
+        }),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Failed to create department');
+      }
+
+      const createData = await createResponse.json();
+      if (createData.success) {
+        toast.success('Department created successfully!');
+        
+        // Now assign this department to admin
+        const assignResponse = await fetch('/api/admin/assign-department', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            departmentId: createData.data.id,
+          }),
+        });
+
+        if (!assignResponse.ok) {
+          throw new Error('Failed to assign department');
+        }
+
+        const assignData = await assignResponse.json();
+        if (assignData.success) {
+          toast.success(
+            `Department "${createData.data.name}" (${createData.data.code}) assigned successfully!`
+          );
+          setShowDepartmentModal(false);
+          // Reset form
+          setNewDepartment({ name: '', code: '', description: '' });
+          // Now fetch dashboard data
+          fetchDashboardData();
+        } else {
+          const errorMsg = assignData.error || 'Failed to assign department';
+          console.error('Assign department error:', errorMsg);
+          throw new Error(errorMsg);
+        }
+      } else {
+        throw new Error(createData.error || 'Failed to create department');
+      }
+    } catch (err) {
+      console.error('Error creating department:', err);
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to create department'
+      );
+    } finally {
+      setIsCreatingDepartment(false);
+    }
+  };
+
   const handleSaveDepartment = async () => {
     if (!selectedDepartmentId) {
       toast.error('Please select a department');
@@ -237,10 +320,14 @@ export default function AdminOverview() {
           `Department "${selectedDept?.name}" (${selectedDept?.code}) assigned successfully!`
         );
         setShowDepartmentModal(false);
+        // Reset selection
+        setSelectedDepartmentId('');
         // Now fetch dashboard data
         fetchDashboardData();
       } else {
-        throw new Error(assignData.error || 'Failed to assign department');
+        const errorMsg = assignData.error || 'Failed to assign department';
+        console.error('Assign department error:', errorMsg);
+        throw new Error(errorMsg);
       }
     } catch (err) {
       console.error('Error assigning department:', err);
@@ -296,54 +383,155 @@ export default function AdminOverview() {
           <div className="space-y-4 py-4">
             <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
               <p className="text-sm text-purple-800 dark:text-purple-200">
-                <strong>Important:</strong> Please select your department to
-                continue. This will be used throughout the system for all
-                operations.
+                <strong>Important:</strong> Please select or create your
+                department to continue. This will be used throughout the system
+                for all operations.
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="department">
-                  Select Department <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={selectedDepartmentId}
-                  onValueChange={setSelectedDepartmentId}
-                  disabled={isSavingDepartment}
-                >
-                  <SelectTrigger id="department">
-                    <SelectValue placeholder="Choose your department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.length === 0 ? (
-                      <SelectItem value="none" disabled>
-                        No departments available
-                      </SelectItem>
-                    ) : (
-                      departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id.toString()}>
-                          {dept.name} ({dept.code})
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Select the department you will be managing
-                </p>
-              </div>
+            {/* Toggle between Select and Create */}
+            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(false)}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  !showCreateForm
+                    ? 'border-b-2 border-purple-600 text-purple-600 dark:text-purple-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Select Existing
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(true)}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  showCreateForm
+                    ? 'border-b-2 border-purple-600 text-purple-600 dark:text-purple-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Create New
+              </button>
             </div>
+
+            {showCreateForm ? (
+              // Create New Department Form
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deptName">
+                    Department Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="deptName"
+                    placeholder="e.g., Computer Science"
+                    value={newDepartment.name}
+                    onChange={(e) =>
+                      setNewDepartment({ ...newDepartment, name: e.target.value })
+                    }
+                    disabled={isCreatingDepartment}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="deptCode">
+                    Department Code <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="deptCode"
+                    placeholder="e.g., CS"
+                    value={newDepartment.code}
+                    onChange={(e) =>
+                      setNewDepartment({
+                        ...newDepartment,
+                        code: e.target.value.toUpperCase(),
+                      })
+                    }
+                    maxLength={10}
+                    disabled={isCreatingDepartment}
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Short code for your department (max 10 characters)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="deptDescription">Description (Optional)</Label>
+                  <Input
+                    id="deptDescription"
+                    placeholder="e.g., Department of Computer Science"
+                    value={newDepartment.description}
+                    onChange={(e) =>
+                      setNewDepartment({
+                        ...newDepartment,
+                        description: e.target.value,
+                      })
+                    }
+                    disabled={isCreatingDepartment}
+                  />
+                </div>
+              </div>
+            ) : (
+              // Select Existing Department
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="department">
+                    Select Department <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={selectedDepartmentId}
+                    onValueChange={setSelectedDepartmentId}
+                    disabled={isSavingDepartment}
+                  >
+                    <SelectTrigger id="department">
+                      <SelectValue placeholder="Choose your department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No departments available
+                        </SelectItem>
+                      ) : (
+                        departments.map((dept) => (
+                          <SelectItem key={dept.id} value={dept.id.toString()}>
+                            {dept.name} ({dept.code})
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Select the department you will be managing
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
-            <Button
-              onClick={handleSaveDepartment}
-              disabled={isSavingDepartment || !selectedDepartmentId}
-              className="w-full sm:w-auto"
-            >
-              {isSavingDepartment ? 'Assigning...' : 'Select & Continue'}
-            </Button>
+            {showCreateForm ? (
+              <Button
+                onClick={handleCreateDepartment}
+                disabled={
+                  isCreatingDepartment ||
+                  !newDepartment.name.trim() ||
+                  !newDepartment.code.trim()
+                }
+                className="w-full sm:w-auto"
+              >
+                {isCreatingDepartment
+                  ? 'Creating & Assigning...'
+                  : 'Create & Continue'}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSaveDepartment}
+                disabled={isSavingDepartment || !selectedDepartmentId}
+                className="w-full sm:w-auto"
+              >
+                {isSavingDepartment ? 'Assigning...' : 'Select & Continue'}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

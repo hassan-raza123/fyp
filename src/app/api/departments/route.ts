@@ -41,3 +41,87 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/departments - Create a new department
+export async function POST(request: NextRequest) {
+  try {
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins can create departments
+    if (user?.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { name, code, description } = body;
+
+    // Validate required fields
+    if (!name || !name.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Department name is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!code || !code.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Department code is required' },
+        { status: 400 }
+      );
+    }
+
+    // Check if department code already exists
+    const existingDepartment = await prisma.departments.findUnique({
+      where: { code: code.trim().toUpperCase() },
+    });
+
+    if (existingDepartment) {
+      return NextResponse.json(
+        { success: false, error: 'Department code already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Create department
+    const department = await prisma.departments.create({
+      data: {
+        name: name.trim(),
+        code: code.trim().toUpperCase(),
+        description: description?.trim() || null,
+        status: 'active',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Department created successfully',
+      data: {
+        id: department.id,
+        name: department.name,
+        code: department.code,
+        description: department.description,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating department:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create department',
+      },
+      { status: 500 }
+    );
+  }
+}
+

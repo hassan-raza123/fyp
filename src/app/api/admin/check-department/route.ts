@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth, getUserIdFromRequest } from '@/lib/api-utils';
 
 // GET /api/admin/check-department - Check if admin has a department assigned
 export async function GET(request: NextRequest) {
   try {
     const { success, user, error } = requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -14,14 +14,48 @@ export async function GET(request: NextRequest) {
     }
 
     // Only admins can check their department
-    if (user?.role !== 'admin') {
+    if (user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
       );
     }
 
-    const userId = user.userId;
+    // Get userId from multiple possible sources
+    let userId: number | null = null;
+    
+    // Try from user object first
+    if (user.userId) {
+      if (typeof user.userId === 'number') {
+        userId = user.userId;
+      } else {
+        const parsed = parseInt(String(user.userId), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    // Try from userData if available
+    if (!userId && user.userData?.id) {
+      if (typeof user.userData.id === 'number') {
+        userId = user.userData.id;
+      } else {
+        const parsed = parseInt(String(user.userData.id), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    // Try from request headers as fallback
+    if (!userId) {
+      userId = getUserIdFromRequest(request);
+    }
+    
+    // Ensure userId is a valid number
+    if (!userId || isNaN(userId)) {
+      return NextResponse.json(
+        { success: false, error: 'User ID not found or invalid' },
+        { status: 400 }
+      );
+    }
 
     // Check if admin has a faculty record with department
     const faculty = await prisma.faculties.findFirst({

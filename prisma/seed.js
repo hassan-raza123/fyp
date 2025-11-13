@@ -86,7 +86,51 @@ async function seedDatabase() {
     },
   });
 
-  // 2. Create Admin User
+  // 2. Create Sample Departments
+  console.log('🏢 Creating sample departments...');
+  const departments = [
+    {
+      name: 'Computer Science',
+      code: 'CS',
+      description: 'Department of Computer Science',
+    },
+    {
+      name: 'Electrical Engineering',
+      code: 'EE',
+      description: 'Department of Electrical Engineering',
+    },
+    {
+      name: 'Mechanical Engineering',
+      code: 'ME',
+      description: 'Department of Mechanical Engineering',
+    },
+    {
+      name: 'Civil Engineering',
+      code: 'CE',
+      description: 'Department of Civil Engineering',
+    },
+    {
+      name: 'Software Engineering',
+      code: 'SE',
+      description: 'Department of Software Engineering',
+    },
+  ];
+
+  for (const dept of departments) {
+    await prisma.departments.upsert({
+      where: { code: dept.code },
+      update: {},
+      create: {
+        name: dept.name,
+        code: dept.code,
+        description: dept.description,
+        status: 'active',
+      },
+    });
+  }
+  console.log(`✅ Created ${departments.length} departments`);
+
+  // 3. Create Admin User
   console.log('👤 Creating admin user...');
   const adminUser = await prisma.users.upsert({
     where: { email: 'hassan.officialmail00@gmail.com' },

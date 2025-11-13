@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth, getUserIdFromRequest } from '@/lib/api-utils';
 
 // POST /api/admin/assign-department - Assign admin to a department
 export async function POST(request: NextRequest) {
   try {
     const { success, user, error } = requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only admins can assign themselves to a department
-    if (user?.role !== 'admin') {
+    if (user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
@@ -31,7 +31,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = user.userId;
+    // Get userId from multiple possible sources
+    let userId: number | null = null;
+    
+    // Try from user object first
+    if (user.userId) {
+      if (typeof user.userId === 'number') {
+        userId = user.userId;
+      } else {
+        const parsed = parseInt(String(user.userId), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    // Try from userData if available
+    if (!userId && user.userData?.id) {
+      if (typeof user.userData.id === 'number') {
+        userId = user.userData.id;
+      } else {
+        const parsed = parseInt(String(user.userData.id), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    // Try from request headers as fallback
+    if (!userId) {
+      userId = getUserIdFromRequest(request);
+    }
+    
+    // Ensure userId is a valid number
+    if (!userId || isNaN(userId)) {
+      console.error('UserId resolution failed:', {
+        userUserId: user.userId,
+        userDataId: user.userData?.id,
+        headerUserId: getUserIdFromRequest(request),
+        userObject: user,
+      });
+      return NextResponse.json(
+        { success: false, error: 'User ID not found or invalid' },
+        { status: 400 }
+      );
+    }
+
+    // Verify user exists in database
+    const userExists = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (!userExists) {
+      return NextResponse.json(
+        { success: false, error: 'User not found in database' },
+        { status: 404 }
+      );
+    }
 
     // Check if department exists
     const department = await prisma.departments.findUnique({

@@ -43,10 +43,13 @@ async function verifyToken(token: string) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
 
+    // Ensure userId is converted to string for header
+    const userId = payload.userId ? String(payload.userId) : '';
+
     return {
       isValid: true,
       userRole: payload.role as string,
-      userId: payload.userId as string,
+      userId: userId,
       email: payload.email as string,
       userData: payload.userData,
     };
