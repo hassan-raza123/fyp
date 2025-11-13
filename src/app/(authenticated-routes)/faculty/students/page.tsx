@@ -189,6 +189,58 @@ export default function StudentsPage() {
             Manage student accounts and information
           </p>
         </div>
+        <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            onClick={() => {
+              // Export student data to CSV
+              const csv = [
+                ['Roll Number', 'Name', 'Email', 'Batch', 'Enrolled Sections', 'Status'],
+                ...students.map((student) => [
+                  student.rollNumber,
+                  `${student.user.firstName} ${student.user.lastName}`,
+                  student.user.email,
+                  student.batch?.name || 'N/A',
+                  student.currentStudents.toString(),
+                  student.status,
+                ]),
+              ]
+                .map((row) => row.map((cell) => `"${cell}"`).join(','))
+                .join('\n');
+              const blob = new Blob([csv], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `students-export-${new Date().toISOString().split('T')[0]}.csv`;
+              a.click();
+              toast.success('Student data exported successfully');
+            }}
+          >
+            <Download className='w-4 h-4 mr-2' />
+            Export
+          </Button>
+          <Button
+            variant='outline'
+            onClick={() => setShowBulkGradeDialog(true)}
+          >
+            <Upload className='w-4 h-4 mr-2' />
+            Bulk Grade Entry
+          </Button>
+          <Button
+            variant='outline'
+            onClick={() => {
+              if (selectedStudentsForNotification.length === 0) {
+                toast.error('Please select students first');
+                return;
+              }
+              setShowNotificationDialog(true);
+            }}
+            disabled={selectedStudentsForNotification.length === 0}
+          >
+            <Send className='w-4 h-4 mr-2' />
+            Send Notification ({selectedStudentsForNotification.length})
+          </Button>
+        </div>
       </div>
 
       <div className='flex items-center gap-4 mb-6'>
@@ -244,10 +296,26 @@ export default function StudentsPage() {
         </form>
       </div>
 
-      <div className='rounded-md border'>
+          <div className='rounded-md border'>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className='w-[50px]'>
+                <input
+                  type='checkbox'
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedStudentsForNotification(students.map((s) => s.id));
+                    } else {
+                      setSelectedStudentsForNotification([]);
+                    }
+                  }}
+                  checked={
+                    students.length > 0 &&
+                    selectedStudentsForNotification.length === students.length
+                  }
+                />
+              </TableHead>
               <TableHead>Roll Number</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
@@ -260,19 +328,39 @@ export default function StudentsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className='text-center'>
+                <TableCell colSpan={8} className='text-center'>
                   Loading...
                 </TableCell>
               </TableRow>
             ) : students.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className='text-center'>
+                <TableCell colSpan={8} className='text-center'>
                   No students found
                 </TableCell>
               </TableRow>
             ) : (
               students.map((student) => (
                 <TableRow key={student.id}>
+                  <TableCell>
+                    <input
+                      type='checkbox'
+                      checked={selectedStudentsForNotification.includes(student.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedStudentsForNotification([
+                            ...selectedStudentsForNotification,
+                            student.id,
+                          ]);
+                        } else {
+                          setSelectedStudentsForNotification(
+                            selectedStudentsForNotification.filter(
+                              (id) => id !== student.id
+                            )
+                          );
+                        }
+                      }}
+                    />
+                  </TableCell>
                   <TableCell>{student.rollNumber}</TableCell>
                   <TableCell>
                     {student.user.firstName} {student.user.lastName}
