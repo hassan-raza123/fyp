@@ -147,6 +147,12 @@ const adminNavigation = [
     title: 'USER MANAGEMENT',
     items: [
       {
+        id: 'admins',
+        label: 'Admins',
+        icon: Shield,
+        href: '/admin/admins',
+      },
+      {
         id: 'faculty',
         label: 'Faculty',
         icon: FacultyIcon,
