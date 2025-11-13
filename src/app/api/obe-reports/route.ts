@@ -146,6 +146,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Send notification to the user who generated the report
+    const { notifyReportGenerated } = await import('@/lib/notification-utils');
+    // Get faculty ID if user is a faculty member
+    const faculty = await prisma.faculties.findFirst({
+      where: { userId: user.userId },
+    });
+    if (faculty) {
+      await notifyReportGenerated(validatedData.reportType, faculty.id);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Report generated successfully',
