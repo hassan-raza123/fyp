@@ -6,9 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint"
+  },
+  "prisma": {
     "seed": "node prisma/seed.js"
-
   },
   "dependencies": {
     "next": "16.0.3",
