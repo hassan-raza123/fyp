@@ -56,9 +56,18 @@ async function seedDatabase() {
   const defaultPassword = await bcrypt.hash('11223344', 10);
 
   // 1. Create Roles
-  // Note: We create all roles (admin, faculty, student) even though we only create an admin user
+  // Note: We create all roles (super_admin, admin, faculty, student) even though we only create an admin user
   // because the admin will need these roles to exist when creating faculty and student users later
   console.log('📋 Creating roles...');
+  await prisma.roles.upsert({
+    where: { name: 'super_admin' },
+    update: {},
+    create: {
+      name: 'super_admin',
+      description: 'Super Admin - Can create departments and assign admins',
+    },
+  });
+
   await prisma.roles.upsert({
     where: { name: 'admin' },
     update: {},
@@ -86,88 +95,47 @@ async function seedDatabase() {
     },
   });
 
-  // 2. Create Sample Departments
-  console.log('🏢 Creating sample departments...');
-  const departments = [
-    {
-      name: 'Computer Science',
-      code: 'CS',
-      description: 'Department of Computer Science',
-    },
-    {
-      name: 'Electrical Engineering',
-      code: 'EE',
-      description: 'Department of Electrical Engineering',
-    },
-    {
-      name: 'Mechanical Engineering',
-      code: 'ME',
-      description: 'Department of Mechanical Engineering',
-    },
-    {
-      name: 'Civil Engineering',
-      code: 'CE',
-      description: 'Department of Civil Engineering',
-    },
-    {
-      name: 'Software Engineering',
-      code: 'SE',
-      description: 'Department of Software Engineering',
-    },
-  ];
-
-  for (const dept of departments) {
-    await prisma.departments.upsert({
-      where: { code: dept.code },
-      update: {},
-      create: {
-        name: dept.name,
-        code: dept.code,
-        description: dept.description,
-        status: 'active',
-      },
-    });
-  }
-  console.log(`✅ Created ${departments.length} departments`);
-
-  // 3. Create Admin User
-  console.log('👤 Creating admin user...');
-  const adminUser = await prisma.users.upsert({
+  // 2. Create Super Admin User (Hassan)
+  console.log('👤 Creating super admin user...');
+  const superAdminUser = await prisma.users.upsert({
     where: { email: 'hassan.officialmail00@gmail.com' },
     update: {},
     create: {
       email: 'hassan.officialmail00@gmail.com',
       password_hash: defaultPassword,
-      first_name: 'Admin',
-      last_name: 'User',
+      first_name: 'Hassan',
+      last_name: 'Admin',
       status: 'active',
       email_verified: true,
     },
   });
 
-  // Get admin role
-  const adminRole = await prisma.roles.findUnique({
-    where: { name: 'admin' },
+  // Get super_admin role
+  const superAdminRole = await prisma.roles.findUnique({
+    where: { name: 'super_admin' },
   });
 
-  // Assign admin role
-  if (adminRole) {
+  // Assign super_admin role
+  if (superAdminRole) {
     await prisma.userroles.upsert({
-      where: { userId: adminUser.id },
-      update: {},
+      where: { userId: superAdminUser.id },
+      update: {
+        roleId: superAdminRole.id,
+      },
       create: {
-        userId: adminUser.id,
-        roleId: adminRole.id,
+        userId: superAdminUser.id,
+        roleId: superAdminRole.id,
       },
     });
   }
 
   console.log('✅ Database seeded successfully!');
-  console.log('\n📝 Admin Login Credentials:');
+  console.log('\n📝 Super Admin Login Credentials:');
   console.log('Email:    hassan.officialmail00@gmail.com');
   console.log('Password: 11223344');
+  console.log('Role:     super_admin');
   console.log(
-    '\n💡 Note: Admin can now create departments, programs, users, etc.'
+    '\n💡 Note: Super Admin can create departments and assign admins to departments.'
   );
 }
 

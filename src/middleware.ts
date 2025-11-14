@@ -66,9 +66,9 @@ async function verifyToken(token: string) {
 
 // Function to check if route is allowed for user role
 function isRouteAllowedForRole(path: string, userRole: string): boolean {
-  // Admin routes - only for admin
+  // Admin routes - for both admin and super_admin
   if (path.startsWith('/admin')) {
-    return userRole === 'admin';
+    return userRole === 'admin' || userRole === 'super_admin';
   }
 
   // Faculty routes - only for faculty

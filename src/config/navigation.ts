@@ -307,9 +307,42 @@ const adminNavigation = [
   },
 ];
 
+const superAdminNavigation = [
+  {
+    title: 'DASHBOARD',
+    items: [
+      { id: 'overview', label: 'Overview', icon: Home, href: '/admin/super-admin' },
+    ],
+  },
+  {
+    title: 'DEPARTMENT MANAGEMENT',
+    items: [
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: Building2,
+        href: '/admin/super-admin',
+      },
+    ],
+  },
+  {
+    title: 'USER MANAGEMENT',
+    items: [
+      {
+        id: 'admins',
+        label: 'Admins',
+        icon: Shield,
+        href: '/admin/admins',
+      },
+    ],
+  },
+];
+
 export const roleBasedNavigation: RoleBasedNavigation = {
   // Admin navigation
   admin: adminNavigation,
+  // Super Admin navigation
+  super_admin: superAdminNavigation,
 
   // Faculty has unique navigation
   faculty: [

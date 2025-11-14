@@ -213,6 +213,7 @@ export default function AdminsPage() {
                   <TableHead>Employee ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Password</TableHead>
                   <TableHead>Designation</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Status</TableHead>
@@ -222,7 +223,7 @@ export default function AdminsPage() {
               <TableBody>
                 {admins.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       No admin users found
                     </TableCell>
                   </TableRow>
@@ -234,6 +235,14 @@ export default function AdminsPage() {
                         {admin.user.first_name} {admin.user.last_name}
                       </TableCell>
                       <TableCell>{admin.user.email}</TableCell>
+                      <TableCell>
+                        <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          11223344
+                        </code>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (default)
+                        </span>
+                      </TableCell>
                       <TableCell>{admin.designation || 'Admin'}</TableCell>
                       <TableCell>
                         {admin.department

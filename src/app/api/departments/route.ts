@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 
-// GET /api/departments - Get all departments (for admin selection)
+// GET /api/departments - Get all departments (for admin selection or super admin view)
 export async function GET(request: NextRequest) {
   try {
-    const { success } = requireAuth(request);
+    const { success, user } = requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -13,25 +13,85 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const departments = await prisma.departments.findMany({
-      where: {
-        status: 'active',
-      },
-      select: {
-        id: true,
-        name: true,
-        code: true,
-        description: true,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    // Super admin can see all departments with their admins
+    // Regular admin can only see active departments for selection
+    const isSuperAdmin = user?.role === 'super_admin';
 
-    return NextResponse.json({
-      success: true,
-      data: departments,
-    });
+    if (isSuperAdmin) {
+      const departments = await prisma.departments.findMany({
+        where: {
+          status: 'active',
+        },
+        include: {
+          admin: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+              status: true,
+            },
+          },
+          _count: {
+            select: {
+              faculties: true,
+              students: true,
+              programs: true,
+              courses: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: departments.map((dept) => ({
+          id: dept.id,
+          name: dept.name,
+          code: dept.code,
+          description: dept.description,
+          status: dept.status,
+          admin: dept.admin
+            ? {
+                id: dept.admin.id,
+                name: `${dept.admin.first_name} ${dept.admin.last_name}`,
+                email: dept.admin.email,
+                status: dept.admin.status,
+              }
+            : null,
+          counts: {
+            faculties: dept._count.faculties,
+            students: dept._count.students,
+            programs: dept._count.programs,
+            courses: dept._count.courses,
+          },
+        })),
+      });
+    } else {
+      // Regular admin - just list for selection
+      const departments = await prisma.departments.findMany({
+        where: {
+          status: 'active',
+        },
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          description: true,
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: departments,
+      });
+    }
   } catch (error) {
     console.error('Error fetching departments:', error);
     return NextResponse.json(
@@ -52,10 +112,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only admins can create departments
-    if (user?.role !== 'admin') {
+    // Only super admin can create departments
+    if (user?.role !== 'super_admin') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Only super admin can create departments' },
         { status: 403 }
       );
     }

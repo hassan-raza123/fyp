@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Only admins can view other admins
-    if (user?.role !== 'admin') {
+    // Only admins and super_admin can view other admins
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }

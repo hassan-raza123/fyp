@@ -1,7 +1,7 @@
 // Refined type definitions
 export type BaseUserType = 'student' | 'faculty' | 'admin';
-export type AdminRole = 'admin';
-export type AllRoles = 'student' | 'faculty' | 'admin';
+export type AdminRole = 'admin' | 'super_admin';
+export type AllRoles = 'student' | 'faculty' | 'admin' | 'super_admin';
 
 // Student specific data
 export interface StudentData {

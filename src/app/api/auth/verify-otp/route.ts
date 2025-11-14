@@ -23,7 +23,7 @@ const verifyOTPSchema = z.object({
     .max(255, 'Email is too long')
     .trim()
     .toLowerCase(),
-  userType: z.enum(['student', 'faculty', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin', 'super_admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -34,7 +34,7 @@ const verifyOTPSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin'): string {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin' | 'super_admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
@@ -42,14 +42,16 @@ function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin'): string {
       return 'faculty';
     case 'admin':
       return 'admin';
+    case 'super_admin':
+      return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
 }
 
-// Check if a role is an admin role
+// Check if a role is an admin role (includes both admin and super_admin)
 function isAdminRole(role: string): boolean {
-  return role === 'admin';
+  return role === 'admin' || role === 'super_admin';
 }
 
 function getDashboardPath(role: AllRoles): string {
@@ -59,6 +61,7 @@ function getDashboardPath(role: AllRoles): string {
     case 'faculty':
       return '/faculty';
     case 'admin':
+    case 'super_admin':
       return '/admin';
     default:
       return '/login';

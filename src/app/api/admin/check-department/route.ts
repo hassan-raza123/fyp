@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Only admins can check their department
+    // Only admins (not super_admin) can check their department
+    // Super admin doesn't need a department
     if (user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
