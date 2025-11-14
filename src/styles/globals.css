@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   html {
@@ -8,20 +6,33 @@
   }
   
   body {
-    @apply bg-white text-gray-900;
+    background-color: white;
+    color: rgb(17 24 39);
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-gray-900;
+    font-weight: 700;
+    color: rgb(17 24 39);
   }
   
   a {
-    @apply text-purple-600 hover:text-purple-700 transition-colors duration-300;
+    color: rgb(147 51 234);
+    transition-property: color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
+  a:hover {
+    color: rgb(126 34 206);
   }
   
   button {
-    @apply rounded-xl transition-all duration-300;
+    border-radius: 0.75rem;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
+  
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -49,6 +60,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+  
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -75,25 +87,35 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+  
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    border-width: 1px;
+    border-color: rgb(243 244 246);
   }
   
   .hover-effect {
-    @apply hover:scale-105 hover:shadow-xl transition-all duration-300;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
+  
+  .hover-effect:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 }
