@@ -3,13 +3,6 @@ import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
 
-// Dashboard routes based on user roles
-const dashboardRoutes = {
-  student: '/student',
-  faculty: '/faculty',
-  admin: '/admin',
-};
-
 // Auth routes that should redirect to dashboard if user is logged in
 const authRoutes = [
   '/login',
@@ -33,9 +26,20 @@ const publicApiRoutes = [
 ];
 
 // Function to get user's dashboard based on role
-const getUserDashboard = (userRole: string): string => {
-  return dashboardRoutes[userRole as keyof typeof dashboardRoutes] || '/login';
-};
+function getUserDashboard(role: string): string {
+  switch (role) {
+    case 'super_admin':
+      return '/admin/super-admin';
+    case 'admin':
+      return '/admin';
+    case 'faculty':
+      return '/faculty';
+    case 'student':
+      return '/student';
+    default:
+      return '/login';
+  }
+}
 
 // Function to verify token and get user details
 async function verifyToken(token: string) {
@@ -54,9 +58,10 @@ async function verifyToken(token: string) {
       userData: payload.userData,
     };
   } catch (error) {
+    console.error('Token verification error:', error);
     return {
       isValid: false,
-      userRole: '',
+      userRole: null,
       userId: '',
       email: '',
       userData: null,
@@ -139,13 +144,14 @@ export async function proxy(request: NextRequest) {
       token
     );
 
-    if (!isValid) {
+    if (!isValid || !userRole) {
       return NextResponse.json(
         { error: 'Invalid or expired authentication token' },
         { status: 401 }
       );
     }
 
+    // At this point, userRole is guaranteed to be a string (not null)
     // Add user info to request headers for API routes
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-id', userId);
@@ -197,6 +203,10 @@ export async function proxy(request: NextRequest) {
     return createLoginRedirect(request, `Invalid token for route: ${path}`);
   }
 
+  // At this point, userRole is guaranteed to be a string (not null)
+  // Store it in a const to help TypeScript understand the type narrowing
+  const verifiedUserRole: string = userRole;
+
   // Check if the route is a role-specific protected route
   const isProtectedRoute =
     path.startsWith('/admin') ||
@@ -205,16 +215,29 @@ export async function proxy(request: NextRequest) {
 
   if (isProtectedRoute) {
     // Check if user has permission for this route
-    if (!isRouteAllowedForRole(path, userRole)) {
+    if (!isRouteAllowedForRole(path, verifiedUserRole)) {
       return createLoginRedirect(
         request,
-        `Role ${userRole} not allowed for route: ${path}`
+        `Role ${verifiedUserRole} not allowed for route: ${path}`
       );
     }
   }
 
+  // Add user info to request headers for protected routes
+  // At this point, we know userRole is valid (checked above)
+  const { userId, email, userData } = await verifyToken(token);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', userId);
+  requestHeaders.set('x-user-email', email);
+  requestHeaders.set('x-user-role', verifiedUserRole);
+  requestHeaders.set('x-user-data', JSON.stringify(userData));
+
   // All checks passed, allow access
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 // Configure which routes to run proxy on
