@@ -13,9 +13,10 @@ import {
 
 interface AssessmentItemFormProps {
   assessmentId: number;
-  clos: Array<{ id: number; description: string }>;
+  clos: Array<{ id: number; code?: string; description: string }>;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
+  initialData?: any;
 }
 
 export function AssessmentItemForm({
@@ -23,12 +24,13 @@ export function AssessmentItemForm({
   clos,
   onSubmit,
   isLoading = false,
+  initialData,
 }: AssessmentItemFormProps) {
   const [formData, setFormData] = useState({
-    questionNo: '',
-    description: '',
-    marks: 0,
-    cloId: '',
+    questionNo: initialData?.questionNo || '',
+    description: initialData?.description || '',
+    marks: initialData?.marks || 0,
+    cloId: initialData?.cloId?.toString() || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,39 +44,39 @@ export function AssessmentItemForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-4'>
-      <div className='space-y-2'>
-        <Label htmlFor='questionNo'>Question Number</Label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="questionNo">Question Number</Label>
         <Input
-          id='questionNo'
+          id="questionNo"
           value={formData.questionNo}
           onChange={(e) =>
             setFormData({ ...formData, questionNo: e.target.value })
           }
-          placeholder='e.g., Q1, Q1a, Q1b'
+          placeholder="e.g., Q1, Q1a, Q1b"
           required
         />
       </div>
 
-      <div className='space-y-2'>
-        <Label htmlFor='description'>Question Description</Label>
+      <div className="space-y-2">
+        <Label htmlFor="description">Question Description</Label>
         <Textarea
-          id='description'
+          id="description"
           value={formData.description}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
-          placeholder='Enter question description'
+          placeholder="Enter question description"
           required
         />
       </div>
 
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='marks'>Marks</Label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="marks">Marks</Label>
           <Input
-            id='marks'
-            type='number'
+            id="marks"
+            type="number"
             value={formData.marks}
             onChange={(e) =>
               setFormData({ ...formData, marks: Number(e.target.value) })
@@ -82,8 +84,8 @@ export function AssessmentItemForm({
             required
           />
         </div>
-        <div className='space-y-2 col-span-2'>
-          <Label htmlFor='cloId'>CLO</Label>
+        <div className="space-y-2 col-span-2">
+          <Label htmlFor="cloId">CLO</Label>
           <Select
             value={formData.cloId}
             onValueChange={(value) =>
@@ -91,11 +93,12 @@ export function AssessmentItemForm({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder='Select CLO' />
+              <SelectValue placeholder="Select CLO" />
             </SelectTrigger>
             <SelectContent>
               {clos.map((clo) => (
                 <SelectItem key={clo.id} value={clo.id.toString()}>
+                  {clo.code ? `${clo.code}: ` : ''}
                   {clo.description}
                 </SelectItem>
               ))}
@@ -104,8 +107,14 @@ export function AssessmentItemForm({
         </div>
       </div>
 
-      <Button type='submit' className='w-full' disabled={isLoading}>
-        {isLoading ? 'Adding Question...' : 'Add Question'}
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading
+          ? initialData
+            ? 'Updating Question...'
+            : 'Adding Question...'
+          : initialData
+          ? 'Update Question'
+          : 'Add Question'}
       </Button>
     </form>
   );

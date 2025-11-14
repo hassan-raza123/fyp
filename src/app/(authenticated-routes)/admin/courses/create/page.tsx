@@ -41,16 +41,10 @@ const createCourseSchema = z.object({
 
 type FormValues = z.infer<typeof createCourseSchema>;
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-}
-
 export default function CreateCoursePage() {
   const router = useRouter();
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<number | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createCourseSchema),
@@ -68,22 +62,45 @@ export default function CreateCoursePage() {
   });
 
   useEffect(() => {
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, []);
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
       }
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id;
+      
+      setCurrentDepartmentId(deptId);
+      form.setValue('departmentId', deptId.toString());
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
@@ -279,33 +296,22 @@ export default function CreateCoursePage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name='departmentId'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select department' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept.id} value={dept.id.toString()}>
-                            {dept.name} ({dept.code})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Department is automatically set from Settings */}
+              {currentDepartmentId && (
+                <FormItem>
+                  <FormLabel>Department</FormLabel>
+                  <FormControl>
+                    <Input
+                      value="Current Department (from Settings)"
+                      disabled
+                      className="bg-gray-50"
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Department is configured in System Settings
+                  </p>
+                </FormItem>
+              )}
 
               <FormField
                 control={form.control}

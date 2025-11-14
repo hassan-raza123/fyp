@@ -26,12 +26,48 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const courseOfferingId = searchParams.get('courseOfferingId');
+
+    const where: any = {};
+    if (courseOfferingId) {
+      where.courseOfferingId = parseInt(courseOfferingId);
+    }
+
+    // If user is faculty, only show their assessments
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.conductedBy = facultyId;
+      } else {
+        // Faculty not found, return empty
+        return NextResponse.json([]);
+      }
+    }
+
     const assessments = await prisma.assessments.findMany({
+      where,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
         assessmentItems: true,
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            semester: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -111,7 +147,28 @@ export async function POST(request: NextRequest) {
           conductedBy: faculty.id,
           status: assessment_status.active,
         },
+        include: {
+          courseOffering: {
+            include: {
+              course: {
+                select: {
+                  code: true,
+                },
+              },
+            },
+          },
+        },
       });
+
+      // Send notification to faculty
+      const { notifyAssessmentCreated } = await import('@/lib/notification-utils');
+      await notifyAssessmentCreated(
+        assessment.id,
+        assessment.title,
+        assessment.courseOffering.course.code,
+        faculty.id
+      );
+
       return NextResponse.json(assessment);
     } catch (err) {
       console.error('Error creating assessment (prisma):', err);

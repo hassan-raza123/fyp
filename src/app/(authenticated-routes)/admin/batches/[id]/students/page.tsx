@@ -67,7 +67,7 @@ export default function BatchStudentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [programFilter, setProgramFilter] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
+  // Department filter removed - API automatically uses current department
 
   // Fetch batch data
   useEffect(() => {
@@ -133,10 +133,7 @@ export default function BatchStudentsPage() {
         if (programFilter) {
           url += `programId=${programFilter}&`;
         }
-
-        if (departmentFilter) {
-          url += `departmentId=${departmentFilter}&`;
-        }
+        // Department filter removed - API automatically uses current department
 
         if (searchTerm) {
           url += `search=${encodeURIComponent(searchTerm)}&`;
@@ -158,7 +155,7 @@ export default function BatchStudentsPage() {
     };
 
     fetchUnassignedStudents();
-  }, [programFilter, departmentFilter, searchTerm]);
+  }, [programFilter, searchTerm]);
 
   // Handle assign students
   const handleAssignStudents = async () => {
@@ -496,18 +493,7 @@ export default function BatchStudentsPage() {
                   />
                 </div>
 
-                <Select
-                  value={departmentFilter}
-                  onValueChange={setDepartmentFilter}
-                >
-                  <SelectTrigger className='w-full sm:w-[180px]'>
-                    <SelectValue placeholder='Department' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value=''>All Departments</SelectItem>
-                    {/* Would need department data to populate options */}
-                  </SelectContent>
-                </Select>
+                {/* Department filter removed - automatically uses current department from Settings */}
 
                 <TooltipProvider>
                   <Tooltip>

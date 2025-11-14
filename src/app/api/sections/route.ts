@@ -22,10 +22,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Build where clause
+    const where: any = {
+      status: 'active',
+    };
+
+    // If user is faculty, only show their assigned sections
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.facultyId = facultyId;
+      } else {
+        // Faculty not found, return empty
+        return NextResponse.json({
+          success: true,
+          data: [],
+        });
+      }
+    }
+
     const sections = await prisma.sections.findMany({
-      where: {
-        status: 'active',
-      },
+      where,
       include: {
         courseOffering: {
           include: {

@@ -24,10 +24,8 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
     const { success, user, error } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
-      'teacher',
+      'admin',
+      'faculty',
       'student',
     ]);
     if (!success) {
@@ -37,15 +35,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const departmentId = searchParams.get('departmentId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
-    const where: any = {};
-    if (departmentId) where.departmentId = parseInt(departmentId);
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not configured. Please set department in Settings.' },
+        { status: 400 }
+      );
+    }
+
+    const where: any = {
+      departmentId: currentDepartmentId, // Always filter by current department
+    };
     if (status) where.status = status;
     if (search) {
       where.OR = [
@@ -127,7 +137,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user has required role
     const userRoles = user?.role.split(',') || [];
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
+    const allowedRoles = ['admin'];
     const hasRequiredRole = userRoles.some((role: string) =>
       allowedRoles.includes(role)
     );

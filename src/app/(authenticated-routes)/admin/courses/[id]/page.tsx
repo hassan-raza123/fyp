@@ -50,8 +50,8 @@ interface Course {
     code: string;
     description: string;
   }[];
-  teachers: {
-    teacher: {
+  faculty: {
+    faculty: {
       id: number;
       name: string;
       email: string;
@@ -102,7 +102,7 @@ export default function CourseDetailsPage() {
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
-          teachers: data.data.teachers || [],
+          faculty: data.data.faculty || [],
           programs: data.data.programs || [],
         });
       } else {
@@ -151,13 +151,13 @@ export default function CourseDetailsPage() {
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge variant='default'>Theory</Badge>;
+        return <Badge variant="default">Theory</Badge>;
       case 'LAB':
-        return <Badge variant='success'>Lab</Badge>;
+        return <Badge variant="success">Lab</Badge>;
       case 'PROJECT':
-        return <Badge variant='secondary'>Project</Badge>;
+        return <Badge variant="secondary">Project</Badge>;
       case 'THESIS':
-        return <Badge variant='destructive'>Thesis</Badge>;
+        return <Badge variant="destructive">Thesis</Badge>;
       default:
         return <Badge>{type}</Badge>;
     }
@@ -166,11 +166,11 @@ export default function CourseDetailsPage() {
   const getStatusBadge = (status: 'active' | 'inactive' | 'archived') => {
     switch (status) {
       case 'active':
-        return <Badge variant='success'>Active</Badge>;
+        return <Badge variant="success">Active</Badge>;
       case 'inactive':
-        return <Badge variant='secondary'>Inactive</Badge>;
+        return <Badge variant="secondary">Inactive</Badge>;
       case 'archived':
-        return <Badge variant='destructive'>Archived</Badge>;
+        return <Badge variant="destructive">Archived</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -179,10 +179,10 @@ export default function CourseDetailsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4'></div>
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
             <p>Loading course details...</p>
           </div>
         </div>
@@ -193,14 +193,14 @@ export default function CourseDetailsPage() {
   // Error state
   if (error) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-red-500 mb-4'>{error}</p>
+      <div className="container mx-auto py-10">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => router.push('/admin/courses')}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
           </Button>
         </div>
@@ -211,14 +211,14 @@ export default function CourseDetailsPage() {
   // Not found state
   if (!course) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-muted-foreground mb-4'>Course not found</p>
+      <div className="container mx-auto py-10">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Course not found</p>
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => router.push('/admin/courses')}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
           </Button>
         </div>
@@ -228,91 +228,91 @@ export default function CourseDetailsPage() {
 
   // Main content
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <div className='flex items-center gap-4'>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
           <Button
-            variant='ghost'
-            size='icon'
+            variant="ghost"
+            size="icon"
             onClick={() => router.push('/admin/courses')}
           >
-            <ArrowLeft className='h-4 w-4' />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className='text-3xl font-bold'>
+            <h1 className="text-3xl font-bold">
               {course?.name || 'Untitled Course'}
             </h1>
-            <p className='text-muted-foreground'>
+            <p className="text-muted-foreground">
               Course Code: {course?.code || 'N/A'}
             </p>
           </div>
         </div>
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
           >
-            <Edit className='mr-2 h-4 w-4' />
+            <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
           <Button
-            variant='destructive'
+            variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
           >
-            <Trash2 className='mr-2 h-4 w-4' />
+            <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Basic Information</h2>
-          <div className='space-y-4'>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+          <div className="space-y-4">
             <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
-              <p className='font-medium'>
+              <p className="text-sm text-muted-foreground">Department</p>
+              <p className="font-medium">
                 {course.department
                   ? `${course.department.name} (${course.department.code})`
                   : 'N/A'}
               </p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Credit Hours</p>
-              <p className='font-medium'>{course.creditHours || 0}</p>
+              <p className="text-sm text-muted-foreground">Credit Hours</p>
+              <p className="font-medium">{course.creditHours || 0}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Theory Hours</p>
-              <p className='font-medium'>{course.theoryHours || 0}</p>
+              <p className="text-sm text-muted-foreground">Theory Hours</p>
+              <p className="font-medium">{course.theoryHours || 0}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Lab Hours</p>
-              <p className='font-medium'>{course.labHours || 0}</p>
+              <p className="text-sm text-muted-foreground">Lab Hours</p>
+              <p className="font-medium">{course.labHours || 0}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Type</p>
-              <div className='mt-1'>{getTypeBadge(course.type)}</div>
+              <p className="text-sm text-muted-foreground">Type</p>
+              <div className="mt-1">{getTypeBadge(course.type)}</div>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
-              <div className='mt-1'>{getStatusBadge(course.status)}</div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <div className="mt-1">{getStatusBadge(course.status)}</div>
             </div>
           </div>
         </Card>
 
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Course Details</h2>
-          <div className='space-y-4'>
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Course Details</h2>
+          <div className="space-y-4">
             {course.description && (
               <div>
-                <p className='text-sm text-muted-foreground'>Description</p>
-                <p className='mt-1'>{course.description}</p>
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="mt-1">{course.description}</p>
               </div>
             )}
             {course.prerequisites && course.prerequisites.length > 0 && (
               <div>
-                <p className='text-sm text-muted-foreground'>Prerequisites</p>
-                <ul className='mt-1 list-disc list-inside'>
+                <p className="text-sm text-muted-foreground">Prerequisites</p>
+                <ul className="mt-1 list-disc list-inside">
                   {course.prerequisites.map((prereq) => (
                     <li key={prereq.prerequisite?.id}>
                       {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
@@ -323,8 +323,8 @@ export default function CourseDetailsPage() {
             )}
             {course.corequisites && course.corequisites.length > 0 && (
               <div>
-                <p className='text-sm text-muted-foreground'>Co-requisites</p>
-                <ul className='mt-1 list-disc list-inside'>
+                <p className="text-sm text-muted-foreground">Co-requisites</p>
+                <ul className="mt-1 list-disc list-inside">
                   {course.corequisites.map((coreq) => (
                     <li key={coreq.corequisite?.id}>
                       {coreq.corequisite?.code} - {coreq.corequisite?.name}
@@ -336,56 +336,56 @@ export default function CourseDetailsPage() {
           </div>
         </Card>
 
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">
             Course Learning Outcomes
           </h2>
-          <div className='space-y-4'>
+          <div className="space-y-4">
             {course.clos && course.clos.length > 0 ? (
               course.clos.map((clo) => (
                 <div key={clo.id}>
-                  <p className='font-medium'>{clo.code}</p>
-                  <p className='text-muted-foreground'>{clo.description}</p>
+                  <p className="font-medium">{clo.code}</p>
+                  <p className="text-muted-foreground">{clo.description}</p>
                 </div>
               ))
             ) : (
-              <p className='text-muted-foreground'>
+              <p className="text-muted-foreground">
                 No learning outcomes defined
               </p>
             )}
           </div>
         </Card>
 
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Assigned Teachers</h2>
-          <div className='space-y-4'>
-            {course.teachers && course.teachers.length > 0 ? (
-              course.teachers.map((teacher) => (
-                <div key={teacher.teacher?.id}>
-                  <p className='font-medium'>{teacher.teacher?.name}</p>
-                  <p className='text-muted-foreground'>
-                    {teacher.teacher?.email}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Assigned Faculty</h2>
+          <div className="space-y-4">
+            {course.faculty && course.faculty.length > 0 ? (
+              course.faculty.map((facultyMember, index) => (
+                <div key={facultyMember.faculty?.id || index}>
+                  <p className="font-medium">{facultyMember.faculty?.name}</p>
+                  <p className="text-muted-foreground">
+                    {facultyMember.faculty?.email}
                   </p>
                 </div>
               ))
             ) : (
-              <p className='text-muted-foreground'>No teachers assigned</p>
+              <p className="text-muted-foreground">No faculty assigned</p>
             )}
           </div>
         </Card>
 
-        <Card className='p-6 md:col-span-2'>
-          <h2 className='text-xl font-semibold mb-4'>
+        <Card className="p-6 md:col-span-2">
+          <h2 className="text-xl font-semibold mb-4">
             Programs Offering This Course
           </h2>
-          <div className='space-y-4'>
+          <div className="space-y-4">
             {course.programs && course.programs.length > 0 ? (
               course.programs.map((program) => (
                 <div key={program.program?.id}>
-                  <p className='font-medium'>
+                  <p className="font-medium">
                     {program.program?.name} ({program.program?.code})
                   </p>
-                  <p className='text-muted-foreground'>
+                  <p className="text-muted-foreground">
                     Semester {program.semester} •{' '}
                     {program.isCore ? 'Core' : 'Elective'} •{' '}
                     {program.creditHours} Credit Hours
@@ -393,7 +393,7 @@ export default function CourseDetailsPage() {
                 </div>
               ))
             ) : (
-              <p className='text-muted-foreground'>
+              <p className="text-muted-foreground">
                 No programs offering this course
               </p>
             )}
@@ -412,14 +412,14 @@ export default function CourseDetailsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant='outline'
+              variant="outline"
               onClick={() => setShowDeleteDialog(false)}
               disabled={isDeleting}
             >
               Cancel
             </Button>
             <Button
-              variant='destructive'
+              variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
             >

@@ -60,6 +60,7 @@ export async function GET(
                         id: true,
                         first_name: true,
                         last_name: true,
+                        email: true,
                       },
                     },
                   },
@@ -93,9 +94,50 @@ export async function GET(
       );
     }
 
+    // Transform sections with faculty into faculty array
+    const facultyList: Array<{
+      faculty: {
+        id: number;
+        name: string;
+        email: string;
+      };
+    }> = [];
+
+    // Extract unique faculty from all course offerings' sections
+    const facultyMap = new Map<
+      number,
+      { id: number; name: string; email: string }
+    >();
+
+    course.courseOfferings?.forEach((offering) => {
+      offering.sections?.forEach((section) => {
+        if (section.faculty) {
+          const facultyId = section.faculty.id;
+          if (!facultyMap.has(facultyId)) {
+            facultyMap.set(facultyId, {
+              id: section.faculty.id,
+              name: `${section.faculty.user.first_name} ${section.faculty.user.last_name}`,
+              email: section.faculty.user.email || '',
+            });
+          }
+        }
+      });
+    });
+
+    // Convert map to array
+    facultyMap.forEach((faculty) => {
+      facultyList.push({ faculty });
+    });
+
+    // Transform course data to include faculty field
+    const transformedCourse = {
+      ...course,
+      faculty: facultyList,
+    };
+
     return NextResponse.json({
       success: true,
-      data: course,
+      data: transformedCourse,
     });
   } catch (error) {
     console.error('Error fetching course:', error);

@@ -55,9 +55,7 @@ export default function EditCoursePage({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [departments, setDepartments] = useState<
-    { id: number; name: string }[]
-  >([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<number | null>(null);
   const resolvedParams = use(params);
   const courseId = resolvedParams.id;
 
@@ -77,7 +75,7 @@ export default function EditCoursePage({
 
   useEffect(() => {
     fetchCourse();
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, [courseId]);
 
   const fetchCourse = async () => {
@@ -113,29 +111,58 @@ export default function EditCoursePage({
     }
   };
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) throw new Error('Failed to fetch departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
+      }
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id;
+      
+      setCurrentDepartmentId(deptId);
+      setValue('departmentId', deptId);
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
   const onSubmit = async (data: FormData) => {
     try {
       setSaving(true);
+      // Always use current department from settings
       const response = await fetch(`/api/courses/${courseId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          departmentId: currentDepartmentId || data.departmentId, // Use current department
+        }),
       });
 
       if (!response.ok) {
@@ -275,30 +302,21 @@ export default function EditCoursePage({
               )}
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='departmentId'>Department</Label>
-              <Select
-                onValueChange={(value) =>
-                  setValue('departmentId', parseInt(value))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select department' />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.departmentId && (
-                <p className='text-sm text-red-500'>
-                  {errors.departmentId.message}
+            {/* Department is automatically set from Settings */}
+            {currentDepartmentId && (
+              <div className='space-y-2'>
+                <Label htmlFor='departmentId'>Department</Label>
+                <Input
+                  id='departmentId'
+                  value='Current Department (from Settings)'
+                  disabled
+                  className='bg-gray-50'
+                />
+                <p className='text-xs text-gray-500'>
+                  Department is configured in System Settings
                 </p>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className='space-y-2'>
               <Label htmlFor='status'>Status</Label>

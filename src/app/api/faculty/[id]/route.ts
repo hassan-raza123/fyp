@@ -9,9 +9,86 @@ interface UserRole {
   };
 }
 
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Check authentication
+    const { success, user, error } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await context.params;
+    const facultyId = parseInt(id);
+    if (isNaN(facultyId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid faculty ID' },
+        { status: 400 }
+      );
+    }
+
+    const faculty = await prisma.faculties.findUnique({
+      where: { id: facultyId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            status: true,
+          },
+        },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+      },
+    });
+
+    if (!faculty) {
+      return NextResponse.json(
+        { success: false, error: 'Faculty not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check department access if admin
+    if (user?.role === 'admin' && user?.departmentId !== faculty.departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: faculty,
+    });
+  } catch (error) {
+    console.error('Error fetching faculty:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch faculty',
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication and get user data
@@ -24,14 +101,15 @@ export async function PUT(
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
       );
     }
 
-    const facultyId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const facultyId = parseInt(id);
     if (isNaN(facultyId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid faculty ID' },
@@ -52,7 +130,7 @@ export async function PUT(
     }
 
     // Check if faculty exists
-    const existingFaculty = await prisma.faculty.findUnique({
+    const existingFaculty = await prisma.faculties.findUnique({
       where: { id: facultyId },
       include: {
         user: true,
@@ -68,7 +146,7 @@ export async function PUT(
     }
 
     // Update faculty information
-    const updatedFaculty = await prisma.faculty.update({
+    const updatedFaculty = await prisma.faculties.update({
       where: { id: facultyId },
       data: {
         designation,
@@ -115,7 +193,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -128,7 +206,7 @@ export async function DELETE(
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -136,7 +214,8 @@ export async function DELETE(
     }
 
     // Parse the faculty ID
-    const facultyId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const facultyId = parseInt(id);
     if (isNaN(facultyId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid faculty ID' },
@@ -147,7 +226,7 @@ export async function DELETE(
     console.log(`Processing DELETE for faculty ID: ${facultyId}`);
 
     // Check if faculty exists
-    const existingFaculty = await prisma.faculty.findUnique({
+    const existingFaculty = await prisma.faculties.findUnique({
       where: { id: facultyId },
       include: {
         user: true,
@@ -179,7 +258,7 @@ export async function DELETE(
     const userRoles = (existingFaculty.user.userrole || []) as UserRole[];
     const isDepartmentAdmin =
       Array.isArray(userRoles) &&
-      userRoles.some((ur) => ur.role.name === 'department_admin');
+      userRoles.some((ur) => ur.role.name === 'admin');
 
     // Store the user ID for later operations
     const userId = existingFaculty.userId;
@@ -216,7 +295,7 @@ export async function DELETE(
 
     // Delete the faculty record completely (instead of just removing department association)
     try {
-      await prisma.faculty.delete({
+      await prisma.faculties.delete({
         where: { id: facultyId },
       });
       console.log('Successfully deleted faculty record');

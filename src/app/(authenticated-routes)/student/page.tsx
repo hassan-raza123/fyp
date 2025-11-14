@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   BookOpen,
   Calendar,
@@ -80,6 +82,7 @@ interface CourseCardProps {
   attendance: number;
   nextClass: string;
   color: string;
+  courseId?: number;
 }
 
 const CourseCard = ({
@@ -90,8 +93,12 @@ const CourseCard = ({
   attendance,
   nextClass,
   color,
+  courseId,
 }: CourseCardProps) => (
-  <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
+  <Link
+    href={courseId ? `/student/courses/${courseId}` : '#'}
+    className='block bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer'
+  >
     <div className='flex items-start justify-between mb-4'>
       <div>
         <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
@@ -124,7 +131,7 @@ const CourseCard = ({
         </span>
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 interface AssignmentProps {
@@ -133,6 +140,7 @@ interface AssignmentProps {
   dueDate: string;
   status: 'upcoming' | 'submitted' | 'overdue';
   priority: 'high' | 'medium' | 'low';
+  assessmentId?: number;
 }
 
 const AssignmentItem = ({
@@ -141,6 +149,7 @@ const AssignmentItem = ({
   dueDate,
   status,
   priority,
+  assessmentId,
 }: AssignmentProps) => {
   const getStatusColor = () => {
     switch (status) {
@@ -164,7 +173,7 @@ const AssignmentItem = ({
     }
   };
 
-  return (
+  const content = (
     <div className='flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors'>
       <div className='flex items-center space-x-3'>
         <div className={`w-2 h-2 rounded-full ${getPriorityColor()}`}></div>
@@ -184,6 +193,16 @@ const AssignmentItem = ({
       </span>
     </div>
   );
+
+  if (assessmentId) {
+    return (
+      <Link href={`/student/assessments/${assessmentId}`} className='block'>
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 };
 
 interface StudentDashboardData {
@@ -199,6 +218,7 @@ interface StudentDashboardData {
     averageGrade: number;
     attendanceRate: number;
     completedAssignments: number;
+    pendingAssignments?: number;
   };
   courses: Array<{
     courseCode: string;
@@ -208,6 +228,7 @@ interface StudentDashboardData {
     attendance: number;
     nextClass: string;
     color: string;
+    courseId?: number;
   }>;
   assignments: Array<{
     title: string;
@@ -215,157 +236,80 @@ interface StudentDashboardData {
     dueDate: string;
     status: 'upcoming' | 'submitted' | 'overdue';
     priority: 'high' | 'medium' | 'low';
+    assessmentId?: number;
   }>;
   recentActivities: Array<{
     id: string;
     summary: string;
     time: string;
     type: string;
+    link?: string;
   }>;
 }
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<StudentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call with dummy data
     const fetchData = async () => {
-      // Simulate loading delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const dummyData: StudentDashboardData = {
-        studentInfo: {
-          name: 'Ahmed Hassan',
-          studentId: '2021-CS-123',
-          program: 'Bachelor of Computer Science',
-          semester: 'Fall 2024',
-          cgpa: 3.75,
-        },
-        stats: {
-          enrolledCourses: 5,
-          averageGrade: 85.2,
-          attendanceRate: 92.5,
-          completedAssignments: 18,
-        },
-        courses: [
-          {
-            courseCode: 'CS-301',
-            courseName: 'Data Structures & Algorithms',
-            instructor: 'Dr. Sarah Johnson',
-            grade: 'A-',
-            attendance: 95,
-            nextClass: 'Today, 2:00 PM',
-            color: 'blue',
-          },
-          {
-            courseCode: 'CS-302',
-            courseName: 'Database Systems',
-            instructor: 'Prof. Michael Chen',
-            grade: 'A',
-            attendance: 88,
-            nextClass: 'Tomorrow, 10:00 AM',
-            color: 'green',
-          },
-          {
-            courseCode: 'CS-303',
-            courseName: 'Software Engineering',
-            instructor: 'Dr. Emily Rodriguez',
-            attendance: 90,
-            nextClass: 'Wednesday, 3:30 PM',
-            color: 'purple',
-          },
-          {
-            courseCode: 'MATH-201',
-            courseName: 'Linear Algebra',
-            instructor: 'Prof. David Kim',
-            grade: 'B+',
-            attendance: 85,
-            nextClass: 'Thursday, 1:00 PM',
-            color: 'orange',
-          },
-          {
-            courseCode: 'ENG-101',
-            courseName: 'Technical Writing',
-            instructor: 'Dr. Lisa Thompson',
-            attendance: 94,
-            nextClass: 'Friday, 11:00 AM',
-            color: 'pink',
-          },
-        ],
-        assignments: [
-          {
-            title: 'Final Project Submission',
-            course: 'CS-301',
-            dueDate: 'Dec 15, 2024',
-            status: 'upcoming',
-            priority: 'high',
-          },
-          {
-            title: 'Database Design Report',
-            course: 'CS-302',
-            dueDate: 'Dec 12, 2024',
-            status: 'upcoming',
-            priority: 'high',
-          },
-          {
-            title: 'Software Requirements Document',
-            course: 'CS-303',
-            dueDate: 'Dec 10, 2024',
-            status: 'submitted',
-            priority: 'medium',
-          },
-          {
-            title: 'Linear Algebra Quiz',
-            course: 'MATH-201',
-            dueDate: 'Dec 8, 2024',
-            status: 'overdue',
-            priority: 'high',
-          },
-          {
-            title: 'Technical Report Draft',
-            course: 'ENG-101',
-            dueDate: 'Dec 20, 2024',
-            status: 'upcoming',
-            priority: 'low',
-          },
-        ],
-        recentActivities: [
-          {
-            id: '1',
-            summary: 'Assignment submitted: Software Requirements Document',
-            time: '2 hours ago',
-            type: 'submission',
-          },
-          {
-            id: '2',
-            summary: 'Grade updated: Database Systems (A)',
-            time: '1 day ago',
-            type: 'grade',
-          },
-          {
-            id: '3',
-            summary: 'Attendance marked: Data Structures & Algorithms',
-            time: '2 days ago',
-            type: 'attendance',
-          },
-          {
-            id: '4',
-            summary: 'New assignment posted: Final Project',
-            time: '3 days ago',
-            type: 'assignment',
-          },
-          {
-            id: '5',
-            summary: 'Course registration confirmed: Technical Writing',
-            time: '1 week ago',
-            type: 'registration',
-          },
-        ],
-      };
-
-      setData(dummyData);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await fetch('/api/student/overview', {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+          // Transform API data to match component interface
+          const transformedData: StudentDashboardData = {
+            studentInfo: result.data.studentInfo,
+            stats: {
+              ...result.data.stats,
+              pendingAssignments: result.data.upcomingAssessments + result.data.overdueAssessments,
+            },
+            courses: result.data.courses.map((course: any, index: number) => ({
+              courseCode: course.code,
+              courseName: course.name,
+              instructor: course.instructor,
+              grade: course.grade || undefined,
+              attendance: 0, // TODO: Implement attendance
+              nextClass: 'N/A', // TODO: Implement next class
+              color: ['blue', 'green', 'purple', 'orange', 'pink'][index % 5],
+              courseId: course.id,
+            })),
+            assignments: result.data.assignments.map((assignment: any) => ({
+              title: assignment.title,
+              course: assignment.course,
+              dueDate: assignment.dueDate 
+                ? new Date(assignment.dueDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'No due date',
+              status: assignment.status,
+              priority: assignment.priority,
+              assessmentId: assignment.id,
+            })),
+            recentActivities: result.data.recentActivities,
+          };
+          
+          setData(transformedData);
+        } else {
+          throw new Error(result.error || 'Failed to fetch data');
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Keep loading state or show error
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -415,7 +359,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6'>
         <StatCard
           title='Enrolled Courses'
           value={data.stats.enrolledCourses}
@@ -452,6 +396,16 @@ export default function StudentDashboard() {
           }
           color='orange'
         />
+        {data.stats.pendingAssignments !== undefined && (
+          <StatCard
+            title='Pending Assignments'
+            value={data.stats.pendingAssignments}
+            icon={
+              <Clock className='w-6 h-6 text-red-600 dark:text-red-400' />
+            }
+            color='red'
+          />
+        )}
       </div>
 
       {/* Main Content Grid */}
@@ -552,16 +506,28 @@ export default function StudentDashboard() {
               </h2>
             </div>
             <div className='divide-y divide-gray-100 dark:divide-gray-700'>
-              {data.recentActivities.map((activity) => (
-                <div key={activity.id} className='p-4'>
-                  <p className='text-sm text-gray-900 dark:text-white'>
-                    {activity.summary}
-                  </p>
-                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                    {activity.time}
-                  </p>
-                </div>
-              ))}
+              {data.recentActivities.map((activity) => {
+                const content = (
+                  <div className='p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer'>
+                    <p className='text-sm text-gray-900 dark:text-white'>
+                      {activity.summary}
+                    </p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                      {activity.time}
+                    </p>
+                  </div>
+                );
+
+                if (activity.link) {
+                  return (
+                    <Link key={activity.id} href={activity.link}>
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return <div key={activity.id}>{content}</div>;
+              })}
             </div>
           </div>
 
@@ -569,15 +535,30 @@ export default function StudentDashboard() {
           <div className='bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white'>
             <h2 className='text-lg font-semibold mb-2'>Quick Actions</h2>
             <div className='space-y-3'>
-              <button className='w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium'>
+              <Link
+                href='/student/results'
+                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+              >
                 View Grades
-              </button>
-              <button className='w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium'>
-                Check Attendance
-              </button>
-              <button className='w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium'>
-                Contact Advisor
-              </button>
+              </Link>
+              <Link
+                href='/student/assessments'
+                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+              >
+                View Assessments
+              </Link>
+              <Link
+                href='/student/results/clo-attainments'
+                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+              >
+                View CLO Attainments
+              </Link>
+              <Link
+                href='/student/results/plo-attainments'
+                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+              >
+                View PLO Attainments
+              </Link>
             </div>
           </div>
         </div>

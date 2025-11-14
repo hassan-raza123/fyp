@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-utils';
+import { syncDepartmentFromSettings } from '@/lib/department-utils';
 
 // GET /api/settings
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const { success, error } = requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
             currentSemester: 'Spring',
             defaultLanguage: 'en',
             timeZone: 'UTC',
+            departmentName: '',
+            departmentCode: '',
           },
           email: {
             smtpHost: '',
@@ -60,16 +62,16 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const { success, error } = requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
     const data = await request.json();
-    const { system, email, notifications } = data;
+    const { system, email, notifications, obe } = data;
 
     // Update or create settings
     const settings = await prisma.settings.upsert({
@@ -78,14 +80,21 @@ export async function PUT(request: NextRequest) {
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
       create: {
         id: 1,
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
     });
+
+    // If department name and code are provided in settings, create/update department
+    if (system?.departmentCode && system?.departmentName) {
+      await syncDepartmentFromSettings();
+    }
 
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {

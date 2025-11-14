@@ -104,7 +104,7 @@ const SidebarNavLink = ({
         group
       `}
     >
-      <div className='relative flex items-center'>
+      <div className="relative flex items-center">
         <div
           className={`
           p-2 rounded-lg transition-all duration-300
@@ -120,7 +120,7 @@ const SidebarNavLink = ({
           />
         </div>
         {isActive && (
-          <div className='absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 rounded-lg' />
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 rounded-lg" />
         )}
       </div>
       {isSidebarOpen && (
@@ -185,30 +185,49 @@ export default function DashboardLayout({
 
   // Update active tab based on URL
   useEffect(() => {
-    const pathSegments = pathname.split('/');
-    // Get the base path (e.g., 'batches' from '/admin/batches/cmbf08ds800038tugw9lz6p40')
-    const basePath = pathSegments[2] || ''; // Index 2 because pathname starts with '/admin/'
-
     // Find the matching navigation item
     const findActiveTab = () => {
+      // Handle root/admin dashboard
+      if (
+        pathname === '/admin' ||
+        pathname === '/faculty' ||
+        pathname === '/student'
+      ) {
+        return 'overview';
+      }
+
+      // Find the best matching navigation item
+      let bestMatch: { item: any; priority: number } | null = null;
+
       for (const section of navigationSections) {
-        const matchingItem = section.items.find((item) => {
-          // Get the base path from the item's href (e.g., 'batches' from '/admin/batches')
-          const itemBasePath = item.href?.split('/')[2];
-          return (
-            itemBasePath === basePath ||
-            (basePath === '' && item.id === 'overview')
-          );
-        });
-        if (matchingItem) {
-          return matchingItem.id;
+        for (const item of section.items) {
+          if (!item.href) continue;
+
+          // Exact match has highest priority
+          if (pathname === item.href) {
+            return item.id;
+          }
+
+          // Check if pathname starts with item href (for sub-routes)
+          // e.g., '/admin/students' matches '/admin/students/create' or '/admin/students/123'
+          if (
+            pathname.startsWith(item.href + '/') ||
+            pathname.startsWith(item.href + '?')
+          ) {
+            const priority = item.href.split('/').length; // Longer paths have higher priority
+            if (!bestMatch || priority > bestMatch.priority) {
+              bestMatch = { item, priority };
+            }
+          }
         }
       }
-      return 'overview'; // Default to overview if no match found
+
+      // Return best match if found, otherwise default to overview
+      return bestMatch ? bestMatch.item.id : 'overview';
     };
 
     setActiveTab(findActiveTab());
-  }, [pathname]); // Update when pathname changes
+  }, [pathname, navigationSections]); // Update when pathname or navigation changes
 
   // Handle click outside for dropdowns
   useEffect(() => {
@@ -253,7 +272,7 @@ export default function DashboardLayout({
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div
-          className='fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden z-40'
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -285,7 +304,7 @@ export default function DashboardLayout({
           border-b
         `}
         >
-          <div className='flex items-center space-x-3'>
+          <div className="flex items-center space-x-3">
             <div
               className={`flex-shrink-0 ${
                 isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
@@ -299,40 +318,31 @@ export default function DashboardLayout({
             </div>
 
             {isSidebarOpen && (
-              <div className='flex flex-col'>
+              <div className="flex flex-col">
                 <h1
                   className={`font-bold text-lg tracking-tight ${
                     isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}
                 >
-                  {role === 'super_admin' && 'Super Admin Panel'}
-                  {role === 'sub_admin' && 'Admin Panel'}
-                  {role === 'department_admin' && 'Department Admin Panel'}
-                  {role === 'department_child' && 'Department Helper Panel'}
-                  {role === 'teacher' && 'Faculty Panel'}
+                  {role === 'admin' && 'Admin Panel'}
+                  {role === 'faculty' && 'Faculty Panel'}
                   {role === 'student' && 'Student Portal'}
-                  {!role && 'Admin Panel'}
+                  {!role && 'Dashboard'}
                 </h1>
-                <div className='flex items-center space-x-1'>
+                <div className="flex items-center space-x-1">
                   <span
                     className={`text-xs ${
                       isDarkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}
                   >
-                    {role === 'super_admin' && 'Full Access'}
-                    {role === 'sub_admin' && 'Full Access'}
-                    {role === 'department_admin' && 'Department Access'}
-                    {role === 'department_child' && 'Department Helper'}
-                    {role === 'teacher' && 'Faculty Access'}
+                    {role === 'admin' && 'Admin Access'}
+                    {role === 'faculty' && 'Faculty Access'}
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
-                  <span className='px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm'>
-                    {role === 'super_admin' && 'Super'}
-                    {role === 'sub_admin' && 'Admin'}
-                    {role === 'department_admin' && 'Dept Admin'}
-                    {role === 'department_child' && 'Dept Helper'}
-                    {role === 'teacher' && 'Faculty'}
+                  <span className="px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
+                    {role === 'admin' && 'Admin'}
+                    {role === 'faculty' && 'Faculty'}
                     {role === 'student' && 'Student'}
                     {!role && 'Beta'}
                   </span>
@@ -360,9 +370,9 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation */}
-        <nav className='p-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent'>
+        <nav className="p-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent">
           {navigationSections.map((section, idx) => (
-            <div key={idx} className='mb-8'>
+            <div key={idx} className="mb-8">
               {isSidebarOpen && (
                 <h2
                   className={`
@@ -373,7 +383,7 @@ export default function DashboardLayout({
                   {section.title}
                 </h2>
               )}
-              <div className='space-y-1'>
+              <div className="space-y-1">
                 {section.items.map((item) => (
                   <SidebarNavLink
                     key={item.id}
@@ -414,11 +424,11 @@ export default function DashboardLayout({
               }
             `}
           >
-            <div className='flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110'>
-              <User className='w-4 h-4 text-white' />
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
+              <User className="w-4 h-4 text-white" />
             </div>
             {isSidebarOpen && (
-              <div className='flex-1 min-w-0'>
+              <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-medium truncate ${
                     isDarkMode ? 'text-white' : 'text-gray-900'
@@ -461,13 +471,13 @@ export default function DashboardLayout({
         >
           {/* Mobile Menu Button */}
           <button
-            className='lg:hidden mr-4 p-2 rounded-lg hover:bg-purple-500/10 text-gray-600 hover:text-primary transition-all duration-300'
+            className="lg:hidden mr-4 p-2 rounded-lg hover:bg-purple-500/10 text-gray-600 hover:text-primary transition-all duration-300"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu size={22} />
           </button>
 
-          <div className='flex items-center flex-1 min-w-0'>
+          <div className="flex items-center flex-1 min-w-0">
             {/* Search Bar */}
             <div
               ref={searchRef}
@@ -476,7 +486,7 @@ export default function DashboardLayout({
               ${isMobileSearchOpen ? 'block' : 'hidden lg:block'}
             `}
             >
-              <div className='relative'>
+              <div className="relative">
                 <Search
                   className={`
                   absolute left-3 top-1/2 -translate-y-1/2
@@ -485,8 +495,8 @@ export default function DashboardLayout({
                   size={18}
                 />
                 <input
-                  type='text'
-                  placeholder='Search...'
+                  type="text"
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={`
@@ -505,7 +515,7 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className='flex items-center space-x-4'>
+          <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!isDarkMode)}
@@ -523,7 +533,7 @@ export default function DashboardLayout({
             </button>
 
             {/* Notifications */}
-            <div ref={notificationRef} className='relative'>
+            <div ref={notificationRef} className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className={`
@@ -541,7 +551,7 @@ export default function DashboardLayout({
             </div>
 
             {/* Profile Menu */}
-            <div ref={profileRef} className='relative'>
+            <div ref={profileRef} className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className={`
@@ -564,7 +574,7 @@ export default function DashboardLayout({
                     isDarkMode ? 'bg-gray-800' : 'bg-white'
                   } ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-300 origin-top-right`}
                 >
-                  <div className='py-1'>
+                  <div className="py-1">
                     <button
                       onClick={handleLogout}
                       className={`w-full flex items-center px-4 py-2 text-sm ${
@@ -573,7 +583,7 @@ export default function DashboardLayout({
                           : 'text-gray-700 hover:bg-purple-500/10 hover:text-primary'
                       } transition-all duration-300`}
                     >
-                      <LogOut className='w-4 h-4 mr-3' />
+                      <LogOut className="w-4 h-4 mr-3" />
                       Logout
                     </button>
                   </div>
@@ -584,7 +594,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className='p-6'>{children}</main>
+        <main className="p-6">{children}</main>
       </div>
     </div>
   );

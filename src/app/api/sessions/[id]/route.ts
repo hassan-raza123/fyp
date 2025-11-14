@@ -1,62 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/api-utils';
 import { z } from 'zod';
 import { session_status } from '@prisma/client';
 import { isValid } from 'date-fns';
 
 const updateSessionSchema = z.object({
-  date: z.string().min(1, 'Date is required'),
-  startTime: z.string().min(1, 'Start time is required'),
-  endTime: z.string().min(1, 'End time is required'),
-  topic: z.string().min(1, 'Topic is required'),
+  date: z.string().min(1, 'Date is required').optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  topic: z.string().min(1, 'Topic is required').optional(),
   remarks: z.string().optional(),
-  status: z.nativeEnum(session_status),
+  status: z.nativeEnum(session_status).optional(),
 });
 
-export async function PUT(
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = Number(params.id);
+    const { success, user } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await context.params;
+    const sessionId = Number(id);
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Session ID is required' },
         { status: 400 }
       );
     }
+
+    // Get existing session
+    const existingSession = await prisma.sessions.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!existingSession) {
+      return NextResponse.json(
+        { success: false, error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateSessionSchema.parse(body);
 
-    const sessionDate = new Date(validatedData.date);
-    if (!isValid(sessionDate)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid date format' },
-        { status: 400 }
-      );
+    const updateData: any = {};
+
+    if (validatedData.date) {
+      const sessionDate = new Date(validatedData.date);
+      if (!isValid(sessionDate)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid date format' },
+          { status: 400 }
+        );
+      }
+      updateData.date = sessionDate;
     }
-    const startTime = new Date(
-      `${validatedData.date}T${validatedData.startTime}`
-    );
-    const endTime = new Date(`${validatedData.date}T${validatedData.endTime}`);
-    if (!isValid(startTime) || !isValid(endTime)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid start or end time format' },
-        { status: 400 }
-      );
+
+    if (validatedData.startTime) {
+      const dateStr = validatedData.date || existingSession.date.toISOString().split('T')[0];
+      const startTime = new Date(`${dateStr}T${validatedData.startTime}`);
+      if (!isValid(startTime)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid start time format' },
+          { status: 400 }
+        );
+      }
+      updateData.startTime = startTime;
+    }
+
+    if (validatedData.endTime) {
+      const dateStr = validatedData.date || existingSession.date.toISOString().split('T')[0];
+      const endTime = new Date(`${dateStr}T${validatedData.endTime}`);
+      if (!isValid(endTime)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid end time format' },
+          { status: 400 }
+        );
+      }
+      updateData.endTime = endTime;
+    }
+
+    if (validatedData.topic !== undefined) {
+      updateData.topic = validatedData.topic;
+    }
+
+    if (validatedData.remarks !== undefined) {
+      updateData.remarks = validatedData.remarks;
+    }
+
+    if (validatedData.status !== undefined) {
+      updateData.status = validatedData.status;
     }
 
     const updated = await prisma.sessions.update({
       where: { id: sessionId },
-      data: {
-        date: sessionDate,
-        startTime,
-        endTime,
-        topic: validatedData.topic,
-        remarks: validatedData.remarks,
-        status: validatedData.status,
-      },
+      data: updateData,
     });
+
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error('Error updating session:', error);
@@ -75,16 +123,26 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = Number(params.id);
+    const { success, user } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await context.params;
+    const sessionId = Number(id);
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Session ID is required' },
         { status: 400 }
       );
     }
+
     await prisma.sessions.delete({ where: { id: sessionId } });
     return NextResponse.json({ success: true });
   } catch (error) {

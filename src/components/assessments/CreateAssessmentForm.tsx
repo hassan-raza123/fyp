@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,9 +21,26 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CreateAssessmentFormProps {
-  sectionId: number;
+  sectionId?: number;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
+}
+
+interface CourseOffering {
+  id: number;
+  course: {
+    id: number;
+    code: string;
+    name: string;
+  };
+  semester: {
+    id: number;
+    name: string;
+  };
+  sections: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 // Static assessment types (must match backend)
@@ -54,13 +71,45 @@ export function CreateAssessmentForm({
     dueDate: new Date(),
     instructions: '',
     weightage: 0,
+    courseOfferingId: '',
   });
+  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
+  const [loadingOfferings, setLoadingOfferings] = useState(true);
+
+  useEffect(() => {
+    const fetchCourseOfferings = async () => {
+      try {
+        const response = await fetch('/api/faculty/course-offerings', {
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to fetch course offerings');
+        const data = await response.json();
+        if (data.success) {
+          setCourseOfferings(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching course offerings:', error);
+      } finally {
+        setLoadingOfferings(false);
+      }
+    };
+
+    if (!sectionId) {
+      fetchCourseOfferings();
+    } else {
+      setLoadingOfferings(false);
+    }
+  }, [sectionId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!sectionId && !formData.courseOfferingId) {
+      alert('Please select a course offering');
+      return;
+    }
     onSubmit({
       ...formData,
-      courseOfferingId: sectionId,
+      courseOfferingId: sectionId || Number(formData.courseOfferingId),
     });
   };
 
@@ -89,6 +138,34 @@ export function CreateAssessmentForm({
           required
         />
       </div>
+
+      {!sectionId && (
+        <div className='space-y-2'>
+          <Label htmlFor='courseOfferingId'>Course Offering</Label>
+          <Select
+            value={formData.courseOfferingId}
+            onValueChange={(value) =>
+              setFormData({ ...formData, courseOfferingId: value })
+            }
+            disabled={loadingOfferings}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='Select course offering' />
+            </SelectTrigger>
+            <SelectContent>
+              {courseOfferings.map((offering) => (
+                <SelectItem
+                  key={offering.id}
+                  value={offering.id.toString()}
+                >
+                  {offering.course.code} - {offering.course.name} (
+                  {offering.semester.name})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className='space-y-2'>
         <Label htmlFor='type'>Assessment Type</Label>

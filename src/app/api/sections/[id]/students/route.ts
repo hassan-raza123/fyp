@@ -133,6 +133,31 @@ export async function POST(
       );
     }
 
+    // Get section with course offering and faculty for notification
+    const sectionWithDetails = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+        faculty: {
+          include: {
+            user: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
     // Add student to section
     const studentSection = await prisma.studentsections.create({
       data: {
@@ -155,6 +180,17 @@ export async function POST(
       },
     });
     console.log('Student added to section:', studentSection);
+
+    // Send notification to faculty about enrollment change
+    if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
+      const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');
+      await notifyStudentEnrollmentChange(
+        sectionWithDetails.courseOffering.course.code,
+        'added',
+        1,
+        sectionWithDetails.facultyId
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -240,9 +276,29 @@ export async function DELETE(
       );
     }
 
-    // First, delete all attendances for this studentSection
-    await prisma.attendances.deleteMany({
-      where: { studentSectionId: enrollment.id },
+    // Get section with course offering and faculty for notification
+    const sectionWithDetails = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+        faculty: {
+          include: {
+            user: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // Remove student from section
@@ -252,6 +308,17 @@ export async function DELETE(
       },
     });
     console.log('Student removed from section:', enrollment.id);
+
+    // Send notification to faculty about enrollment change
+    if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
+      const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');
+      await notifyStudentEnrollmentChange(
+        sectionWithDetails.courseOffering.course.code,
+        'removed',
+        1,
+        sectionWithDetails.facultyId
+      );
+    }
 
     return NextResponse.json({
       success: true,

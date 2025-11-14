@@ -62,7 +62,6 @@ export default function AssessmentsPage() {
               <DialogTitle>Create New Assessment</DialogTitle>
             </DialogHeader>
             <CreateAssessmentForm
-              sectionId={1} // This should be dynamic based on the selected section
               onSubmit={handleCreateAssessment}
               isLoading={isLoading}
             />

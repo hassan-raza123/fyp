@@ -91,7 +91,7 @@ export default function RoleManagementForm({
 
           // Set role-specific details based on current role
           if (
-            (currentRole === 'teacher' || currentRole === 'department_admin') &&
+            (currentRole === 'faculty' || currentRole === 'admin') &&
             data.faculty
           ) {
             form.setValue('facultyDetails', {
@@ -141,8 +141,8 @@ export default function RoleManagementForm({
 
       // Add role-specific details only if they are required
       switch (values.role) {
-        case 'teacher':
-        case 'department_admin':
+        case 'faculty':
+        case 'admin':
           if (
             !values.facultyDetails?.departmentId ||
             !values.facultyDetails?.designation
@@ -152,10 +152,6 @@ export default function RoleManagementForm({
             return;
           }
           requestBody.facultyDetails = values.facultyDetails;
-          break;
-
-        case 'sub_admin':
-          // No additional details needed for sub_admin
           break;
       }
 
@@ -201,22 +197,22 @@ export default function RoleManagementForm({
   };
 
   return (
-    <div className='p-6'>
+    <div className="p-6">
       <Card>
-        <div className='p-6'>
-          <h2 className='text-2xl font-bold mb-6'>
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6">
             {mode === 'assign' ? 'Assign Role' : 'Edit Role'}
           </h2>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name='role'
+                name="role"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Role <span className='text-red-500'>*</span>
+                      Role <span className="text-red-500">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={(value) => {
@@ -227,14 +223,11 @@ export default function RoleManagementForm({
                       value={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder='Select a role' />
+                        <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value='sub_admin'>Sub Admin</SelectItem>
-                        <SelectItem value='department_admin'>
-                          Department Admin
-                        </SelectItem>
-                        <SelectItem value='teacher'>Teacher</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="faculty">Faculty</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -242,17 +235,17 @@ export default function RoleManagementForm({
                 )}
               />
 
-              {(form.watch('role') === 'teacher' ||
-                form.watch('role') === 'department_admin') && (
-                <div className='space-y-4 border rounded-lg p-4'>
-                  <h3 className='text-lg font-medium'>Faculty Details</h3>
+              {(form.watch('role') === 'faculty' ||
+                form.watch('role') === 'admin') && (
+                <div className="space-y-4 border rounded-lg p-4">
+                  <h3 className="text-lg font-medium">Faculty Details</h3>
                   <FormField
                     control={form.control}
-                    name='facultyDetails.departmentId'
+                    name="facultyDetails.departmentId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Department <span className='text-red-500'>*</span>
+                          Department <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -260,7 +253,7 @@ export default function RoleManagementForm({
                           disabled={fetchingDepartments}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder='Select department' />
+                            <SelectValue placeholder="Select department" />
                           </SelectTrigger>
                           <SelectContent>
                             {departments.map((dept) => (
@@ -279,14 +272,14 @@ export default function RoleManagementForm({
                   />
                   <FormField
                     control={form.control}
-                    name='facultyDetails.designation'
+                    name="facultyDetails.designation"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Designation <span className='text-red-500'>*</span>
+                          Designation <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder='Enter designation' />
+                          <Input {...field} placeholder="Enter designation" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -295,18 +288,18 @@ export default function RoleManagementForm({
                 </div>
               )}
 
-              <div className='flex justify-end gap-4'>
+              <div className="flex justify-end gap-4">
                 <Button
-                  type='button'
-                  variant='outline'
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push('/admin/users')}
                 >
                   Cancel
                 </Button>
-                <Button type='submit' disabled={isLoading}>
+                <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
-                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {mode === 'assign' ? 'Assigning...' : 'Updating...'}
                     </>
                   ) : mode === 'assign' ? (

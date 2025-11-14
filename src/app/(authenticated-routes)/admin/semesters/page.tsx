@@ -104,51 +104,51 @@ export default function SemestersPage() {
   const getStatusBadge = (status: semester_status) => {
     switch (status) {
       case semester_status.active:
-        return <Badge variant='success'>Active</Badge>;
+        return <Badge variant="success">Active</Badge>;
       case semester_status.inactive:
-        return <Badge variant='secondary'>Inactive</Badge>;
+        return <Badge variant="secondary">Inactive</Badge>;
       case semester_status.completed:
-        return <Badge variant='destructive'>Completed</Badge>;
+        return <Badge variant="destructive">Completed</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
   };
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className='text-3xl font-bold'>Semesters</h1>
-          <p className='text-muted-foreground'>
+          <h1 className="text-3xl font-bold">Semesters</h1>
+          <p className="text-muted-foreground">
             Manage academic semesters and their details
           </p>
         </div>
         <Button onClick={() => router.push('/admin/semesters/new')}>
-          <Plus className='mr-2 h-4 w-4' />
+          <Plus className="mr-2 h-4 w-4" />
           Create Semester
         </Button>
       </div>
 
-      <Card className='p-6 mb-6'>
-        <div className='flex flex-col md:flex-row gap-4'>
-          <div className='flex-1'>
-            <div className='relative'>
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+      <Card className="p-6 mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder='Search semesters...'
+                placeholder="Search semesters..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className='pl-8'
+                className="pl-8"
               />
             </div>
           </div>
-          <div className='flex gap-4'>
+          <div className="flex gap-4">
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className='w-[180px]'>
-                <SelectValue placeholder='Status' />
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value={semester_status.active}>Active</SelectItem>
                 <SelectItem value={semester_status.inactive}>
                   Inactive
@@ -163,7 +163,7 @@ export default function SemestersPage() {
       </Card>
 
       <Card>
-        <div className='relative w-full overflow-auto'>
+        <div className="relative w-full overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -172,26 +172,26 @@ export default function SemestersPage() {
                 <TableHead>End Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Course Offerings</TableHead>
-                <TableHead className='text-right'>Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className='text-center'>
+                  <TableCell colSpan={6} className="text-center">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : semesters.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className='text-center'>
+                  <TableCell colSpan={6} className="text-center">
                     No semesters found
                   </TableCell>
                 </TableRow>
               ) : (
                 semesters.map((semester) => (
                   <TableRow key={semester.id}>
-                    <TableCell className='font-medium'>
+                    <TableCell className="font-medium">
                       {semester.name}
                     </TableCell>
                     <TableCell>
@@ -202,22 +202,34 @@ export default function SemestersPage() {
                     </TableCell>
                     <TableCell>{getStatusBadge(semester.status)}</TableCell>
                     <TableCell>{semester._count.courseOfferings}</TableCell>
-                    <TableCell className='text-right'>
-                      <Button
-                        variant='ghost'
-                        onClick={() =>
-                          router.push(`/admin/semesters/${semester.id}`)
-                        }
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        className='text-red-600 hover:text-red-700'
-                        onClick={() => handleDelete(semester.id)}
-                      >
-                        Delete
-                      </Button>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/admin/semesters/${semester.id}`)
+                          }
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/admin/semesters/${semester.id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(semester.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -227,18 +239,18 @@ export default function SemestersPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className='flex items-center justify-end space-x-2 p-4'>
+          <div className="flex items-center justify-end space-x-2 p-4">
             <Button
-              variant='outline'
-              size='sm'
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
               Previous
             </Button>
             <Button
-              variant='outline'
-              size='sm'
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
             >

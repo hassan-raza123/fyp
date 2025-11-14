@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
-import { getUserFromRequest } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user || user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { success, user, error } = requireAuth(request);
+    if (!success || user?.role !== 'admin') {
+      return NextResponse.json(
+        { error: error || 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     // Enrollment trend (last 12 months)
@@ -62,7 +65,31 @@ export async function GET(request: NextRequest) {
     const avgGPAResult = await prisma.semestergpa.aggregate({
       _avg: { semesterGPA: true },
     });
-    const retentionRate = 0.92; // Placeholder, calculate as needed
+    
+    // Calculate retention rate (students who completed at least 2 semesters)
+    const studentsWithMultipleSemesters = await prisma.semestergpa.groupBy({
+      by: ['studentId'],
+      _count: {
+        studentId: true,
+      },
+    });
+    const retainedStudents = studentsWithMultipleSemesters.filter(
+      (s) => s._count.studentId >= 2
+    ).length;
+    const retentionRate =
+      totalEnrollment > 0 ? retainedStudents / totalEnrollment : 0;
+
+    // Additional stats
+    const totalPrograms = await prisma.programs.count();
+    const totalCourses = await prisma.courses.count();
+    const totalDepartments = await prisma.departments.count();
+    const totalFaculty = await prisma.faculties.count({
+      where: { status: 'active' },
+    });
+    const totalAssessments = await prisma.assessments.count();
+    const activeCourseOfferings = await prisma.courseofferings.count({
+      where: { status: 'active' },
+    });
 
     return NextResponse.json({
       enrollmentTrend,
@@ -79,6 +106,12 @@ export async function GET(request: NextRequest) {
         programCompletion,
         averageGPA: avgGPAResult._avg.semesterGPA || 0,
         retentionRate,
+        totalPrograms,
+        totalCourses,
+        totalDepartments,
+        totalFaculty,
+        totalAssessments,
+        activeCourseOfferings,
       },
     });
   } catch (error) {

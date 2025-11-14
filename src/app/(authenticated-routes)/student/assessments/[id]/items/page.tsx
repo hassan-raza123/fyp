@@ -1,86 +1,89 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Metadata } from 'next';
-import { AssessmentItemForm } from '@/components/assessments/AssessmentItemForm';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+interface AssessmentItem {
+  id: number;
+  questionNo: number;
+  description: string;
+  marks: number;
+  clo: {
+    id: number;
+    code: string;
+    description: string;
+  } | null;
+  obtainedMarks: number | null;
+  remarks: string | null;
+}
 
 export default function AssessmentItemsPage() {
   const params = useParams();
   const router = useRouter();
-  const [assessment, setAssessment] = useState<any>(null);
-  const [clos, setClos] = useState<any[]>([]);
-  const [plos, setPlos] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const assessmentId = params?.id;
+  const [items, setItems] = useState<AssessmentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [assessmentTitle, setAssessmentTitle] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [assessmentRes, closRes, plosRes] = await Promise.all([
-          fetch(`/api/assessments/${params.id}`),
-          fetch('/api/clos'),
-          fetch('/api/plos'),
-        ]);
+    if (!assessmentId) return;
+    fetchData();
+  }, [assessmentId]);
 
-        if (!assessmentRes.ok || !closRes.ok || !plosRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const [assessmentData, closData, plosData] = await Promise.all([
-          assessmentRes.json(),
-          closRes.json(),
-          plosRes.json(),
-        ]);
-
-        setAssessment(assessmentData);
-        setClos(Array.isArray(closData.data) ? closData.data : []);
-        setPlos(Array.isArray(plosData.data) ? plosData.data : []);
-      } catch (error) {
-        toast.error('Failed to load data');
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (params.id) fetchData();
-  }, [params.id]);
-
-  const handleSubmit = async (data: any) => {
+  const fetchData = async () => {
     try {
-      setIsSubmitting(true);
-      const response = await fetch(`/api/assessments/${params.id}/items`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      setLoading(true);
+      const [itemsRes, assessmentRes] = await Promise.all([
+        fetch(`/api/student/assessments/${assessmentId}/items`, {
+          credentials: 'include',
+        }),
+        fetch(`/api/assessments/${assessmentId}`, {
+          credentials: 'include',
+        }),
+      ]);
 
-      if (!response.ok) {
-        throw new Error('Failed to create assessment item');
+      if (!itemsRes.ok) throw new Error('Failed to fetch items');
+      const itemsResult = await itemsRes.json();
+      if (itemsResult.success) {
+        setItems(itemsResult.data);
       }
 
-      toast.success('Assessment item created successfully');
-      router.refresh();
+      if (assessmentRes.ok) {
+        const assessmentData = await assessmentRes.json();
+        setAssessmentTitle(assessmentData.title || 'Assessment Items');
+      }
     } catch (error) {
-      toast.error('Failed to create assessment item');
-      console.error('Error creating assessment item:', error);
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load assessment items');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!assessment) {
-    return notFound();
+  if (loading) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <p>Loading items...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -89,23 +92,66 @@ export default function AssessmentItemsPage() {
         <Button variant='ghost' size='icon' onClick={() => router.back()}>
           <ArrowLeft className='h-4 w-4' />
         </Button>
-        <h1 className='text-3xl font-bold'>Assessment Items</h1>
+        <div>
+          <h1 className='text-3xl font-bold'>{assessmentTitle}</h1>
+          <p className='text-gray-500'>Assessment Items</p>
+        </div>
       </div>
-      <div className='max-w-2xl'>
-        <AssessmentItemForm
-          assessmentId={
-            typeof params.id === 'string'
-              ? parseInt(params.id)
-              : Array.isArray(params.id)
-              ? parseInt(params.id[0])
-              : 0
-          }
-          clos={clos}
-          plos={plos}
-          onSubmit={handleSubmit}
-          isLoading={isSubmitting}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Assessment Items</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {items.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              No items available
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Question</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Marks</TableHead>
+                  <TableHead>CLO</TableHead>
+                  <TableHead>Your Marks</TableHead>
+                  <TableHead>Remarks</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">
+                      Q{item.questionNo}
+                    </TableCell>
+                    <TableCell className="max-w-md">{item.description}</TableCell>
+                    <TableCell>{item.marks}</TableCell>
+                    <TableCell>
+                      {item.clo ? (
+                        <Badge variant="outline">{item.clo.code}</Badge>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {item.obtainedMarks !== null ? (
+                        <span className="font-medium">
+                          {item.obtainedMarks} / {item.marks}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Not evaluated</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      {item.remarks || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

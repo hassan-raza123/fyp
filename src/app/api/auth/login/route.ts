@@ -33,25 +33,21 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin' | 'department_admin'
-): string {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
-    case 'teacher':
-      return 'teacher';
-    case 'department_admin':
-      return 'department_admin';
+    case 'faculty':
+      return 'faculty';
     case 'admin':
-      return 'super_admin';
+      return 'admin';
     default:
       throw new Error('Invalid user type');
   }
@@ -59,13 +55,7 @@ function mapUserTypeToRole(
 
 // Check if a role is an admin role
 function isAdminRole(role: string): boolean {
-  const adminRoles: string[] = [
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-  ];
-  return adminRoles.includes(role);
+  return role === 'admin';
 }
 
 function createUserData(user: any, userType: AllRoles): UserData {
@@ -86,7 +76,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
     };
   }
 
-  if (userType === 'teacher' && user.faculty) {
+  if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
       departmentId: user.faculty.departmentId,
@@ -248,26 +238,12 @@ export async function POST(request: NextRequest) {
 
     // Handle admin users
     if (userType === 'admin') {
-      // Check if user has any admin role
-      const hasAdminRole = userRoles.some(isAdminRole);
-
-      if (!hasAdminRole) {
+      // Check if user has admin role
+      if (!userRoles.includes('admin')) {
         return NextResponse.json(
           {
             success: false,
             message: 'User does not have admin privileges',
-          },
-          { status: 403 }
-        );
-      }
-
-      // Get the actual admin role from userRoles
-      const actualRole = userRoles.find(isAdminRole) as AllRoles;
-      if (!actualRole) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Invalid admin role',
           },
           { status: 403 }
         );
@@ -309,13 +285,12 @@ export async function POST(request: NextRequest) {
           email: email,
           userType: userType,
           otpSent: true,
-          actualRole: actualRole, // Pass the actual role to use after OTP verification
         },
       });
     }
 
-    // Handle students and teachers
-    if (userType === 'student' || userType === 'teacher') {
+    // Handle students and faculty
+    if (userType === 'student' || userType === 'faculty') {
       // Check if user has the specific role
       const requestedRole = mapUserTypeToRole(userType);
       if (!userRoles.includes(requestedRole)) {
@@ -369,12 +344,14 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Verified student/teacher - direct login
-      const userData = createUserData(user, userType);
+      // Verified student/faculty - direct login
+      // Map database role to frontend role (admin maps to 'admin' in frontend)
+      const frontendRole = userType;
+      const userData = createUserData(user, frontendRole as AllRoles);
       const tokenPayload: TokenPayload = {
         userId: user.id,
         email: user.email,
-        role: userType,
+        role: frontendRole,
         userData,
       };
 
@@ -462,15 +439,9 @@ export async function POST(request: NextRequest) {
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
-    case 'super_admin':
+    case 'admin':
       return '/admin';
-    case 'sub_admin':
-      return '/admin';
-    case 'department_admin':
-      return '/department';
-    case 'child_admin':
-      return '/sub-admin';
-    case 'teacher':
+    case 'faculty':
       return '/faculty';
     case 'student':
       return '/student';

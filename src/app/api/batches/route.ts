@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, requireRole } from '@/lib/api-utils';
 import { batches_status } from '@prisma/client';
+import { getCurrentDepartmentId } from '@/lib/department-utils';
 
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
@@ -15,14 +16,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not configured in settings' },
+        { status: 400 }
+      );
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
-    // Build query conditions
-    const where: any = {};
+    // Build query conditions - automatically filter by current department through program
+    const where: any = {
+      program: {
+        departmentId: currentDepartmentId,
+      },
+    };
 
     if (programId) {
       where.programId = parseInt(programId);
@@ -101,9 +115,7 @@ export async function POST(request: NextRequest) {
 
     // Check role
     const { success: roleSuccess, error: roleError } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
+      'admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(

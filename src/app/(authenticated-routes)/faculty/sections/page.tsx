@@ -134,10 +134,6 @@ export default function SectionsPage() {
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-3xl font-bold'>Sections</h1>
-        <Button onClick={() => router.push('/admin/sections/create')}>
-          <Plus className='mr-2 h-4 w-4' />
-          Create Section
-        </Button>
       </div>
 
       <Card>
@@ -219,7 +215,7 @@ export default function SectionsPage() {
                         <Button
                           variant='ghost'
                           onClick={() =>
-                            router.push(`/admin/sections/${section.id}`)
+                            router.push(`/faculty/sections/${section.id}`)
                           }
                         >
                           View Details

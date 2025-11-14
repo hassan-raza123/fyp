@@ -55,11 +55,10 @@ interface Section {
 export default function CreateStudentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState<Department[]>([]);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
-  const [fetchingDepartments, setFetchingDepartments] = useState(false);
   const [fetchingPrograms, setFetchingPrograms] = useState(false);
   const [fetchingBatches, setFetchingBatches] = useState(false);
   const [fetchingSections, setFetchingSections] = useState(false);
@@ -77,35 +76,59 @@ export default function CreateStudentPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    fetchDepartments();
+    fetchCurrentDepartment();
   }, []);
 
-  const fetchDepartments = async () => {
+  const fetchCurrentDepartment = async () => {
     try {
-      setFetchingDepartments(true);
-      const response = await fetch('/api/departments?status=active');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+      // Get settings to find department code
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
       }
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch departments');
+      const settingsData = await settingsResponse.json();
+      if (!settingsData.success || !settingsData.data) {
+        throw new Error('Settings not found');
       }
-      setDepartments(data.data);
+
+      const systemSettings =
+        typeof settingsData.data.system === 'string'
+          ? JSON.parse(settingsData.data.system)
+          : settingsData.data.system;
+
+      const departmentCode = systemSettings?.departmentCode;
+      if (!departmentCode) {
+        toast.error('Please configure department in Settings first');
+        return;
+      }
+
+      // Get department ID by code
+      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+      if (!deptResponse.ok) {
+        throw new Error('Department not found');
+      }
+      const deptData = await deptResponse.json();
+      const deptId = deptData.id.toString();
+      
+      setCurrentDepartmentId(deptId);
+      setFormData((prev) => ({
+        ...prev,
+        departmentId: deptId,
+      }));
+      
+      // Fetch programs for current department
+      fetchPrograms(deptId);
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to fetch departments'
-      );
-    } finally {
-      setFetchingDepartments(false);
+      console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please configure in Settings.');
     }
   };
 
   const fetchPrograms = async (departmentId: string) => {
     try {
       setFetchingPrograms(true);
-      const response = await fetch(`/api/departments/${departmentId}/programs`);
+      // Fetch programs for current department
+      const response = await fetch(`/api/programs?departmentId=${departmentId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch programs');
       }
@@ -113,7 +136,7 @@ export default function CreateStudentPage() {
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch programs');
       }
-      setPrograms(data.data);
+      setPrograms(data.data || []);
     } catch (error) {
       console.error('Error fetching programs:', error);
       toast.error(
@@ -340,32 +363,21 @@ export default function CreateStudentPage() {
                 )}
               </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='departmentId'>Department</Label>
-                <Select
-                  value={formData.departmentId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, departmentId: value })
-                  }
-                  disabled={fetchingDepartments}
-                >
-                  <SelectTrigger
-                    className={errors.departmentId ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder='Select department' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id.toString()}>
-                        {dept.name} ({dept.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.departmentId && (
-                  <p className='text-sm text-red-500'>{errors.departmentId}</p>
-                )}
-              </div>
+              {/* Department is automatically set from Settings */}
+              {currentDepartmentId && (
+                <div className='space-y-2'>
+                  <Label htmlFor='departmentId'>Department</Label>
+                  <Input
+                    id='departmentId'
+                    value='Current Department (from Settings)'
+                    disabled
+                    className='bg-gray-50'
+                  />
+                  <p className='text-xs text-gray-500'>
+                    Department is configured in System Settings
+                  </p>
+                </div>
+              )}
 
               <div className='space-y-2'>
                 <Label htmlFor='programId'>Program</Label>
@@ -374,7 +386,7 @@ export default function CreateStudentPage() {
                   onValueChange={(value) =>
                     setFormData({ ...formData, programId: value })
                   }
-                  disabled={fetchingPrograms || !formData.departmentId}
+                  disabled={fetchingPrograms || !currentDepartmentId}
                 >
                   <SelectTrigger
                     className={errors.programId ? 'border-red-500' : ''}

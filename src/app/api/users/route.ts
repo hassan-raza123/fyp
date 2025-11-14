@@ -13,27 +13,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Build the where clause based on user role
+    // Build the where clause
     const whereClause: any = {
       NOT: {
         id: user.userId, // Exclude current user
       },
     };
-
-    // If user is sub_admin, exclude super_admin users
-    if (user.role === 'sub_admin') {
-      whereClause.userrole = {
-        role: {
-          NOT: {
-            name: 'super_admin',
-          },
-        },
-      };
-    }
 
     const users = await prisma.users.findMany({
       where: whereClause,
@@ -119,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has admin role
-    if (authUser?.role !== 'super_admin' && authUser?.role !== 'sub_admin') {
+    if (authUser?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

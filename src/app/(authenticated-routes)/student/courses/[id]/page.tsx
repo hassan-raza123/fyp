@@ -3,18 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, Target, BarChart3, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import Link from 'next/link';
 
 interface Course {
   id: number;
@@ -50,8 +49,8 @@ interface Course {
     code: string;
     description: string;
   }[];
-  teachers: {
-    teacher: {
+  faculty: {
+    faculty: {
       id: number;
       name: string;
       email: string;
@@ -76,8 +75,7 @@ export default function CourseDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState('information');
 
   useEffect(() => {
     if (!courseId) {
@@ -92,7 +90,9 @@ export default function CourseDetailsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/courses/${courseId}`);
+      const response = await fetch(`/api/courses/${courseId}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch course');
       const data = await response.json();
       if (data.success && data.data) {
@@ -102,7 +102,7 @@ export default function CourseDetailsPage() {
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
-          teachers: data.data.teachers || [],
+          faculty: data.data.faculty || [],
           programs: data.data.programs || [],
         });
       } else {
@@ -121,43 +121,16 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!course) return;
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/courses/${courseId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete course');
-      }
-
-      toast.success('Course deleted successfully');
-      router.push('/admin/courses');
-    } catch (error) {
-      console.error('Error deleting course:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to delete course'
-      );
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
-
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge variant='default'>Theory</Badge>;
+        return <Badge variant="default">Theory</Badge>;
       case 'LAB':
-        return <Badge variant='success'>Lab</Badge>;
+        return <Badge variant="success">Lab</Badge>;
       case 'PROJECT':
-        return <Badge variant='secondary'>Project</Badge>;
+        return <Badge variant="secondary">Project</Badge>;
       case 'THESIS':
-        return <Badge variant='destructive'>Thesis</Badge>;
+        return <Badge variant="destructive">Thesis</Badge>;
       default:
         return <Badge>{type}</Badge>;
     }
@@ -166,11 +139,11 @@ export default function CourseDetailsPage() {
   const getStatusBadge = (status: 'active' | 'inactive' | 'archived') => {
     switch (status) {
       case 'active':
-        return <Badge variant='success'>Active</Badge>;
+        return <Badge variant="success">Active</Badge>;
       case 'inactive':
-        return <Badge variant='secondary'>Inactive</Badge>;
+        return <Badge variant="secondary">Inactive</Badge>;
       case 'archived':
-        return <Badge variant='destructive'>Archived</Badge>;
+        return <Badge variant="destructive">Archived</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -179,10 +152,10 @@ export default function CourseDetailsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4'></div>
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
             <p>Loading course details...</p>
           </div>
         </div>
@@ -193,14 +166,14 @@ export default function CourseDetailsPage() {
   // Error state
   if (error) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-red-500 mb-4'>{error}</p>
+      <div className="container mx-auto py-10">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
           <Button
-            variant='outline'
-            onClick={() => router.push('/admin/courses')}
+            variant="outline"
+            onClick={() => router.push('/student/courses')}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
           </Button>
         </div>
@@ -211,14 +184,14 @@ export default function CourseDetailsPage() {
   // Not found state
   if (!course) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-muted-foreground mb-4'>Course not found</p>
+      <div className="container mx-auto py-10">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Course not found</p>
           <Button
-            variant='outline'
-            onClick={() => router.push('/admin/courses')}
+            variant="outline"
+            onClick={() => router.push('/student/courses')}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
           </Button>
         </div>
@@ -228,206 +201,278 @@ export default function CourseDetailsPage() {
 
   // Main content
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <div className='flex items-center gap-4'>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
           <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => router.push('/admin/courses')}
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push('/student/courses')}
           >
-            <ArrowLeft className='h-4 w-4' />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className='text-3xl font-bold'>
+            <h1 className="text-3xl font-bold">
               {course?.name || 'Untitled Course'}
             </h1>
-            <p className='text-muted-foreground'>
+            <p className="text-muted-foreground">
               Course Code: {course?.code || 'N/A'}
             </p>
           </div>
         </div>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
-            onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
-          >
-            <Edit className='mr-2 h-4 w-4' />
-            Edit
-          </Button>
-          <Button
-            variant='destructive'
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className='mr-2 h-4 w-4' />
-            Delete
-          </Button>
-        </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Basic Information</h2>
-          <div className='space-y-4'>
-            <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
-              <p className='font-medium'>
-                {course.department
-                  ? `${course.department.name} (${course.department.code})`
-                  : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Credit Hours</p>
-              <p className='font-medium'>{course.creditHours || 0}</p>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Theory Hours</p>
-              <p className='font-medium'>{course.theoryHours || 0}</p>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Lab Hours</p>
-              <p className='font-medium'>{course.labHours || 0}</p>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Type</p>
-              <div className='mt-1'>{getTypeBadge(course.type)}</div>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
-              <div className='mt-1'>{getStatusBadge(course.status)}</div>
-            </div>
-          </div>
-        </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="information">
+            <BookOpen className="w-4 h-4 mr-2" />
+            Information
+          </TabsTrigger>
+          <TabsTrigger value="clos">
+            <Target className="w-4 h-4 mr-2" />
+            CLOs
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="offerings">
+            <Calendar className="w-4 h-4 mr-2" />
+            Offerings
+          </TabsTrigger>
+        </TabsList>
 
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Course Details</h2>
-          <div className='space-y-4'>
-            {course.description && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Description</p>
-                <p className='mt-1'>{course.description}</p>
-              </div>
-            )}
-            {course.prerequisites && course.prerequisites.length > 0 && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Prerequisites</p>
-                <ul className='mt-1 list-disc list-inside'>
-                  {course.prerequisites.map((prereq) => (
-                    <li key={prereq.prerequisite?.id}>
-                      {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
-                    </li>
+        {/* Course Information Tab */}
+        <TabsContent value="information" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Department</p>
+                  <p className="font-medium">
+                    {course.department
+                      ? `${course.department.name} (${course.department.code})`
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Credit Hours</p>
+                  <p className="font-medium">{course.creditHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Theory Hours</p>
+                  <p className="font-medium">{course.theoryHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Lab Hours</p>
+                  <p className="font-medium">{course.labHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <div className="mt-1">{getTypeBadge(course.type)}</div>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <div className="mt-1">{getStatusBadge(course.status)}</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Course Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {course.description && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Description</p>
+                    <p className="mt-1">{course.description}</p>
+                  </div>
+                )}
+                {course.prerequisites && course.prerequisites.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Prerequisites</p>
+                    <ul className="mt-1 list-disc list-inside">
+                      {course.prerequisites.map((prereq) => (
+                        <li key={prereq.prerequisite?.id}>
+                          {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {course.corequisites && course.corequisites.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Co-requisites</p>
+                    <ul className="mt-1 list-disc list-inside">
+                      {course.corequisites.map((coreq) => (
+                        <li key={coreq.corequisite?.id}>
+                          {coreq.corequisite?.code} - {coreq.corequisite?.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Course Learning Outcomes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {course.clos && course.clos.length > 0 ? (
+                    <>
+                      {course.clos.slice(0, 3).map((clo) => (
+                        <div key={clo.id}>
+                          <p className="font-medium">{clo.code}</p>
+                          <p className="text-muted-foreground text-sm">{clo.description}</p>
+                        </div>
+                      ))}
+                      {course.clos.length > 3 && (
+                        <Link
+                          href={`/student/courses/${courseId}/clos`}
+                          className="text-primary hover:underline text-sm"
+                        >
+                          View all {course.clos.length} CLOs →
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      No learning outcomes defined
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Assigned Faculty</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {course.faculty && course.faculty.length > 0 ? (
+                    course.faculty.map((facultyMember, index) => (
+                      <div key={facultyMember.faculty?.id || index}>
+                        <p className="font-medium">{facultyMember.faculty?.name}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {facultyMember.faculty?.email}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">No faculty assigned</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Programs Offering This Course</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {course.programs && course.programs.length > 0 ? (
+                    course.programs.map((program) => (
+                      <div key={program.program?.id}>
+                        <p className="font-medium">
+                          {program.program?.name} ({program.program?.code})
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          Semester {program.semester} •{' '}
+                          {program.isCore ? 'Core' : 'Elective'} •{' '}
+                          {program.creditHours} Credit Hours
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">
+                      No programs offering this course
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* CLOs Tab */}
+        <TabsContent value="clos" className="mt-6">
+          <div className="flex justify-end mb-4">
+            <Link href={`/student/courses/${courseId}/clos`}>
+              <Button variant="outline">
+                View All CLOs
+              </Button>
+            </Link>
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Course Learning Outcomes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {course.clos && course.clos.length > 0 ? (
+                <div className="space-y-4">
+                  {course.clos.map((clo) => (
+                    <div key={clo.id} className="border-b pb-4 last:border-0">
+                      <p className="font-medium text-lg">{clo.code}</p>
+                      <p className="text-muted-foreground mt-1">{clo.description}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">
+                  No learning outcomes defined for this course
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Course Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  Course analytics will be displayed here
+                </p>
+                <Link href={`/student/courses/${courseId}/analytics`}>
+                  <Button>View Detailed Analytics</Button>
+                </Link>
               </div>
-            )}
-            {course.corequisites && course.corequisites.length > 0 && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Co-requisites</p>
-                <ul className='mt-1 list-disc list-inside'>
-                  {course.corequisites.map((coreq) => (
-                    <li key={coreq.corequisite?.id}>
-                      {coreq.corequisite?.code} - {coreq.corequisite?.name}
-                    </li>
-                  ))}
-                </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Offerings Tab */}
+        <TabsContent value="offerings" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Course Offerings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  Course offerings history will be displayed here
+                </p>
+                <Link href={`/student/courses/${courseId}/offerings`}>
+                  <Button>View All Offerings</Button>
+                </Link>
               </div>
-            )}
-          </div>
-        </Card>
-
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>
-            Course Learning Outcomes
-          </h2>
-          <div className='space-y-4'>
-            {course.clos && course.clos.length > 0 ? (
-              course.clos.map((clo) => (
-                <div key={clo.id}>
-                  <p className='font-medium'>{clo.code}</p>
-                  <p className='text-muted-foreground'>{clo.description}</p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>
-                No learning outcomes defined
-              </p>
-            )}
-          </div>
-        </Card>
-
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Assigned Teachers</h2>
-          <div className='space-y-4'>
-            {course.teachers && course.teachers.length > 0 ? (
-              course.teachers.map((teacher) => (
-                <div key={teacher.teacher?.id}>
-                  <p className='font-medium'>{teacher.teacher?.name}</p>
-                  <p className='text-muted-foreground'>
-                    {teacher.teacher?.email}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>No teachers assigned</p>
-            )}
-          </div>
-        </Card>
-
-        <Card className='p-6 md:col-span-2'>
-          <h2 className='text-xl font-semibold mb-4'>
-            Programs Offering This Course
-          </h2>
-          <div className='space-y-4'>
-            {course.programs && course.programs.length > 0 ? (
-              course.programs.map((program) => (
-                <div key={program.program?.id}>
-                  <p className='font-medium'>
-                    {program.program?.name} ({program.program?.code})
-                  </p>
-                  <p className='text-muted-foreground'>
-                    Semester {program.semester} •{' '}
-                    {program.isCore ? 'Core' : 'Elective'} •{' '}
-                    {program.creditHours} Credit Hours
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>
-                No programs offering this course
-              </p>
-            )}
-          </div>
-        </Card>
-      </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the
-              course "{course.name}" and all its associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Course'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

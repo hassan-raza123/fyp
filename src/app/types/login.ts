@@ -1,7 +1,7 @@
 // Refined type definitions
-export type BaseUserType = 'student' | 'teacher' | 'admin';
-export type AdminRole = 'super_admin' | 'sub_admin' | 'department_admin' | 'child_admin';
-export type AllRoles = BaseUserType | AdminRole;
+export type BaseUserType = 'student' | 'faculty' | 'admin';
+export type AdminRole = 'admin';
+export type AllRoles = 'student' | 'faculty' | 'admin';
 
 // Student specific data
 export interface StudentData {
@@ -11,8 +11,8 @@ export interface StudentData {
   batch: string;
 }
 
-// Teacher specific data
-export interface TeacherData {
+// Faculty specific data
+export interface FacultyData {
   employeeId: string;
   departmentId: string;
   designation: string;
@@ -28,7 +28,7 @@ export interface BaseUserData {
 }
 
 // Combined user data type
-export type UserData = BaseUserData & Partial<StudentData & TeacherData>;
+export type UserData = BaseUserData & Partial<StudentData & FacultyData>;
 
 // API response types
 export interface LoginSuccess {

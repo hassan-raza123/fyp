@@ -13,10 +13,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    
+    // Get current department ID from settings
+    const currentDepartmentId = await getCurrentDepartmentId();
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not configured. Please set department in Settings.' },
+        { status: 400 }
+      );
+    }
+
+    // Always filter by current department
+    const whereClause: any = {
+      status: 'active',
+      departmentId: currentDepartmentId,
+    };
+
     const faculties = await prisma.faculties.findMany({
-      where: {
-        status: 'active',
-      },
+      where: whereClause,
       include: {
         user: {
           select: {
@@ -24,6 +40,7 @@ export async function GET(request: NextRequest) {
             first_name: true,
             last_name: true,
             email: true,
+            status: true,
           },
         },
         department: {

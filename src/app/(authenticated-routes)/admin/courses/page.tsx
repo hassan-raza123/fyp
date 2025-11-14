@@ -68,10 +68,8 @@ interface Department {
 export default function CoursesPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [departmentId, setDepartmentId] = useState<string>('all');
   const [type, setType] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
@@ -81,28 +79,8 @@ export default function CoursesPage() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  useEffect(() => {
     fetchCourses();
-  }, [search, departmentId, type, status, page]);
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await fetch('/api/departments');
-      if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-      }
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to fetch departments');
-    }
-  };
+  }, [search, type, status, page]);
 
   const fetchCourses = async () => {
     try {
@@ -112,8 +90,7 @@ export default function CoursesPage() {
         limit: '10',
       });
       if (search) params.append('search', search);
-      if (departmentId && departmentId !== 'all')
-        params.append('departmentId', departmentId);
+      // Department filter removed - API automatically uses current department
       if (type && type !== 'all') params.append('type', type);
       if (status && status !== 'all') params.append('status', status);
 
@@ -219,19 +196,7 @@ export default function CoursesPage() {
             />
           </div>
         </div>
-        <Select value={departmentId} onValueChange={setDepartmentId}>
-          <SelectTrigger className='w-[180px]'>
-            <SelectValue placeholder='Department' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='all'>All Departments</SelectItem>
-            {departments.map((dept) => (
-              <SelectItem key={dept.id} value={dept.id.toString()}>
-                {dept.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Department filter removed - automatically uses current department from Settings */}
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Course Type' />

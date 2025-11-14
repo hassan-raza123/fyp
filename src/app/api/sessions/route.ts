@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/api-utils';
 import { z } from 'zod';
 import { session_status } from '@prisma/client';
 import { isValid } from 'date-fns';
 
 const createSessionSchema = z.object({
   sectionId: z.number(),
-  date: z.string().min(1, 'Date is required'), // Expected format: YYYY-MM-DD
-  startTime: z.string().optional(), // Expected format: HH:mm
-  endTime: z.string().optional(), // Expected format: HH:mm
+  date: z.string().min(1, 'Date is required'),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
   topic: z.string().min(1, 'Topic is required'),
   remarks: z.string().optional(),
   status: z.nativeEnum(session_status).default(session_status.scheduled),
@@ -16,6 +17,14 @@ const createSessionSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const { success, user } = requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createSessionSchema.parse(body);
 
@@ -27,7 +36,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Combine date and time strings and convert to Date objects
     const startTime = validatedData.startTime
       ? new Date(`${validatedData.date}T${validatedData.startTime}`)
       : undefined;
@@ -35,7 +43,6 @@ export async function POST(request: NextRequest) {
       ? new Date(`${validatedData.date}T${validatedData.endTime}`)
       : undefined;
 
-    // Validate time objects if provided
     if (startTime && !isValid(startTime)) {
       return NextResponse.json(
         { success: false, error: 'Invalid start time format' },
@@ -49,7 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only include startTime and endTime if they are provided
     const sessionData: any = {
       sectionId: validatedData.sectionId,
       date: sessionDate,
@@ -82,22 +88,59 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const sectionId = searchParams.get('sectionId');
-
-    if (!sectionId) {
+    const { success, user } = requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Section ID is required' },
-        { status: 400 }
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const sectionId = searchParams.get('sectionId');
+
+    const where: any = {};
+    
+    // If user is faculty, filter by their sections
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.section = {
+          facultyId: facultyId,
+        };
+      }
+    }
+
+    if (sectionId) {
+      where.sectionId = Number(sectionId);
+    }
+
     const sessions = await prisma.sessions.findMany({
-      where: {
-        sectionId: Number(sectionId),
+      where,
+      include: {
+        section: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+                semester: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        date: 'asc',
+        date: 'desc',
       },
     });
 
@@ -110,5 +153,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// You might want to add PUT/PATCH for updating and DELETE for deleting sessions later.

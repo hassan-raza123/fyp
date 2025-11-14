@@ -61,7 +61,7 @@ export async function POST(
     }
 
     const userRoles = user.userrole.map((ur) => ur.role.name);
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
+    const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -139,7 +139,7 @@ export async function PUT(
     }
 
     const userRoles = user.userrole.map((ur) => ur.role.name);
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
+    const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -203,7 +203,7 @@ export async function DELETE(
     }
 
     const userRoles = user.userrole.map((ur) => ur.role.name);
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
+    const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
