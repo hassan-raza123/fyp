@@ -1,34 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  /* Minimal neutral design tokens – feel free to customize later */
-  --color-background: 0 0% 100%;
-  --color-foreground: 222 47% 11%;
+  /* Light theme based on MNS UET logo */
 
-  --color-card: 0 0% 100%;
+  /* Base */
+  --color-background: 210 40% 98%; /* very light cool gray instead of pure white */
+  --color-foreground: 222 47% 11%; /* dark navy text */
+
+  /* Surfaces */
+  --color-card: 0 0% 100%; /* white cards on soft background */
   --color-card-foreground: 222 47% 11%;
 
   --color-popover: 0 0% 100%;
   --color-popover-foreground: 222 47% 11%;
 
-  --color-primary: 222 84% 56%;
+  /* Brand (primary = gear blue from logo) */
+  --color-primary: 214 100% 35%; /* deep MNS blue */
   --color-primary-foreground: 0 0% 100%;
 
-  --color-accent: 217 91% 60%;
+  /* Accent (factory red from logo) */
+  --color-accent: 351 63% 45%; /* logo red */
   --color-accent-foreground: 0 0% 100%;
 
-  --color-secondary: 210 40% 96%;
-  --color-secondary-foreground: 222 47% 11%;
+  /* Secondary / muted */
+  --color-secondary: 210 40% 96%; /* light panel background */
+  --color-secondary-foreground: 222 47% 15%;
 
   --color-muted: 210 40% 96%;
-  --color-muted-foreground: 215 16% 40%;
+  --color-muted-foreground: 215 16% 35%;
 
+  /* Status */
   --color-destructive: 0 84% 60%;
   --color-destructive-foreground: 0 0% 100%;
 
-  --color-border: 214 32% 91%;
-  --color-input: 214 32% 91%;
-  --color-ring: 222 84% 56%;
+  /* Borders / inputs / focus ring */
+  --color-border: 214 32% 86%;
+  --color-input: 214 32% 86%;
+  --color-ring: 214 100% 45%;
 
   --radius: 0.5rem;
 }
