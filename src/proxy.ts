@@ -108,7 +108,7 @@ export async function proxy(request: NextRequest) {
   if (
     path.startsWith('/_next/') ||
     path.startsWith('/favicon.ico') ||
-    path.startsWith('/logo.jpg') ||
+    path.startsWith('/logo.png') ||
     path.startsWith('/team/') ||
     path.match(
       /\.(jpg|jpeg|png|gif|svg|ico|webp|avif|css|js|woff|woff2|ttf|eot)$/i

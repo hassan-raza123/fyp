@@ -53,6 +53,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { logout } from '@/app/actions/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { roleBasedNavigation } from '@/config/navigation';
+import { useTheme } from 'next-themes';
 
 interface SidebarNavLinkProps {
   item: {
@@ -160,12 +161,15 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { user, loading, role } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isDarkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  // Theme from next-themes
+  const { theme, setTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   // Get navigation items based on user role
   const navigationSections = role
@@ -261,42 +265,6 @@ export default function DashboardLayout({
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Initialize theme from localStorage or system preference
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const stored = window.localStorage.getItem('theme');
-    if (stored === 'dark') {
-      setDarkMode(true);
-      return;
-    }
-    if (stored === 'light') {
-      setDarkMode(false);
-      return;
-    }
-
-    // Fallback to system preference
-    const prefersDark = window.matchMedia?.(
-      '(prefers-color-scheme: dark)'
-    ).matches;
-    if (prefersDark) {
-      setDarkMode(true);
-    }
-  }, []);
-
-  // Sync dark mode with <html> class so global theme tokens work
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-      window.localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      window.localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
 
   // While auth is loading or role not yet resolved, avoid flashing wrong sidebar
   if (loading || !role) {
@@ -568,7 +536,7 @@ export default function DashboardLayout({
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <button
-              onClick={() => setDarkMode(!isDarkMode)}
+              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
               className={`
                 p-2 rounded-lg
                 ${

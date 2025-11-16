@@ -13,9 +13,6 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "next": "16.0.3",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-avatar": "^1.1.7",
@@ -55,9 +52,13 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.456.0",
+    "next": "16.0.3",
     "next-auth": "^4.24.11",
+    "next-themes": "^0.4.6",
     "nodemailer": "^7.0.7",
+    "react": "19.2.0",
     "react-day-picker": "^9.7.0",
+    "react-dom": "19.2.0",
     "react-hook-form": "^7.56.1",
     "recharts": "^2.15.2",
     "sonner": "^2.0.5",
@@ -66,19 +67,19 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@prisma/client": "^6.9.0",
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "@prisma/client": "^6.9.0",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.8",
     "postcss": "^8",
-    "prisma": "^6.9.0"
+    "prisma": "^6.9.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
