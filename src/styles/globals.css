@@ -100,12 +100,14 @@
 
 @layer components {
   .card {
-    background-color: white;
+    /* Use theme variables instead of hardcoded white so dark mode works */
+    background-color: hsl(var(--card));
     border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
     padding: 1.5rem;
     border-width: 1px;
-    border-color: rgb(243 244 246);
+    border-color: hsl(var(--border));
   }
   
   .hover-effect {
