@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import { Metadata } from 'next';
 import { BookOpen, Clock, School } from 'lucide-react';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Login | Smart Campus for MNSUET',
@@ -13,16 +14,23 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className='min-h-screen bg-white flex items-center justify-center p-4'>
-      <div className='w-full max-w-6xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row'>
+    <div className='min-h-screen bg-background flex items-center justify-center p-4'>
+      <div className='w-full max-w-6xl bg-card rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row border border-border'>
         {/* Left Side */}
-        <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 items-center justify-center p-12'>
+        <div className='hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground bg-linear-to-br from-primary via-primary to-accent items-center justify-center p-12'>
           <div className='max-w-lg text-center'>
             <div className='mb-8'>
-              <div className='w-20 h-20 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 mx-auto mb-6 flex items-center justify-center'>
-                <School className='w-12 h-12 text-white' />
+              <div className='w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/30 mx-auto mb-6 flex items-center justify-center overflow-hidden'>
+                <Image
+                  src='/logo.jpg'
+                  alt='MNS UET Logo'
+                  width={96}
+                  height={96}
+                  className='object-contain'
+                  priority
+                />
               </div>
-              <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+              <h1 className='text-3xl font-bold text-white mb-2'>
                 Smart Campus for MNSUET
               </h1>
               <p className='text-white/80 text-xl leading-relaxed'>

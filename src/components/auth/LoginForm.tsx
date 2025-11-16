@@ -186,8 +186,8 @@ export default function LoginForm() {
     <div className='max-w-md w-full mx-auto'>
       {/* Header */}
       <div className='text-center mb-10'>
-        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <School className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
+        <div className='bg-primary bg-linear-to-br from-primary via-primary to-accent w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary/30'>
+          <School className='w-12 h-12 text-primary-foreground group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>Welcome Back!</h2>
         <p className='text-text-light mt-2'>
@@ -198,7 +198,7 @@ export default function LoginForm() {
       </div>
 
       {/* User Type Selector */}
-      <div className='flex rounded-2xl bg-gray-100 p-1.5 mb-8'>
+      <div className='flex rounded-2xl bg-secondary p-1.5 mb-8'>
         {(['student', 'faculty', 'admin'] as const).map((type) => (
           <button
             key={type}
@@ -206,7 +206,7 @@ export default function LoginForm() {
             onClick={() => handleUserTypeChange(type)}
             className={`flex-1 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
               formData.userType === type
-                ? 'bg-white text-primary shadow-lg shadow-gray-200'
+                ? 'bg-card text-primary shadow-lg shadow-primary/20'
                 : 'text-text-light hover:text-primary'
             }`}
           >
@@ -234,8 +234,8 @@ export default function LoginForm() {
               onChange={handleInputChange}
               onBlur={() => validateEmail(formData.email)}
               className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${
-                errors.email ? 'border-red-500' : 'border-gray-200'
-              } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+                errors.email ? 'border-red-500' : 'border-input'
+              } bg-card text-foreground placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
               placeholder={getEmailPlaceholder(formData.userType)}
             />
           </div>
@@ -262,8 +262,8 @@ export default function LoginForm() {
               onChange={handleInputChange}
               onBlur={() => validatePassword(formData.password)}
               className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                errors.password ? 'border-red-500' : 'border-gray-200'
-              } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
+                errors.password ? 'border-red-500' : 'border-input'
+              } bg-card text-foreground placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
               placeholder='Enter your password'
             />
             <button
@@ -314,7 +314,7 @@ export default function LoginForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='relative w-full bg-primary bg-linear-to-br from-primary via-primary to-accent text-primary-foreground py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
         >
           <span
             className={`inline-flex items-center justify-center ${
