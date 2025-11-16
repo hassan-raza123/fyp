@@ -12,7 +12,8 @@
   --color-popover: 0 0% 100%;
   --color-popover-foreground: 222 47% 11%;
 
-  --color-primary: 214 100% 35%;
+  /* Primary = logo blue */
+  --color-primary: 221 76% 24%;
   --color-primary-foreground: 0 0% 100%;
 
   --color-secondary: 210 40% 96%;
@@ -21,7 +22,8 @@
   --color-muted: 210 40% 96%;
   --color-muted-foreground: 215 16% 35%;
 
-  --color-accent: 351 63% 45%;
+  /* Accent = logo red */
+  --color-accent: 356 65% 44%;
   --color-accent-foreground: 0 0% 100%;
 
   --color-destructive: 0 84% 60%;
@@ -56,7 +58,7 @@
     --color-popover: 222 47% 13%;
     --color-popover-foreground: 210 40% 98%;
 
-    --color-primary: 214 100% 65%;
+    --color-primary: 221 80% 66%;
     --color-primary-foreground: 0 0% 100%;
 
     --color-secondary: 222 47% 18%;
@@ -65,7 +67,7 @@
     --color-muted: 222 47% 18%;
     --color-muted-foreground: 215 20% 80%;
 
-    --color-accent: 351 63% 55%;
+    --color-accent: 356 80% 60%;
     --color-accent-foreground: 0 0% 100%;
 
     --color-destructive: 0 72% 51%;
