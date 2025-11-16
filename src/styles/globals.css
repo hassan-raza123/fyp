@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  /* Tailwind v4 color tokens – these drive classes like bg-background, text-primary, etc. */
+
+  /* Light mode (defaults) */
+  --color-background: 220 40% 97%;
+  --color-foreground: 222 47% 11%;
+
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 222 47% 11%;
+
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 222 47% 11%;
+
+  --color-primary: 216 89% 37%;        /* #0B4FAF – logo gear blue */
+  --color-primary-foreground: 0 0% 98%;
+
+  --color-accent: 357 61% 43%;         /* #B3212D – logo factory red */
+  --color-accent-foreground: 0 0% 98%;
+
+  --color-secondary: 220 80% 96%;
+  --color-secondary-foreground: 222 47% 20%;
+
+  --color-muted: 215 20% 96%;
+  --color-muted-foreground: 215 16% 45%;
+
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 98%;
+
+  --color-border: 214 32% 91%;
+  --color-input: 214 32% 91%;
+  --color-ring: 216 89% 45%;
+
+  --radius: 0.5rem;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -34,101 +69,78 @@
   }
   
   :root {
-    /* =========
-       LIGHT THEME – Logo based
-       =========
-       Primary: gear blue (#0B4FAF)
-       Accent:  factory red (#B3212D)
-       Glow:    soft cyan around logo
-    */
-
-    /* Surfaces */
-    --background: 220 40% 97%; /* soft bluish off‑white, dashboard base */
-    --foreground: 222 47% 11%; /* slate-900 – high contrast text */
-
-    --card: 0 0% 100%; /* pure white cards on light bg */
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    /* Brand */
-    --primary: 216 89% 37%; /* #0B4FAF – logo gear blue */
-    --primary-foreground: 0 0% 98%; /* on primary buttons/text */
-
-    --accent: 357 61% 43%; /* #B3212D – logo factory red */
-    --accent-foreground: 0 0% 98%;
-
-    /* Supporting */
-    --secondary: 220 80% 96%; /* pale blue chips / subtle fills */
-    --secondary-foreground: 222 47% 20%;
-
-    --muted: 215 20% 96%; /* neutral sections, table stripes etc. */
-    --muted-foreground: 215 16% 45%;
-
-    --destructive: 0 72% 51%; /* red for errors, independent of logo red */
-    --destructive-foreground: 0 0% 98%;
-
-    /* Lines, inputs, focus ring */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 216 89% 45%; /* slightly brighter primary for focus halo */
-
-    /* Charts – tuned around brand blue + red */
-    --chart-1: 216 89% 45%; /* primary blue */
-    --chart-2: 357 61% 50%; /* accent red */
-    --chart-3: 200 80% 45%; /* cyan/teal – logo glow family */
-    --chart-4: 43 74% 60%;  /* warm amber for contrast */
-    --chart-5: 160 60% 40%; /* green for positive metrics */
-
+    /* Link our old CSS custom properties to Tailwind theme tokens so both systems stay in sync */
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: var(--color-card);
+    --card-foreground: var(--color-card-foreground);
+    --popover: var(--color-popover);
+    --popover-foreground: var(--color-popover-foreground);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-foreground);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-foreground);
+    --muted: var(--color-muted);
+    --muted-foreground: var(--color-muted-foreground);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-foreground);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-destructive-foreground);
+    --border: var(--color-border);
+    --input: var(--color-input);
+    --ring: var(--color-ring);
     --radius: 0.5rem;
   }
   
   .dark {
-    /* =========
-       DARK THEME – Logo based
-       =========
-       Keep brand blue & red, but on deep navy / slate background
-    */
+    /* Dark mode overrides – update Tailwind tokens + our legacy vars together */
+    --color-background: 222 47% 5%;
+    --color-foreground: 210 40% 96%;
 
-    /* Surfaces */
-    --background: 222 47% 5%;   /* near‑black navy */
-    --foreground: 210 40% 96%;  /* soft off‑white text */
+    --color-card: 222 47% 8%;
+    --color-card-foreground: 210 40% 96%;
 
-    --card: 222 47% 8%;         /* slightly raised card */
-    --card-foreground: 210 40% 96%;
+    --color-popover: 222 47% 8%;
+    --color-popover-foreground: 210 40% 96%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 96%;
+    --color-primary: 216 90% 65%;
+    --color-primary-foreground: 222 47% 5%;
 
-    /* Brand – same hue, higher lightness for dark mode */
-    --primary: 216 90% 65%;          /* bright gear blue on dark */
-    --primary-foreground: 222 47% 5%;
+    --color-accent: 357 70% 60%;
+    --color-accent-foreground: 222 47% 5%;
 
-    --accent: 357 70% 60%;          /* brighter factory red */
-    --accent-foreground: 222 47% 5%;
+    --color-secondary: 222 24% 15%;
+    --color-secondary-foreground: 210 40% 96%;
 
-    /* Supporting */
-    --secondary: 222 24% 15%;       /* soft navy chips */
-    --secondary-foreground: 210 40% 96%;
+    --color-muted: 222 24% 14%;
+    --color-muted-foreground: 215 20% 70%;
 
-    --muted: 222 24% 14%;           /* neutral muted blocks */
-    --muted-foreground: 215 20% 70%;
+    --color-destructive: 0 72% 55%;
+    --color-destructive-foreground: 0 0% 98%;
 
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --color-border: 222 24% 18%;
+    --color-input: 222 24% 18%;
+    --color-ring: 216 90% 65%;
 
-    /* Lines, inputs, focus ring */
-    --border: 222 24% 18%;
-    --input: 222 24% 18%;
-    --ring: 216 90% 65%;
-
-    /* Charts – slightly brighter than light mode for dark bg */
-    --chart-1: 216 90% 65%; /* primary blue */
-    --chart-2: 357 75% 60%; /* accent red */
-    --chart-3: 200 85% 60%; /* cyan/teal */
-    --chart-4: 43 85% 60%;  /* amber */
-    --chart-5: 160 70% 45%; /* green */
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: var(--color-card);
+    --card-foreground: var(--color-card-foreground);
+    --popover: var(--color-popover);
+    --popover-foreground: var(--color-popover-foreground);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-foreground);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-foreground);
+    --muted: var(--color-muted);
+    --muted-foreground: var(--color-muted-foreground);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-foreground);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-destructive-foreground);
+    --border: var(--color-border);
+    --input: var(--color-input);
+    --ring: var(--color-ring);
   }
   
   * {

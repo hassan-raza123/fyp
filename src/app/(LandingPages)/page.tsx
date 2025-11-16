@@ -95,7 +95,7 @@ export default function LandingPage() {
   return (
     <div className='min-h-screen bg-background'>
       {/* Hero Section */}
-      <div className='relative bg-gradient-to-br from-primary via-primary to-accent'>
+      <div className='relative bg-linear-to-br from-primary via-primary to-accent'>
         <NavbarClient />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
 
