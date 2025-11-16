@@ -1,10 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  /* Tailwind v4 color tokens – these drive classes like bg-background, text-primary, etc. */
-
-  /* Light mode (defaults) */
-  --color-background: 220 40% 97%;
+  /* Minimal neutral design tokens – feel free to customize later */
+  --color-background: 0 0% 100%;
   --color-foreground: 222 47% 11%;
 
   --color-card: 0 0% 100%;
@@ -13,24 +11,24 @@
   --color-popover: 0 0% 100%;
   --color-popover-foreground: 222 47% 11%;
 
-  --color-primary: 216 89% 37%;        /* #0B4FAF – logo gear blue */
-  --color-primary-foreground: 0 0% 98%;
+  --color-primary: 222 84% 56%;
+  --color-primary-foreground: 0 0% 100%;
 
-  --color-accent: 357 61% 43%;         /* #B3212D – logo factory red */
-  --color-accent-foreground: 0 0% 98%;
+  --color-accent: 217 91% 60%;
+  --color-accent-foreground: 0 0% 100%;
 
-  --color-secondary: 220 80% 96%;
-  --color-secondary-foreground: 222 47% 20%;
+  --color-secondary: 210 40% 96%;
+  --color-secondary-foreground: 222 47% 11%;
 
-  --color-muted: 215 20% 96%;
-  --color-muted-foreground: 215 16% 45%;
+  --color-muted: 210 40% 96%;
+  --color-muted-foreground: 215 16% 40%;
 
-  --color-destructive: 0 72% 51%;
-  --color-destructive-foreground: 0 0% 98%;
+  --color-destructive: 0 84% 60%;
+  --color-destructive-foreground: 0 0% 100%;
 
   --color-border: 214 32% 91%;
   --color-input: 214 32% 91%;
-  --color-ring: 216 89% 45%;
+  --color-ring: 222 84% 56%;
 
   --radius: 0.5rem;
 }
@@ -41,26 +39,9 @@
   }
   
   body {
-    background-color: white;
-    color: rgb(17 24 39);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    color: rgb(17 24 39);
-  }
-  
-  a {
-    color: rgb(147 51 234);
-    transition-property: color;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
-  }
-  
-  a:hover {
-    color: rgb(126 34 206);
-  }
-  
+
   button {
     border-radius: 0.75rem;
     transition-property: all;
@@ -92,57 +73,6 @@
     --radius: 0.5rem;
   }
   
-  .dark {
-    /* Dark mode overrides – update Tailwind tokens + our legacy vars together */
-    --color-background: 222 47% 5%;
-    --color-foreground: 210 40% 96%;
-
-    --color-card: 222 47% 8%;
-    --color-card-foreground: 210 40% 96%;
-
-    --color-popover: 222 47% 8%;
-    --color-popover-foreground: 210 40% 96%;
-
-    --color-primary: 216 90% 65%;
-    --color-primary-foreground: 222 47% 5%;
-
-    --color-accent: 357 70% 60%;
-    --color-accent-foreground: 222 47% 5%;
-
-    --color-secondary: 222 24% 15%;
-    --color-secondary-foreground: 210 40% 96%;
-
-    --color-muted: 222 24% 14%;
-    --color-muted-foreground: 215 20% 70%;
-
-    --color-destructive: 0 72% 55%;
-    --color-destructive-foreground: 0 0% 98%;
-
-    --color-border: 222 24% 18%;
-    --color-input: 222 24% 18%;
-    --color-ring: 216 90% 65%;
-
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-    --card: var(--color-card);
-    --card-foreground: var(--color-card-foreground);
-    --popover: var(--color-popover);
-    --popover-foreground: var(--color-popover-foreground);
-    --primary: var(--color-primary);
-    --primary-foreground: var(--color-primary-foreground);
-    --secondary: var(--color-secondary);
-    --secondary-foreground: var(--color-secondary-foreground);
-    --muted: var(--color-muted);
-    --muted-foreground: var(--color-muted-foreground);
-    --accent: var(--color-accent);
-    --accent-foreground: var(--color-accent-foreground);
-    --destructive: var(--color-destructive);
-    --destructive-foreground: var(--color-destructive-foreground);
-    --border: var(--color-border);
-    --input: var(--color-input);
-    --ring: var(--color-ring);
-  }
-  
   * {
     border-color: hsl(var(--border));
   }
@@ -154,22 +84,6 @@
 }
 
 @layer components {
-  .card {
-    /* Use theme variables instead of hardcoded white so dark mode works */
-    background-color: hsl(var(--card));
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-      0 4px 6px -4px rgb(0 0 0 / 0.1);
-    padding: 1.5rem;
-    border-width: 1px;
-    border-color: hsl(var(--border));
-  }
-  
-  /* Soften default Tailwind gray-900 text to use themed foreground instead of pure black */
-  .text-gray-900 {
-    color: hsl(var(--foreground)) !important;
-  }
-  
   .hover-effect {
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -179,68 +93,5 @@
   .hover-effect:hover {
     transform: scale(1.05);
     box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  }
-}
-
-@layer utilities {
-  /* Map old purple/indigo brand colors to university logo palette */
-
-  /* Solid backgrounds */
-  .bg-purple-50 {
-    background-color: #e0edff !important;
-  }
-  .bg-purple-100 {
-    background-color: #c7ddff !important;
-  }
-  .bg-purple-500,
-  .bg-purple-600 {
-    background-color: #0b4faf !important;
-  }
-  .bg-purple-900 {
-    background-color: #062e73 !important;
-  }
-
-  .bg-indigo-500,
-  .bg-indigo-600 {
-    background-color: #1d4ed8 !important;
-  }
-
-  /* Text colors */
-  .text-purple-600,
-  .text-purple-500 {
-    color: #0b4faf !important;
-  }
-  .text-purple-400 {
-    color: #3b82f6 !important;
-  }
-  .text-purple-100 {
-    color: #dbeafe !important;
-  }
-
-  /* Borders */
-  .border-purple-500,
-  .border-purple-600 {
-    border-color: #0b4faf !important;
-  }
-  .border-purple-200 {
-    border-color: #bfdbfe !important;
-  }
-  .border-purple-800 {
-    border-color: #1e3a8a !important;
-  }
-
-  /* Gradient stops remapped to brand blue palette */
-  .from-purple-600 {
-    --tw-gradient-from: #0b4faf var(--tw-gradient-from-position);
-    --tw-gradient-to: rgb(11 79 175 / 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-  }
-  .via-purple-500 {
-    --tw-gradient-via-position: 50%;
-    --tw-gradient-stops: var(--tw-gradient-from),
-      #1d4ed8 var(--tw-gradient-via-position), var(--tw-gradient-to);
-  }
-  .to-indigo-600 {
-    --tw-gradient-to: #22d3ee var(--tw-gradient-to-position);
   }
 }
