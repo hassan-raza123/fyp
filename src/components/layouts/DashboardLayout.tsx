@@ -159,7 +159,6 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading, role } = useAuth();
-  console.log(user);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isDarkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -169,9 +168,9 @@ export default function DashboardLayout({
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Get navigation items based on user role
-  const navigationSections =
-    roleBasedNavigation[role as keyof typeof roleBasedNavigation] ||
-    roleBasedNavigation.student;
+  const navigationSections = role
+    ? roleBasedNavigation[role as keyof typeof roleBasedNavigation] || []
+    : [];
 
   // Refs for click outside
   const searchRef = useRef<HTMLDivElement | null>(null);
@@ -263,6 +262,18 @@ export default function DashboardLayout({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // While auth is loading or role not yet resolved, avoid flashing wrong sidebar
+  if (loading || !role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`min-h-screen ${
@@ -325,6 +336,7 @@ export default function DashboardLayout({
                   }`}
                 >
                   {role === 'admin' && 'Admin Panel'}
+                  {role === 'super_admin' && 'Super Admin Panel'}
                   {role === 'faculty' && 'Faculty Panel'}
                   {role === 'student' && 'Student Portal'}
                   {!role && 'Dashboard'}
@@ -336,12 +348,14 @@ export default function DashboardLayout({
                     }`}
                   >
                     {role === 'admin' && 'Admin Access'}
+                    {role === 'super_admin' && 'Super Admin Access'}
                     {role === 'faculty' && 'Faculty Access'}
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
                   <span className="px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
                     {role === 'admin' && 'Admin'}
+                    {role === 'super_admin' && 'Super Admin'}
                     {role === 'faculty' && 'Faculty'}
                     {role === 'student' && 'Student'}
                     {!role && 'Beta'}
