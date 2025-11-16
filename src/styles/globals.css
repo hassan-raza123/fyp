@@ -1,46 +1,5 @@
 @import "tailwindcss";
 
-@theme {
-  /* Light theme based on MNS UET logo */
-
-  /* Base */
-  --color-background: 210 40% 98%; /* very light cool gray instead of pure white */
-  --color-foreground: 222 47% 11%; /* dark navy text */
-
-  /* Surfaces */
-  --color-card: 0 0% 100%; /* white cards on soft background */
-  --color-card-foreground: 222 47% 11%;
-
-  --color-popover: 0 0% 100%;
-  --color-popover-foreground: 222 47% 11%;
-
-  /* Brand (primary = gear blue from logo) */
-  --color-primary: 214 100% 35%; /* deep MNS blue */
-  --color-primary-foreground: 0 0% 100%;
-
-  /* Accent (factory red from logo) */
-  --color-accent: 351 63% 45%; /* logo red */
-  --color-accent-foreground: 0 0% 100%;
-
-  /* Secondary / muted */
-  --color-secondary: 210 40% 96%; /* light panel background */
-  --color-secondary-foreground: 222 47% 15%;
-
-  --color-muted: 210 40% 96%;
-  --color-muted-foreground: 215 16% 35%;
-
-  /* Status */
-  --color-destructive: 0 84% 60%;
-  --color-destructive-foreground: 0 0% 100%;
-
-  /* Borders / inputs / focus ring */
-  --color-border: 214 32% 86%;
-  --color-input: 214 32% 86%;
-  --color-ring: 214 100% 45%;
-
-  --radius: 0.5rem;
-}
-
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -48,6 +7,9 @@
   
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    /* Static (non-theming) colors */
+    background-color: #f9fafb;
+    color: #0f172a;
   }
 
   button {
@@ -55,39 +17,6 @@
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 300ms;
-  }
-  
-  :root {
-    /* Link our old CSS custom properties to Tailwind theme tokens so both systems stay in sync */
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-    --card: var(--color-card);
-    --card-foreground: var(--color-card-foreground);
-    --popover: var(--color-popover);
-    --popover-foreground: var(--color-popover-foreground);
-    --primary: var(--color-primary);
-    --primary-foreground: var(--color-primary-foreground);
-    --secondary: var(--color-secondary);
-    --secondary-foreground: var(--color-secondary-foreground);
-    --muted: var(--color-muted);
-    --muted-foreground: var(--color-muted-foreground);
-    --accent: var(--color-accent);
-    --accent-foreground: var(--color-accent-foreground);
-    --destructive: var(--color-destructive);
-    --destructive-foreground: var(--color-destructive-foreground);
-    --border: var(--color-border);
-    --input: var(--color-input);
-    --ring: var(--color-ring);
-    --radius: 0.5rem;
-  }
-  
-  * {
-    border-color: hsl(var(--border));
-  }
-  
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
   }
 }
 
