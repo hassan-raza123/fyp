@@ -457,8 +457,9 @@ export async function POST(request: NextRequest) {
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
-    case 'admin':
     case 'super_admin':
+      return '/super-admin';
+    case 'admin':
       return '/admin';
     case 'faculty':
       return '/faculty';

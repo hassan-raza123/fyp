@@ -56,13 +56,14 @@ function isAdminRole(role: string): boolean {
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
-    case 'student':
-      return '/student';
+    case 'super_admin':
+      return '/super-admin';
+    case 'admin':
+      return '/admin';
     case 'faculty':
       return '/faculty';
-    case 'admin':
-    case 'super_admin':
-      return '/admin';
+    case 'student':
+      return '/student';
     default:
       return '/login';
   }

@@ -29,7 +29,7 @@ const publicApiRoutes = [
 function getUserDashboard(role: string): string {
   switch (role) {
     case 'super_admin':
-      return '/admin/super-admin';
+      return '/super-admin';
     case 'admin':
       return '/admin';
     case 'faculty':
@@ -71,9 +71,14 @@ async function verifyToken(token: string) {
 
 // Function to check if route is allowed for user role
 function isRouteAllowedForRole(path: string, userRole: string): boolean {
-  // Admin routes - for both admin and super_admin
+  // Super admin routes - only for super_admin
+  if (path.startsWith('/super-admin')) {
+    return userRole === 'super_admin';
+  }
+
+  // Department admin routes - only for admin
   if (path.startsWith('/admin')) {
-    return userRole === 'admin' || userRole === 'super_admin';
+    return userRole === 'admin';
   }
 
   // Faculty routes - only for faculty
@@ -209,6 +214,7 @@ export async function proxy(request: NextRequest) {
 
   // Check if the route is a role-specific protected route
   const isProtectedRoute =
+    path.startsWith('/super-admin') ||
     path.startsWith('/admin') ||
     path.startsWith('/faculty') ||
     path.startsWith('/student');

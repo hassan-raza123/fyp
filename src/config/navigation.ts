@@ -311,7 +311,12 @@ const superAdminNavigation = [
   {
     title: 'DASHBOARD',
     items: [
-      { id: 'overview', label: 'Overview', icon: Home, href: '/admin/super-admin' },
+      {
+        id: 'overview',
+        label: 'Overview',
+        icon: Home,
+        href: '/super-admin',
+      },
     ],
   },
   {
@@ -321,7 +326,7 @@ const superAdminNavigation = [
         id: 'departments',
         label: 'Departments',
         icon: Building2,
-        href: '/admin/super-admin/departments',
+        href: '/super-admin/departments',
       },
     ],
   },
@@ -332,7 +337,7 @@ const superAdminNavigation = [
         id: 'admins',
         label: 'Admins',
         icon: Shield,
-        href: '/admin/admins',
+        href: '/super-admin/admins',
       },
     ],
   },
