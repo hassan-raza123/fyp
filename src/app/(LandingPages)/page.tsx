@@ -93,16 +93,16 @@ const userRoles = [
 
 export default function LandingPage() {
   return (
-    <div className='min-h-screen bg-white'>
+    <div className='min-h-screen bg-background'>
       {/* Hero Section */}
-      <div className='relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600'>
+      <div className='relative bg-gradient-to-br from-primary via-primary to-accent'>
         <NavbarClient />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
 
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-32 sm:px-6 lg:px-8'>
           <div className='max-w-4xl mx-auto text-center'>
-            <div className='inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8'>
-              <span className='text-white text-sm font-medium'>
+            <div className='inline-flex items-center px-4 py-2 rounded-full bg-primary-foreground/10 backdrop-blur-md border border-primary-foreground/20 mb-8'>
+              <span className='text-primary-foreground text-sm font-medium'>
                 Modern Attendance System
               </span>
             </div>
@@ -114,7 +114,7 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className='text-xl text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed'>
+            <p className='text-xl text-primary-foreground/80 mb-12 max-w-2xl mx-auto leading-relaxed'>
               Revolutionize attendance management with our AI-powered system.
               Save time, reduce errors, and gain valuable insights.
             </p>
@@ -122,14 +122,14 @@ export default function LandingPage() {
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
               <Link
                 href='/login'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-white text-purple-600 font-semibold hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
               >
                 Get Started
                 <ArrowRight className='ml-2 h-5 w-5' />
               </Link>
               <Link
                 href='/demo'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all duration-300'
+                className='inline-flex items-center px-8 py-4 rounded-xl bg-primary/10 backdrop-blur-md border border-primary/20 text-primary-foreground hover:bg-primary/20 transition-all duration-300'
               >
                 Watch Demo
               </Link>
@@ -144,12 +144,12 @@ export default function LandingPage() {
           {statistics.map((stat, index) => (
             <div
               key={index}
-              className='bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:scale-105 hover:shadow-xl transition-all duration-300'
+              className='bg-card rounded-xl shadow-lg p-6 border border-border hover:scale-105 hover:shadow-xl transition-all duration-300'
             >
-              <div className='text-4xl font-bold text-purple-600 mb-2 group-hover:scale-110 transition-transform duration-300'>
+              <div className='text-4xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300'>
                 {stat.value}
               </div>
-              <div className='text-gray-600 font-medium'>{stat.label}</div>
+              <div className='text-muted-foreground font-medium'>{stat.label}</div>
             </div>
           ))}
         </div>
@@ -158,10 +158,10 @@ export default function LandingPage() {
       {/* Features Section */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20'>
         <div className='text-center mb-16'>
-          <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+          <h2 className='text-4xl font-bold text-foreground mb-6'>
             Key Features
           </h2>
-          <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+          <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
             Everything you need for modern attendance management
           </p>
         </div>
@@ -170,28 +170,28 @@ export default function LandingPage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className='bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:scale-105 hover:shadow-xl transition-all duration-300'
+              className='bg-card rounded-xl shadow-lg p-6 border border-border hover:scale-105 hover:shadow-xl transition-all duration-300'
             >
-              <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
+              <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center mb-4'>
                 {feature.icon}
               </div>
-              <h3 className='text-xl font-semibold text-gray-900 mb-2'>
+              <h3 className='text-xl font-semibold text-foreground mb-2'>
                 {feature.title}
               </h3>
-              <p className='text-gray-600'>{feature.description}</p>
+              <p className='text-muted-foreground'>{feature.description}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* User Roles Section */}
-      <div className='py-20 bg-gray-50'>
+      <div className='py-20 bg-muted'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
-            <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+            <h2 className='text-4xl font-bold text-foreground mb-6'>
               Built for Everyone
             </h2>
-            <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+            <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
               Specialized features for every role in your institution
             </p>
           </div>
@@ -200,20 +200,20 @@ export default function LandingPage() {
             {userRoles.map((role, index) => (
               <div
                 key={index}
-                className='bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:scale-105 hover:shadow-xl transition-all duration-300'
+                className='bg-card rounded-xl shadow-lg p-6 border border-border hover:scale-105 hover:shadow-xl transition-all duration-300'
               >
                 <div className='mb-6'>{role.icon}</div>
-                <h3 className='text-xl font-semibold text-gray-900 mb-4'>
+                <h3 className='text-xl font-semibold text-foreground mb-4'>
                   {role.title}
                 </h3>
-                <p className='text-gray-600 mb-6'>{role.description}</p>
+                <p className='text-muted-foreground mb-6'>{role.description}</p>
                 <ul className='space-y-3'>
                   {role.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
-                      className='flex items-center text-gray-700'
+                      className='flex items-center text-muted-foreground'
                     >
-                      <CheckCircle className='h-5 w-5 text-purple-600 mr-2' />
+                      <CheckCircle className='h-5 w-5 text-primary mr-2' />
                       {feature}
                     </li>
                   ))}
@@ -225,18 +225,18 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 py-24'>
+      <div className='bg-gradient-to-br from-primary via-primary to-accent py-24'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center'>
-            <h2 className='text-4xl font-bold text-white mb-6'>
+          <div className='bg-primary/10 backdrop-blur-md border border-primary/20 rounded-3xl p-12 text-center'>
+            <h2 className='text-4xl font-bold text-primary-foreground mb-6'>
               Ready to Transform?
             </h2>
-            <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto'>
+            <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto'>
               Join leading institutions using our modern attendance system
             </p>
             <Link
               href='/login'
-              className='inline-flex items-center px-8 py-4 rounded-xl bg-white text-purple-600 font-semibold hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+              className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
             >
               Get Started Now
               <ArrowRight className='ml-2 h-5 w-5' />
