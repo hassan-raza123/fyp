@@ -1,32 +1,35 @@
 export const theme = {
   colors: {
     primary: {
-      DEFAULT: '#7C3AED', // Purple-600
-      light: '#A78BFA', // Purple-400
-      dark: '#5B21B6', // Purple-800
+      // Brand primary: deep royal blue from logo gear
+      DEFAULT: '#0B4FAF',
+      light: '#3B82F6',
+      dark: '#062E73',
     },
     accent: {
-      DEFAULT: '#FFFFFF',
-      light: '#F3F4F6', // Gray-100
-      dark: '#1F2937', // Gray-800
+      // Brand accent: factory red from logo
+      DEFAULT: '#B3212D',
+      light: '#F97373',
+      dark: '#7F111A',
     },
     text: {
-      DEFAULT: '#111827', // Gray-900
-      light: '#6B7280', // Gray-500
-      dark: '#1F2937', // Gray-800
+      DEFAULT: '#0F172A', // Slate-900
+      light: '#64748B', // Slate-500
+      dark: '#020617', // Slate-950
     },
     background: {
       DEFAULT: '#FFFFFF',
-      secondary: '#F9FAFB', // Gray-50
+      secondary: '#F1F5F9', // Slate-50
     },
   },
   gradients: {
-    primary: 'bg-gradient-to-br from-purple-500 to-indigo-600',
-    secondary: 'bg-gradient-to-b from-secondary to-white',
+    // Primary gradient based on logo blue + cyan glow
+    primary: 'bg-linear-to-br from-[#0B4FAF] via-[#1D4ED8] to-[#22D3EE]',
+    secondary: 'bg-linear-to-b from-[#0B4FAF]/5 to-white',
   },
   shadows: {
-    DEFAULT: 'shadow-lg shadow-primary-light/20',
-    hover: 'hover:shadow-xl hover:shadow-primary-light/30',
+    DEFAULT: 'shadow-lg shadow-blue-500/20',
+    hover: 'hover:shadow-xl hover:shadow-blue-500/30',
   },
   transitions: {
     DEFAULT: 'transition-all duration-300',
