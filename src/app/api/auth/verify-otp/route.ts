@@ -165,22 +165,45 @@ export async function POST(
       );
     }
 
-    // Map userType to database role name
-    const dbRole = mapUserTypeToRole(userType);
+    /**
+     * Admin flow:
+     * - Frontend par sirf ek "Admin" tab hai
+     * - Agar user ke paas `admin` ya `super_admin` me se koi bhi role ho to allow karna hai
+     * - Agar sirf `super_admin` ho to token me `super_admin` role set karna hai
+     */
 
-    // Verify user has the correct role in database
-    if (!userRoles.includes(dbRole)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `User does not have ${userType} role`,
-        },
-        { status: 403 }
-      );
+    let actualRole: AllRoles = userType as AllRoles;
+
+    if (userType === 'admin' || userType === 'super_admin') {
+      const hasAdminRole = userRoles.includes('admin');
+      const hasSuperAdminRole = userRoles.includes('super_admin');
+
+      if (!hasAdminRole && !hasSuperAdminRole) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'User does not have admin privileges',
+          },
+          { status: 403 }
+        );
+      }
+
+      // Super admin ko prefer karein, warna normal admin
+      actualRole = (hasSuperAdminRole ? 'super_admin' : 'admin') as AllRoles;
+    } else {
+      // Non-admin routes ke liye purana strict role check
+      const dbRole = mapUserTypeToRole(userType);
+
+      if (!userRoles.includes(dbRole)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `User does not have ${userType} role`,
+          },
+          { status: 403 }
+        );
+      }
     }
-
-    // Use admin role name
-    const actualRole = userType as AllRoles;
 
     // Verify OTP
     const otpRecord = await prisma.otps.findFirst({

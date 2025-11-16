@@ -240,19 +240,32 @@ export async function POST(request: NextRequest) {
 
     // Handle admin and super_admin users
     if (userType === 'admin' || userType === 'super_admin') {
-      // Check if user has the requested admin role
-      const requestedRole = mapUserTypeToRole(userType);
-      if (!userRoles.includes(requestedRole)) {
+      /**
+       * Frontend par sirf ek "Admin" tab hai.
+       * - Agar user ke paas `admin` ya `super_admin` dono me se koi bhi role ho to
+       *   usko admin dashboard me allow karna hai.
+       * - Agar sirf `super_admin` role ho (Hassan jaisa user), to bhi "Admin" tab se login ho sakta hai.
+       */
+
+      const hasAdminRole = userRoles.includes('admin');
+      const hasSuperAdminRole = userRoles.includes('super_admin');
+
+      if (!hasAdminRole && !hasSuperAdminRole) {
         return NextResponse.json(
           {
             success: false,
-            message: `User does not have ${userType} privileges`,
+            message: 'User does not have admin privileges',
           },
           { status: 403 }
         );
       }
 
-      // For admin users, always send OTP
+      // Effective admin role jo token / OTP me use hoga
+      const effectiveAdminRole: AdminRole = hasSuperAdminRole
+        ? 'super_admin'
+        : 'admin';
+
+      // For admin users (including super_admin), always send OTP
       const otp = generateOTP();
       const hashedOTP = await bcrypt.hash(otp, 10);
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
@@ -261,7 +274,8 @@ export async function POST(request: NextRequest) {
       await prisma.otps.deleteMany({
         where: {
           email,
-          userType,
+          // OTP records ko effective role ke sath tie karte hain
+          userType: effectiveAdminRole,
           isUsed: false,
         },
       });
@@ -270,7 +284,7 @@ export async function POST(request: NextRequest) {
       await prisma.otps.create({
         data: {
           email,
-          userType,
+          userType: effectiveAdminRole,
           code: hashedOTP,
           expiresAt,
           isUsed: false,
@@ -286,7 +300,8 @@ export async function POST(request: NextRequest) {
         data: {
           redirectTo: '/verify-otp',
           email: email,
-          userType: userType,
+          // Frontend ko bhi effective role bhejte hain (admin / super_admin)
+          userType: effectiveAdminRole,
           otpSent: true,
         },
       });

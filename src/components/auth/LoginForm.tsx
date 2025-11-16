@@ -115,16 +115,18 @@ export default function LoginForm() {
         }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         setServerError(data.message || 'Login failed');
         setIsLoading(false);
         return;
       }
 
+      // Success response yahan par guaranteed hai (data.success === true)
+
       // If user is verified and should be redirected directly
-      if (data.data.shouldRedirect) {
+      if ((data as any).data?.shouldRedirect) {
         // Store user preferences in localStorage if remember me is checked
         if (formData.rememberMe) {
           localStorage.setItem('userEmail', formData.email);
@@ -132,14 +134,20 @@ export default function LoginForm() {
         }
 
         // Redirect to dashboard
-        window.location.href = data.data.redirectTo;
+        window.location.href = (data as any).data.redirectTo;
         return;
       }
 
       // For OTP verification required
+      // Backend ho sakta hai effective role (admin / super_admin) return kare
+      // isliye yahan se wahi userType bhejte hain jo server ne diya hai
+      const otpUserType =
+        ((data as any).data && (data as any).data.userType) ||
+        formData.userType;
+
       window.location.href = `/verify-otp?email=${encodeURIComponent(
         formData.email
-      )}&userType=${encodeURIComponent(formData.userType)}`;
+      )}&userType=${encodeURIComponent(otpUserType)}`;
     } catch (error) {
       setServerError('An error occurred during login');
       console.error('Login error:', error);
