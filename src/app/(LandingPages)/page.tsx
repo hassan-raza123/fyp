@@ -17,33 +17,33 @@ import NavbarClient from '@/components/landing-page/NavbarClient';
 
 const features = [
   {
-    icon: <Users className='h-6 w-6 text-white' />,
+    icon: <Users className='h-6 w-6 text-primary-foreground' />,
     title: 'Smart Attendance',
     description:
       'Real-time tracking with AI-powered insights and facial recognition',
   },
   {
-    icon: <Bell className='h-6 w-6 text-white' />,
+    icon: <Bell className='h-6 w-6 text-primary-foreground' />,
     title: 'Instant Alerts',
     description: 'Automated notifications for absences and important updates',
   },
   {
-    icon: <PieChart className='h-6 w-6 text-white' />,
+    icon: <PieChart className='h-6 w-6 text-primary-foreground' />,
     title: 'Analytics Dashboard',
     description: 'Comprehensive performance metrics and attendance trends',
   },
   {
-    icon: <FileBarChart className='h-6 w-6 text-white' />,
+    icon: <FileBarChart className='h-6 w-6 text-primary-foreground' />,
     title: 'Report Generation',
     description: 'One-click detailed reports and export capabilities',
   },
   {
-    icon: <Shield className='h-6 w-6 text-white' />,
+    icon: <Shield className='h-6 w-6 text-primary-foreground' />,
     title: 'Secure & Reliable',
     description: 'Enterprise-grade security with data encryption',
   },
   {
-    icon: <Zap className='h-6 w-6 text-white' />,
+    icon: <Zap className='h-6 w-6 text-primary-foreground' />,
     title: 'Fast & Efficient',
     description: 'Lightning-fast processing with minimal latency',
   },
