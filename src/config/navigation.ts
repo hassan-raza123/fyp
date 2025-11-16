@@ -321,7 +321,7 @@ const superAdminNavigation = [
         id: 'departments',
         label: 'Departments',
         icon: Building2,
-        href: '/admin/super-admin',
+        href: '/admin/super-admin/departments',
       },
     ],
   },

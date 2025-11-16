@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Building2,
   Users,
@@ -320,46 +320,102 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const filteredDepartments = departments.filter((dept) =>
-    dept.name.toLowerCase().includes(search.toLowerCase()) ||
-    dept.code.toLowerCase().includes(search.toLowerCase())
+  const filteredDepartments = useMemo(
+    () =>
+      departments.filter(
+        (dept) =>
+          dept.name.toLowerCase().includes(search.toLowerCase()) ||
+          dept.code.toLowerCase().includes(search.toLowerCase())
+      ),
+    [departments, search]
   );
 
-  if (loading) {
-    return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto py-10 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Shield className="h-8 w-8" />
-            Super Admin Dashboard
+            Super Admin Overview
           </h1>
           <p className="text-muted-foreground">
-            Manage departments and assign admins
+            High-level snapshot of departments and admin users.
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Department
-        </Button>
       </div>
 
+      {/* Stats cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Departments
+            </CardTitle>
+            <CardDescription>Total departments in the system</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{departments.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Admin Users
+            </CardTitle>
+            <CardDescription>Active admin accounts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {adminUsers.filter((a) => a.status === 'active').length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              Assigned Departments
+            </CardTitle>
+            <CardDescription>Departments with admin assigned</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {departments.filter((d) => d.admin).length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              Unassigned Departments
+            </CardTitle>
+            <CardDescription>No admin mapped yet</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {departments.filter((d) => !d.admin).length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick list of departments (read‑only preview) */}
       <Card>
         <CardHeader>
-          <CardTitle>Departments</CardTitle>
+          <CardTitle>Recent Departments</CardTitle>
           <CardDescription>
-            View all departments and their assigned admins
+            Quick preview of departments and their admins. Full management in
+            the Departments module.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-6">
+          <div className="flex gap-4 mb-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -379,27 +435,22 @@ export default function SuperAdminDashboard() {
                 <TableRow>
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
                   <TableHead>Admin</TableHead>
                   <TableHead>Stats</TableHead>
-                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDepartments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={4} className="text-center py-8">
                       No departments found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredDepartments.map((dept) => (
+                  filteredDepartments.slice(0, 5).map((dept) => (
                     <TableRow key={dept.id}>
                       <TableCell className="font-medium">{dept.code}</TableCell>
                       <TableCell>{dept.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {dept.description || '-'}
-                      </TableCell>
                       <TableCell>
                         {dept.admin ? (
                           <div>
@@ -407,64 +458,20 @@ export default function SuperAdminDashboard() {
                             <div className="text-sm text-muted-foreground">
                               {dept.admin.email}
                             </div>
-                            <Badge
-                              variant={
-                                dept.admin.status === 'active'
-                                  ? 'default'
-                                  : 'secondary'
-                              }
-                              className="mt-1"
-                            >
-                              {dept.admin.status}
-                            </Badge>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-muted-foreground">
+                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
                             <AlertCircle className="h-4 w-4" />
-                            <span>No admin assigned</span>
-                          </div>
+                            No admin
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm space-y-1">
-                          <div>Faculties: {dept.counts.faculties}</div>
-                          <div>Students: {dept.counts.students}</div>
-                          <div>Programs: {dept.counts.programs}</div>
-                          <div>Courses: {dept.counts.courses}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditDepartment(dept)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedDepartment(dept);
-                              setShowAssignModal(true);
-                            }}
-                          >
-                            <Shield className="h-4 w-4 mr-1" />
-                            Assign
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedDepartment(dept);
-                              setShowDeleteModal(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
+                        <div className="text-xs space-y-1 text-muted-foreground">
+                          <div>Fac: {dept.counts.faculties}</div>
+                          <div>Std: {dept.counts.students}</div>
+                          <div>Prog: {dept.counts.programs}</div>
+                          <div>Cr: {dept.counts.courses}</div>
                         </div>
                       </TableCell>
                     </TableRow>
