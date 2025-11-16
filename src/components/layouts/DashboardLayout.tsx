@@ -262,6 +262,42 @@ export default function DashboardLayout({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const stored = window.localStorage.getItem('theme');
+    if (stored === 'dark') {
+      setDarkMode(true);
+      return;
+    }
+    if (stored === 'light') {
+      setDarkMode(false);
+      return;
+    }
+
+    // Fallback to system preference
+    const prefersDark = window.matchMedia?.(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+    if (prefersDark) {
+      setDarkMode(true);
+    }
+  }, []);
+
+  // Sync dark mode with <html> class so global theme tokens work
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      window.localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      window.localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
   // While auth is loading or role not yet resolved, avoid flashing wrong sidebar
   if (loading || !role) {
     return (
@@ -277,7 +313,7 @@ export default function DashboardLayout({
   return (
     <div
       className={`min-h-screen ${
-        isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'
+        isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}
     >
       {/* Mobile Backdrop */}
