@@ -57,7 +57,7 @@ const statistics = [
 
 const userRoles = [
   {
-    icon: <GraduationCap className='h-8 w-8 text-purple-600' />,
+    icon: <GraduationCap className='h-8 w-8 text-primary' />,
     title: 'For Administration',
     description: 'Complete system oversight and management',
     features: [
@@ -68,7 +68,7 @@ const userRoles = [
     ],
   },
   {
-    icon: <Book className='h-8 w-8 text-purple-600' />,
+    icon: <Book className='h-8 w-8 text-primary' />,
     title: 'For Faculty',
     description: 'Streamlined tools for efficient management',
     features: [
@@ -79,7 +79,7 @@ const userRoles = [
     ],
   },
   {
-    icon: <Users className='h-8 w-8 text-purple-600' />,
+    icon: <Users className='h-8 w-8 text-primary' />,
     title: 'For Students',
     description: 'Easy monitoring and access',
     features: [

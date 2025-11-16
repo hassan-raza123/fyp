@@ -58,7 +58,7 @@ export default function NavbarClient() {
               />
               <span
                 className={`text-xl font-bold transition-colors duration-300 ${
-                  isScrolled ? 'text-purple-600' : 'text-white'
+                  isScrolled ? 'text-primary' : 'text-primary-foreground'
                 }`}
               >
                 Smart Campus
@@ -76,11 +76,11 @@ export default function NavbarClient() {
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
                     isScrolled
                       ? isActive(item.href)
-                        ? 'text-purple-600 font-semibold bg-purple-50'
-                        : 'text-gray-900 hover:text-purple-600'
+                        ? 'text-primary font-semibold bg-primary/10'
+                        : 'text-foreground hover:text-primary'
                       : isActive(item.href)
-                      ? 'text-white font-semibold bg-white/10 backdrop-blur-sm border border-white/20'
-                      : 'text-white hover:text-white/80 hover:bg-white/5'
+                      ? 'text-primary-foreground font-semibold bg-primary/20 backdrop-blur-sm border border-primary/30'
+                      : 'text-primary-foreground hover:text-primary-foreground/80 hover:bg-primary/10'
                   }`}
                 >
                   {item.name}
@@ -90,8 +90,8 @@ export default function NavbarClient() {
                 href='/login'
                 className={`ml-4 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   isScrolled
-                    ? 'bg-purple-600 text-white hover:bg-purple-700'
-                    : 'bg-white text-purple-600 hover:bg-white/90'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-card text-primary hover:bg-card/90'
                 }`}
               >
                 Login
@@ -105,8 +105,8 @@ export default function NavbarClient() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 ${
                 isScrolled
-                  ? 'text-gray-900 hover:text-purple-600'
-                  : 'text-white hover:text-white/80'
+                  ? 'text-foreground hover:text-primary'
+                  : 'text-primary-foreground hover:text-primary-foreground/80'
               }`}
             >
               {isMobileMenuOpen ? (
@@ -121,7 +121,7 @@ export default function NavbarClient() {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className='md:hidden bg-white border-b border-gray-200'>
+        <div className='md:hidden bg-card border-b border-border'>
           <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
             {navigation.map((item) => (
               <Link
@@ -129,8 +129,8 @@ export default function NavbarClient() {
                 href={item.href}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   isActive(item.href)
-                    ? 'text-purple-600 font-semibold bg-purple-50'
-                    : 'text-gray-900 hover:text-purple-600'
+                    ? 'text-primary font-semibold bg-primary/10'
+                    : 'text-foreground hover:text-primary'
                 }`}
               >
                 {item.name}
@@ -138,7 +138,7 @@ export default function NavbarClient() {
             ))}
             <Link
               href='/login'
-              className='block px-3 py-2 rounded-md text-base font-medium text-purple-600 hover:text-purple-700'
+              className='block px-3 py-2 rounded-md text-base font-medium text-primary hover:text-primary/80'
             >
               Login
             </Link>

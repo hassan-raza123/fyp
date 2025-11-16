@@ -133,21 +133,21 @@ const features = [
 
 export default function FeaturesPage() {
   return (
-    <div className='min-h-screen bg-white'>
+    <div className='min-h-screen bg-background text-foreground'>
       {/* Hero Section */}
-      <div className='relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600'>
+      <div className='relative bg-gradient-to-br from-primary via-primary to-accent'>
         <NavbarClient />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
 
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
           <div className='max-w-3xl mx-auto text-center'>
-            <h1 className='text-4xl font-bold text-white mb-6 lg:text-5xl'>
+            <h1 className='text-4xl font-bold text-primary-foreground mb-6 lg:text-5xl'>
               Powerful Features for
               <span className='block bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
                 Modern Education
               </span>
             </h1>
-            <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
+            <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
               Discover how Smart Campus for MNSUET&apos;s comprehensive features
               can transform your institution&apos;s management and educational
               processes.
@@ -162,23 +162,23 @@ export default function FeaturesPage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className='bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:scale-105 hover:shadow-xl transition-all duration-300'
+              className='bg-card rounded-xl shadow-lg p-6 border border-border hover:scale-105 hover:shadow-xl transition-all duration-300'
             >
-              <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
+              <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center mb-4'>
                 {feature.icon}
               </div>
-              <h3 className='text-xl font-semibold text-gray-900 mb-2'>
+              <h3 className='text-xl font-semibold text-foreground mb-2'>
                 {feature.title}
               </h3>
-              <p className='text-gray-600 mb-4'>{feature.description}</p>
+              <p className='text-muted-foreground mb-4'>{feature.description}</p>
               <ul className='space-y-2'>
                 {feature.items.map((item, itemIndex) => (
                   <li
                     key={itemIndex}
-                    className='flex items-start text-gray-700'
+                    className='flex items-start text-muted-foreground'
                   >
                     <div className='flex-shrink-0 mt-1'>
-                      <div className='w-1.5 h-1.5 rounded-full bg-purple-600' />
+                      <div className='w-1.5 h-1.5 rounded-full bg-primary' />
                     </div>
                     <span className='ml-2'>{item}</span>
                   </li>
@@ -190,13 +190,13 @@ export default function FeaturesPage() {
       </div>
 
       {/* CTA Section */}
-      <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 py-16'>
+      <div className='bg-gradient-to-br from-primary via-primary to-accent py-16'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center'>
-            <h2 className='text-3xl font-bold text-white mb-6'>
+          <div className='bg-primary/10 backdrop-blur-md border border-primary/20 rounded-3xl p-12 text-center'>
+            <h2 className='text-3xl font-bold text-primary-foreground mb-6'>
               Ready to Transform Your Institution?
             </h2>
-            <p className='text-xl text-white/80 mb-8 max-w-2xl mx-auto'>
+            <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto'>
               Experience the power of Smart Campus for MNSUET&apos;s
               comprehensive features and take your institution to the next
               level.
@@ -204,14 +204,14 @@ export default function FeaturesPage() {
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
               <Link
                 href='/login'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-white text-purple-600 font-semibold hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
               >
                 Get Started
                 <ArrowRight className='ml-2 h-5 w-5' />
               </Link>
               <Link
                 href='/demo'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all duration-300'
+                className='inline-flex items-center px-8 py-4 rounded-xl bg-primary/10 backdrop-blur-md border border-primary/20 text-primary-foreground hover:bg-primary/20 transition-all duration-300'
               >
                 Request Demo
               </Link>
