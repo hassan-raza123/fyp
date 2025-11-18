@@ -57,8 +57,8 @@ export default function NavbarClient() {
                 }}
               />
               <span
-                className={`text-xl font-bold transition-colors duration-300 ${
-                  isScrolled ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent' : 'text-white'
+                className={`text-xl font-semibold transition-colors duration-300 ${
+                  isScrolled ? 'text-slate-900' : 'text-white'
                 }`}
               >
                 Smart Campus
@@ -73,14 +73,14 @@ export default function NavbarClient() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isScrolled
                       ? isActive(item.href)
-                        ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-bold bg-purple-50'
-                        : 'text-slate-700 hover:text-purple-600'
+                        ? 'text-blue-900 font-semibold bg-blue-50'
+                        : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
                       : isActive(item.href)
-                      ? 'text-white font-bold bg-white/25 backdrop-blur-md border border-white/40 shadow-lg'
-                      : 'text-white hover:text-white hover:bg-white/15 backdrop-blur-sm'
+                      ? 'text-white font-semibold bg-white/20 backdrop-blur-sm'
+                      : 'text-white/90 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   {item.name}
@@ -88,10 +88,10 @@ export default function NavbarClient() {
               ))}
               <Link
                 href='/login'
-                className={`ml-4 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                className={`ml-4 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   isScrolled
-                    ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white hover:from-purple-700 hover:to-cyan-700'
-                    : 'bg-white text-purple-600 hover:bg-white/95'
+                    ? 'bg-blue-900 text-white hover:bg-blue-800 shadow-md'
+                    : 'bg-white text-blue-900 hover:bg-blue-50 shadow-md'
                 }`}
               >
                 Login
@@ -121,16 +121,16 @@ export default function NavbarClient() {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className='md:hidden bg-white/95 backdrop-blur-xl border-b-2 border-purple-200 shadow-2xl'>
-          <div className='px-4 pt-4 pb-4 space-y-2 sm:px-6'>
+        <div className='md:hidden bg-white border-b border-gray-200 shadow-lg'>
+          <div className='px-4 pt-3 pb-3 space-y-1'>
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`block px-4 py-3 rounded-xl text-base font-semibold transition-all ${
+                className={`block px-3 py-2 rounded-lg text-base font-medium transition-all ${
                   isActive(item.href)
-                    ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-bold bg-purple-50 border-2 border-purple-200'
-                    : 'text-slate-700 hover:text-purple-600 hover:bg-purple-50'
+                    ? 'text-blue-900 font-semibold bg-blue-50'
+                    : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
                 }`}
               >
                 {item.name}
@@ -138,7 +138,7 @@ export default function NavbarClient() {
             ))}
             <Link
               href='/login'
-              className='block px-4 py-3 rounded-xl text-base font-bold bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-center shadow-lg hover:shadow-xl transform hover:scale-105 transition-all'
+              className='block px-3 py-2 rounded-lg text-base font-semibold bg-blue-900 text-white text-center mt-2 hover:bg-blue-800 transition-all'
             >
               Login
             </Link>
