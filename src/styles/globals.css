@@ -1,32 +1,32 @@
 @import "tailwindcss";
 
-/* Global Color Scheme - CSS Variables based on Logo Colors */
+/* Global Color Scheme - Professional University OBE System Colors */
 :root {
-  /* Primary Colors - Purple (from logo gradient #7C3AED to #6366F1) */
-  --primary-50: #f5f3ff;
-  --primary-100: #ede9fe;
-  --primary-200: #ddd6fe;
-  --primary-300: #c4b5fd;
-  --primary-400: #a78bfa;
-  --primary-500: #8b5cf6; /* Base purple */
-  --primary-600: #7c3aed; /* Logo purple start */
-  --primary-700: #6d28d9;
-  --primary-800: #5b21b6;
-  --primary-900: #4c1d95;
+  /* Primary Colors - Professional Indigo (from logo #4F46E5) - Main brand color */
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  --primary-200: #c7d2fe;
+  --primary-300: #a5b4fc;
+  --primary-400: #818cf8;
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5; /* Logo main indigo - Primary brand color */
+  --primary-700: #4338ca;
+  --primary-800: #3730a3;
+  --primary-900: #312e81;
   
-  /* Secondary Colors - Indigo (from logo #4F46E5 and #6366F1) */
-  --secondary-50: #eef2ff;
-  --secondary-100: #e0e7ff;
-  --secondary-200: #c7d2fe;
-  --secondary-300: #a5b4fc;
-  --secondary-400: #818cf8;
-  --secondary-500: #6366f1; /* Logo indigo end */
-  --secondary-600: #4f46e5; /* Logo indigo main */
-  --secondary-700: #4338ca;
-  --secondary-800: #3730a3;
-  --secondary-900: #312e81;
+  /* Secondary Colors - Deep Blue (Academic, Professional) */
+  --secondary-50: #eff6ff;
+  --secondary-100: #dbeafe;
+  --secondary-200: #bfdbfe;
+  --secondary-300: #93c5fd;
+  --secondary-400: #60a5fa;
+  --secondary-500: #3b82f6;
+  --secondary-600: #2563eb;
+  --secondary-700: #1d4ed8;
+  --secondary-800: #1e40af;
+  --secondary-900: #1e3a8a;
   
-  /* Accent Colors - Emerald (from logo #10B981) */
+  /* Accent Colors - Emerald (Success, Positive actions from logo #10B981) */
   --accent-50: #ecfdf5;
   --accent-100: #d1fae5;
   --accent-200: #a7f3d0;
@@ -61,11 +61,11 @@
   --border-color: #e5e5e5;
   --hover-bg: #fafafa;
   
-  /* Status Colors */
-  --success: #10b981; /* Using logo emerald */
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --info: #6366f1; /* Using logo indigo */
+  /* Status Colors - Professional and Clear */
+  --success: #10b981; /* Logo emerald */
+  --error: #dc2626; /* Professional red */
+  --warning: #d97706; /* Professional orange */
+  --info: #4f46e5; /* Logo indigo */
 }
 
 /* Tailwind v4 design tokens - Using CSS variables from :root */
@@ -79,8 +79,8 @@
   --color-popover: var(--card-bg);
   --color-popover-foreground: var(--text-primary);
 
-  /* Primary Colors - Purple (from logo gradient #7C3AED to #6366F1) */
-  --color-primary: var(--primary-500);
+  /* Primary Colors - Professional Indigo (Logo #4F46E5) */
+  --color-primary: var(--primary-600); /* Using logo main indigo as primary */
   --color-primary-foreground: 0 0% 100%;
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
@@ -93,8 +93,8 @@
   --color-primary-800: var(--primary-800);
   --color-primary-900: var(--primary-900);
 
-  /* Secondary Colors - Indigo (from logo #4F46E5 and #6366F1) */
-  --color-secondary: var(--secondary-500);
+  /* Secondary Colors - Professional Deep Blue */
+  --color-secondary: var(--secondary-600);
   --color-secondary-foreground: 0 0% 100%;
   --color-secondary-50: var(--secondary-50);
   --color-secondary-100: var(--secondary-100);
@@ -141,7 +141,7 @@
 
   --color-border: var(--border-color);
   --color-input: var(--border-color);
-  --color-ring: var(--primary-500);
+  --color-ring: var(--primary-600); /* Logo indigo */
 
   --radius: 0.5rem;
 }
@@ -268,17 +268,17 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 
-  /* Gradient Backgrounds */
-  .gradient-primary {
-    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  /* Solid Professional Backgrounds (No gradients for clean university look) */
+  .bg-primary-solid {
+    background-color: var(--primary-600);
   }
 
-  .gradient-secondary {
-    background: linear-gradient(135deg, var(--secondary-500) 0%, var(--secondary-700) 100%);
+  .bg-secondary-solid {
+    background-color: var(--secondary-600);
   }
 
-  .gradient-accent {
-    background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-700) 100%);
+  .bg-accent-solid {
+    background-color: var(--accent-500);
   }
 }
 
