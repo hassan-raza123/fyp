@@ -1,42 +1,42 @@
 @import "tailwindcss";
 
-/* Global Color Scheme - CSS Variables for easy access */
+/* Global Color Scheme - CSS Variables based on Logo Colors */
 :root {
-  /* Primary Colors - Education Blue */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  /* Primary Colors - Purple (from logo gradient #7C3AED to #6366F1) */
+  --primary-50: #f5f3ff;
+  --primary-100: #ede9fe;
+  --primary-200: #ddd6fe;
+  --primary-300: #c4b5fd;
+  --primary-400: #a78bfa;
+  --primary-500: #8b5cf6; /* Base purple */
+  --primary-600: #7c3aed; /* Logo purple start */
+  --primary-700: #6d28d9;
+  --primary-800: #5b21b6;
+  --primary-900: #4c1d95;
   
-  /* Secondary Colors - Academic Purple */
-  --secondary-50: #faf5ff;
-  --secondary-100: #f3e8ff;
-  --secondary-200: #e9d5ff;
-  --secondary-300: #d8b4fe;
-  --secondary-400: #c084fc;
-  --secondary-500: #a855f7;
-  --secondary-600: #9333ea;
-  --secondary-700: #7e22ce;
-  --secondary-800: #6b21a8;
-  --secondary-900: #581c87;
+  /* Secondary Colors - Indigo (from logo #4F46E5 and #6366F1) */
+  --secondary-50: #eef2ff;
+  --secondary-100: #e0e7ff;
+  --secondary-200: #c7d2fe;
+  --secondary-300: #a5b4fc;
+  --secondary-400: #818cf8;
+  --secondary-500: #6366f1; /* Logo indigo end */
+  --secondary-600: #4f46e5; /* Logo indigo main */
+  --secondary-700: #4338ca;
+  --secondary-800: #3730a3;
+  --secondary-900: #312e81;
   
-  /* Accent Colors - Success Green */
-  --accent-50: #f0fdf4;
-  --accent-100: #dcfce7;
-  --accent-200: #bbf7d0;
-  --accent-300: #86efac;
-  --accent-400: #4ade80;
-  --accent-500: #22c55e;
-  --accent-600: #16a34a;
-  --accent-700: #15803d;
-  --accent-800: #166534;
-  --accent-900: #14532d;
+  /* Accent Colors - Emerald (from logo #10B981) */
+  --accent-50: #ecfdf5;
+  --accent-100: #d1fae5;
+  --accent-200: #a7f3d0;
+  --accent-300: #6ee7b7;
+  --accent-400: #34d399;
+  --accent-500: #10b981; /* Logo emerald */
+  --accent-600: #059669;
+  --accent-700: #047857;
+  --accent-800: #065f46;
+  --accent-900: #064e3b;
   
   /* Neutral Colors */
   --neutral-50: #fafafa;
@@ -62,10 +62,10 @@
   --hover-bg: #fafafa;
   
   /* Status Colors */
-  --success: #10b981;
+  --success: #10b981; /* Using logo emerald */
   --error: #ef4444;
   --warning: #f59e0b;
-  --info: #3b82f6;
+  --info: #6366f1; /* Using logo indigo */
 }
 
 /* Tailwind v4 design tokens - Using CSS variables from :root */
@@ -79,7 +79,7 @@
   --color-popover: var(--card-bg);
   --color-popover-foreground: var(--text-primary);
 
-  /* Primary Colors - Education Blue */
+  /* Primary Colors - Purple (from logo gradient #7C3AED to #6366F1) */
   --color-primary: var(--primary-500);
   --color-primary-foreground: 0 0% 100%;
   --color-primary-50: var(--primary-50);
@@ -93,7 +93,7 @@
   --color-primary-800: var(--primary-800);
   --color-primary-900: var(--primary-900);
 
-  /* Secondary Colors - Academic Purple */
+  /* Secondary Colors - Indigo (from logo #4F46E5 and #6366F1) */
   --color-secondary: var(--secondary-500);
   --color-secondary-foreground: 0 0% 100%;
   --color-secondary-50: var(--secondary-50);
@@ -107,7 +107,7 @@
   --color-secondary-800: var(--secondary-800);
   --color-secondary-900: var(--secondary-900);
 
-  /* Accent Colors - Success Green */
+  /* Accent Colors - Emerald (from logo #10B981) */
   --color-accent: var(--accent-500);
   --color-accent-foreground: 0 0% 100%;
   --color-accent-50: var(--accent-50);
