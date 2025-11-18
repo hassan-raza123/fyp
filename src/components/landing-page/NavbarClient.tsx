@@ -58,7 +58,7 @@ export default function NavbarClient() {
               />
               <span
                 className={`text-xl font-bold transition-colors duration-300 ${
-                  isScrolled ? 'text-primary-600' : 'text-white'
+                  isScrolled ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent' : 'text-white'
                 }`}
               >
                 Smart Campus
@@ -73,14 +73,14 @@ export default function NavbarClient() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                     isScrolled
                       ? isActive(item.href)
-                        ? 'text-primary-600 font-semibold bg-primary-50'
-                        : 'text-foreground hover:text-primary-600'
+                        ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-bold bg-purple-50'
+                        : 'text-slate-700 hover:text-purple-600'
                       : isActive(item.href)
-                      ? 'text-white font-semibold bg-white/20 backdrop-blur-sm border border-white/30'
-                      : 'text-white hover:text-white/80 hover:bg-white/10'
+                      ? 'text-white font-bold bg-white/25 backdrop-blur-md border border-white/40 shadow-lg'
+                      : 'text-white hover:text-white hover:bg-white/15 backdrop-blur-sm'
                   }`}
                 >
                   {item.name}
@@ -88,10 +88,10 @@ export default function NavbarClient() {
               ))}
               <Link
                 href='/login'
-                className={`ml-4 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                className={`ml-4 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
                   isScrolled
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-white text-primary-600 hover:bg-white/90'
+                    ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white hover:from-purple-700 hover:to-cyan-700'
+                    : 'bg-white text-purple-600 hover:bg-white/95'
                 }`}
               >
                 Login
@@ -121,16 +121,16 @@ export default function NavbarClient() {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className='md:hidden bg-card border-b border-border'>
-          <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
+        <div className='md:hidden bg-white/95 backdrop-blur-xl border-b-2 border-purple-200 shadow-2xl'>
+          <div className='px-4 pt-4 pb-4 space-y-2 sm:px-6'>
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                className={`block px-4 py-3 rounded-xl text-base font-semibold transition-all ${
                   isActive(item.href)
-                    ? 'text-primary-600 font-semibold bg-primary-50'
-                    : 'text-foreground hover:text-primary-600'
+                    ? 'bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-bold bg-purple-50 border-2 border-purple-200'
+                    : 'text-slate-700 hover:text-purple-600 hover:bg-purple-50'
                 }`}
               >
                 {item.name}
@@ -138,7 +138,7 @@ export default function NavbarClient() {
             ))}
             <Link
               href='/login'
-              className='block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:text-primary-700'
+              className='block px-4 py-3 rounded-xl text-base font-bold bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-center shadow-lg hover:shadow-xl transform hover:scale-105 transition-all'
             >
               Login
             </Link>
