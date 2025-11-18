@@ -14,15 +14,15 @@ import {
 
 export default function Footer() {
   return (
-    <footer className='bg-gradient-to-b from-background to-muted text-muted-foreground'>
+    <footer className='bg-muted text-muted-foreground'>
       {/* Main Footer Content */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-12'>
           {/* Brand Section */}
           <div className='col-span-1 md:col-span-2'>
             <div className='flex items-center space-x-3 mb-6'>
-              <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center'>
-                <span className='text-xl font-bold text-primary-foreground'>S</span>
+              <div className='w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center'>
+                <span className='text-xl font-bold text-white'>S</span>
               </div>
               <h3 className='text-2xl font-bold text-foreground'>
                 Smart Campus for MNSUET
