@@ -147,6 +147,15 @@
   --badge-bg: rgba(252, 153, 40, 0.1); /* Orange with opacity */
   --badge-text: var(--orange-dark);
   
+  /* Opacity variants for form elements */
+  --brand-primary-opacity-10: rgba(38, 40, 149, 0.1);
+  --brand-primary-opacity-20: rgba(38, 40, 149, 0.2);
+  --brand-primary-opacity-30: rgba(38, 40, 149, 0.3);
+  --brand-secondary-opacity-10: rgba(252, 153, 40, 0.1);
+  --brand-secondary-opacity-20: rgba(252, 153, 40, 0.2);
+  --black-opacity-05: rgba(0, 0, 0, 0.05);
+  --black-opacity-10: rgba(0, 0, 0, 0.1);
+  
   --feature-icon-bg-from: var(--blue);
   --feature-icon-bg-to: var(--blue-light);
   

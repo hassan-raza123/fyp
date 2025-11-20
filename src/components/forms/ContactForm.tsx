@@ -78,7 +78,7 @@ export default function ContactForm() {
   }
   const inputFocusStyle: React.CSSProperties = {
     borderColor: 'var(--brand-primary)',
-    '--tw-ring-color': 'rgba(38, 40, 149, 0.2)',
+    '--tw-ring-color': 'var(--brand-primary-opacity-20)',
   } as React.CSSProperties
   const labelClasses = 'block text-sm font-medium mb-1.5'
   const labelStyle: React.CSSProperties = {
@@ -92,12 +92,12 @@ export default function ContactForm() {
           className='p-4 rounded-lg border'
           style={{
             backgroundColor: status.type === 'success' 
-              ? 'rgba(252, 153, 40, 0.1)' 
-              : 'rgba(0, 0, 0, 0.05)',
+              ? 'var(--brand-secondary-opacity-10)' 
+              : 'var(--black-opacity-05)',
             color: status.type === 'success' ? 'var(--brand-secondary-dark)' : 'var(--black)',
             borderColor: status.type === 'success' 
-              ? 'rgba(252, 153, 40, 0.2)' 
-              : 'rgba(0, 0, 0, 0.1)',
+              ? 'var(--brand-secondary-opacity-20)' 
+              : 'var(--black-opacity-10)',
           } as React.CSSProperties}
         >
           {status.message}
@@ -195,7 +195,7 @@ export default function ContactForm() {
           className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-semibold focus:outline-none focus:ring-2 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
           style={{
             backgroundColor: isLoading ? 'var(--gray-400)' : 'var(--brand-primary)',
-            '--tw-ring-color': 'rgba(38, 40, 149, 0.3)',
+            '--tw-ring-color': 'var(--brand-primary-opacity-30)',
             color: 'var(--white)',
           } as React.CSSProperties}
           onMouseEnter={(e) => {
