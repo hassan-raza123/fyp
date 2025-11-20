@@ -1,7 +1,6 @@
 import HeroSection from '@/components/landing-page/HeroSection';
 import OBEShowcaseSection from '@/components/landing-page/OBEShowcaseSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
-import ChallengesSection from '@/components/landing-page/ChallengesSection';
 import StatsOverview from '@/components/landing-page/StatsOverview';
 import TestimonialsSection from '@/components/landing-page/TestimonialsSection';
 import TeamSection from '@/components/landing-page/TeamSection';
@@ -19,8 +18,7 @@ export default function LandingPage() {
       {/* OBE Showcase - Combined */}
       <OBEShowcaseSection />
       
-      {/* Why Choose Us & System Features */}
-      <ChallengesSection />
+      {/* Student Benefits & System Features */}
       <StatsOverview />
       <FeaturesSection />
       
