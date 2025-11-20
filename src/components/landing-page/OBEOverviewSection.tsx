@@ -3,90 +3,53 @@ import { BookOpen, Target, Award } from 'lucide-react';
 
 export default function OBEOverviewSection() {
   return (
-    <div className='relative py-24 bg-white overflow-hidden'>
-      {/* Background Image with Light Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/Applying-to-university-college.jpg')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-white/75" />
-      
-      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='py-24 bg-white'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Section Header */}
         <div className='text-center mb-16'>
-          <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
+          <span className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
             OUTCOME-BASED EDUCATION
-          </div>
+          </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
             What is OBE?
           </h2>
-          <p className='text-xl landing-text-body max-w-3xl mx-auto'>
-            A student-centric teaching and learning methodology focused on achieving specific outcomes
+          <p className='text-xl landing-text-body max-w-2xl mx-auto'>
+            A student-centric methodology focused on achieving specific learning outcomes
           </p>
         </div>
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left - Content */}
-          <div className='space-y-6 order-2 lg:order-1'>
-            <div className='group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1'>
-              <div className='flex items-start space-x-4'>
-                <div className='landing-icon-bg rounded-xl p-3 shrink-0 group-hover:scale-110 transition-transform duration-300'>
-                  <Target className='h-6 w-6 text-white' />
+          <div className='space-y-6'>
+            {[
+              { icon: Target, title: 'Clear Learning Outcomes', desc: 'Define specific, measurable outcomes students should achieve' },
+              { icon: BookOpen, title: 'Student-Centered Approach', desc: 'Focus on practical knowledge and demonstrable skills' },
+              { icon: Award, title: 'Continuous Assessment', desc: 'Regular evaluation to ensure outcome achievement' }
+            ].map((item, idx) => (
+              <div key={idx} className='flex items-start space-x-4 p-6 rounded-xl hover:bg-slate-50 transition-colors duration-300'>
+                <div className='w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shrink-0'>
+                  <item.icon className='h-6 w-6 text-white' />
                 </div>
                 <div>
-                  <h3 className='text-xl font-bold landing-text-heading mb-2'>
-                    Clear Learning Outcomes
-                  </h3>
-                  <p className='landing-text-body leading-relaxed'>
-                    Define specific, measurable learning outcomes that students should achieve by the end of their program
-                  </p>
+                  <h3 className='text-lg font-bold landing-text-heading mb-2'>{item.title}</h3>
+                  <p className='landing-text-body text-sm'>{item.desc}</p>
                 </div>
               </div>
-            </div>
-
-            <div className='group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1'>
-              <div className='flex items-start space-x-4'>
-                <div className='landing-icon-bg rounded-xl p-3 shrink-0 group-hover:scale-110 transition-transform duration-300'>
-                  <BookOpen className='h-6 w-6 text-white' />
-                </div>
-                <div>
-                  <h3 className='text-xl font-bold landing-text-heading mb-2'>
-                    Student-Centered Approach
-                  </h3>
-                  <p className='landing-text-body leading-relaxed'>
-                    Focus on what students can demonstrate upon completion, ensuring practical knowledge and skills
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className='group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1'>
-              <div className='flex items-start space-x-4'>
-                <div className='landing-icon-bg rounded-xl p-3 shrink-0 group-hover:scale-110 transition-transform duration-300'>
-                  <Award className='h-6 w-6 text-white' />
-                </div>
-                <div>
-                  <h3 className='text-xl font-bold landing-text-heading mb-2'>
-                    Continuous Assessment
-                  </h3>
-                  <p className='landing-text-body leading-relaxed'>
-                    Regular evaluation and feedback to ensure students are meeting the intended learning outcomes
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Right - Image */}
-          <div className='order-1 lg:order-2'>
-            <div className='relative group'>
-              <div className='absolute -inset-4 landing-decorative-blur-1 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500'></div>
-              <div className='relative bg-white rounded-3xl overflow-hidden shadow-2xl transform group-hover:scale-105 transition-all duration-500'>
-                <Image
-                  src='/info-images/outcome-based-education-l.webp'
-                  alt='Outcome Based Education Overview'
-                  width={650}
-                  height={650}
-                  className='w-full h-auto object-cover'
-                  priority
-                />
-              </div>
+          <div className='relative'>
+            <div className='absolute inset-0 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl transform rotate-3'></div>
+            <div className='relative bg-white rounded-2xl overflow-hidden shadow-2xl'>
+              <Image
+                src='/info-images/outcome-based-education-l.webp'
+                alt='Outcome Based Education'
+                width={650}
+                height={650}
+                className='w-full h-auto'
+                priority
+              />
             </div>
           </div>
         </div>

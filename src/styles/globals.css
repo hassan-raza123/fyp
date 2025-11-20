@@ -351,6 +351,33 @@
     background: linear-gradient(to bottom right, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
   }
 
+  /* Modern Card with Shine Effect */
+  .modern-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modern-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+    z-index: 1;
+  }
+
+  .modern-card:hover::before {
+    left: 100%;
+  }
+
+  .modern-card > * {
+    position: relative;
+    z-index: 2;
+  }
+
   .landing-section-gradient {
     background: linear-gradient(to bottom right, var(--section-bg-gradient-from), var(--section-bg-gradient-via), var(--section-bg-gradient-to));
   }
@@ -505,6 +532,21 @@
   to {
     opacity: 1;
   }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out;
 }
 
 @keyframes slideInLeft {

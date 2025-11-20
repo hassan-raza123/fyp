@@ -3,21 +3,18 @@ import { userRoles } from '@/constants/landing-page';
 
 export default function UserRolesSection() {
   return (
-    <div id="portals" className='relative py-24 landing-section-gradient scroll-mt-20 overflow-hidden'>
-      {/* Background Image with Light Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/5007.webp')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/70 via-blue-50/70 to-slate-50/70" />
-      
-      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div id="portals" className='py-24 bg-white scroll-mt-20'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Section Header */}
         <div className='text-center mb-16'>
-          <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
+          <span className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
             USER PORTALS
-          </div>
+          </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
-            Three Dedicated Interfaces
+            Built for Everyone
           </h2>
-          <p className='text-xl landing-text-body max-w-3xl mx-auto'>
-            Specialized dashboards designed for each user role
+          <p className='text-xl landing-text-body max-w-2xl mx-auto'>
+            Specialized dashboards for each role
           </p>
         </div>
 
@@ -27,23 +24,20 @@ export default function UserRolesSection() {
             return (
               <div
                 key={index}
-                className='group bg-white rounded-2xl shadow-xl p-8 border-2 border-slate-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
+                className='group bg-white rounded-2xl p-8 border-2 border-slate-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300'
               >
-                <div className='mb-6 w-16 h-16 rounded-2xl landing-icon-bg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300'>
-                  <IconComponent className='h-8 w-8 text-white' />
+                <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
+                  <IconComponent className='h-7 w-7 text-white' />
                 </div>
                 <h3 className='text-2xl font-bold landing-text-heading mb-3'>
                   {role.title}
                 </h3>
-                <p className='landing-text-body mb-6 leading-relaxed'>{role.description}</p>
-                <ul className='space-y-3'>
-                  {role.features.map((feature, featureIndex) => (
-                    <li
-                      key={featureIndex}
-                      className='flex items-start landing-text-muted'
-                    >
-                      <CheckCircle className='h-5 w-5 landing-success-icon mr-3 shrink-0 mt-0.5' />
-                      <span className='text-sm font-medium'>{feature}</span>
+                <p className='landing-text-body mb-6'>{role.description}</p>
+                <ul className='space-y-2'>
+                  {role.features.map((feature, idx) => (
+                    <li key={idx} className='flex items-start landing-text-muted text-sm'>
+                      <CheckCircle className='h-4 w-4 text-green-500 mr-2 shrink-0 mt-0.5' />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>

@@ -2,60 +2,41 @@ import Image from 'next/image';
 import { CheckCircle2, TrendingUp, Users2, Sparkles } from 'lucide-react';
 
 const benefits = [
-  {
-    icon: TrendingUp,
-    title: 'Enhanced Learning Quality',
-    description: 'Structured curriculum aligned with industry standards and professional requirements'
-  },
-  {
-    icon: Users2,
-    title: 'Better Career Outcomes',
-    description: 'Students graduate with practical skills and competencies valued by employers'
-  },
-  {
-    icon: Sparkles,
-    title: 'Transparent Evaluation',
-    description: 'Clear assessment criteria and measurable learning outcomes for fair grading'
-  },
-  {
-    icon: CheckCircle2,
-    title: 'Continuous Improvement',
-    description: 'Data-driven insights help improve curriculum and teaching methodologies'
-  }
+  { icon: TrendingUp, title: 'Enhanced Learning', desc: 'Structured curriculum aligned with industry standards' },
+  { icon: Users2, title: 'Career Ready', desc: 'Practical skills valued by employers' },
+  { icon: Sparkles, title: 'Transparent', desc: 'Clear assessment criteria and outcomes' },
+  { icon: CheckCircle2, title: 'Data-Driven', desc: 'Insights for continuous improvement' }
 ];
 
 export default function BenefitsSection() {
   return (
-    <div className='relative py-24 landing-section-gradient overflow-hidden'>
-      {/* Background Image with Light Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/cs-prospective-bs.png')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/70 via-blue-50/70 to-slate-50/70" />
-      
-      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='py-24 bg-gradient-to-b from-slate-50 to-white'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Section Header */}
         <div className='text-center mb-16'>
-          <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
-            WHY OBE?
-          </div>
+          <span className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
+            BENEFITS
+          </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
-            Benefits of OBE System
+            Why Choose OBE?
           </h2>
-          <p className='text-xl landing-text-body max-w-3xl mx-auto'>
-            Experience the advantages of modern outcome-based education methodology
+          <p className='text-xl landing-text-body max-w-2xl mx-auto'>
+            Experience the advantages of modern education
           </p>
         </div>
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left - Image */}
           <div className='order-2 lg:order-1'>
-            <div className='relative group'>
-              <div className='absolute -inset-4 landing-decorative-blur-2 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500'></div>
-              <div className='relative bg-white rounded-3xl overflow-hidden shadow-2xl transform group-hover:scale-105 transition-all duration-500'>
+            <div className='relative'>
+              <div className='absolute inset-0 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-3xl transform -rotate-3'></div>
+              <div className='relative bg-white rounded-2xl overflow-hidden shadow-2xl'>
                 <Image
                   src='/info-images/Benefits-of-Outcome-Based-Education-L-650x650.webp'
-                  alt='Benefits of Outcome Based Education'
+                  alt='Benefits of OBE'
                   width={650}
                   height={650}
-                  className='w-full h-auto object-cover'
+                  className='w-full h-auto'
                 />
               </div>
             </div>
@@ -68,16 +49,16 @@ export default function BenefitsSection() {
               return (
                 <div
                   key={index}
-                  className='group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
+                  className='bg-white rounded-xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300'
                 >
-                  <div className='landing-icon-bg rounded-xl p-3 w-14 h-14 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300'>
+                  <div className='w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-4'>
                     <IconComponent className='h-6 w-6 text-white' />
                   </div>
                   <h3 className='text-lg font-bold landing-text-heading mb-2'>
                     {benefit.title}
                   </h3>
-                  <p className='landing-text-body text-sm leading-relaxed'>
-                    {benefit.description}
+                  <p className='landing-text-body text-sm'>
+                    {benefit.desc}
                   </p>
                 </div>
               );

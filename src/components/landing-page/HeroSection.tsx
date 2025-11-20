@@ -1,55 +1,82 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, PlayCircle } from 'lucide-react';
 import NavbarClient from './NavbarClient';
 
 export default function HeroSection() {
   return (
-    <div className='relative landing-hero-bg overflow-hidden'>
+    <div className='relative landing-hero-bg overflow-hidden min-h-screen flex items-center'>
       <NavbarClient />
-      {/* Background Image with Light Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/path-foward-banner.jpg')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-blue-900/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+      
+      {/* Subtle background pattern - NO image */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
       
       {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 landing-decorative-blur-1 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 landing-decorative-blur-2 rounded-full blur-3xl" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
 
-      <div className='relative max-w-7xl mx-auto px-4 pt-32 pb-48 sm:px-6 lg:px-8'>
-        <div className='max-w-4xl mx-auto text-center'>
-          <div className='inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 mb-8 shadow-lg'>
-            <div className='w-2 h-2 bg-green-400 rounded-full animate-pulse' />
-            <span className='text-white text-sm font-semibold tracking-wide'>
-              OBE Management System
-            </span>
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
+          {/* Left Content */}
+          <div>
+            <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-900 mb-6 animate-fade-in'>
+              <span className='text-sm font-semibold'>MNS University of Engineering & Technology</span>
+            </div>
+
+            <h1 className='text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight'>
+              Transform Your
+              <span className='block text-cyan-300'>Learning Journey</span>
+            </h1>
+
+            <p className='text-xl text-blue-100 mb-8 leading-relaxed'>
+              Experience the power of Outcome-Based Education with EduTrack - your comprehensive platform for academic excellence.
+            </p>
+
+            <div className='flex flex-col sm:flex-row gap-4'>
+              <Link
+                href='/login'
+                className='group inline-flex items-center justify-center px-8 py-4 rounded-lg bg-white text-blue-900 font-semibold hover:bg-blue-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105'
+              >
+                Get Started
+                <ArrowRight className='ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform' />
+              </Link>
+              <Link
+                href='/#modules'
+                className='group inline-flex items-center justify-center px-8 py-4 rounded-lg border-2 border-white/30 text-white font-semibold hover:bg-white/10 transition-all duration-300'
+              >
+                <PlayCircle className='mr-2 h-5 w-5' />
+                Watch Demo
+              </Link>
+            </div>
+
+            {/* Quick Stats */}
+            <div className='grid grid-cols-3 gap-6 mt-12'>
+              <div>
+                <div className='text-3xl font-bold text-white mb-1'>5000+</div>
+                <div className='text-sm text-blue-200'>Students</div>
+              </div>
+              <div>
+                <div className='text-3xl font-bold text-white mb-1'>200+</div>
+                <div className='text-sm text-blue-200'>Faculty</div>
+              </div>
+              <div>
+                <div className='text-3xl font-bold text-white mb-1'>50+</div>
+                <div className='text-sm text-blue-200'>Programs</div>
+              </div>
+            </div>
           </div>
 
-          <h1 className='text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight'>
-            Smart Academic
-            <span className='block bg-gradient-to-r from-blue-200 via-cyan-200 to-blue-300 bg-clip-text text-transparent mt-2'>
-              Management System
-            </span>
-          </h1>
-
-          <p className='text-xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed'>
-            Comprehensive Outcome-Based Education platform for academic excellence at 
-            <span className='font-semibold text-white'> MNS University of Engineering & Technology</span>
-          </p>
-
-          <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-            <Link
-              href='/login'
-              className='group inline-flex items-center justify-center px-8 py-4 rounded-xl landing-cta-btn font-bold text-lg shadow-2xl hover:shadow-white/20'
-            >
-              Access Portal
-              <ArrowRight className='ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform' />
-            </Link>
-            <Link
-              href='/#modules'
-              className='group inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white/10 backdrop-blur-xl border-2 border-white/30 text-white font-bold text-lg hover:bg-white/20 transition-all duration-300'
-            >
-              Explore Features
-            </Link>
+          {/* Right - Image/Illustration */}
+          <div className='hidden lg:block'>
+            <div className='relative'>
+              <div className='absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur-3xl opacity-20'></div>
+              <div className='relative bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20'>
+                <img 
+                  src='/bg/path-foward-banner.jpg'
+                  alt='Education'
+                  className='rounded-2xl w-full h-auto shadow-2xl'
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
