@@ -236,42 +236,6 @@ export default function TestimonialsSection() {
           ))}
         </div>
 
-        {/* Stats Cards with Glassmorphism */}
-        <div className='mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto'>
-          {[
-            { number: '5000+', label: 'Active Students', color: 'var(--brand-primary)' },
-            { number: '98%', label: 'Satisfaction Rate', color: 'var(--brand-secondary)' },
-            { number: '50+', label: 'Programs', color: 'var(--brand-primary)' }
-          ].map((stat, index) => (
-            <div 
-              key={index}
-              className='text-center p-8 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-105 cursor-pointer'
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-                e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06)';
-              }}
-            >
-              <div 
-                className='text-5xl md:text-6xl font-extrabold mb-2'
-                style={{ color: stat.color }}
-              >
-                {stat.number}
-              </div>
-              <p className='text-base font-semibold' style={{ color: 'var(--text-body)' }}>
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Hide scrollbar */}

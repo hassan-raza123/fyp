@@ -5,20 +5,37 @@ import { Linkedin, Mail, Twitter, Github, Instagram, MapPin, Phone, GraduationCa
 export default function Footer() {
 
   return (
-    <footer className='bg-linear-to-b from-white to-gray-50/50 border-t border-gray-200/60 relative'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
+    <footer className='relative overflow-hidden border-t border-gray-200/60'>
+      {/* Background Image */}
+      <div 
+        className='absolute inset-0 bg-cover bg-no-repeat'
+        style={{ 
+          backgroundImage: "url('/bg/uni-connect-evaluation-reports.jpg')",
+          backgroundPosition: 'center top'
+        }}
+      ></div>
+      
+      {/* Overlay - Smooth dark gradient */}
+      <div 
+        className='absolute inset-0'
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.85), rgba(0, 0, 0, 0.90))'
+        }}
+      ></div>
+
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 z-10'>
         {/* Top Section */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 mb-12'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 mb-16'>
           {/* Brand Section */}
           <div className='space-y-5'>
             <div className='flex items-center gap-3'>
               <img src="/logo's/logo.png" alt='EduTrack Logo' className='w-16 h-16 object-contain' />
               <div>
-                <h3 className='text-xl font-bold text-gray-900'>EduTrack</h3>
-                <p className='text-sm text-gray-500'>OBE Management System</p>
+                <h3 className='text-xl font-bold text-white'>EduTrack</h3>
+                <p className='text-sm text-blue-200'>OBE Management System</p>
               </div>
             </div>
-            <p className='text-sm text-gray-600 leading-relaxed'>
+            <p className='text-sm text-white/80 leading-relaxed'>
               Muhammad Nawaz Sharif University of Engineering & Technology (MNS-UET), Multan. A comprehensive OBE management system for tracking learning outcomes and academic excellence.
             </p>
             
@@ -37,7 +54,7 @@ export default function Footer() {
                   href={href}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='w-10 h-10 rounded-lg border border-gray-200 hover:border-blue hover:bg-blue/5 flex items-center justify-center text-gray-600 hover:text-blue transition-all group'
+                  className='w-10 h-10 rounded-lg border border-white/20 hover:border-orange hover:bg-orange/10 flex items-center justify-center text-white/70 hover:text-orange transition-all group'
                   aria-label={label}
                 >
                   <Icon className='w-4 h-4 group-hover:scale-110 transition-transform' />
@@ -48,7 +65,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className='space-y-5'>
-            <h4 className='text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2'>
+            <h4 className='text-sm font-semibold text-white uppercase tracking-wide flex items-center gap-2'>
               <span className='w-1 h-4 bg-orange rounded-full'></span>
               Quick Links
             </h4>
@@ -61,7 +78,7 @@ export default function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className='text-sm text-gray-600 hover:text-blue transition-colors flex items-center gap-2 group'
+                    className='text-sm text-white/70 hover:text-orange transition-colors flex items-center gap-2 group'
                   >
                     <Icon className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all' />
                     <span>{label}</span>
@@ -73,39 +90,39 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div className='space-y-5'>
-            <h4 className='text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2'>
+            <h4 className='text-sm font-semibold text-white uppercase tracking-wide flex items-center gap-2'>
               <span className='w-1 h-4 bg-orange rounded-full'></span>
               Contact
             </h4>
             <ul className='space-y-4'>
               <li className='flex items-start gap-3'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
+                <div className='w-8 h-8 rounded-lg bg-orange/20 flex items-center justify-center shrink-0 group-hover:bg-orange/30 transition-colors'>
                   <MapPin className='h-4 w-4 text-orange' />
                 </div>
-                <span className='text-sm text-gray-600 leading-relaxed'>
+                <span className='text-sm text-white/80 leading-relaxed'>
                   QasimPur Colony, BCG Chowk,<br />
                   Bahawalpur Road, Multan,<br />
                   Punjab, Pakistan
                 </span>
               </li>
               <li className='flex items-start gap-3'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
+                <div className='w-8 h-8 rounded-lg bg-orange/20 flex items-center justify-center shrink-0 group-hover:bg-orange/30 transition-colors'>
                   <Phone className='h-4 w-4 text-orange' />
                 </div>
                 <a
                   href='tel:+92619330592'
-                  className='text-sm text-gray-600 hover:text-blue transition-colors leading-relaxed'
+                  className='text-sm text-white/80 hover:text-orange transition-colors leading-relaxed'
                 >
                   +92-61-9330592
                 </a>
               </li>
               <li className='flex items-start gap-3'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
+                <div className='w-8 h-8 rounded-lg bg-orange/20 flex items-center justify-center shrink-0 group-hover:bg-orange/30 transition-colors'>
                   <Mail className='h-4 w-4 text-orange' />
                 </div>
                 <a
                   href='mailto:info@mnsuet.edu.pk'
-                  className='text-sm text-gray-600 hover:text-blue transition-colors break-all leading-relaxed'
+                  className='text-sm text-white/80 hover:text-orange transition-colors break-all leading-relaxed'
                 >
                   info@mnsuet.edu.pk
                 </a>
@@ -115,18 +132,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className='pt-8 border-t border-gray-200'>
+        <div className='pt-12 mt-8 border-t border-white/10'>
           <div className='flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left'>
-            <div className='flex flex-col md:flex-row items-center gap-3 md:gap-4 text-sm text-gray-500'>
+            <div className='flex flex-col md:flex-row items-center gap-3 md:gap-4 text-sm text-white/60'>
               <p>&copy; {new Date().getFullYear()} EduTrack — All rights reserved.</p>
-              <span className='hidden md:inline text-gray-300'>|</span>
+              <span className='hidden md:inline text-white/30'>|</span>
               <p className='text-xs'>Developed by Final Year Students at MNS UET</p>
             </div>
             <div className='flex gap-6 text-sm'>
-              <Link href='/privacy' className='text-gray-500 hover:text-blue transition-colors'>
+              <Link href='/privacy' className='text-white/60 hover:text-orange transition-colors'>
                 Privacy Policy
               </Link>
-              <Link href='/terms' className='text-gray-500 hover:text-blue transition-colors'>
+              <Link href='/terms' className='text-white/60 hover:text-orange transition-colors'>
                 Terms of Service
               </Link>
             </div>
