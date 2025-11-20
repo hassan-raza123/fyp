@@ -7,6 +7,7 @@ import { Menu, X, Sparkles } from 'lucide-react';
 
 const navigation = [
   { name: 'Home', href: '/' },
+  { name: 'How It Works', href: '/#how-it-works' },
   { name: 'Features', href: '/#modules' },
   { name: 'Team', href: '/#team' },
   { name: 'Portal', href: '/#portal' },
@@ -23,7 +24,7 @@ export default function NavbarClient() {
       setIsScrolled(window.scrollY > 20);
       
       // Update active hash based on scroll position
-      const sections = ['modules', 'team', 'portal'];
+      const sections = ['how-it-works', 'modules', 'team', 'portal'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -77,16 +78,23 @@ export default function NavbarClient() {
               href='/'
               className='flex items-center space-x-3 group relative'
             >
-              {/* Glow Effect */}
-              <div className='absolute -inset-2 brand-gradient rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity'></div>
-              
               {/* Logo Container */}
               <div className='relative'>
-                <div className='w-14 h-14 rounded-xl brand-gradient flex items-center justify-center shadow-lg transform group-hover:scale-105 group-hover:rotate-3 transition-all duration-300'>
+                {/* Orange Spot Behind Logo */}
+                <div 
+                  className='absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-300'
+                  style={{ 
+                    background: 'var(--brand-secondary)',
+                    transform: 'scale(1.2)'
+                  }}
+                ></div>
+                
+                {/* Logo */}
+                <div className='relative w-14 h-14 transform group-hover:scale-110 transition-all duration-300'>
                   <img
                     src="/logo's/logo.png"
                     alt='EduTrack Logo'
-                    className='w-9 h-9 object-contain'
+                    className='w-full h-full object-contain drop-shadow-lg'
                   />
                 </div>
               </div>
@@ -95,18 +103,17 @@ export default function NavbarClient() {
               <div className='relative'>
                 <div className='flex items-center gap-2'>
                   <span
-                    className={`text-2xl font-extrabold tracking-tight transition-colors duration-300 ${
+                    className={`text-2xl font-black tracking-tight transition-colors duration-300 ${
                       isScrolled ? 'text-slate-900' : 'text-white'
                     }`}
                   >
                     EduTrack
                   </span>
-                  <Sparkles className={`w-5 h-5 ${isScrolled ? 'text-brand-primary' : 'text-cyan-300'}`} />
                 </div>
-                <div className={`text-xs font-semibold tracking-wide transition-colors duration-300 ${
-                  isScrolled ? 'text-brand-primary' : 'text-cyan-200'
+                <div className={`text-xs font-bold tracking-wide transition-colors duration-300 ${
+                  isScrolled ? 'text-brand-secondary' : 'text-orange-200'
                 }`}>
-                  Outcome-Based Education
+                  OBE Management System
                 </div>
               </div>
             </Link>
@@ -136,7 +143,11 @@ export default function NavbarClient() {
             <div className='hidden lg:flex items-center space-x-4'>
               <Link
                 href='/login'
-                className='navbar-cta px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group'
+                className='px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 shadow-lg'
+                style={{
+                  backgroundColor: 'var(--brand-secondary)',
+                  boxShadow: '0 4px 20px rgba(252, 153, 40, 0.3)'
+                }}
               >
                 <span className='relative z-10 flex items-center gap-2'>
                   Login
@@ -199,7 +210,11 @@ export default function NavbarClient() {
               <Link
                 href='/login'
                 onClick={() => setIsMobileMenuOpen(false)}
-                className='block navbar-cta px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4'
+                className='block px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4 shadow-lg'
+                style={{
+                  backgroundColor: 'var(--brand-secondary)',
+                  boxShadow: '0 4px 20px rgba(252, 153, 40, 0.3)'
+                }}
               >
                 Login to Portal
               </Link>

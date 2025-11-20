@@ -28,7 +28,7 @@ export default function UniversityStatsBar() {
   ];
 
   return (
-    <section className='relative py-20 overflow-hidden bg-white'>
+    <section id='how-it-works' className='relative py-20 overflow-hidden bg-white scroll-mt-20'>
       {/* Decorative Background */}
       <div className='absolute inset-0'>
         <div className='absolute top-1/4 left-0 w-96 h-96 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-primary)' }}></div>
