@@ -4,18 +4,21 @@ import NavbarClient from './NavbarClient';
 
 export default function HeroSection() {
   return (
-    <div className='relative landing-hero-bg overflow-hidden'>
+    <div className='relative overflow-hidden bg-slate-900 text-white'>
       <NavbarClient />
       
-      {/* Animated Background */}
+      {/* Background Image + Overlay */}
       <div className="absolute inset-0">
+        <img
+          src='/bg/p3a0405-1.webp'
+          alt='Campus Background'
+          className='w-full h-full object-cover'
+        />
+        <div className='absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/80 to-transparent'></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="absolute top-0 -left-4 w-96 h-96 landing-decorative-blur-1 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-96 h-96 landing-decorative-blur-2 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-96 h-96 landing-decorative-blur-1 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className='relative pt-32 pb-20 sm:pt-40 sm:pb-24'>
+      <div className='relative pt-32 pb-20 sm:pt-40 sm:pb-32'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='grid lg:grid-cols-2 gap-12 items-center'>
             {/* Left Content */}

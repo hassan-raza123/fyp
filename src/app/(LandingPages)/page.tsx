@@ -1,4 +1,5 @@
 import HeroSection from '@/components/landing-page/HeroSection';
+import ParallaxShowcaseSection from '@/components/landing-page/ParallaxShowcaseSection';
 import StatsSection from '@/components/landing-page/StatsSection';
 import OBEOverviewSection from '@/components/landing-page/OBEOverviewSection';
 import BenefitsSection from '@/components/landing-page/BenefitsSection';
@@ -17,6 +18,7 @@ export default function LandingPage() {
     <div className='min-h-screen landing-section-gradient'>
       {/* Hero & Stats */}
       <HeroSection />
+      <ParallaxShowcaseSection />
       <StatsSection />
       
       {/* OBE Educational Content */}
