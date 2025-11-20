@@ -86,7 +86,20 @@ export default function OBEShowcaseSection() {
   }, [activeTab, isVisible]);
 
   return (
-    <div className='py-24 bg-white relative overflow-hidden'>
+    <div 
+      id='obe-showcase'
+      className='relative bg-fixed bg-center bg-cover py-24 overflow-hidden scroll-mt-20'
+      style={{ backgroundImage: "url('/bg/5007.webp')" }}
+    >
+      {/* Dark Overlay */}
+      <div 
+        className='absolute inset-0'
+        style={{ 
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.80), rgba(0, 0, 0, 0.75))'
+        }}
+      ></div>
+
+      <div className='relative'>
       <style jsx global>{`
         @keyframes slideInFromLeft {
           0% {
@@ -120,29 +133,17 @@ export default function OBEShowcaseSection() {
         }
       `}</style>
 
-      {/* Decorative Background */}
-      <div className='absolute inset-0 opacity-[0.03]' suppressHydrationWarning>
-        <div className='absolute top-20 left-0 w-96 h-96 bg-brand-primary rounded-full blur-3xl' suppressHydrationWarning></div>
-        <div className='absolute bottom-20 right-0 w-96 h-96 bg-brand-secondary rounded-full blur-3xl' suppressHydrationWarning></div>
-      </div>
 
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <span 
-            className='inline-block px-5 py-2.5 rounded-full font-semibold text-sm mb-6'
-            style={{ 
-              backgroundColor: 'var(--brand-secondary-opacity-10)',
-              color: 'var(--brand-secondary)',
-              border: '1px solid var(--brand-secondary-opacity-20)'
-            }}
-          >
+          <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur text-sm font-semibold mb-4 text-white'>
             OBE ECOSYSTEM
           </span>
-          <h2 className='text-5xl md:text-6xl font-extrabold mb-4' style={{ color: 'var(--text-heading)' }}>
+          <h2 className='text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight'>
             Complete OBE Solution
           </h2>
-          <p className='text-xl max-w-3xl mx-auto' style={{ color: 'var(--text-body)' }}>
+          <p className='text-xl text-indigo-100 max-w-2xl mx-auto'>
             Everything you need for outcome-based education in one intelligent platform
           </p>
         </div>
@@ -155,14 +156,11 @@ export default function OBEShowcaseSection() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className='group flex items-center gap-3 px-6 py-4 rounded-2xl transition-all duration-300'
-                style={{
-                  backgroundColor: activeTab === item.id ? 'var(--brand-primary)' : 'rgba(0, 0, 0, 0.03)',
-                  color: activeTab === item.id ? 'white' : 'var(--text-body)',
-                  border: activeTab === item.id ? 'none' : '2px solid rgba(0, 0, 0, 0.08)',
-                  transform: activeTab === item.id ? 'scale(1.05)' : 'scale(1)',
-                  boxShadow: activeTab === item.id ? '0 8px 24px rgba(38, 40, 149, 0.25)' : 'none'
-                }}
+                className={`group flex items-center gap-3 px-6 py-4 rounded-2xl transition-all duration-300 ${
+                  activeTab === item.id 
+                    ? 'bg-brand-secondary text-white scale-105 shadow-xl' 
+                    : 'bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-white/15'
+                }`}
               >
                 <TabIcon className='w-5 h-5' />
                 <span className='font-bold text-base hidden sm:inline'>{item.title}</span>
@@ -207,15 +205,14 @@ export default function OBEShowcaseSection() {
             {/* Title with Icon */}
             <div>
               <div 
-                className='inline-flex items-center gap-3 px-4 py-2 rounded-xl mb-4'
-                style={{ backgroundColor: 'var(--brand-secondary-opacity-10)' }}
+                className='inline-flex items-center gap-3 px-4 py-2 rounded-xl mb-4 bg-white/10 backdrop-blur border border-white/20'
               >
-                <IconComponent className='w-6 h-6' style={{ color: 'var(--brand-secondary)' }} />
-                <span className='text-sm font-bold uppercase tracking-wide' style={{ color: 'var(--brand-secondary)' }}>
+                <IconComponent className='w-6 h-6 text-brand-secondary' />
+                <span className='text-sm font-bold uppercase tracking-wide text-brand-secondary'>
                   {activeItem.subtitle}
                 </span>
               </div>
-              <h3 className='text-4xl font-bold mb-4' style={{ color: 'var(--text-heading)' }}>
+              <h3 className='text-4xl font-bold mb-4 text-white'>
                 {activeItem.title}
               </h3>
             </div>
@@ -227,19 +224,7 @@ export default function OBEShowcaseSection() {
                 return (
                   <div
                     key={index}
-                    className='group flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-lg'
-                    style={{ 
-                      borderColor: 'var(--gray-200)',
-                      backgroundColor: 'white'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--brand-primary)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--gray-200)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
+                    className='group flex items-start gap-3 p-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 transition-all duration-300 hover:bg-white/15'
                   >
                     <div 
                       className='w-10 h-10 rounded-lg flex items-center justify-center shrink-0'
@@ -252,7 +237,7 @@ export default function OBEShowcaseSection() {
                       <FeatureIcon className='w-5 h-5 text-white' />
                     </div>
                     <div>
-                      <p className='text-sm font-semibold leading-relaxed' style={{ color: 'var(--text-heading)' }}>
+                      <p className='text-sm font-semibold leading-relaxed text-white'>
                         {feature.text}
                       </p>
                     </div>
@@ -263,6 +248,7 @@ export default function OBEShowcaseSection() {
            </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
