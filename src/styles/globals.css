@@ -1,138 +1,168 @@
 @import "tailwindcss";
 
-/* Global Color Scheme - Professional University System */
+/* ================================
+   FINAL GLOBAL COLOR THEME
+   Orange (#fc9928), Logo Blue (#262895), White, Black Only
+   ================================ */
+
 :root {
-  /* Primary Colors - Professional Navy Blue (Academic Excellence) */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #1e40af; /* Deep professional blue */
-  --primary-700: #1e3a8a;
-  --primary-800: #1e3a8a;
-  --primary-900: #172554;
+  /* Theme Colors - ONLY 4 COLORS */
+  --orange: #fc9928;
+  --orange-dark: #e6891f;
+  --orange-light: #ffb347;
   
-  /* Secondary Colors - Slate Gray (Professional, Clean) */
-  --secondary-50: #f8fafc;
-  --secondary-100: #f1f5f9;
-  --secondary-200: #e2e8f0;
-  --secondary-300: #cbd5e1;
-  --secondary-400: #94a3b8;
-  --secondary-500: #64748b;
-  --secondary-600: #475569;
-  --secondary-700: #334155;
-  --secondary-800: #1e293b;
-  --secondary-900: #0f172a;
+  --blue: #262895; /* Logo Blue */
+  --blue-dark: #1c1e74;
+  --blue-light: #433ea7;
   
-  /* Accent Colors - Sophisticated Teal (Trust, Professionalism) */
-  --accent-50: #f0fdfa;
-  --accent-100: #ccfbf1;
-  --accent-200: #99f6e4;
-  --accent-300: #5eead4;
-  --accent-400: #2dd4bf;
-  --accent-500: #14b8a6; /* Professional teal */
-  --accent-600: #0d9488;
-  --accent-700: #0f766e;
-  --accent-800: #115e59;
-  --accent-900: #134e4a;
+  --white: #ffffff;
+  --black: #000000;
   
-  /* Neutral Colors */
-  --neutral-50: #fafafa;
-  --neutral-100: #f5f5f5;
-  --neutral-200: #e5e5e5;
-  --neutral-300: #d4d4d4;
-  --neutral-400: #a3a3a3;
-  --neutral-500: #737373;
-  --neutral-600: #525252;
-  --neutral-700: #404040;
-  --neutral-800: #262626;
-  --neutral-900: #171717;
+  /* Grays derived from Black/White only */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  
+  /* Primary Colors - Logo Blue */
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  --primary-200: #c7d2fe;
+  --primary-300: #a5b4fc;
+  --primary-400: #818cf8;
+  --primary-500: #6366f1;
+  --primary-600: #262895; /* Logo Blue */
+  --primary-700: #1c1e74;
+  --primary-800: #1e1b4b;
+  --primary-900: #1e1b4b;
+  
+  /* Secondary Colors - Orange */
+  --secondary-50: #fff7ed;
+  --secondary-100: #ffedd5;
+  --secondary-200: #fed7aa;
+  --secondary-300: #fdba74;
+  --secondary-400: #fb923c;
+  --secondary-500: #fc9928; /* Orange */
+  --secondary-600: #e6891f;
+  --secondary-700: #c2410c;
+  --secondary-800: #9a3412;
+  --secondary-900: #7c2d12;
+  
+  /* Accent Colors - Orange (same as secondary) */
+  --accent-50: var(--secondary-50);
+  --accent-100: var(--secondary-100);
+  --accent-200: var(--secondary-200);
+  --accent-300: var(--secondary-300);
+  --accent-400: var(--secondary-400);
+  --accent-500: var(--secondary-500);
+  --accent-600: var(--secondary-600);
+  --accent-700: var(--secondary-700);
+  --accent-800: var(--secondary-800);
+  --accent-900: var(--secondary-900);
+  
+  /* Neutral Colors - Black/White Grays */
+  --neutral-50: var(--gray-50);
+  --neutral-100: var(--gray-100);
+  --neutral-200: var(--gray-200);
+  --neutral-300: var(--gray-300);
+  --neutral-400: var(--gray-400);
+  --neutral-500: var(--gray-500);
+  --neutral-600: var(--gray-600);
+  --neutral-700: var(--gray-700);
+  --neutral-800: var(--gray-800);
+  --neutral-900: var(--gray-900);
   
   /* Semantic Colors - Light Theme */
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --hover-bg: #f8fafc;
+  --background: var(--white);
+  --foreground: var(--black);
+  --card-bg: var(--white);
+  --card-border: var(--gray-200);
+  --text-primary: var(--black);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  --border-color: var(--gray-200);
+  --hover-bg: var(--gray-50);
   
-  /* Status Colors - Professional */
-  --success: #059669;
-  --error: #dc2626;
-  --warning: #d97706;
-  --info: #1e40af;
-
+  /* Status Colors - Using theme colors only */
+  --success: var(--orange); /* Using orange for success */
+  --error: var(--black); /* Using black for error */
+  --warning: var(--orange-dark);
+  --info: var(--blue);
+  
   /* ================================
-     GLOBAL UNIFIED COLOR SCHEME
+     BRAND COLORS - Theme Only
      ================================ */
   
-  /* Primary Brand Colors */
-  --brand-primary: #262895; /* Deep indigo */
-  --brand-primary-dark: #1c1e74; /* Darker indigo */
-  --brand-primary-light: #433ea7; /* Lighter indigo */
-  --brand-secondary: #756ba2; /* Muted purple */
-  --brand-secondary-dark: #5b5289; /* Dark lavender */
-  --brand-secondary-light: #a89fce; /* Soft lavender */
+  /* Primary Brand Colors - Logo Blue */
+  --brand-primary: var(--blue);
+  --brand-primary-dark: var(--blue-dark);
+  --brand-primary-light: var(--blue-light);
   
-  /* Gradient Colors */
-  --gradient-from: #262895; /* Deep indigo */
-  --gradient-via: #756ba2; /* Muted purple */
-  --gradient-to: #d7d5e7; /* Soft lavender */
+  /* Secondary Brand Colors - Orange */
+  --brand-secondary: var(--orange);
+  --brand-secondary-dark: var(--orange-dark);
+  --brand-secondary-light: var(--orange-light);
+  
+  /* Gradient Colors - Blue to Orange */
+  --gradient-from: var(--blue);
+  --gradient-via: var(--blue-light);
+  --gradient-to: var(--orange);
   
   /* Hero/Header Colors */
-  --hero-bg-from: #1c1e74;
-  --hero-bg-via: #262895;
-  --hero-bg-to: #756ba2;
-  --hero-text: #ffffff;
-  --hero-text-highlight: #f5f3ff;
+  --hero-bg-from: var(--blue-dark);
+  --hero-bg-via: var(--blue);
+  --hero-bg-to: var(--blue-light);
+  --hero-text: var(--white);
+  --hero-text-highlight: var(--white);
   --hero-badge-bg: rgba(255, 255, 255, 0.1);
   --hero-badge-border: rgba(255, 255, 255, 0.2);
   
-  --section-bg-light: #f8fafc; /* slate-50 */
-  --section-bg-white: #ffffff;
-  --section-bg-gradient-from: #f8fafc; /* slate-50 */
-  --section-bg-gradient-via: #eff6ff; /* blue-50 */
-  --section-bg-gradient-to: #f8fafc; /* slate-50 */
+  --section-bg-light: var(--gray-50);
+  --section-bg-white: var(--white);
+  --section-bg-gradient-from: var(--white);
+  --section-bg-gradient-via: var(--gray-50);
+  --section-bg-gradient-to: var(--white);
   
-  --card-bg-white: #ffffff;
-  --card-bg-gradient-from: #ffffff;
-  --card-bg-gradient-to: #f8fafc; /* slate-50 */
-  --card-border-color: #e2e8f0; /* slate-200 */
-  --card-border-hover: #c8c1e5; /* lavender */
+  --card-bg-white: var(--white);
+  --card-bg-gradient-from: var(--white);
+  --card-bg-gradient-to: var(--gray-50);
+  --card-border-color: var(--gray-200);
+  --card-border-hover: var(--blue);
   --card-shadow: rgba(0, 0, 0, 0.1);
   
-  --icon-bg-from: #262895;
-  --icon-bg-to: #756ba2;
-  --icon-text: #ffffff;
+  --icon-bg-from: var(--blue);
+  --icon-bg-to: var(--blue-light);
+  --icon-text: var(--white);
   
-  --text-heading: #0f172a; /* slate-900 */
-  --text-body: #475569; /* slate-600 */
-  --text-muted-light: #64748b; /* slate-700 */
+  --text-heading: var(--black);
+  --text-body: var(--gray-600);
+  --text-muted-light: var(--gray-500);
   
-  --badge-bg: #ece9fb;
-  --badge-text: #322a72;
+  --badge-bg: rgba(252, 153, 40, 0.1); /* Orange with opacity */
+  --badge-text: var(--orange-dark);
   
-  --feature-icon-bg-from: #262895;
-  --feature-icon-bg-to: #756ba2;
+  --feature-icon-bg-from: var(--blue);
+  --feature-icon-bg-to: var(--blue-light);
   
-  --stat-value-from: #1c1e74;
-  --stat-value-to: #756ba2;
+  --stat-value-from: var(--blue-dark);
+  --stat-value-to: var(--blue);
   
-  --cta-btn-bg: #ffffff;
-  --cta-btn-text: #262895;
-  --cta-btn-hover: #f3f0ff;
+  --cta-btn-bg: var(--orange);
+  --cta-btn-text: var(--white);
+  --cta-btn-hover: var(--orange-dark);
   
-  --decorative-blur-1: rgba(38, 40, 149, 0.2);
-  --decorative-blur-2: rgba(117, 107, 162, 0.2);
+  --decorative-blur-1: rgba(38, 40, 149, 0.2); /* Blue with opacity */
+  --decorative-blur-2: rgba(252, 153, 40, 0.2); /* Orange with opacity */
   
-  --success-bg: #f0fdf4; /* green-50 */
-  --success-text: #166534; /* green-800 */
-  --success-icon: #22c55e; /* green-500 */
+  --success-bg: rgba(252, 153, 40, 0.1);
+  --success-text: var(--orange-dark);
+  --success-icon: var(--orange);
 }
 
 /* Tailwind v4 design tokens - Using CSS variables from :root */
@@ -146,8 +176,8 @@
   --color-popover: var(--card-bg);
   --color-popover-foreground: var(--text-primary);
 
-  /* Primary Colors - Professional Indigo (Logo #4F46E5) */
-  --color-primary: var(--primary-600); /* Using logo main indigo as primary */
+  /* Primary Colors - Logo Blue */
+  --color-primary: var(--primary-600);
   --color-primary-foreground: 0 0% 100%;
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
@@ -160,7 +190,7 @@
   --color-primary-800: var(--primary-800);
   --color-primary-900: var(--primary-900);
 
-  /* Secondary Colors - Professional Deep Blue */
+  /* Secondary Colors - Orange */
   --color-secondary: var(--secondary-600);
   --color-secondary-foreground: 0 0% 100%;
   --color-secondary-50: var(--secondary-50);
@@ -174,7 +204,7 @@
   --color-secondary-800: var(--secondary-800);
   --color-secondary-900: var(--secondary-900);
 
-  /* Accent Colors - Emerald (from logo #10B981) */
+  /* Accent Colors - Orange */
   --color-accent: var(--accent-500);
   --color-accent-foreground: 0 0% 100%;
   --color-accent-50: var(--accent-50);
@@ -208,7 +238,7 @@
 
   --color-border: var(--border-color);
   --color-input: var(--border-color);
-  --color-ring: var(--primary-600); /* Logo indigo */
+  --color-ring: var(--primary-600);
 
   --radius: 0.5rem;
 }
@@ -225,25 +255,21 @@
     overflow-x: hidden;
   }
 
-  /* Smooth transitions for all interactive elements */
   * {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Dark theme overrides when `.dark` is present on <html> */
   .dark {
     color-scheme: dark;
-
-    /* Update CSS variables for dark mode - @theme inline will automatically use these */
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --card-bg: #171717;
-    --card-border: #262626;
-    --text-primary: #ededed;
-    --text-secondary: #a3a3a3;
-    --text-muted: #525252;
-    --border-color: #262626;
-    --hover-bg: #171717;
+    --background: var(--black);
+    --foreground: var(--white);
+    --card-bg: var(--gray-900);
+    --card-border: var(--gray-800);
+    --text-primary: var(--white);
+    --text-secondary: var(--gray-400);
+    --text-muted: var(--gray-500);
+    --border-color: var(--gray-800);
+    --hover-bg: var(--gray-900);
   }
 
   button {
@@ -255,33 +281,33 @@
 }
 
 @layer components {
-  /* Utility Classes for Colors - Use these in your components */
+  /* Utility Classes for Colors */
   .bg-primary {
-    background-color: var(--primary-500);
+    background-color: var(--blue);
   }
 
   .bg-primary-hover:hover {
-    background-color: var(--primary-600);
+    background-color: var(--blue-dark);
   }
 
   .text-primary {
-    color: var(--primary-600);
+    color: var(--blue);
   }
 
   .bg-secondary {
-    background-color: var(--secondary-500);
+    background-color: var(--orange);
   }
 
   .text-secondary {
-    color: var(--secondary-600);
+    color: var(--orange);
   }
 
   .bg-accent {
-    background-color: var(--accent-500);
+    background-color: var(--orange);
   }
 
   .text-accent {
-    color: var(--accent-600);
+    color: var(--orange);
   }
 
   .bg-card {
@@ -298,13 +324,13 @@
 
   /* Button Styles */
   .btn-primary {
-    background-color: var(--primary-500);
-    color: white;
+    background-color: var(--blue);
+    color: var(--white);
     transition: background-color 0.2s ease;
   }
 
   .btn-primary:hover {
-    background-color: var(--primary-600);
+    background-color: var(--blue-dark);
   }
 
   .btn-secondary {
@@ -316,7 +342,17 @@
 
   .btn-secondary:hover {
     background-color: var(--hover-bg);
-    border-color: var(--primary-500);
+    border-color: var(--blue);
+  }
+
+  .btn-accent {
+    background-color: var(--orange);
+    color: var(--white);
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-accent:hover {
+    background-color: var(--orange-dark);
   }
 
   /* Hover Effects */
@@ -328,10 +364,9 @@
 
   .hover-effect:hover {
     transform: scale(1.05);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   }
 
-  /* Card Hover Effect */
   .card-hover {
     transition: all 0.3s ease;
   }
@@ -341,34 +376,33 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 
-  /* Professional Subtle Gradients */
+  /* Professional Gradients - Theme Colors Only */
   .bg-gradient-professional {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
   }
 
   .bg-gradient-subtle {
-    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    background: linear-gradient(180deg, var(--white) 0%, var(--gray-50) 100%);
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
   }
 
-  /* Professional Overlays */
+  /* Overlays */
   .overlay-dark {
-    background: rgba(15, 23, 42, 0.7);
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .overlay-blue {
-    background: linear-gradient(135deg, rgba(30, 64, 175, 0.95) 0%, rgba(30, 58, 138, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(38, 40, 149, 0.95) 0%, rgba(28, 30, 116, 0.95) 100%);
   }
 
-  /* Landing Page Specific Components */
+  /* Landing Page Components */
   .landing-hero-bg {
     background: linear-gradient(135deg, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
   }
 
-  /* Modern Card with Shine Effect */
   .modern-card {
     position: relative;
     overflow: hidden;
@@ -469,36 +503,40 @@
      UNIFIED COLOR UTILITY CLASSES
      ================================ */
   
-  /* Brand Gradient */
+  /* Brand Gradient - Blue to Orange */
   .brand-gradient {
-    background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+    background: linear-gradient(135deg, var(--blue), var(--blue-light), var(--orange));
   }
 
   .brand-gradient-hover:hover {
-    background: linear-gradient(135deg, var(--brand-primary-dark), var(--brand-primary), var(--brand-secondary));
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue), var(--orange-dark));
   }
 
   /* Text Colors */
   .text-brand-primary {
-    color: var(--brand-primary);
+    color: var(--blue);
   }
 
   .text-brand-secondary {
-    color: var(--brand-secondary);
+    color: var(--orange);
   }
 
   /* Background Colors */
   .bg-brand-primary {
-    background-color: var(--brand-primary);
+    background-color: var(--blue);
   }
 
   .bg-brand-secondary {
-    background-color: var(--brand-secondary);
+    background-color: var(--orange);
   }
 
   /* Border Colors */
   .border-brand-primary {
-    border-color: var(--brand-primary);
+    border-color: var(--blue);
+  }
+
+  .border-brand-secondary {
+    border-color: var(--orange);
   }
 
   /* Navbar Specific */
@@ -513,22 +551,22 @@
   }
 
   .navbar-link:hover {
-    color: var(--brand-primary);
+    color: var(--blue);
   }
 
   .navbar-link-active {
-    color: var(--brand-primary);
-    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--blue);
+    background-color: rgba(38, 40, 149, 0.1);
   }
 
   .navbar-cta {
-    background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    box-shadow: 0 4px 15px rgba(38, 40, 149, 0.3);
     transition: all 0.3s ease;
   }
 
   .navbar-cta:hover {
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 6px 20px rgba(38, 40, 149, 0.4);
     transform: translateY(-2px);
   }
 
@@ -553,7 +591,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(30, 64, 175, 0.9) 0%, rgba(30, 58, 138, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(38, 40, 149, 0.9) 0%, rgba(28, 30, 116, 0.9) 100%);
     z-index: 0;
   }
 
@@ -585,14 +623,14 @@
 
   /* Pattern Overlays */
   .pattern-dots {
-    background-image: radial-gradient(circle, rgba(100, 116, 139, 0.1) 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
   }
 
   .pattern-grid {
     background-image: 
-      linear-gradient(rgba(100, 116, 139, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(100, 116, 139, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 }
@@ -774,7 +812,7 @@
   }
 }
 
-/* Hover Glow Effect */
+/* Hover Glow Effect - Theme Colors */
 .hover-glow {
   position: relative;
   transition: all 0.3s ease;
@@ -786,7 +824,7 @@
   inset: -2px;
   border-radius: inherit;
   padding: 2px;
-  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6);
+  background: linear-gradient(45deg, var(--blue), var(--orange), var(--blue));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
