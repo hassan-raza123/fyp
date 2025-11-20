@@ -1,5 +1,4 @@
 import HeroSection from '@/components/landing-page/HeroSection';
-import ParallaxShowcaseSection from '@/components/landing-page/ParallaxShowcaseSection';
 import OBEShowcaseSection from '@/components/landing-page/OBEShowcaseSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import ChallengesSection from '@/components/landing-page/ChallengesSection';
@@ -15,7 +14,6 @@ export default function LandingPage() {
     <div className='min-h-screen landing-section-gradient'>
       {/* Hero */}
       <HeroSection />
-      <ParallaxShowcaseSection />
       
       {/* OBE Showcase - Combined */}
       <OBEShowcaseSection />
