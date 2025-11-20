@@ -6,9 +6,9 @@ export default function Footer() {
 
   return (
     <footer className='bg-linear-to-b from-white to-gray-50/50 border-t border-gray-200/60 relative'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
         {/* Top Section */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-12 items-start'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 mb-12'>
           {/* Brand Section */}
           <div className='space-y-5'>
             <div className='flex items-center gap-3'>
@@ -18,12 +18,12 @@ export default function Footer() {
                 <p className='text-sm text-gray-500'>OBE Management System</p>
               </div>
             </div>
-            <p className='text-sm text-gray-600 leading-relaxed max-w-sm'>
+            <p className='text-sm text-gray-600 leading-relaxed'>
               Muhammad Nawaz Sharif University of Engineering & Technology (MNS-UET), Multan. A comprehensive OBE management system for tracking learning outcomes and academic excellence.
             </p>
             
             {/* Social Links */}
-            <div className='flex items-center gap-3'>
+            <div className='flex items-center gap-2 flex-wrap'>
               {[
                 { Icon: Facebook, label: 'Facebook', href: 'https://www.facebook.com/mnsuet' },
                 { Icon: Twitter, label: 'Twitter', href: 'https://twitter.com/mnsuet' },
@@ -78,34 +78,34 @@ export default function Footer() {
               Contact
             </h4>
             <ul className='space-y-4'>
-              <li className='flex items-start gap-3 group'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
+              <li className='flex items-start gap-3'>
+                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
                   <MapPin className='h-4 w-4 text-orange' />
                 </div>
-                <span className='text-sm text-gray-600 pt-1.5'>
+                <span className='text-sm text-gray-600 leading-relaxed'>
                   QasimPur Colony, BCG Chowk,<br />
                   Bahawalpur Road, Multan,<br />
                   Punjab, Pakistan
                 </span>
               </li>
-              <li className='flex items-start gap-3 group'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
+              <li className='flex items-start gap-3'>
+                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
                   <Phone className='h-4 w-4 text-orange' />
                 </div>
                 <a
                   href='tel:+92619330592'
-                  className='text-sm text-gray-600 hover:text-blue transition-colors pt-1.5'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors leading-relaxed'
                 >
                   +92-61-9330592
                 </a>
               </li>
-              <li className='flex items-start gap-3 group'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
+              <li className='flex items-start gap-3'>
+                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center flex-shrink-0 group-hover:bg-orange/20 transition-colors'>
                   <Mail className='h-4 w-4 text-orange' />
                 </div>
                 <a
                   href='mailto:info@mnsuet.edu.pk'
-                  className='text-sm text-gray-600 hover:text-blue transition-colors break-all pt-1.5'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors break-all leading-relaxed'
                 >
                   info@mnsuet.edu.pk
                 </a>
@@ -116,8 +116,8 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className='pt-8 border-t border-gray-200'>
-          <div className='flex flex-col md:flex-row items-center justify-between gap-4'>
-            <div className='flex flex-col md:flex-row items-center gap-4 text-sm text-gray-500'>
+          <div className='flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left'>
+            <div className='flex flex-col md:flex-row items-center gap-3 md:gap-4 text-sm text-gray-500'>
               <p>&copy; {new Date().getFullYear()} EduTrack — All rights reserved.</p>
               <span className='hidden md:inline text-gray-300'>|</span>
               <p className='text-xs'>Developed by Final Year Students at MNS UET</p>
@@ -133,7 +133,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-
     </footer>
   );
 }
