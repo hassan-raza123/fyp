@@ -22,8 +22,8 @@ const solutions = [
 export default function ChallengesSection() {
   return (
     <div className='relative py-24 bg-white overflow-hidden'>
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-[url('/info-images/photo1.png')] bg-cover bg-center opacity-4 blur-sm" />
+      {/* Background Image - Tech solution focus */}
+      <div className="absolute inset-0 bg-[url('/info-images/1682065986635.png')] bg-cover bg-center opacity-4 blur-sm" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>

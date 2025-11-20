@@ -4,10 +4,10 @@ import { ArrowRight } from 'lucide-react';
 export default function CTASection() {
   return (
     <div className='relative py-24 overflow-hidden'>
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-[url('/info-images/images.png')] bg-cover bg-center" />
+      {/* Background Image - Strong university/educational context for final CTA */}
+      <div className="absolute inset-0 bg-[url('/info-images/maxresdefault.jpg')] bg-cover bg-center opacity-20" />
       {/* Dark Overlay */}
-      <div className="absolute inset-0 landing-hero-bg opacity-95" />
+      <div className="absolute inset-0 landing-hero-bg opacity-90" />
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-blue-800/90 to-blue-950/90" />
       {/* Decorative Elements */}
       <div className="absolute top-10 left-10 w-72 h-72 landing-decorative-blur-1 rounded-full blur-3xl" />

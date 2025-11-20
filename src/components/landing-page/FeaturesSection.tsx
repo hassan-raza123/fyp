@@ -3,8 +3,8 @@ import { features } from '@/constants/landing-page';
 export default function FeaturesSection() {
   return (
     <div id="modules" className='relative py-24 bg-white scroll-mt-20 overflow-hidden'>
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 bg-[url('/info-images/1682065986635.png')] bg-cover bg-center opacity-5" />
+      {/* Background Image with Overlay - System interface preview */}
+      <div className="absolute inset-0 bg-[url('/info-images/images.png')] bg-cover bg-center opacity-5" />
       <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white opacity-90" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
