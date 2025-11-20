@@ -9,9 +9,9 @@ import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import UserRolesSection from '@/components/landing-page/UserRolesSection';
 import ChallengesSection from '@/components/landing-page/ChallengesSection';
 import TeamSection from '@/components/landing-page/TeamSection';
-import ContactSection from '@/components/landing-page/ContactSection';
 import CTASection from '@/components/landing-page/CTASection';
 import Footer from '@/components/landing-page/Footer';
+import FloatingChatButton from '@/components/landing-page/FloatingChatButton';
 
 export default function LandingPage() {
   return (
@@ -32,12 +32,14 @@ export default function LandingPage() {
       <UserRolesSection />
       <ChallengesSection />
       
-      {/* Team & Contact */}
+      {/* Team & CTA */}
       <TeamSection />
-      <ContactSection />
       <CTASection />
       
       <Footer />
+      
+      {/* Floating Chat Button */}
+      <FloatingChatButton />
     </div>
   );
 }

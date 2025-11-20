@@ -10,7 +10,6 @@ const navigation = [
   { name: 'Features', href: '/#modules' },
   { name: 'Portals', href: '/#portals' },
   { name: 'Team', href: '/#team' },
-  { name: 'Contact', href: '/#contact' },
 ];
 
 export default function NavbarClient() {
