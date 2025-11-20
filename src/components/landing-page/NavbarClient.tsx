@@ -112,7 +112,7 @@ export default function NavbarClient() {
                 className='navbar-cta px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group'
               >
                 <span className='relative z-10 flex items-center gap-2'>
-                  Get Started Free
+                  Login
                   <svg className='w-4 h-4 group-hover:translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
                   </svg>
@@ -174,7 +174,7 @@ export default function NavbarClient() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className='block navbar-cta px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4'
               >
-                Get Started Free
+                Login to Portal
               </Link>
             </div>
           </div>

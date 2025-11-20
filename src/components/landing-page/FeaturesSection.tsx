@@ -10,10 +10,10 @@ export default function FeaturesSection() {
             FEATURES
           </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
-            Everything You Need
+            System Features
           </h2>
           <p className='text-xl landing-text-body max-w-2xl mx-auto'>
-            Comprehensive tools for modern education management
+            Comprehensive tools for managing Outcome-Based Education at MNS UET
           </p>
         </div>
 

@@ -1,4 +1,5 @@
-import { CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { CheckCircle, ArrowRight } from 'lucide-react';
 import { userRoles } from '@/constants/landing-page';
 
 export default function UserRolesSection() {
@@ -11,10 +12,10 @@ export default function UserRolesSection() {
             USER PORTALS
           </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
-            Built for Everyone
+            Access Your Portal
           </h2>
           <p className='text-xl landing-text-body max-w-2xl mx-auto'>
-            Specialized dashboards for each role
+            Login with your university credentials to access your dedicated portal
           </p>
         </div>
 
@@ -22,9 +23,10 @@ export default function UserRolesSection() {
           {userRoles.map((role, index) => {
             const IconComponent = role.icon;
             return (
-              <div
+              <Link
                 key={index}
-                className='group bg-white rounded-2xl p-8 border-2 border-slate-200 hover:border-brand-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
+                href='/login'
+                className='group bg-white rounded-2xl p-8 border-2 border-slate-200 hover:border-brand-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block'
               >
                 <div className='w-14 h-14 rounded-xl brand-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg'>
                   <IconComponent className='h-7 w-7 text-white' />
@@ -33,7 +35,7 @@ export default function UserRolesSection() {
                   {role.title}
                 </h3>
                 <p className='landing-text-body mb-6'>{role.description}</p>
-                <ul className='space-y-2'>
+                <ul className='space-y-2 mb-6'>
                   {role.features.map((feature, idx) => (
                     <li key={idx} className='flex items-start landing-text-muted text-sm'>
                       <CheckCircle className='h-4 w-4 text-brand-secondary mr-2 shrink-0 mt-0.5' />
@@ -41,7 +43,10 @@ export default function UserRolesSection() {
                     </li>
                   ))}
                 </ul>
-              </div>
+                <div className='flex items-center text-brand-primary font-semibold group-hover:translate-x-2 transition-transform'>
+                  Login to Portal <ArrowRight className='ml-2 w-5 h-5' />
+                </div>
+              </Link>
             );
           })}
         </div>
