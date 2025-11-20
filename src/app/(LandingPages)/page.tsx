@@ -5,6 +5,7 @@ import OBEFrameworkSection from '@/components/landing-page/OBEFrameworkSection';
 import MappingProcessSection from '@/components/landing-page/MappingProcessSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import ChallengesSection from '@/components/landing-page/ChallengesSection';
+import TestimonialsSection from '@/components/landing-page/TestimonialsSection';
 import TeamSection from '@/components/landing-page/TeamSection';
 import CTASection from '@/components/landing-page/CTASection';
 import Footer from '@/components/landing-page/Footer';
@@ -30,6 +31,9 @@ export default function LandingPage() {
       {/* Team & Portal Access */}
       <TeamSection />
       <CTASection />
+      
+      {/* Testimonials */}
+      <TestimonialsSection />
       
       <Footer />
       
