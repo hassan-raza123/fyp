@@ -132,9 +132,9 @@ export default function OBEShowcaseSection() {
           <span 
             className='inline-block px-5 py-2.5 rounded-full font-semibold text-sm mb-6'
             style={{ 
-              backgroundColor: 'var(--brand-primary-opacity-10)',
-              color: 'var(--brand-primary)',
-              border: '1px solid var(--brand-primary-opacity-20)'
+              backgroundColor: 'var(--brand-secondary-opacity-10)',
+              color: 'var(--brand-secondary)',
+              border: '1px solid var(--brand-secondary-opacity-20)'
             }}
           >
             OBE ECOSYSTEM
