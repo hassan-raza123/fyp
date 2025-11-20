@@ -18,9 +18,9 @@ export default function LandingPage() {
       {/* OBE Showcase - Combined */}
       <OBEShowcaseSection />
       
-      {/* System Features */}
-      <FeaturesSection />
+      {/* Why Choose Us & System Features */}
       <ChallengesSection />
+      <FeaturesSection />
       
       {/* Team & Portal Access */}
       <TeamSection />
