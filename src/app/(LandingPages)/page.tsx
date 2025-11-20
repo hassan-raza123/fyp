@@ -1,6 +1,5 @@
 import HeroSection from '@/components/landing-page/HeroSection';
 import ParallaxShowcaseSection from '@/components/landing-page/ParallaxShowcaseSection';
-import OBEOverviewSection from '@/components/landing-page/OBEOverviewSection';
 import BenefitsSection from '@/components/landing-page/BenefitsSection';
 import OBEFrameworkSection from '@/components/landing-page/OBEFrameworkSection';
 import MappingProcessSection from '@/components/landing-page/MappingProcessSection';
@@ -20,7 +19,6 @@ export default function LandingPage() {
       <ParallaxShowcaseSection />
       
       {/* OBE Educational Content */}
-      <OBEOverviewSection />
       <BenefitsSection />
       <OBEFrameworkSection />
       <MappingProcessSection />
