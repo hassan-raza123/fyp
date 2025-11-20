@@ -36,28 +36,28 @@ export default function Footer() {
             <div className='flex space-x-3'>
               <a
                 href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-200'
+                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
                 aria-label='Twitter'
               >
                 <Twitter className='h-4 w-4' />
               </a>
               <a
                 href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-200'
+                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
                 aria-label='LinkedIn'
               >
                 <Linkedin className='h-4 w-4' />
               </a>
               <a
                 href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-200'
+                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
                 aria-label='GitHub'
               >
                 <Github className='h-4 w-4' />
               </a>
               <a
                 href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-200'
+                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
                 aria-label='Instagram'
               >
                 <Instagram className='h-4 w-4' />
@@ -103,11 +103,11 @@ export default function Footer() {
             <h4 className='text-base font-semibold text-white mb-4'>Contact</h4>
             <ul className='space-y-3'>
               <li className='flex items-start space-x-2'>
-                <MapPin className='h-4 w-4 text-blue-400 mt-0.5 shrink-0' />
+                <MapPin className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
                 <span className='text-slate-400 text-sm'>MNS UET, Multan, Pakistan</span>
               </li>
               <li className='flex items-start space-x-2'>
-                <Mail className='h-4 w-4 text-blue-400 mt-0.5 shrink-0' />
+                <Mail className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
                 <a
                   href='mailto:itzhassanraza276@gmail.com'
                   className='text-slate-400 hover:text-white transition-colors text-sm break-all'
@@ -116,7 +116,7 @@ export default function Footer() {
                 </a>
               </li>
               <li className='flex items-start space-x-2'>
-                <Phone className='h-4 w-4 text-blue-400 mt-0.5 shrink-0' />
+                <Phone className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
                 <span className='text-slate-400 text-sm'>+92 (123) 456-7890</span>
               </li>
             </ul>

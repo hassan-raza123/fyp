@@ -67,12 +67,29 @@
   --warning: #d97706;
   --info: #1e40af;
 
-  /* Landing Page Theme Colors */
-  --hero-bg-from: #1e3a8a; /* blue-900 */
-  --hero-bg-via: #1e40af; /* blue-800 */
-  --hero-bg-to: #172554; /* blue-950 */
+  /* ================================
+     GLOBAL UNIFIED COLOR SCHEME
+     ================================ */
+  
+  /* Primary Brand Colors */
+  --brand-primary: #262895; /* Deep indigo */
+  --brand-primary-dark: #1c1e74; /* Darker indigo */
+  --brand-primary-light: #433ea7; /* Lighter indigo */
+  --brand-secondary: #756ba2; /* Muted purple */
+  --brand-secondary-dark: #5b5289; /* Dark lavender */
+  --brand-secondary-light: #a89fce; /* Soft lavender */
+  
+  /* Gradient Colors */
+  --gradient-from: #262895; /* Deep indigo */
+  --gradient-via: #756ba2; /* Muted purple */
+  --gradient-to: #d7d5e7; /* Soft lavender */
+  
+  /* Hero/Header Colors */
+  --hero-bg-from: #1c1e74;
+  --hero-bg-via: #262895;
+  --hero-bg-to: #756ba2;
   --hero-text: #ffffff;
-  --hero-text-highlight: #dbeafe; /* blue-100 */
+  --hero-text-highlight: #f5f3ff;
   --hero-badge-bg: rgba(255, 255, 255, 0.1);
   --hero-badge-border: rgba(255, 255, 255, 0.2);
   
@@ -86,32 +103,32 @@
   --card-bg-gradient-from: #ffffff;
   --card-bg-gradient-to: #f8fafc; /* slate-50 */
   --card-border-color: #e2e8f0; /* slate-200 */
-  --card-border-hover: #bfdbfe; /* blue-200 */
+  --card-border-hover: #c8c1e5; /* lavender */
   --card-shadow: rgba(0, 0, 0, 0.1);
   
-  --icon-bg-from: #2563eb; /* blue-600 */
-  --icon-bg-to: #1e40af; /* blue-800 */
+  --icon-bg-from: #262895;
+  --icon-bg-to: #756ba2;
   --icon-text: #ffffff;
   
   --text-heading: #0f172a; /* slate-900 */
   --text-body: #475569; /* slate-600 */
   --text-muted-light: #64748b; /* slate-700 */
   
-  --badge-bg: #dbeafe; /* blue-100 */
-  --badge-text: #1e3a8a; /* blue-900 */
+  --badge-bg: #ece9fb;
+  --badge-text: #322a72;
   
-  --feature-icon-bg-from: #2563eb; /* blue-600 */
-  --feature-icon-bg-to: #1e40af; /* blue-800 */
+  --feature-icon-bg-from: #262895;
+  --feature-icon-bg-to: #756ba2;
   
-  --stat-value-from: #1e3a8a; /* blue-900 */
-  --stat-value-to: #2563eb; /* blue-600 */
+  --stat-value-from: #1c1e74;
+  --stat-value-to: #756ba2;
   
   --cta-btn-bg: #ffffff;
-  --cta-btn-text: #1e3a8a; /* blue-900 */
-  --cta-btn-hover: #eff6ff; /* blue-50 */
+  --cta-btn-text: #262895;
+  --cta-btn-hover: #f3f0ff;
   
-  --decorative-blur-1: rgba(59, 130, 246, 0.2); /* blue-500 with opacity */
-  --decorative-blur-2: rgba(34, 211, 238, 0.2); /* cyan-500 with opacity */
+  --decorative-blur-1: rgba(38, 40, 149, 0.2);
+  --decorative-blur-2: rgba(117, 107, 162, 0.2);
   
   --success-bg: #f0fdf4; /* green-50 */
   --success-text: #166534; /* green-800 */
@@ -348,7 +365,7 @@
 
   /* Landing Page Specific Components */
   .landing-hero-bg {
-    background: linear-gradient(to bottom right, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
+    background: linear-gradient(135deg, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
   }
 
   /* Modern Card with Shine Effect */
@@ -398,7 +415,7 @@
   }
 
   .landing-icon-bg {
-    background: linear-gradient(to bottom right, var(--icon-bg-from), var(--icon-bg-to));
+    background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
   }
 
   .landing-badge {
@@ -446,6 +463,73 @@
 
   .landing-success-icon {
     color: var(--success-icon);
+  }
+
+  /* ================================
+     UNIFIED COLOR UTILITY CLASSES
+     ================================ */
+  
+  /* Brand Gradient */
+  .brand-gradient {
+    background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+  }
+
+  .brand-gradient-hover:hover {
+    background: linear-gradient(135deg, var(--brand-primary-dark), var(--brand-primary), var(--brand-secondary));
+  }
+
+  /* Text Colors */
+  .text-brand-primary {
+    color: var(--brand-primary);
+  }
+
+  .text-brand-secondary {
+    color: var(--brand-secondary);
+  }
+
+  /* Background Colors */
+  .bg-brand-primary {
+    background-color: var(--brand-primary);
+  }
+
+  .bg-brand-secondary {
+    background-color: var(--brand-secondary);
+  }
+
+  /* Border Colors */
+  .border-brand-primary {
+    border-color: var(--brand-primary);
+  }
+
+  /* Navbar Specific */
+  .navbar-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .navbar-link {
+    transition: all 0.2s ease;
+  }
+
+  .navbar-link:hover {
+    color: var(--brand-primary);
+  }
+
+  .navbar-link-active {
+    color: var(--brand-primary);
+    background-color: rgba(37, 99, 235, 0.1);
+  }
+
+  .navbar-cta {
+    background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .navbar-cta:hover {
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px);
   }
 
   /* Background Image Utilities */
@@ -545,8 +629,23 @@
   }
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-slide-up {
   animation: slideUp 0.8s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
 }
 
 @keyframes slideInLeft {
@@ -589,6 +688,30 @@
   50% {
     transform: translateY(-20px);
   }
+}
+
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
 
 @keyframes pulse {

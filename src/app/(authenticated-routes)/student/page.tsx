@@ -532,7 +532,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className='bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white'>
+          <div className='bg-linear-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white'>
             <h2 className='text-lg font-semibold mb-2'>Quick Actions</h2>
             <div className='space-y-3'>
               <Link

@@ -159,7 +159,7 @@ export default function ContactForm() {
           type='submit'
           disabled={isLoading}
           className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-medium
-            bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 
+            bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 
             hover:from-purple-700 hover:via-purple-600 hover:to-indigo-700
             focus:outline-none focus:ring-4 focus:ring-purple-200
             shadow-lg shadow-purple-500/20

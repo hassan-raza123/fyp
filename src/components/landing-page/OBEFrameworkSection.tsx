@@ -1,93 +1,107 @@
 import Image from 'next/image';
-import { Workflow, RefreshCw, ClipboardCheck, FileCheck } from 'lucide-react';
+import { Workflow, RefreshCw, ClipboardCheck, FileCheck, ArrowRight } from 'lucide-react';
 
 const steps = [
   {
     icon: Workflow,
     number: '01',
     title: 'Plan',
-    description: 'Define Program Learning Outcomes (PLOs) and Course Learning Outcomes (CLOs)'
+    description: 'Define learning outcomes and curriculum structure',
+    color: 'from-blue-500 to-cyan-500'
   },
   {
     icon: ClipboardCheck,
     number: '02',
     title: 'Do',
-    description: 'Implement curriculum, deliver instruction, and conduct assessments'
+    description: 'Implement curriculum and conduct assessments',
+    color: 'from-purple-500 to-blue-500'
   },
   {
     icon: FileCheck,
     number: '03',
     title: 'Check',
-    description: 'Measure and evaluate student performance against defined outcomes'
+    description: 'Measure student performance and outcomes',
+    color: 'from-cyan-500 to-teal-500'
   },
   {
     icon: RefreshCw,
     number: '04',
     title: 'Act',
-    description: 'Analyze results and make improvements to teaching and curriculum'
+    description: 'Improve based on analysis and feedback',
+    color: 'from-blue-500 to-indigo-500'
   }
 ];
 
 export default function OBEFrameworkSection() {
   return (
-    <div className='relative py-24 bg-white overflow-hidden'>
-      {/* Background Image with Light Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/download.jpeg')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-white/70" />
-      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='py-24 bg-linear-to-b from-white via-slate-50 to-white'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
-            PDCA CYCLE
-          </div>
+          <span className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
+            PDCA FRAMEWORK
+          </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
-            OBE Framework
+            How OBE Works
           </h2>
-          <p className='text-xl landing-text-body max-w-3xl mx-auto'>
-            A systematic approach following the Plan-Do-Check-Act principle for continuous improvement
+          <div className='w-24 h-1.5 brand-gradient mx-auto rounded-full mb-6'></div>
+          <p className='text-xl landing-text-body max-w-2xl mx-auto'>
+            A systematic approach following the Plan-Do-Check-Act cycle
           </p>
         </div>
 
-        {/* Framework Image */}
-        <div className='mb-16'>
-          <div className='relative group max-w-5xl mx-auto'>
-            <div className='absolute -inset-4 landing-decorative-blur-1 rounded-3xl blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500'></div>
-            <div className='relative landing-card rounded-3xl overflow-hidden shadow-2xl transform group-hover:scale-[1.02] transition-all duration-500'>
+        {/* Framework Diagram */}
+        <div className='mb-16 max-w-4xl mx-auto'>
+          <div className='relative group'>
+            <div className='absolute -inset-4 brand-gradient rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity'></div>
+            <div className='relative bg-white rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-100 p-8'>
               <Image
                 src='/info-images/Outcome-based-education-OBE-framework-consistency-with-PDCAPlan-Do-Check-Act-principle.png'
-                alt='OBE Framework - PDCA Cycle'
+                alt='OBE Framework'
                 width={1200}
                 height={800}
-                className='w-full h-auto object-contain bg-white p-8'
+                className='w-full h-auto'
               />
             </div>
           </div>
         </div>
 
-        {/* Steps Grid */}
+        {/* Steps Cards */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
               <div
                 key={index}
-                className='group relative landing-card rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2'
+                className='relative group'
               >
-                {/* Step Number Background */}
-                <div className='absolute top-4 right-4 text-7xl font-black text-blue-50 group-hover:text-blue-100 transition-colors duration-300'>
-                  {step.number}
-                </div>
+                {/* Connecting Line */}
+                {index < steps.length - 1 && (
+                  <div className='hidden lg:block absolute top-1/2 -right-3 w-6 h-0.5 bg-linear-to-r from-[#a89fce] to-transparent z-0'></div>
+                )}
                 
-                <div className='relative z-10'>
-                  <div className='landing-icon-bg rounded-xl p-3 w-14 h-14 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300'>
-                    <IconComponent className='h-6 w-6 text-white' />
+                <div className='relative bg-white rounded-2xl p-6 shadow-lg border-2 border-slate-100 hover:border-brand-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full'>
+                  {/* Step Number */}
+                  <div className='text-6xl font-black text-slate-100 mb-4'>
+                    {step.number}
                   </div>
-                  <h3 className='text-2xl font-bold landing-text-heading mb-3'>
+                  
+                  {/* Icon */}
+                  <div className={`w-14 h-14 rounded-xl bg-linear-to-br ${step.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                    <IconComponent className='w-7 h-7 text-white' />
+                  </div>
+                  
+                  <h3 className='text-xl font-bold landing-text-heading mb-3'>
                     {step.title}
                   </h3>
                   <p className='landing-text-body text-sm leading-relaxed'>
                     {step.description}
                   </p>
+
+                  {/* Hover Arrow */}
+                  <div className='mt-4 opacity-0 group-hover:opacity-100 transition-opacity'>
+                    <ArrowRight className='w-5 h-5 text-brand-primary' />
+                  </div>
                 </div>
               </div>
             );
@@ -97,4 +111,3 @@ export default function OBEFrameworkSection() {
     </div>
   );
 }
-

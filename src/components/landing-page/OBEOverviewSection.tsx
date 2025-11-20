@@ -7,7 +7,7 @@ export default function OBEOverviewSection() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
+          <span className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             OUTCOME-BASED EDUCATION
           </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
@@ -27,7 +27,7 @@ export default function OBEOverviewSection() {
               { icon: Award, title: 'Continuous Assessment', desc: 'Regular evaluation to ensure outcome achievement' }
             ].map((item, idx) => (
               <div key={idx} className='flex items-start space-x-4 p-6 rounded-xl hover:bg-slate-50 transition-colors duration-300'>
-                <div className='w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shrink-0'>
+                <div className='w-12 h-12 rounded-lg brand-gradient flex items-center justify-center shrink-0 shadow-md'>
                   <item.icon className='h-6 w-6 text-white' />
                 </div>
                 <div>
@@ -40,8 +40,8 @@ export default function OBEOverviewSection() {
 
           {/* Right - Image */}
           <div className='relative'>
-            <div className='absolute inset-0 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl transform rotate-3'></div>
-            <div className='relative bg-white rounded-2xl overflow-hidden shadow-2xl'>
+            <div className='absolute inset-0 bg-linear-to-br from-blue-100 to-cyan-100 rounded-3xl transform rotate-3'></div>
+            <div className='relative bg-white rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-100'>
               <Image
                 src='/info-images/outcome-based-education-l.webp'
                 alt='Outcome Based Education'

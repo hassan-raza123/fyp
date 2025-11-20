@@ -372,7 +372,7 @@ export default function AdminOverview() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white">
+              <div className="bg-linear-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white">
                 <h2 className="text-lg font-semibold mb-2">Need Help?</h2>
                 <p className="text-sm text-purple-100 mb-4">
                   Get support from our team or check the documentation

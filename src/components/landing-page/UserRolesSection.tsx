@@ -7,7 +7,7 @@ export default function UserRolesSection() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
+          <span className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             USER PORTALS
           </span>
           <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
@@ -24,9 +24,9 @@ export default function UserRolesSection() {
             return (
               <div
                 key={index}
-                className='group bg-white rounded-2xl p-8 border-2 border-slate-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300'
+                className='group bg-white rounded-2xl p-8 border-2 border-slate-200 hover:border-brand-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
               >
-                <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
+                <div className='w-14 h-14 rounded-xl brand-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg'>
                   <IconComponent className='h-7 w-7 text-white' />
                 </div>
                 <h3 className='text-2xl font-bold landing-text-heading mb-3'>
@@ -36,7 +36,7 @@ export default function UserRolesSection() {
                 <ul className='space-y-2'>
                   {role.features.map((feature, idx) => (
                     <li key={idx} className='flex items-start landing-text-muted text-sm'>
-                      <CheckCircle className='h-4 w-4 text-green-500 mr-2 shrink-0 mt-0.5' />
+                      <CheckCircle className='h-4 w-4 text-brand-secondary mr-2 shrink-0 mt-0.5' />
                       <span>{feature}</span>
                     </li>
                   ))}

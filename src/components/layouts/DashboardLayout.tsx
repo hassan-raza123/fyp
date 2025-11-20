@@ -96,7 +96,7 @@ const SidebarNavLink = ({
         transition-all duration-300 ease-in-out
         ${
           isActive
-            ? 'bg-gradient-to-r from-purple-500/10 to-indigo-500/10 text-primary shadow-sm relative'
+            ? 'bg-linear-to-r from-purple-500/10 to-indigo-500/10 text-primary shadow-sm relative'
             : isDarkMode
             ? 'text-gray-400 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
             : 'text-gray-600 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
@@ -111,7 +111,7 @@ const SidebarNavLink = ({
           p-2 rounded-lg transition-all duration-300
           ${
             isActive
-              ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md'
+              ? 'bg-linear-to-r from-purple-500 to-indigo-500 text-white shadow-md'
               : 'text-current group-hover:scale-110'
           }
         `}
@@ -121,7 +121,7 @@ const SidebarNavLink = ({
           />
         </div>
         {isActive && (
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 rounded-lg" />
+          <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-indigo-500/5 rounded-lg" />
         )}
       </div>
       {isSidebarOpen && (
@@ -140,7 +140,7 @@ const SidebarNavLink = ({
             ${
               isActive
                 ? 'bg-white text-primary shadow-sm'
-                : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm'
+                : 'bg-linear-to-r from-purple-500 to-indigo-500 text-white shadow-sm'
             }
           `}
         >
@@ -323,7 +323,7 @@ export default function DashboardLayout({
             <div
               className={`flex-shrink-0 ${
                 isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
-              } rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
+              } rounded-xl bg-linear-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
             >
               <Shield
                 className={`${
@@ -357,7 +357,7 @@ export default function DashboardLayout({
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
-                  <span className="px-1.5 py-0.5 text-[10px] bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
+                  <span className="px-1.5 py-0.5 text-[10px] bg-linear-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
                     {role === 'admin' && 'Admin'}
                     {role === 'super_admin' && 'Super Admin'}
                     {role === 'faculty' && 'Faculty'}
@@ -442,7 +442,7 @@ export default function DashboardLayout({
               }
             `}
           >
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-linear-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
               <User className="w-4 h-4 text-white" />
             </div>
             {isSidebarOpen && (

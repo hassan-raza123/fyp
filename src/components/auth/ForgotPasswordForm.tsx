@@ -79,7 +79,7 @@ export default function ForgotPasswordForm() {
   return (
     <div className='max-w-md w-full mx-auto p-6'>
       <div className='text-center mb-8'>
-        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+        <div className='bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
           <School className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>Forgot Password?</h2>
@@ -137,7 +137,7 @@ export default function ForgotPasswordForm() {
           <button
             type='submit'
             disabled={isLoading}
-            className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+            className='relative w-full bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
           >
             <span
               className={`inline-flex items-center justify-center ${
