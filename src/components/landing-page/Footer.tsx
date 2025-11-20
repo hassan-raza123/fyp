@@ -1,148 +1,98 @@
 import React from 'react';
 import Link from 'next/link';
-import {
-  Linkedin,
-  Mail,
-  Twitter,
-  Github,
-  Instagram,
-  MapPin,
-  Phone,
-} from 'lucide-react';
+import { Linkedin, Mail, Twitter, Github, Instagram, MapPin, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className='bg-slate-900 text-slate-300'>
-      {/* Main Footer Content */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-        <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
+    <footer className='bg-linear-to-b from-white to-transparent border-t border-gray-200/60'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-12 items-start'>
           {/* Brand Section */}
-          <div className='col-span-1 md:col-span-2'>
-            <div className='flex items-center space-x-3 mb-4'>
-              <img
-                src="/logo's/logo.png"
-                alt='EduTrack Logo'
-                className='w-10 h-10 rounded-lg object-cover'
-              />
-              <h3 className='text-xl font-semibold text-white'>
-                EduTrack for MNSUET
-              </h3>
+          <div className='space-y-4'>
+            <div className='flex items-center gap-3'>
+              <img src="/logo's/logo.png" alt='EduTrack Logo' className='w-16 h-16 object-contain' />
+              <div>
+                <h3 className='text-xl font-bold text-gray-900'>EduTrack</h3>
+                <p className='text-sm text-gray-500'>OBE Management System</p>
+              </div>
             </div>
-            <p className='text-slate-400 max-w-md mb-4 text-sm leading-relaxed'>
-              Transforming education through outcomes. A comprehensive OBE management 
-              system for tracking learning outcomes, assessments, and academic excellence 
-              at MNS University of Engineering & Technology.
+            <p className='text-sm text-gray-600 leading-relaxed max-w-sm'>
+              Transforming education through outcomes. A comprehensive OBE management system for tracking learning outcomes and academic excellence.
             </p>
-            <div className='flex space-x-3'>
-              <a
-                href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
-                aria-label='Twitter'
-              >
-                <Twitter className='h-4 w-4' />
-              </a>
-              <a
-                href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
-                aria-label='LinkedIn'
-              >
-                <Linkedin className='h-4 w-4' />
-              </a>
-              <a
-                href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
-                aria-label='GitHub'
-              >
-                <Github className='h-4 w-4' />
-              </a>
-              <a
-                href='#'
-                className='w-9 h-9 rounded-lg bg-slate-800 hover:bg-brand-primary flex items-center justify-center transition-colors duration-200'
-                aria-label='Instagram'
-              >
-                <Instagram className='h-4 w-4' />
-              </a>
+            <div className='flex items-center gap-3'>
+              {[Twitter, Linkedin, Github, Instagram].map((Icon, index) => (
+                <a key={index} href='#' className='w-10 h-10 rounded-lg border border-gray-200 hover:border-blue hover:bg-blue/5 flex items-center justify-center text-gray-600 hover:text-blue transition-all'>
+                  <Icon className='w-4 h-4' />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className='text-base font-semibold text-white mb-4'>
+          <div className='space-y-4'>
+            <h4 className='text-sm font-semibold text-gray-900 uppercase tracking-wide'>
               Quick Links
             </h4>
-            <ul className='space-y-2'>
+            <ul className='space-y-3'>
               <li>
                 <Link
                   href='/#modules'
-                  className='text-slate-400 hover:text-white transition-colors text-sm'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors'
                 >
-                  Modules
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href='/#portals'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors'
+                >
+                  Portals
                 </Link>
               </li>
               <li>
                 <Link
                   href='/#team'
-                  className='text-slate-400 hover:text-white transition-colors text-sm'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors'
                 >
                   Team
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href='/#contact'
-                  className='text-slate-400 hover:text-white transition-colors text-sm'
-                >
-                  Contact
                 </Link>
               </li>
             </ul>
           </div>
 
           {/* Contact Info */}
-          <div>
-            <h4 className='text-base font-semibold text-white mb-4'>Contact</h4>
+          <div className='space-y-4'>
+            <h4 className='text-sm font-semibold text-gray-900 uppercase tracking-wide'>
+              Contact
+            </h4>
             <ul className='space-y-3'>
-              <li className='flex items-start space-x-2'>
-                <MapPin className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
-                <span className='text-slate-400 text-sm'>MNS UET, Multan, Pakistan</span>
+              <li className='flex items-start gap-2'>
+                <MapPin className='h-4 w-4 text-orange mt-0.5 shrink-0' />
+                <span className='text-sm text-gray-600'>MNS UET, Multan, Pakistan</span>
               </li>
-              <li className='flex items-start space-x-2'>
-                <Mail className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
+              <li className='flex items-start gap-2'>
+                <Mail className='h-4 w-4 text-orange mt-0.5 shrink-0' />
                 <a
                   href='mailto:itzhassanraza276@gmail.com'
-                  className='text-slate-400 hover:text-white transition-colors text-sm break-all'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors break-all'
                 >
                   itzhassanraza276@gmail.com
                 </a>
               </li>
-              <li className='flex items-start space-x-2'>
-                <Phone className='h-4 w-4 text-brand-secondary-light mt-0.5 shrink-0' />
-                <span className='text-slate-400 text-sm'>+92 (123) 456-7890</span>
+              <li className='flex items-start gap-2'>
+                <Phone className='h-4 w-4 text-orange mt-0.5 shrink-0' />
+                <span className='text-sm text-gray-600'>+92 (123) 456-7890</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className='mt-8 pt-6 border-t border-slate-800'>
-          <div className='flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0'>
-            <p className='text-slate-400 text-sm'>
-              &copy; {new Date().getFullYear()} EduTrack - OBE Management System. All rights reserved.
-            </p>
-            <div className='flex space-x-6 text-sm'>
-              <Link
-                href='/privacy'
-                className='text-slate-400 hover:text-white transition-colors'
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href='/terms'
-                className='text-slate-400 hover:text-white transition-colors'
-              >
-                Terms of Service
-              </Link>
-            </div>
+        <div className='pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500 gap-3'>
+          <p>&copy; {new Date().getFullYear()} EduTrack — All rights reserved.</p>
+          <div className='flex gap-6'>
+            <Link href='/privacy' className='hover:text-gray-900'>Privacy</Link>
+            <Link href='/terms' className='hover:text-gray-900'>Terms</Link>
           </div>
         </div>
       </div>
