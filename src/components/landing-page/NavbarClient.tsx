@@ -7,9 +7,9 @@ import { Menu, X } from 'lucide-react';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Features', href: '/features' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'Modules', href: '/#modules' },
+  { name: 'Team', href: '/#team' },
+  { name: 'Contact', href: '/#contact' },
 ];
 
 export default function NavbarClient() {

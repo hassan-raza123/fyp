@@ -73,23 +73,23 @@ export default function Footer() {
             <ul className='space-y-2'>
               <li>
                 <Link
-                  href='/features'
+                  href='/#modules'
                   className='text-slate-400 hover:text-white transition-colors text-sm'
                 >
-                  Features
+                  Modules
                 </Link>
               </li>
               <li>
                 <Link
-                  href='/about'
+                  href='/#team'
                   className='text-slate-400 hover:text-white transition-colors text-sm'
                 >
-                  About Us
+                  Team
                 </Link>
               </li>
               <li>
                 <Link
-                  href='/contact'
+                  href='/#contact'
                   className='text-slate-400 hover:text-white transition-colors text-sm'
                 >
                   Contact
