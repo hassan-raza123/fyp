@@ -58,7 +58,7 @@ export default function NavbarClient() {
               />
               <span
                 className={`text-xl font-semibold transition-colors duration-300 ${
-                  isScrolled ? 'text-slate-900' : 'text-white'
+                  isScrolled ? 'landing-text-heading' : 'text-white'
                 }`}
               >
                 Smart Campus
@@ -77,7 +77,7 @@ export default function NavbarClient() {
                     isScrolled
                       ? isActive(item.href)
                         ? 'text-blue-900 font-semibold bg-blue-50'
-                        : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
+                        : 'landing-text-muted hover:text-blue-900 hover:bg-slate-50'
                       : isActive(item.href)
                       ? 'text-white font-semibold bg-white/20 backdrop-blur-sm'
                       : 'text-white/90 hover:text-white hover:bg-white/10'
@@ -91,7 +91,7 @@ export default function NavbarClient() {
                 className={`ml-4 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   isScrolled
                     ? 'bg-blue-900 text-white hover:bg-blue-800 shadow-md'
-                    : 'bg-white text-blue-900 hover:bg-blue-50 shadow-md'
+                    : 'landing-cta-btn shadow-md'
                 }`}
               >
                 Login
@@ -130,7 +130,7 @@ export default function NavbarClient() {
                 className={`block px-3 py-2 rounded-lg text-base font-medium transition-all ${
                   isActive(item.href)
                     ? 'text-blue-900 font-semibold bg-blue-50'
-                    : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
+                    : 'landing-text-muted hover:text-blue-900 hover:bg-slate-50'
                 }`}
               >
                 {item.name}

@@ -66,6 +66,56 @@
   --error: #dc2626;
   --warning: #d97706;
   --info: #1e40af;
+
+  /* Landing Page Theme Colors */
+  --hero-bg-from: #1e3a8a; /* blue-900 */
+  --hero-bg-via: #1e40af; /* blue-800 */
+  --hero-bg-to: #172554; /* blue-950 */
+  --hero-text: #ffffff;
+  --hero-text-highlight: #dbeafe; /* blue-100 */
+  --hero-badge-bg: rgba(255, 255, 255, 0.1);
+  --hero-badge-border: rgba(255, 255, 255, 0.2);
+  
+  --section-bg-light: #f8fafc; /* slate-50 */
+  --section-bg-white: #ffffff;
+  --section-bg-gradient-from: #f8fafc; /* slate-50 */
+  --section-bg-gradient-via: #eff6ff; /* blue-50 */
+  --section-bg-gradient-to: #f8fafc; /* slate-50 */
+  
+  --card-bg-white: #ffffff;
+  --card-bg-gradient-from: #ffffff;
+  --card-bg-gradient-to: #f8fafc; /* slate-50 */
+  --card-border-color: #e2e8f0; /* slate-200 */
+  --card-border-hover: #bfdbfe; /* blue-200 */
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  
+  --icon-bg-from: #2563eb; /* blue-600 */
+  --icon-bg-to: #1e40af; /* blue-800 */
+  --icon-text: #ffffff;
+  
+  --text-heading: #0f172a; /* slate-900 */
+  --text-body: #475569; /* slate-600 */
+  --text-muted-light: #64748b; /* slate-700 */
+  
+  --badge-bg: #dbeafe; /* blue-100 */
+  --badge-text: #1e3a8a; /* blue-900 */
+  
+  --feature-icon-bg-from: #2563eb; /* blue-600 */
+  --feature-icon-bg-to: #1e40af; /* blue-800 */
+  
+  --stat-value-from: #1e3a8a; /* blue-900 */
+  --stat-value-to: #2563eb; /* blue-600 */
+  
+  --cta-btn-bg: #ffffff;
+  --cta-btn-text: #1e3a8a; /* blue-900 */
+  --cta-btn-hover: #eff6ff; /* blue-50 */
+  
+  --decorative-blur-1: rgba(59, 130, 246, 0.2); /* blue-500 with opacity */
+  --decorative-blur-2: rgba(34, 211, 238, 0.2); /* cyan-500 with opacity */
+  
+  --success-bg: #f0fdf4; /* green-50 */
+  --success-text: #166534; /* green-800 */
+  --success-icon: #22c55e; /* green-500 */
 }
 
 /* Tailwind v4 design tokens - Using CSS variables from :root */
@@ -288,6 +338,81 @@
 
   .overlay-blue {
     background: linear-gradient(135deg, rgba(30, 64, 175, 0.95) 0%, rgba(30, 58, 138, 0.95) 100%);
+  }
+
+  /* Landing Page Specific Components */
+  .landing-hero-bg {
+    background: linear-gradient(to bottom right, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
+  }
+
+  .landing-section-gradient {
+    background: linear-gradient(to bottom right, var(--section-bg-gradient-from), var(--section-bg-gradient-via), var(--section-bg-gradient-to));
+  }
+
+  .landing-card {
+    background: var(--card-bg-white);
+    border: 1px solid var(--card-border-color);
+    transition: all 0.3s ease;
+  }
+
+  .landing-card:hover {
+    border-color: var(--card-border-hover);
+    transform: translateY(-0.5rem);
+  }
+
+  .landing-card-gradient {
+    background: linear-gradient(to bottom right, var(--card-bg-gradient-from), var(--card-bg-gradient-to));
+  }
+
+  .landing-icon-bg {
+    background: linear-gradient(to bottom right, var(--icon-bg-from), var(--icon-bg-to));
+  }
+
+  .landing-badge {
+    background: var(--badge-bg);
+    color: var(--badge-text);
+  }
+
+  .landing-stat-value {
+    background: linear-gradient(to bottom right, var(--stat-value-from), var(--stat-value-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .landing-cta-btn {
+    background: var(--cta-btn-bg);
+    color: var(--cta-btn-text);
+    transition: all 0.3s ease;
+  }
+
+  .landing-cta-btn:hover {
+    background: var(--cta-btn-hover);
+    transform: scale(1.05);
+  }
+
+  .landing-text-heading {
+    color: var(--text-heading);
+  }
+
+  .landing-text-body {
+    color: var(--text-body);
+  }
+
+  .landing-text-muted {
+    color: var(--text-muted-light);
+  }
+
+  .landing-decorative-blur-1 {
+    background: var(--decorative-blur-1);
+  }
+
+  .landing-decorative-blur-2 {
+    background: var(--decorative-blur-2);
+  }
+
+  .landing-success-icon {
+    color: var(--success-icon);
   }
 }
 

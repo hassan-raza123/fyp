@@ -7,16 +7,15 @@ export default function StatsSection() {
         {statistics.map((stat, index) => (
           <div
             key={index}
-            className='group bg-white rounded-2xl shadow-xl p-8 border border-slate-200 hover:shadow-2xl hover:border-blue-200 transition-all duration-300 hover:-translate-y-2'
+            className='group landing-card rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300'
           >
-            <div className='text-5xl font-extrabold bg-gradient-to-br from-blue-900 to-blue-600 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform'>
+            <div className='text-5xl font-extrabold landing-stat-value mb-2 group-hover:scale-110 transition-transform'>
               {stat.value}
             </div>
-            <div className='text-slate-600 font-semibold text-lg'>{stat.label}</div>
+            <div className='landing-text-body font-semibold text-lg'>{stat.label}</div>
           </div>
         ))}
       </div>
     </div>
   );
 }
-

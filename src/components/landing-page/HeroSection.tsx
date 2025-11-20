@@ -4,15 +4,15 @@ import NavbarClient from './NavbarClient';
 
 export default function HeroSection() {
   return (
-    <div className='relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 overflow-hidden'>
+    <div className='relative landing-hero-bg overflow-hidden'>
       <NavbarClient />
       {/* Animated background pattern */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       
       {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
+      <div className="absolute top-20 left-10 w-72 h-72 landing-decorative-blur-1 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 landing-decorative-blur-2 rounded-full blur-3xl" />
 
       <div className='relative max-w-7xl mx-auto px-4 pt-32 pb-48 sm:px-6 lg:px-8'>
         <div className='max-w-4xl mx-auto text-center'>
@@ -38,7 +38,7 @@ export default function HeroSection() {
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
             <Link
               href='/login'
-              className='group inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-blue-900 font-bold text-lg hover:bg-blue-50 transition-all duration-300 shadow-2xl hover:shadow-white/20 hover:scale-105'
+              className='group inline-flex items-center justify-center px-8 py-4 rounded-xl landing-cta-btn font-bold text-lg shadow-2xl hover:shadow-white/20'
             >
               Access Portal
               <ArrowRight className='ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform' />
@@ -55,4 +55,3 @@ export default function HeroSection() {
     </div>
   );
 }
-

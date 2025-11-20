@@ -7,13 +7,13 @@ export default function TeamSection() {
     <div id="team" className='py-24 bg-white scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
-          <div className='inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-900 font-semibold text-sm mb-4'>
+          <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             PROJECT TEAM
           </div>
-          <h2 className='text-4xl md:text-5xl font-extrabold text-slate-900 mb-4'>
+          <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
             Development Team
           </h2>
-          <p className='text-xl text-slate-600 max-w-3xl mx-auto'>
+          <p className='text-xl landing-text-body max-w-3xl mx-auto'>
             Final Year Project - Computer Science Department, MNS UET
           </p>
         </div>
@@ -31,13 +31,13 @@ export default function TeamSection() {
                   className='object-cover w-full h-full'
                 />
               </div>
-              <h3 className='text-2xl font-extrabold text-slate-900 mb-2'>
+              <h3 className='text-2xl font-extrabold landing-text-heading mb-2'>
                 {supervisor.name}
               </h3>
               <p className='text-blue-700 font-bold mb-2'>
                 {supervisor.role}
               </p>
-              <p className='text-slate-600 text-sm mb-6'>
+              <p className='landing-text-body text-sm mb-6'>
                 {supervisor.designation}
               </p>
               <a
@@ -58,7 +58,7 @@ export default function TeamSection() {
           {teamMembers.map((member, index) => (
             <div
               key={index}
-              className='group bg-white rounded-2xl shadow-lg p-6 border-2 border-slate-200 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
+              className='group landing-card rounded-2xl shadow-lg p-6 border-2 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
             >
               <div className='flex flex-col items-center text-center'>
                 <div className='w-28 h-28 rounded-xl overflow-hidden mb-4 shadow-lg ring-2 ring-slate-200 group-hover:ring-blue-300 transition-all'>
@@ -70,7 +70,7 @@ export default function TeamSection() {
                     className='object-cover w-full h-full'
                   />
                 </div>
-                <h3 className='text-base font-bold text-slate-900 mb-1'>
+                <h3 className='text-base font-bold landing-text-heading mb-1'>
                   {member.name}
                 </h3>
                 <p className='text-blue-600 text-sm font-semibold mb-4'>
@@ -102,4 +102,3 @@ export default function TeamSection() {
     </div>
   );
 }
-
