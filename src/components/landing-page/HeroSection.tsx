@@ -47,14 +47,22 @@ export default function HeroSection() {
           <div className='flex flex-wrap justify-center gap-4 mb-16'>
             <Link
               href='/login'
-              className='inline-flex items-center justify-center px-10 py-5 rounded-xl bg-brand-secondary text-white font-bold text-lg shadow-2xl hover:scale-105 transition-transform duration-300'
+              className='inline-flex items-center justify-center px-10 py-5 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300'
+              style={{
+                backgroundColor: 'var(--brand-secondary)',
+                boxShadow: '0 8px 30px rgba(252, 153, 40, 0.4)'
+              }}
             >
               Access Portal
               <ArrowRight className='ml-2 w-6 h-6' />
             </Link>
             <Link
               href='/#modules'
-              className='inline-flex items-center justify-center px-10 py-5 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white font-bold text-lg hover:bg-white/15 transition-all duration-300'
+              className='inline-flex items-center justify-center px-10 py-5 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300'
+              style={{
+                backgroundColor: 'var(--brand-primary)',
+                boxShadow: '0 8px 30px rgba(38, 40, 149, 0.4)'
+              }}
             >
               Learn More
             </Link>
@@ -64,29 +72,41 @@ export default function HeroSection() {
           <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto'>
             <Link
               href='/login'
-              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+              className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
+              style={{
+                border: '2px solid rgba(252, 153, 40, 0.3)'
+              }}
             >
-              <GraduationCap className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
-              <div className='text-lg font-bold text-white mb-2'>Student</div>
-              <div className='text-sm text-indigo-100'>View results & progress</div>
+              <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-secondary)' }}></div>
+              <GraduationCap className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-secondary)' }} />
+              <div className='text-lg font-bold text-white mb-2 relative z-10'>Student</div>
+              <div className='text-sm text-gray-200 relative z-10'>View results & progress</div>
             </Link>
 
             <Link
               href='/login'
-              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+              className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
+              style={{
+                border: '2px solid rgba(38, 40, 149, 0.3)'
+              }}
             >
-              <BookOpen className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
-              <div className='text-lg font-bold text-white mb-2'>Faculty</div>
-              <div className='text-sm text-indigo-100'>Manage courses</div>
+              <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-primary)' }}></div>
+              <BookOpen className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-primary)' }} />
+              <div className='text-lg font-bold text-white mb-2 relative z-10'>Faculty</div>
+              <div className='text-sm text-gray-200 relative z-10'>Manage courses</div>
             </Link>
 
             <Link
               href='/login'
-              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+              className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
+              style={{
+                border: '2px solid rgba(252, 153, 40, 0.3)'
+              }}
             >
-              <Users className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
-              <div className='text-lg font-bold text-white mb-2'>Admin</div>
-              <div className='text-sm text-indigo-100'>System management</div>
+              <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-secondary)' }}></div>
+              <Users className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-secondary)' }} />
+              <div className='text-lg font-bold text-white mb-2 relative z-10'>Admin</div>
+              <div className='text-sm text-gray-200 relative z-10'>System management</div>
             </Link>
           </div>
         </div>
