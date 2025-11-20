@@ -24,7 +24,7 @@ export default function TeamSection() {
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
               {/* Rounded Rectangle */}
-              <div className='w-56 h-72 rounded-[3rem] overflow-hidden bg-gray-100 shadow-xl'>
+              <div className='w-56 h-72 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                 <Image
                   src={teamMembers[0].picture}
                   alt={teamMembers[0].name}
@@ -68,7 +68,7 @@ export default function TeamSection() {
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-6'>
               {/* Larger Rounded Rectangle */}
-              <div className='w-72 h-[22rem] rounded-[3.5rem] overflow-hidden bg-gray-100 shadow-2xl'>
+              <div className='w-72 h-88 rounded-[7rem] overflow-hidden bg-gray-100 shadow-2xl'>
                 <Image
                   src={supervisor.picture}
                   alt={supervisor.name}
@@ -103,7 +103,7 @@ export default function TeamSection() {
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
               {/* Rounded Rectangle */}
-              <div className='w-56 h-72 rounded-[3rem] overflow-hidden bg-gray-100 shadow-xl'>
+              <div className='w-56 h-72 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                 <Image
                   src={teamMembers[1].picture}
                   alt={teamMembers[1].name}
