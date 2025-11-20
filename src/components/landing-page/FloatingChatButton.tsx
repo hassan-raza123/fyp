@@ -19,7 +19,7 @@ export default function FloatingChatButton() {
       {/* Floating Chat Button - Logo Blue Theme */}
       <button
         onClick={() => setIsOpen(true)}
-        className='fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-primary-dark flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-translate-y-1 group'
+        className='fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-translate-y-1 group'
         aria-label='Open contact form'
         style={{ 
           backgroundColor: 'var(--brand-primary)',
@@ -44,7 +44,7 @@ export default function FloatingChatButton() {
             <DialogTitle className='text-2xl font-bold text-brand-primary' style={{ color: 'var(--brand-primary)' }}>
               Get In Touch
             </DialogTitle>
-            <DialogDescription className='text-base text-gray-600'>
+            <DialogDescription className='text-base' style={{ color: 'var(--text-body)' }}>
               Have questions? We're here to help you get started
             </DialogDescription>
           </DialogHeader>
