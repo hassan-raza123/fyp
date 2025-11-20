@@ -1,84 +1,93 @@
 import Link from 'next/link';
-import { ArrowRight, GraduationCap, BookOpen, Users } from 'lucide-react';
+import { ArrowRight, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import NavbarClient from './NavbarClient';
 
 export default function HeroSection() {
   return (
-    <div className='relative overflow-hidden bg-slate-900 text-white'>
+    <div 
+      className='relative overflow-hidden bg-fixed bg-center bg-cover'
+      style={{ backgroundImage: "url('/bg/mns-university-of-agriculture-multan-campus-building-view_oux5we.jpg')" }}
+    >
       <NavbarClient />
 
-      {/* Background */}
-      <div className='absolute inset-0'>
-        <img
-          src='/bg/path-foward-banner.jpg'
-          alt='Education Background'
-          className='w-full h-full object-cover'
-        />
-        <div className='absolute inset-0 bg-linear-to-r from-slate-950/95 via-slate-900/80 to-transparent md:to-slate-900/60'></div>
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-      </div>
+      {/* Dark Overlay */}
+      <div 
+        className='absolute inset-0'
+        style={{ 
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(0, 0, 0, 0.80))'
+        }}
+      ></div>
 
-      <div className='relative pt-28 pb-32'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='lg:w-3/5'>
-            <span className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm font-semibold mb-6'>
-              MNS University of Engineering & Technology
-            </span>
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
 
-            <h1 className='text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight'>
-              EduTrack
-              <span className='block text-[#fc9928] mt-2'>OBE Management System</span>
-            </h1>
+      <div className='relative pt-32 pb-40'>
+        <div className='max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+          {/* University Badge */}
+          <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-sm font-semibold mb-8 text-white'>
+            MNS University of Engineering & Technology
+          </span>
 
-            <p className='text-lg text-indigo-100 mb-10 max-w-2xl leading-relaxed'>
-              Access your portal to manage courses, assessments, results, and track learning outcomes. 
-              Login with your university credentials to get started.
-            </p>
+          {/* Main Heading */}
+          <h1 className='text-6xl sm:text-7xl lg:text-8xl font-black text-white mb-6 leading-tight'>
+            EduTrack
+          </h1>
+          
+          <div className='text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-secondary mb-8'>
+            OBE Management System
+          </div>
 
-            <div className='flex flex-wrap gap-4 mb-12'>
-              <Link
-                href='/login'
-                className='inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-brand-primary font-bold text-lg shadow-lg hover:shadow-xl transition-transform hover:-translate-y-0.5'
-              >
-                Login to Portal
-                <ArrowRight className='ml-2 w-5 h-5' />
-              </Link>
-              <Link
-                href='/#portals'
-                className='inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-white/40 text-white font-semibold hover:bg-white/10 transition-all duration-300'
-              >
-                View Portals
-                <ArrowRight className='ml-2 w-5 h-5' />
-              </Link>
-            </div>
+          {/* Description */}
+          <p className='text-xl text-indigo-100 mb-12 max-w-3xl mx-auto leading-relaxed'>
+            Comprehensive platform for managing Outcome-Based Education at MNS UET. 
+            Track learning outcomes, manage assessments, and access detailed reports.
+          </p>
 
-            {/* Quick Access Cards */}
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8'>
-              <Link
-                href='/login'
-                className='bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 hover:bg-white/20 transition-all'
-              >
-                <GraduationCap className='w-8 h-8 text-[#fc9928] mb-2' />
-                <div className='text-sm font-semibold text-white'>Student Portal</div>
-                <div className='text-xs text-white/70 mt-1'>View results & progress</div>
-              </Link>
-              <Link
-                href='/login'
-                className='bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 hover:bg-white/20 transition-all'
-              >
-                <BookOpen className='w-8 h-8 text-[#fc9928] mb-2' />
-                <div className='text-sm font-semibold text-white'>Faculty Portal</div>
-                <div className='text-xs text-white/70 mt-1'>Manage courses & assessments</div>
-              </Link>
-              <Link
-                href='/login'
-                className='bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 hover:bg-white/20 transition-all'
-              >
-                <Users className='w-8 h-8 text-[#fc9928] mb-2' />
-                <div className='text-sm font-semibold text-white'>Admin Portal</div>
-                <div className='text-xs text-white/70 mt-1'>System management</div>
-              </Link>
-            </div>
+          {/* CTA Buttons */}
+          <div className='flex flex-wrap justify-center gap-4 mb-16'>
+            <Link
+              href='/login'
+              className='inline-flex items-center justify-center px-10 py-5 rounded-xl bg-brand-secondary text-white font-bold text-lg shadow-2xl hover:scale-105 transition-transform duration-300'
+            >
+              Access Portal
+              <ArrowRight className='ml-2 w-6 h-6' />
+            </Link>
+            <Link
+              href='/#modules'
+              className='inline-flex items-center justify-center px-10 py-5 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white font-bold text-lg hover:bg-white/15 transition-all duration-300'
+            >
+              Learn More
+            </Link>
+          </div>
+
+          {/* Quick Access Cards */}
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto'>
+            <Link
+              href='/login'
+              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+            >
+              <GraduationCap className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
+              <div className='text-lg font-bold text-white mb-2'>Student</div>
+              <div className='text-sm text-indigo-100'>View results & progress</div>
+            </Link>
+
+            <Link
+              href='/login'
+              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+            >
+              <BookOpen className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
+              <div className='text-lg font-bold text-white mb-2'>Faculty</div>
+              <div className='text-sm text-indigo-100'>Manage courses</div>
+            </Link>
+
+            <Link
+              href='/login'
+              className='group bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-300'
+            >
+              <Users className='w-12 h-12 text-brand-secondary mb-3 mx-auto' />
+              <div className='text-lg font-bold text-white mb-2'>Admin</div>
+              <div className='text-sm text-indigo-100'>System management</div>
+            </Link>
           </div>
         </div>
       </div>
