@@ -1,76 +1,105 @@
+'use client';
+
 import Image from 'next/image';
-import { Linkedin, Github, Award } from 'lucide-react';
+import { Linkedin, Github, Award, Sparkles } from 'lucide-react';
 import { supervisor, teamMembers } from '@/constants/landing-page';
 
 export default function TeamSection() {
   return (
-    <div id="team" className='relative py-24 bg-linear-to-b from-slate-50 to-white scroll-mt-20 overflow-hidden'>
-      {/* Decorative Background */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-20 left-10 w-64 h-64 landing-decorative-blur-1 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-64 h-64 landing-decorative-blur-2 rounded-full blur-3xl"></div>
+    <div id="team" className='relative py-32 bg-white scroll-mt-20 overflow-hidden'>
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-primary rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-primary-light rounded-full blur-3xl"></div>
       </div>
 
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
-        <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
-            OUR TEAM
-          </span>
-          <h2 className='text-4xl md:text-5xl font-extrabold landing-text-heading mb-4'>
+        <div className='text-center mb-20'>
+          <div className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 mb-6'>
+            <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-primary)' }} />
+            <span className='text-sm font-semibold' style={{ color: 'var(--brand-primary)' }}>
+              OUR TEAM
+            </span>
+          </div>
+          <h2 className='text-5xl md:text-6xl font-extrabold mb-6' style={{ color: 'var(--text-heading)' }}>
             Meet the Team
           </h2>
-          <div className='w-24 h-1.5 brand-gradient mx-auto rounded-full mb-6'></div>
-          <p className='text-xl landing-text-body max-w-2xl mx-auto'>
-            Dedicated professionals building the future of education
+          <p className='text-lg max-w-2xl mx-auto' style={{ color: 'var(--text-body)' }}>
+            Passionate developers and designers dedicated to transforming education through technology
           </p>
         </div>
 
-        {/* Supervisor Card - Featured */}
-        <div className='max-w-2xl mx-auto mb-16'>
+        {/* Supervisor Card - Elegant & Featured */}
+        <div className='max-w-3xl mx-auto mb-24'>
           <div className='relative group'>
-            {/* Glow effect */}
-            <div className='absolute -inset-4 brand-gradient rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity'></div>
+            {/* Subtle glow on hover */}
+            <div className='absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500'
+              style={{ 
+                background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light))',
+                filter: 'blur(20px)'
+              }}
+            ></div>
             
-            <div className='relative bg-white rounded-3xl shadow-2xl border-2 border-slate-100 overflow-hidden'>
-              <div className='p-8 sm:p-10'>
-                <div className='flex flex-col sm:flex-row items-center gap-8'>
-                  {/* Photo */}
-                  <div className='relative'>
-                    <div className='absolute -inset-2 brand-gradient rounded-2xl blur-lg opacity-50'></div>
-                    <div className='relative w-32 h-32 rounded-2xl overflow-hidden ring-4 ring-white shadow-xl'>
+            <div className='relative bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden backdrop-blur-sm'>
+              <div className='p-10 sm:p-12'>
+                <div className='flex flex-col sm:flex-row items-center gap-10'>
+                  {/* Photo with elegant frame */}
+                  <div className='relative shrink-0'>
+                    <div className='absolute -inset-3 rounded-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500'
+                      style={{ 
+                        background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light))',
+                        filter: 'blur(15px)'
+                      }}
+                    ></div>
+                    <div className='relative w-36 h-36 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl transform group-hover:scale-105 transition-transform duration-500'>
                       <Image
                         src={supervisor.picture}
                         alt={supervisor.name}
-                        width={128}
-                        height={128}
+                        width={144}
+                        height={144}
                         className='object-cover w-full h-full'
                       />
                     </div>
-                    {/* Badge */}
-                    <div className='absolute -bottom-2 -right-2 w-10 h-10 brand-gradient rounded-full flex items-center justify-center shadow-lg'>
-                      <Award className='w-5 h-5 text-white' />
+                    {/* Elegant badge */}
+                    <div className='absolute -bottom-3 -right-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300'
+                      style={{ 
+                        backgroundColor: 'var(--brand-primary)'
+                      }}
+                    >
+                      <Award className='w-6 h-6 text-white' />
                     </div>
                   </div>
                   
                   {/* Info */}
-                  <div className='flex-1 text-center sm:text-left'>
-                    <h3 className='text-2xl font-bold landing-text-heading mb-2'>
-                      {supervisor.name}
-                    </h3>
-                    <p className='text-brand-primary font-semibold mb-2'>
-                      {supervisor.role}
-                    </p>
-                    <p className='landing-text-body text-sm mb-6'>
-                      {supervisor.designation}
-                    </p>
+                  <div className='flex-1 text-center sm:text-left space-y-4'>
+                    <div>
+                      <h3 className='text-3xl font-bold mb-2' style={{ color: 'var(--text-heading)' }}>
+                        {supervisor.name}
+                      </h3>
+                      <p className='text-lg font-semibold mb-2' style={{ color: 'var(--brand-primary)' }}>
+                        {supervisor.role}
+                      </p>
+                      <p className='text-base' style={{ color: 'var(--text-body)' }}>
+                        {supervisor.designation}
+                      </p>
+                    </div>
                     <a
                       href={supervisor.linkedin}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='inline-flex items-center px-6 py-3 rounded-xl brand-gradient text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg'
+                      className='inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300'
+                      style={{ 
+                        backgroundColor: 'var(--brand-primary)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--brand-primary-dark)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
+                      }}
                     >
-                      <Linkedin className='w-5 h-5 mr-2' />
+                      <Linkedin className='w-5 h-5' />
                       Connect on LinkedIn
                     </a>
                   </div>
@@ -80,39 +109,50 @@ export default function TeamSection() {
           </div>
         </div>
 
-        {/* Team Grid */}
-        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6'>
+        {/* Team Grid - Modern & Clean */}
+        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8'>
           {teamMembers.map((member, index) => (
             <div
               key={index}
-              className='group bg-white rounded-2xl p-6 border-2 border-slate-100 hover:border-brand-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-2'
+              className='group relative bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1'
             >
-              <div className='relative mb-4'>
-                <div className='absolute -inset-1 brand-gradient rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity'></div>
-                <div className='relative w-full aspect-square rounded-xl overflow-hidden ring-2 ring-slate-100 group-hover:ring-brand-primary transition-all'>
+              {/* Photo */}
+              <div className='relative mb-5'>
+                <div className='relative w-full aspect-square rounded-2xl overflow-hidden ring-1 ring-gray-200 group-hover:ring-gray-300 transition-all duration-300'>
                   <Image
                     src={member.picture}
                     alt={member.name}
                     width={200}
                     height={200}
-                    className='object-cover w-full h-full'
+                    className='object-cover w-full h-full transition-transform duration-300 group-hover:scale-105'
                   />
                 </div>
               </div>
               
-              <h3 className='text-sm font-bold landing-text-heading mb-1 text-center'>
-                {member.name}
-              </h3>
-              <p className='text-brand-primary text-xs font-semibold mb-4 text-center'>
-                {member.role}
-              </p>
+              {/* Info */}
+              <div className='text-center space-y-2 mb-5'>
+                <h3 className='text-base font-bold transition-colors duration-300' style={{ color: 'var(--text-heading)' }}>
+                  {member.name}
+                </h3>
+                <p className='text-sm font-semibold' style={{ color: 'var(--brand-primary)' }}>
+                  {member.role}
+                </p>
+              </div>
               
-              <div className='flex justify-center gap-2'>
+              {/* Social Links */}
+              <div className='flex justify-center gap-3'>
                 <a
                   href={member.github}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-all duration-300'
+                  className='p-2.5 rounded-xl border border-gray-200 hover:border-gray-900 hover:bg-gray-900 transition-all duration-300'
+                  style={{ color: 'var(--text-body)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--white)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-body)';
+                  }}
                 >
                   <Github className='w-4 h-4' />
                 </a>
@@ -120,8 +160,20 @@ export default function TeamSection() {
                   href={member.linkedin}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='p-2 rounded-lg landing-badge hover:bg-brand-primary hover:text-white transition-all duration-300'
-                  style={{ background: 'var(--badge-bg)', color: 'var(--badge-text)' }}
+                  className='p-2.5 rounded-xl border transition-all duration-300'
+                  style={{ 
+                    borderColor: 'var(--brand-primary)',
+                    backgroundColor: 'var(--brand-primary-opacity-10)',
+                    color: 'var(--brand-primary)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
+                    e.currentTarget.style.color = 'var(--white)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-10)';
+                    e.currentTarget.style.color = 'var(--brand-primary)';
+                  }}
                 >
                   <Linkedin className='w-4 h-4' />
                 </a>
