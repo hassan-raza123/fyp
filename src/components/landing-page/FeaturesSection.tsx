@@ -5,7 +5,8 @@ export default function FeaturesSection() {
     <div id="modules" className='relative py-24 bg-white scroll-mt-20 overflow-hidden'>
       {/* Background Image with Light Overlay */}
       <div className="absolute inset-0 bg-[url('/bg/istockphoto-1480277406-612x612.jpg')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/65 to-white/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/70 to-white/75" />
+      
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
@@ -25,7 +26,7 @@ export default function FeaturesSection() {
             return (
               <div
                 key={index}
-                className='group landing-card-gradient rounded-2xl shadow-lg p-8 border border-slate-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 hover:-translate-y-1'
+                className='group bg-white rounded-2xl shadow-lg p-8 border border-slate-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 hover:-translate-y-1'
               >
                 <div className='w-14 h-14 rounded-xl landing-icon-bg flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <IconComponent className='h-6 w-6 text-white' />

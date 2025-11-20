@@ -6,7 +6,8 @@ export default function UserRolesSection() {
     <div id="portals" className='relative py-24 landing-section-gradient scroll-mt-20 overflow-hidden'>
       {/* Background Image with Light Overlay */}
       <div className="absolute inset-0 bg-[url('/bg/5007.webp')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/65 via-blue-50/65 to-slate-50/65" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/70 via-blue-50/70 to-slate-50/70" />
+      
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
@@ -26,7 +27,7 @@ export default function UserRolesSection() {
             return (
               <div
                 key={index}
-                className='group landing-card rounded-2xl shadow-xl p-8 border-2 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
+                className='group bg-white rounded-2xl shadow-xl p-8 border-2 border-slate-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2'
               >
                 <div className='mb-6 w-16 h-16 rounded-2xl landing-icon-bg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <IconComponent className='h-8 w-8 text-white' />
