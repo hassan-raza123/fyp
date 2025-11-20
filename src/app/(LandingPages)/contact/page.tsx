@@ -15,14 +15,13 @@ export default function Contact() {
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
           <div className='max-w-3xl mx-auto text-center'>
             <h1 className='text-4xl font-bold text-primary-foreground mb-6 lg:text-5xl'>
-              Get in Touch with{' '}
-              <span className='bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
-                Smart Campus for MNSUET
+              Contact Us
+              <span className='block bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
+                Get in Touch
               </span>
             </h1>
             <p className='text-xl text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed'>
-              Have questions? We&apos;re here to help you implement and get the
-              most out of Smart Campus for MNSUET.
+              Have questions about the OBE Management System? Reach out to us.
             </p>
           </div>
         </div>
@@ -88,21 +87,12 @@ export default function Contact() {
                 </div>
               </div>
 
-              {/* Visit Us Section */}
-              <div className='mt-12 bg-primary/5 rounded-xl p-8'>
-                <h3 className='text-xl font-bold text-foreground mb-4'>
-                  Visit Us
-                </h3>
-                <div className='space-y-2 text-muted-foreground'>
-                  <p>
-                    We&apos;re located at MNS University of Engineering and
-                    Technology, Multan.
-                  </p>
-                  <p>
-                    Feel free to stop by during office hours or schedule an
-                    appointment.
-                  </p>
-                </div>
+              {/* Note Section */}
+              <div className='mt-12 bg-primary/5 rounded-xl p-6'>
+                <p className='text-muted-foreground text-sm'>
+                  This system is developed as a Final Year Project for MNS University 
+                  of Engineering and Technology by the Computer Science Department.
+                </p>
               </div>
             </div>
           </div>

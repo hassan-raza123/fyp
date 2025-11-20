@@ -17,75 +17,75 @@ import NavbarClient from '@/components/landing-page/NavbarClient';
 const features = [
   {
     icon: <Users className='h-6 w-6' />,
-    title: 'Student Management',
+    title: 'User Management',
     description:
-      'Comprehensive student profiles, enrollment, and academic tracking',
-  },
-  {
-    icon: <FileBarChart className='h-6 w-6' />,
-    title: 'OBE Assessment',
-    description: 'CLO/PLO mapping, attainment tracking, and outcome analysis',
-  },
-  {
-    icon: <PieChart className='h-6 w-6' />,
-    title: 'Analytics Dashboard',
-    description: 'Real-time insights, performance metrics, and detailed reports',
+      'Comprehensive management for students, faculty, and administrators',
   },
   {
     icon: <Book className='h-6 w-6' />,
-    title: 'Course Management',
-    description: 'Course offerings, sections, and curriculum management',
+    title: 'Academic Structure',
+    description: 'Programs, courses, batches, sections, and course offerings',
   },
   {
-    icon: <Shield className='h-6 w-6' />,
-    title: 'Secure & Reliable',
-    description: 'Enterprise-grade security with role-based access control',
+    icon: <FileBarChart className='h-6 w-6' />,
+    title: 'Assessments',
+    description: 'Complete assessment management with CLO/PLO mapping',
+  },
+  {
+    icon: <CheckCircle className='h-6 w-6' />,
+    title: 'Results & Grading',
+    description: 'Marks entry, result evaluation, and transcript generation',
+  },
+  {
+    icon: <PieChart className='h-6 w-6' />,
+    title: 'OBE Analytics',
+    description: 'CLO/PLO/LLO attainment tracking and outcome analysis',
   },
   {
     icon: <Bell className='h-6 w-6' />,
-    title: 'Notifications',
-    description: 'Automated alerts and updates for all stakeholders',
+    title: 'Reports & Notifications',
+    description: 'Comprehensive reports and real-time notifications',
   },
 ];
 
 const statistics = [
-  { value: '99.9%', label: 'System Uptime' },
-  { value: '50%', label: 'Time Saved' },
-  { value: '24/7', label: 'Support Available' },
+  { value: '5000+', label: 'Students' },
+  { value: '200+', label: 'Faculty Members' },
+  { value: '50+', label: 'Programs' },
 ];
 
 const userRoles = [
   {
     icon: <GraduationCap className='h-8 w-8 text-primary' />,
-    title: 'For Administration',
-    description: 'Complete system oversight and management',
+    title: 'Admin Portal',
+    description: 'Complete control over academic operations',
     features: [
-      'User management',
-      'Analytics access',
-      'Policy control',
-      'System configuration',
+      'Manage students, faculty & programs',
+      'Configure courses & offerings',
+      'Monitor CLO/PLO attainments',
+      'Generate comprehensive reports',
     ],
   },
   {
     icon: <Book className='h-8 w-8 text-primary' />,
-    title: 'For Faculty',
-    description: 'Streamlined tools for efficient management',
+    title: 'Faculty Portal',
+    description: 'Efficient tools for teaching and assessment',
     features: [
-      'Quick marking',
-      'Detailed reports',
-      'Performance tracking',
-      'Class management',
+      'Manage course sections',
+      'Create & grade assessments',
+      'Track student performance',
+      'View CLO/PLO analytics',
     ],
   },
   {
     icon: <Users className='h-8 w-8 text-primary' />,
-    title: 'For Students',
-    description: 'Easy monitoring and access',
+    title: 'Student Portal',
+    description: 'Access to academic information',
     features: [
-      'Attendance history',
-      'Progress tracking',
-      'Instant alerts',
-      'Mobile access',
+      'View enrolled courses',
+      'Check assessment results',
+      'Track CLO/PLO progress',
+      'Download transcript',
     ],
   },
 ];
@@ -107,16 +107,15 @@ export default function LandingPage() {
             </div>
 
             <h1 className='text-5xl font-bold text-white mb-6 lg:text-6xl tracking-tight leading-tight'>
-              Smart Campus Management for
+              Outcome-Based Education Management System
               <span className='block text-white mt-2'>
                 MNS University of Engineering & Technology
               </span>
             </h1>
 
             <p className='text-lg text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed'>
-              A comprehensive education management system designed to streamline 
-              attendance tracking, assessment management, and academic progress monitoring 
-              for modern universities.
+              Comprehensive OBE management system for academic programs, assessments, 
+              results, and CLO/PLO attainment tracking at MNS UET.
             </p>
 
             <div className='flex flex-col sm:flex-row gap-4 justify-center'>
@@ -159,10 +158,10 @@ export default function LandingPage() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24'>
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-bold text-slate-900 mb-4'>
-            Key Features
+            System Features
           </h2>
           <p className='text-lg text-slate-600 max-w-2xl mx-auto'>
-            Comprehensive tools designed for modern educational institutions
+            Core modules for complete academic and OBE management
           </p>
         </div>
 
@@ -191,10 +190,10 @@ export default function LandingPage() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-16'>
             <h2 className='text-4xl font-bold text-slate-900 mb-4'>
-              Built for Everyone
+              Three Dedicated Portals
             </h2>
             <p className='text-lg text-slate-600 max-w-2xl mx-auto'>
-              Tailored solutions for administration, faculty, and students
+              Separate interfaces for admins, faculty, and students
             </p>
           </div>
 
@@ -235,16 +234,16 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center'>
           <h2 className='text-3xl font-bold text-white mb-4'>
-            Ready to Transform Your Institution?
+            Access the System
           </h2>
           <p className='text-lg text-white/90 mb-8 max-w-2xl mx-auto'>
-            Join leading universities leveraging our comprehensive OBE management system
+            Login with your credentials to access your portal
           </p>
           <Link
             href='/login'
             className='inline-flex items-center px-8 py-4 rounded-lg bg-white text-blue-900 font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg'
           >
-            Get Started Now
+            Login to Portal
             <ArrowRight className='ml-2 h-5 w-5' />
           </Link>
         </div>

@@ -9,7 +9,6 @@ import {
   FileCheck,
   Calculator,
   BarChart3,
-  Smartphone,
   Shield,
   ArrowRight,
 } from 'lucide-react';
@@ -21,112 +20,101 @@ const features = [
     icon: <Users className='h-8 w-8 text-white' />,
     title: 'User Management',
     description:
-      'Comprehensive user management system with role-based access control',
+      'Complete management of students, faculty, and administrators',
     items: [
-      'Multi-level role-based access control',
-      'Comprehensive user profile management',
-      'Secure authentication and authorization',
-      'Bulk user import capabilities',
+      'Student profiles and enrollment',
+      'Faculty member management',
+      'Admin and role management',
+      'Bulk student import',
     ],
   },
   {
     icon: <Building2 className='h-8 w-8 text-white' />,
-    title: 'University Structure',
-    description: 'Complete university structure management system',
+    title: 'Academic Structure',
+    description: 'Program and course management',
     items: [
-      'Department and program configuration',
+      'Programs and departments',
       'Course catalog management',
-      'Academic session and calendar setup',
-      'Batch/section organization',
+      'Batch organization',
+      'Section management',
     ],
   },
   {
     icon: <Calendar className='h-8 w-8 text-white' />,
-    title: 'Class Scheduling',
+    title: 'Course Offerings',
     description:
-      'Intelligent scheduling system for optimal resource utilization',
+      'Semester-wise course offerings and enrollments',
     items: [
-      'Intelligent class scheduling with conflict detection',
-      'Room capacity and availability management',
-      'Faculty workload management',
-      'Interactive schedule visualization',
-    ],
-  },
-  {
-    icon: <ClipboardCheck className='h-8 w-8 text-white' />,
-    title: 'Attendance Management',
-    description: 'Advanced attendance tracking and management',
-    items: [
-      'Real-time attendance tracking',
-      'Mobile-friendly attendance marking',
-      'Leave application processing',
-      'Attendance statistics and eligibility calculation',
+      'Create course offerings per semester',
+      'Assign faculty to courses',
+      'Section allocation',
+      'Student enrollment',
     ],
   },
   {
     icon: <GraduationCap className='h-8 w-8 text-white' />,
-    title: 'OBE Framework',
-    description: 'Comprehensive Outcome-Based Education implementation',
+    title: 'CLO/PLO/LLO Management',
+    description: 'Outcome-Based Education framework',
     items: [
-      'PLO (Program Learning Outcome) management',
-      'CLO (Course Learning Outcome) creation and mapping',
-      "Bloom's taxonomy level assignment",
-      'SDG (Sustainable Development Goals) alignment',
+      'Program Learning Outcomes (PLOs)',
+      'Course Learning Outcomes (CLOs)',
+      'Lab Learning Outcomes (LLOs)',
+      'CLO-PLO and LLO-PLO mappings',
     ],
   },
   {
     icon: <FileCheck className='h-8 w-8 text-white' />,
     title: 'Assessment Management',
-    description: 'Flexible and comprehensive assessment system',
+    description: 'Create and manage course assessments',
     items: [
-      'Flexible assessment type configuration',
-      'CLO-mapped assessments',
-      'Comprehensive grading system',
-      'Assessment statistics and analysis',
+      'Create assessments with CLO mapping',
+      'Multiple assessment types',
+      'Assessment items configuration',
+      'CLO-mapped evaluation',
     ],
   },
   {
     icon: <Calculator className='h-8 w-8 text-white' />,
-    title: 'Results Processing',
-    description: 'Automated result processing and analysis',
+    title: 'Results & Grading',
+    description: 'Marks entry and result management',
     items: [
-      'Automated course result calculation',
-      'GPA/CGPA computation',
-      'CLO achievement tracking',
-      'PLO attainment measurement',
+      'Marks entry for assessments',
+      'Result evaluation and moderation',
+      'Grade management',
+      'Transcript generation',
     ],
   },
   {
     icon: <BarChart3 className='h-8 w-8 text-white' />,
-    title: 'Analytics & Reporting',
-    description: 'Comprehensive analytics and reporting tools',
+    title: 'OBE Analytics',
+    description: 'Track learning outcome attainments',
     items: [
-      'Customizable dashboard visualizations',
-      'Standard and custom report generation',
-      'Data export functionality',
-      'Statistical analysis tools',
+      'CLO attainment tracking',
+      'PLO attainment measurement',
+      'LLO attainment analysis',
+      'Course and student analytics',
     ],
   },
   {
-    icon: <Smartphone className='h-8 w-8 text-white' />,
-    title: 'Mobile Accessibility',
-    description: 'Full mobile support for all users',
+    icon: <ClipboardCheck className='h-8 w-8 text-white' />,
+    title: 'Reports & Transcripts',
+    description: 'Generate academic reports',
     items: [
-      'Responsive design for all devices',
-      'Faculty-focused mobile attendance marking',
-      'Student portal for mobile access',
-      'Real-time notifications',
+      'Student transcripts',
+      'OBE reports',
+      'Performance reports',
+      'Analytical dashboards',
     ],
   },
   {
     icon: <Shield className='h-8 w-8 text-white' />,
-    title: 'Security & Compliance',
-    description: 'Enterprise-grade security and compliance',
+    title: 'System Features',
+    description: 'Additional system capabilities',
     items: [
-      'Data encryption and protection',
-      'Role-based access controls',
-      'Audit logging and tracking',
-      'Backup and recovery solutions',
+      'Role-based access control',
+      'Notifications system',
+      'Session management',
+      'Settings configuration',
     ],
   },
 ];
@@ -142,15 +130,14 @@ export default function FeaturesPage() {
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
           <div className='max-w-3xl mx-auto text-center'>
             <h1 className='text-4xl font-bold text-primary-foreground mb-6 lg:text-5xl'>
-              Powerful Features for
+              System Modules
               <span className='block bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
-                Modern Education
+                Comprehensive OBE Management
               </span>
             </h1>
             <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
-              Discover how Smart Campus for MNSUET&apos;s comprehensive features
-              can transform your institution&apos;s management and educational
-              processes.
+              All the essential modules for managing academic programs, assessments, 
+              and outcome-based education at MNS UET.
             </p>
           </div>
         </div>
@@ -194,28 +181,18 @@ export default function FeaturesPage() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='bg-primary/10 backdrop-blur-md border border-primary/20 rounded-3xl p-12 text-center'>
             <h2 className='text-3xl font-bold text-primary-foreground mb-6'>
-              Ready to Transform Your Institution?
+              Access the System
             </h2>
             <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto'>
-              Experience the power of Smart Campus for MNSUET&apos;s
-              comprehensive features and take your institution to the next
-              level.
+              Login with your credentials to start using the OBE management system.
             </p>
-            <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-              <Link
-                href='/login'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-              >
-                Get Started
-                <ArrowRight className='ml-2 h-5 w-5' />
-              </Link>
-              <Link
-                href='/demo'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-primary/10 backdrop-blur-md border border-primary/20 text-primary-foreground hover:bg-primary/20 transition-all duration-300'
-              >
-                Request Demo
-              </Link>
-            </div>
+            <Link
+              href='/login'
+              className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+            >
+              Login to Portal
+              <ArrowRight className='ml-2 h-5 w-5' />
+            </Link>
           </div>
         </div>
       </div>

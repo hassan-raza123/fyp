@@ -1,13 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Target,
-  Lightbulb,
   ArrowRight,
-  GraduationCap,
-  BookOpen,
-  Shield,
-  Clock,
   Github,
   Linkedin,
 } from 'lucide-react';
@@ -62,35 +56,6 @@ const teamMembers = [
   },
 ];
 
-const values = [
-  {
-    icon: <GraduationCap className='h-8 w-8 text-white' />,
-    title: 'Educational Excellence',
-    description: 'Committed to enhancing learning outcomes through technology',
-  },
-  {
-    icon: <BookOpen className='h-8 w-8 text-white' />,
-    title: 'Innovation',
-    description: 'Constantly pushing boundaries in educational technology',
-  },
-  {
-    icon: <Shield className='h-8 w-8 text-white' />,
-    title: 'Integrity',
-    description: 'Maintaining highest standards of ethics and transparency',
-  },
-  {
-    icon: <Clock className='h-8 w-8 text-white' />,
-    title: 'Reliability',
-    description: 'Consistent and dependable service for our clients',
-  },
-];
-
-const stats = [
-  { value: '50+', label: 'Institutions' },
-  { value: '100K+', label: 'Students' },
-  { value: '10K+', label: 'Faculty' },
-  { value: '99.9%', label: 'Satisfaction' },
-];
 
 export default function AboutPage() {
   return (
@@ -103,75 +68,45 @@ export default function AboutPage() {
         <div className='relative max-w-7xl mx-auto px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
           <div className='max-w-3xl mx-auto text-center'>
             <h1 className='text-4xl font-bold text-primary-foreground mb-6 lg:text-5xl'>
-              About
+              About the
               <span className='block bg-gradient-to-r from-white via-white/90 to-white/80 text-transparent bg-clip-text'>
-                Smart Campus for MNSUET
+                OBE Management System
               </span>
             </h1>
             <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed'>
-              Transforming education through innovative technology solutions
+              Final Year Project - MNS University of Engineering & Technology
             </p>
           </div>
         </div>
       </div>
 
-      {/* Mission & Vision */}
+      {/* Project Overview */}
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-12'>
+        <div className='max-w-3xl mx-auto'>
           <div className='bg-card rounded-xl shadow-lg p-8 border border-border'>
-            <div className='w-14 h-14 rounded-xl bg-linear-to-br from-primary via-primary to-accent flex items-center justify-center mb-6'>
-              <Target className='h-8 w-8 text-white' />
-            </div>
             <h3 className='text-2xl font-bold text-foreground mb-4'>
-              Our Mission
+              Project Overview
             </h3>
-            <p className='text-muted-foreground leading-relaxed'>
-              To revolutionize educational management through cutting-edge
-              technology, making it more efficient, transparent, and
-              outcome-focused. We aim to empower educational institutions with
-              tools that enhance learning experiences and administrative
-              efficiency.
+            <p className='text-muted-foreground leading-relaxed mb-4'>
+              This Outcome-Based Education (OBE) Management System is designed specifically for 
+              MNS University of Engineering & Technology to streamline academic operations, 
+              assessment management, and learning outcome tracking.
             </p>
-          </div>
-          <div className='bg-card rounded-xl shadow-lg p-8 border border-border'>
-            <div className='w-14 h-14 rounded-xl bg-linear-to-br from-primary via-primary to-accent flex items-center justify-center mb-6'>
-              <Lightbulb className='h-8 w-8 text-white' />
-            </div>
-            <h3 className='text-2xl font-bold text-foreground mb-4'>
-              Our Vision
-            </h3>
             <p className='text-muted-foreground leading-relaxed'>
-              To be the global leader in educational management solutions,
-              setting new standards for academic excellence and administrative
-              efficiency. We envision a future where technology seamlessly
-              enhances every aspect of education.
+              The system provides comprehensive tools for managing students, faculty, courses, 
+              assessments, and tracking CLO/PLO attainments, making OBE implementation 
+              efficient and transparent.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className='bg-muted py-16'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
-            {stats.map((stat, index) => (
-              <div key={index} className='text-center'>
-                <div className='text-4xl font-bold text-primary mb-2'>
-                  {stat.value}
-                </div>
-                <div className='text-muted-foreground'>{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
       {/* Team Section */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-muted'>
         <div className='text-center mb-16'>
-          <h2 className='text-4xl font-bold text-foreground mb-4'>Our Team</h2>
+          <h2 className='text-4xl font-bold text-foreground mb-4'>Development Team</h2>
           <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
-            Meet the brilliant minds behind Smart Campus for MNSUET
+            Final Year Project Team - Computer Science Department
           </p>
         </div>
 
@@ -349,62 +284,23 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Values Section */}
-      <div className='bg-muted py-16'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='text-center mb-16'>
-            <h2 className='text-3xl font-bold text-foreground mb-4'>
-              Our Values
-            </h2>
-            <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
-              The principles that guide everything we do
-            </p>
-          </div>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className='bg-card rounded-xl shadow-lg p-6 border border-border hover:scale-105 hover:shadow-xl transition-all duration-300'
-              >
-                <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center mb-4'>
-                  {value.icon}
-                </div>
-                <h3 className='text-xl font-semibold text-foreground mb-2'>
-                  {value.title}
-                </h3>
-                <p className='text-muted-foreground'>{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* CTA Section */}
       <div className='bg-gradient-to-br from-primary via-primary to-accent py-16'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='bg-primary/10 backdrop-blur-md border border-primary/20 rounded-3xl p-12 text-center'>
             <h2 className='text-3xl font-bold text-primary-foreground mb-6'>
-              Join Us in Transforming Education
+              Access the System
             </h2>
             <p className='text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto'>
-              Be part of the educational revolution with Smart Campus for MNSUET
+              Login with your credentials to access the OBE management portal
             </p>
-            <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-              <Link
+            <Link
               href='/login'
               className='inline-flex items-center px-8 py-4 rounded-xl bg-card text-primary font-semibold hover:bg-card/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-              >
-                Get Started
-                <ArrowRight className='ml-2 h-5 w-5' />
-              </Link>
-              <Link
-                href='/contact'
-                className='inline-flex items-center px-8 py-4 rounded-xl bg-primary/10 backdrop-blur-md border border-primary/20 text-primary-foreground hover:bg-primary/20 transition-all duration-300'
-              >
-                Contact Us
-              </Link>
-            </div>
+            >
+              Login to Portal
+              <ArrowRight className='ml-2 h-5 w-5' />
+            </Link>
           </div>
         </div>
       </div>
