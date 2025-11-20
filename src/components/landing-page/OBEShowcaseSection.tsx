@@ -9,7 +9,7 @@ const showcaseItems = [
     id: 'benefits',
     title: 'Why EduTrack?',
     subtitle: 'Smart OBE Management',
-    image: '/info-images/Benefits-of-Outcome-Based-Education-L-650x650.webp',
+    image: '/info-images/obe-benefits.webp',
     icon: Zap,
     features: [
       { icon: Target, text: 'Automated CLO & PLO Tracking' },
@@ -22,7 +22,7 @@ const showcaseItems = [
     id: 'framework',
     title: 'PDCA Framework',
     subtitle: 'How EduTrack Works',
-    image: '/info-images/Outcome-based-education-OBE-framework-consistency-with-PDCAPlan-Do-Check-Act-principle.png',
+    image: '/info-images/pdca-framework.png',
     icon: Workflow,
     features: [
       { icon: Workflow, text: 'Plan: Define CLOs & PLOs' },
@@ -35,7 +35,7 @@ const showcaseItems = [
     id: 'mapping',
     title: 'CLO-PLO Mapping',
     subtitle: 'Intelligent Outcome Alignment',
-    image: '/info-images/CO-PO-Mapping-Process.jpg',
+    image: '/info-images/clo-plo-mapping.jpg',
     icon: GitBranch,
     features: [
       { icon: Target, text: 'Automated CLO Tracking' },
