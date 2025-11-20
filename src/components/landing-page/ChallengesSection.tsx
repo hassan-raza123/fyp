@@ -1,151 +1,185 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Shield, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sparkles, Target, Zap, BarChart3, Users } from 'lucide-react';
 
 const solutions = [
   {
-    icon: Shield,
-    title: 'Simplified Management',
-    description: 'Automate complex OBE calculations and reporting'
-  },
-  {
     icon: Zap,
-    title: 'Instant Results',
-    description: 'Real-time attainment calculation and analytics'
+    title: 'Automated Calculations',
+    description: 'Automatic CLO, PLO, and LLO attainment calculations with real-time updates for accurate OBE tracking.',
+    color: 'var(--brand-secondary)'
   },
   {
-    icon: CheckCircle2,
-    title: 'Complete Automation',
-    description: 'From assessment to final OBE reports'
+    icon: Target,
+    title: 'Centralized Management',
+    description: 'All departments, programs, and courses managed in one unified system for the entire university.',
+    color: 'var(--brand-primary)'
+  },
+  {
+    icon: BarChart3,
+    title: 'Comprehensive Reports',
+    description: 'Generate detailed OBE reports, assessment analytics, and performance insights with a single click.',
+    color: 'var(--brand-secondary)'
+  },
+  {
+    icon: Users,
+    title: 'Role-Based Access',
+    description: 'Faculty, students, and administrators each have tailored dashboards for efficient workflow.',
+    color: 'var(--brand-primary)'
   }
 ];
 
 export default function ChallengesSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className='py-24 bg-white'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='relative py-24 overflow-hidden'>
+      {/* Background Image */}
+      <div 
+        className='absolute inset-0 bg-cover bg-center bg-no-repeat'
+        style={{ 
+          backgroundImage: "url('/bg/cs-prospective-bs.png')"
+        }}
+      ></div>
+      
+      {/* White Overlay */}
+      <div 
+        className='absolute inset-0'
+        style={{ 
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.70))'
+        }}
+      ></div>
+
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+          animation: scaleIn 0.6s ease-out forwards;
+        }
+      `}</style>
+
+      {/* Decorative Background Elements */}
+      <div className='absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-secondary)' }}></div>
+      <div className='absolute bottom-20 right-10 w-72 h-72 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-primary)' }}></div>
+
+      <div ref={sectionRef} className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
-        <div className='text-center mb-16'>
-          <span 
-            className='inline-block px-4 py-2 rounded-full font-semibold text-sm mb-4'
+        <div className={`text-center mb-20 ${isVisible ? 'animate-fade-up' : 'opacity-0'}`}>
+          <div className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6' 
             style={{ 
-              backgroundColor: 'var(--brand-primary-opacity-10)',
-              color: 'var(--brand-primary)'
+              backgroundColor: 'var(--brand-secondary-opacity-10)',
+              border: '1px solid var(--brand-secondary-opacity-20)'
             }}
           >
-            SMART SOLUTIONS
-          </span>
-          <h2 className='text-4xl md:text-5xl font-extrabold mb-4' style={{ color: 'var(--text-heading)' }}>
-            Effortless OBE Implementation
+            <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-secondary)' }} />
+            <span className='text-sm font-bold uppercase tracking-wider' style={{ color: 'var(--brand-secondary)' }}>
+              Why Choose Us
+            </span>
+          </div>
+          <h2 className='text-5xl md:text-6xl font-extrabold mb-6' style={{ color: 'var(--text-heading)' }}>
+            Streamlined OBE
+            <span className='block mt-2' style={{ color: 'var(--brand-secondary)' }}>For MNS UET</span>
           </h2>
-          <div 
-            className='w-24 h-1.5 mx-auto rounded-full mb-6'
-            style={{ 
-              background: 'linear-gradient(90deg, var(--brand-primary), var(--brand-secondary))'
-            }}
-          ></div>
-          <p className='text-xl max-w-2xl mx-auto' style={{ color: 'var(--text-body)' }}>
-            Eliminate manual work with intelligent automation
+          <p className='text-xl max-w-3xl mx-auto leading-relaxed' style={{ color: 'var(--text-body)' }}>
+            A complete system designed to simplify outcome-based education management across all departments and programs.
           </p>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-          {/* Left - Image */}
-          <div className='relative'>
-            <div 
-              className='absolute -inset-4 rounded-3xl blur-2xl opacity-20'
-              style={{ 
-                background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))'
-              }}
-            ></div>
-            <div className='relative bg-white rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-100 transform hover:scale-105 transition-all duration-500'>
-              <Image
-                src='/info-images/Challenges-of-Outcome-Based-Education-L-650x650.webp'
-                alt='OBE Solutions'
-                width={650}
-                height={650}
-                className='w-full h-auto'
-              />
-            </div>
-          </div>
-
-          {/* Right - Solutions */}
-          <div className='space-y-6'>
-            {solutions.map((solution, index) => {
-              const IconComponent = solution.icon;
-              return (
-                <div
-                  key={index}
-                  className='group bg-white rounded-2xl p-6 border-2 transition-all duration-300'
-                  style={{ borderColor: 'var(--gray-200)' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--brand-primary)';
-                    e.currentTarget.style.boxShadow = '0 20px 50px rgba(0, 0, 0, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--gray-200)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <div className='flex items-start gap-4'>
-                    <div 
-                      className='w-14 h-14 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform shrink-0'
-                      style={{ 
-                        background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))'
-                      }}
-                    >
-                      <IconComponent className='w-7 h-7 text-white' />
-                    </div>
-                    <div className='flex-1'>
-                      <h3 
-                        className='text-xl font-bold mb-2 transition-colors'
-                        style={{ color: 'var(--text-heading)' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--brand-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--text-heading)';
-                        }}
-                      >
-                        {solution.title}
-                      </h3>
-                      <p className='leading-relaxed' style={{ color: 'var(--text-body)' }}>
-                        {solution.description}
-                      </p>
-                    </div>
+        {/* Solutions Grid */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {solutions.map((solution, index) => {
+            const IconComponent = solution.icon;
+            return (
+              <div
+                key={index}
+                className={`group relative rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 ${isVisible ? 'animate-fade-up' : 'opacity-0'}`}
+                style={{ 
+                  backgroundColor: 'transparent',
+                  border: `3px solid ${solution.color}`,
+                  animationDelay: `${index * 0.1}s`
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = `0 20px 40px ${solution.color}40`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                }}
+              >
+                
+                <div className='relative'>
+                  {/* Icon */}
+                  <div 
+                    className='w-16 h-16 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300'
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      border: `3px solid ${solution.color}`
+                    }}
+                  >
+                    <IconComponent className='w-8 h-8' style={{ color: solution.color }} />
                   </div>
+                  
+                  {/* Content */}
+                  <h3 className='text-2xl font-bold mb-3 group-hover:translate-x-1 transition-transform drop-shadow-lg' style={{ color: '#000000' }}>
+                    {solution.title}
+                  </h3>
+                  <p className='text-base leading-relaxed font-semibold drop-shadow-md' style={{ color: '#000000' }}>
+                    {solution.description}
+                  </p>
                 </div>
-              );
-            })}
-
-            {/* CTA Card */}
-            <div 
-              className='relative overflow-hidden rounded-2xl p-8 shadow-xl'
-              style={{ 
-                background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))'
-              }}
-            >
-              <div className='absolute inset-0 bg-[url("/grid.svg")] opacity-10'></div>
-              <div className='relative'>
-                <h4 className='text-xl font-bold text-white mb-3'>
-                  Ready to Get Started?
-                </h4>
-                <p className='text-white/90 mb-6'>
-                  Join institutions using EduTrack for seamless OBE management
-                </p>
-                <Link
-                  href='/#portal'
-                  className='inline-flex items-center px-6 py-3 rounded-xl bg-white font-bold transition-all duration-300 shadow-lg hover:shadow-2xl'
-                  style={{ color: 'var(--brand-primary)' }}
-                >
-                  Access Portal
-                  <ArrowRight className='ml-2 w-5 h-5' />
-                </Link>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>
