@@ -6,7 +6,7 @@ export default function HeroSection() {
   return (
     <div 
       className='relative overflow-hidden bg-fixed bg-center bg-cover'
-      style={{ backgroundImage: "url('/bg/mns-university-of-agriculture-multan-campus-building-view_oux5we.jpg')" }}
+      style={{ backgroundImage: "url('/bg/hero-university-building.jpg')" }}
     >
       <NavbarClient />
 

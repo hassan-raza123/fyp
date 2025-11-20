@@ -12,7 +12,7 @@ export default function Footer() {
       <div 
         className='absolute inset-0 bg-cover bg-no-repeat'
         style={{ 
-          backgroundImage: "url('/bg/uni-connect-evaluation-reports.jpg')",
+          backgroundImage: "url('/bg/footer-background.jpg')",
           backgroundPosition: 'center top'
         }}
       ></div>

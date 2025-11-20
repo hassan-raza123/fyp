@@ -6,7 +6,7 @@ export default function CTASection() {
     <div
       id="portal"
       className='relative bg-fixed bg-center bg-cover scroll-mt-20'
-      style={{ backgroundImage: "url('/bg/Newroom-Summer-Graduation-2023.webp')" }}
+      style={{ backgroundImage: "url('/bg/graduation-ceremony.webp')" }}
     >
       <div className='bg-linear-to-b from-black/50 via-black/40 to-black/55'>
         <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24'>
