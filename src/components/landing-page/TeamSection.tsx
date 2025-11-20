@@ -19,7 +19,7 @@ export default function TeamSection() {
         </div>
 
         {/* First Row: 3 people */}
-        <div className='flex justify-center gap-16 lg:gap-24 mb-16'>
+        <div className='flex justify-center items-end gap-16 lg:gap-24 mb-16'>
           {/* Left Developer */}
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
@@ -64,39 +64,44 @@ export default function TeamSection() {
             </p>
           </div>
 
-          {/* Center Supervisor */}
+          {/* Center Supervisor (Bigger) */}
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
-              {/* Rounded Rectangle */}
-              <div className='w-64 h-80 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
+              {/* Rounded Rectangle - Bigger */}
+              <div className='w-72 h-88 rounded-[7rem] overflow-hidden bg-gray-100 shadow-2xl'>
                 <Image
                   src={supervisor.picture}
                   alt={supervisor.name}
-                  width={256}
-                  height={320}
+                  width={288}
+                  height={352}
                   className='object-cover w-full h-full'
                 />
               </div>
               
               {/* Social Icons on Hover */}
-              <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+              <div className='absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
                 <a
                   href={supervisor.linkedin}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg'
+                  className='w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg'
                   style={{ backgroundColor: 'var(--brand-primary)' }}
                 >
-                  <Linkedin className='w-5 h-5 text-white' />
+                  <Linkedin className='w-6 h-6 text-white' />
                 </a>
               </div>
             </div>
-            <h3 className='text-xl font-bold mb-2' style={{ color: 'var(--text-heading)' }}>
-              {supervisor.name}
-            </h3>
-            <p className='text-base' style={{ color: 'var(--text-body)' }}>
-              {supervisor.designation}
-            </p>
+            <div className='space-y-1'>
+              <h3 className='text-2xl font-bold' style={{ color: 'var(--text-heading)' }}>
+                {supervisor.name}
+              </h3>
+              <p className='text-sm font-semibold uppercase tracking-wide' style={{ color: 'var(--brand-primary)' }}>
+                Project Supervisor
+              </p>
+              <p className='text-base' style={{ color: 'var(--text-body)' }}>
+                {supervisor.designation}
+              </p>
+            </div>
           </div>
 
           {/* Right Developer */}
