@@ -12,6 +12,7 @@ import TeamSection from '@/components/landing-page/TeamSection';
 import CTASection from '@/components/landing-page/CTASection';
 import Footer from '@/components/landing-page/Footer';
 import FloatingChatButton from '@/components/landing-page/FloatingChatButton';
+import BackToTopButton from '@/components/landing-page/BackToTopButton';
 
 export default function LandingPage() {
   return (
@@ -40,6 +41,9 @@ export default function LandingPage() {
       
       {/* Floating Chat Button */}
       <FloatingChatButton />
+      
+      {/* Back to Top Button */}
+      <BackToTopButton />
     </div>
   );
 }
