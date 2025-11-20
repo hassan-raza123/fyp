@@ -4,8 +4,10 @@ import { supervisor, teamMembers } from '@/constants/landing-page';
 
 export default function TeamSection() {
   return (
-    <div id="team" className='py-24 bg-white scroll-mt-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div id="team" className='relative py-24 bg-white scroll-mt-20 overflow-hidden'>
+      {/* Background with Blur */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             PROJECT TEAM

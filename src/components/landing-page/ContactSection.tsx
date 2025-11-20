@@ -3,8 +3,10 @@ import ContactForm from '@/components/forms/ContactForm';
 
 export default function ContactSection() {
   return (
-    <div id="contact" className='py-24 landing-section-gradient scroll-mt-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div id="contact" className='relative py-24 landing-section-gradient scroll-mt-20 overflow-hidden'>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             GET IN TOUCH

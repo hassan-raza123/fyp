@@ -420,6 +420,70 @@
   .landing-success-icon {
     color: var(--success-icon);
   }
+
+  /* Background Image Utilities */
+  .bg-overlay-dark {
+    position: relative;
+  }
+
+  .bg-overlay-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 0;
+  }
+
+  .bg-overlay-gradient {
+    position: relative;
+  }
+
+  .bg-overlay-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.9) 0%, rgba(30, 58, 138, 0.9) 100%);
+    z-index: 0;
+  }
+
+  .bg-blur-light {
+    backdrop-filter: blur(8px);
+  }
+
+  .bg-blur-medium {
+    backdrop-filter: blur(16px);
+  }
+
+  .bg-blur-heavy {
+    backdrop-filter: blur(24px);
+  }
+
+  /* Parallax Background */
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  @media (max-width: 768px) {
+    .parallax-bg {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Pattern Overlays */
+  .pattern-dots {
+    background-image: radial-gradient(circle, rgba(100, 116, 139, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .pattern-grid {
+    background-image: 
+      linear-gradient(rgba(100, 116, 139, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(100, 116, 139, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 }
 
 /* Animations */

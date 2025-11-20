@@ -2,8 +2,11 @@ import { features } from '@/constants/landing-page';
 
 export default function FeaturesSection() {
   return (
-    <div id="modules" className='py-24 bg-white scroll-mt-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div id="modules" className='relative py-24 bg-white scroll-mt-20 overflow-hidden'>
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 bg-[url('/info-images/1682065986635.png')] bg-cover bg-center opacity-5" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white opacity-90" />
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
             SYSTEM MODULES

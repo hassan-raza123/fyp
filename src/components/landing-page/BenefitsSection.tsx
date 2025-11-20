@@ -26,8 +26,10 @@ const benefits = [
 
 export default function BenefitsSection() {
   return (
-    <div className='py-24 landing-section-gradient'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='relative py-24 landing-section-gradient overflow-hidden'>
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 bg-[url('/info-images/obe-report-150803020525-lva1-app6892-thumbnail.webp')] bg-cover bg-center opacity-3 blur-sm" />
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>

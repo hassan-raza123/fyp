@@ -6,8 +6,9 @@ export default function HeroSection() {
   return (
     <div className='relative landing-hero-bg overflow-hidden'>
       <NavbarClient />
-      {/* Animated background pattern */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 bg-[url('/info-images/maxresdefault.jpg')] bg-cover bg-center opacity-10" />
+      <div className="absolute inset-0 landing-hero-bg opacity-95" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       
       {/* Decorative elements */}

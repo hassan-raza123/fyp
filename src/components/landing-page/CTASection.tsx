@@ -3,8 +3,13 @@ import { ArrowRight } from 'lucide-react';
 
 export default function CTASection() {
   return (
-    <div className='landing-hero-bg py-24 relative overflow-hidden'>
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+    <div className='relative py-24 overflow-hidden'>
+      {/* Background Image */}
+      <div className="absolute inset-0 bg-[url('/info-images/images.png')] bg-cover bg-center" />
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 landing-hero-bg opacity-95" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-blue-800/90 to-blue-950/90" />
+      {/* Decorative Elements */}
       <div className="absolute top-10 left-10 w-72 h-72 landing-decorative-blur-1 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 w-96 h-96 landing-decorative-blur-2 rounded-full blur-3xl" />
       
