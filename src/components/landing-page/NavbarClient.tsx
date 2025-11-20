@@ -49,7 +49,7 @@ export default function NavbarClient() {
               className='flex items-center space-x-3 transition-all duration-300'
             >
               <img
-                src='/logo.png'
+                src="/logo's/logo.png"
                 alt='Smart Campus Logo'
                 className='w-12 h-12 rounded-full shadow-md object-cover'
                 onError={(e) => {

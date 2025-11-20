@@ -22,7 +22,7 @@ export default function AuthLayout({
             <div className='mb-8'>
               <div className='w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/30 mx-auto mb-6 flex items-center justify-center overflow-hidden'>
                 <Image
-                  src='/logo.png'
+                  src="/logo's/logo.png"
                   alt='MNS UET Logo'
                   width={96}
                   height={96}
