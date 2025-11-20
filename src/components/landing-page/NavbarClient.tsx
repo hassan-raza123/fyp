@@ -85,12 +85,12 @@ export default function NavbarClient() {
                   className='absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-300'
                   style={{ 
                     background: 'var(--brand-secondary)',
-                    transform: 'scale(1.2)'
+                    transform: 'scale(1.3)'
                   }}
                 ></div>
                 
                 {/* Logo */}
-                <div className='relative w-14 h-14 transform group-hover:scale-110 transition-all duration-300'>
+                <div className='relative w-20 h-20 transform group-hover:scale-110 transition-all duration-300'>
                   <img
                     src="/logo's/logo.png"
                     alt='EduTrack Logo'
