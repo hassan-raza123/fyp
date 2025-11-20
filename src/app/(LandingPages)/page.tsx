@@ -1,8 +1,6 @@
 import HeroSection from '@/components/landing-page/HeroSection';
 import ParallaxShowcaseSection from '@/components/landing-page/ParallaxShowcaseSection';
-import BenefitsSection from '@/components/landing-page/BenefitsSection';
-import OBEFrameworkSection from '@/components/landing-page/OBEFrameworkSection';
-import MappingProcessSection from '@/components/landing-page/MappingProcessSection';
+import OBEShowcaseSection from '@/components/landing-page/OBEShowcaseSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import ChallengesSection from '@/components/landing-page/ChallengesSection';
 import TestimonialsSection from '@/components/landing-page/TestimonialsSection';
@@ -19,10 +17,8 @@ export default function LandingPage() {
       <HeroSection />
       <ParallaxShowcaseSection />
       
-      {/* OBE Educational Content */}
-      <BenefitsSection />
-      <OBEFrameworkSection />
-      <MappingProcessSection />
+      {/* OBE Showcase - Combined */}
+      <OBEShowcaseSection />
       
       {/* System Features */}
       <FeaturesSection />
