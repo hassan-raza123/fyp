@@ -18,18 +18,18 @@ export default function TeamSection() {
           </p>
         </div>
 
-        {/* First Row: 3 people with supervisor in center (bigger) */}
-        <div className='flex justify-center items-end gap-16 lg:gap-24 mb-16'>
+        {/* First Row: 3 people */}
+        <div className='flex justify-center gap-16 lg:gap-24 mb-16'>
           {/* Left Developer */}
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
               {/* Rounded Rectangle */}
-              <div className='w-56 h-72 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
+              <div className='w-64 h-80 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                 <Image
                   src={teamMembers[0].picture}
                   alt={teamMembers[0].name}
-                  width={224}
-                  height={288}
+                  width={256}
+                  height={320}
                   className='object-cover w-full h-full'
                 />
               </div>
@@ -64,37 +64,37 @@ export default function TeamSection() {
             </p>
           </div>
 
-          {/* Center Supervisor (Bigger) */}
+          {/* Center Supervisor */}
           <div className='flex flex-col items-center text-center group'>
-            <div className='relative mb-6'>
-              {/* Larger Rounded Rectangle */}
-              <div className='w-72 h-88 rounded-[7rem] overflow-hidden bg-gray-100 shadow-2xl'>
+            <div className='relative mb-5'>
+              {/* Rounded Rectangle */}
+              <div className='w-64 h-80 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                 <Image
                   src={supervisor.picture}
                   alt={supervisor.name}
-                  width={288}
-                  height={352}
+                  width={256}
+                  height={320}
                   className='object-cover w-full h-full'
                 />
               </div>
               
               {/* Social Icons on Hover */}
-              <div className='absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+              <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
                 <a
                   href={supervisor.linkedin}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-xl'
+                  className='w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg'
                   style={{ backgroundColor: 'var(--brand-primary)' }}
                 >
-                  <Linkedin className='w-6 h-6 text-white' />
+                  <Linkedin className='w-5 h-5 text-white' />
                 </a>
               </div>
             </div>
-            <h3 className='text-2xl font-bold mb-2' style={{ color: 'var(--text-heading)' }}>
+            <h3 className='text-xl font-bold mb-2' style={{ color: 'var(--text-heading)' }}>
               {supervisor.name}
             </h3>
-            <p className='text-lg' style={{ color: 'var(--text-body)' }}>
+            <p className='text-base' style={{ color: 'var(--text-body)' }}>
               {supervisor.designation}
             </p>
           </div>
@@ -103,12 +103,12 @@ export default function TeamSection() {
           <div className='flex flex-col items-center text-center group'>
             <div className='relative mb-5'>
               {/* Rounded Rectangle */}
-              <div className='w-56 h-72 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
+              <div className='w-64 h-80 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                 <Image
                   src={teamMembers[1].picture}
                   alt={teamMembers[1].name}
-                  width={224}
-                  height={288}
+                  width={256}
+                  height={320}
                   className='object-cover w-full h-full'
                 />
               </div>
@@ -150,7 +150,7 @@ export default function TeamSection() {
             <div key={index} className='flex flex-col items-center text-center group'>
               <div className='relative mb-5'>
                 {/* Rounded Rectangle */}
-                <div className='w-56 h-72 rounded-[3rem] overflow-hidden bg-gray-100 shadow-xl'>
+                <div className='w-64 h-80 rounded-[7rem] overflow-hidden bg-gray-100 shadow-xl'>
                   <Image
                     src={member.picture}
                     alt={member.name}
