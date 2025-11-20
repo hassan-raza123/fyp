@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Linkedin, Mail, Twitter, Github, Instagram, MapPin, Phone, GraduationCap, BookOpen, Users } from 'lucide-react';
+import { Linkedin, Mail, Twitter, Github, Instagram, MapPin, Phone, GraduationCap, BookOpen, Users, Facebook, Youtube, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
 
@@ -19,20 +19,24 @@ export default function Footer() {
               </div>
             </div>
             <p className='text-sm text-gray-600 leading-relaxed max-w-sm'>
-              Transforming education through outcomes. A comprehensive OBE management system for tracking learning outcomes and academic excellence at MNS UET.
+              Muhammad Nawaz Sharif University of Engineering & Technology (MNS-UET), Multan. A comprehensive OBE management system for tracking learning outcomes and academic excellence.
             </p>
             
             {/* Social Links */}
             <div className='flex items-center gap-3'>
               {[
-                { Icon: Twitter, label: 'Twitter' },
-                { Icon: Linkedin, label: 'LinkedIn' },
-                { Icon: Github, label: 'GitHub' },
-                { Icon: Instagram, label: 'Instagram' }
-              ].map(({ Icon, label }, index) => (
+                { Icon: Facebook, label: 'Facebook', href: 'https://www.facebook.com/mnsuet' },
+                { Icon: Twitter, label: 'Twitter', href: 'https://twitter.com/mnsuet' },
+                { Icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/school/mnsuet' },
+                { Icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/mnsuet' },
+                { Icon: Youtube, label: 'YouTube', href: 'https://www.youtube.com/@mnsuet' },
+                { Icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/92619330592' }
+              ].map(({ Icon, label, href }) => (
                 <a 
-                  key={index} 
-                  href='#' 
+                  key={label}
+                  href={href}
+                  target='_blank'
+                  rel='noopener noreferrer'
                   className='w-10 h-10 rounded-lg border border-gray-200 hover:border-blue hover:bg-blue/5 flex items-center justify-center text-gray-600 hover:text-blue transition-all group'
                   aria-label={label}
                 >
@@ -78,24 +82,33 @@ export default function Footer() {
                 <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
                   <MapPin className='h-4 w-4 text-orange' />
                 </div>
-                <span className='text-sm text-gray-600 pt-1.5'>MNS UET, Multan, Pakistan</span>
+                <span className='text-sm text-gray-600 pt-1.5'>
+                  QasimPur Colony, BCG Chowk,<br />
+                  Bahawalpur Road, Multan,<br />
+                  Punjab, Pakistan
+                </span>
+              </li>
+              <li className='flex items-start gap-3 group'>
+                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
+                  <Phone className='h-4 w-4 text-orange' />
+                </div>
+                <a
+                  href='tel:+92619330592'
+                  className='text-sm text-gray-600 hover:text-blue transition-colors pt-1.5'
+                >
+                  +92-61-9330592
+                </a>
               </li>
               <li className='flex items-start gap-3 group'>
                 <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
                   <Mail className='h-4 w-4 text-orange' />
                 </div>
                 <a
-                  href='mailto:itzhassanraza276@gmail.com'
+                  href='mailto:info@mnsuet.edu.pk'
                   className='text-sm text-gray-600 hover:text-blue transition-colors break-all pt-1.5'
                 >
-                  itzhassanraza276@gmail.com
+                  info@mnsuet.edu.pk
                 </a>
-              </li>
-              <li className='flex items-start gap-3 group'>
-                <div className='w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors'>
-                  <Phone className='h-4 w-4 text-orange' />
-                </div>
-                <span className='text-sm text-gray-600 pt-1.5'>+92 (123) 456-7890</span>
               </li>
             </ul>
           </div>
