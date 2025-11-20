@@ -4,10 +4,11 @@ import { ArrowRight, GraduationCap, BookOpen, Users } from 'lucide-react';
 export default function CTASection() {
   return (
     <div
-      className='relative bg-fixed bg-center bg-cover'
+      id="portal"
+      className='relative bg-fixed bg-center bg-cover scroll-mt-20'
       style={{ backgroundImage: "url('/bg/Newroom-Summer-Graduation-2023.webp')" }}
     >
-      <div className='bg-gradient-to-b from-black/50 via-black/40 to-black/55'>
+      <div className='bg-linear-to-b from-black/50 via-black/40 to-black/55'>
         <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24'>
           <div className='text-center mb-12'>
             <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur text-sm font-semibold mb-4'>

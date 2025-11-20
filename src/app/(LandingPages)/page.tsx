@@ -6,7 +6,6 @@ import BenefitsSection from '@/components/landing-page/BenefitsSection';
 import OBEFrameworkSection from '@/components/landing-page/OBEFrameworkSection';
 import MappingProcessSection from '@/components/landing-page/MappingProcessSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
-import UserRolesSection from '@/components/landing-page/UserRolesSection';
 import ChallengesSection from '@/components/landing-page/ChallengesSection';
 import TeamSection from '@/components/landing-page/TeamSection';
 import CTASection from '@/components/landing-page/CTASection';
@@ -30,10 +29,9 @@ export default function LandingPage() {
       
       {/* System Features */}
       <FeaturesSection />
-      <UserRolesSection />
       <ChallengesSection />
       
-      {/* Team & CTA */}
+      {/* Team & Portal Access */}
       <TeamSection />
       <CTASection />
       

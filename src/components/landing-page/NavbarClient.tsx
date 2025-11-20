@@ -8,29 +8,57 @@ import { Menu, X, Sparkles } from 'lucide-react';
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Features', href: '/#modules' },
-  { name: 'Portals', href: '/#portals' },
   { name: 'Team', href: '/#team' },
+  { name: 'Portal', href: '/#portal' },
 ];
 
 export default function NavbarClient() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState('');
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      
+      // Update active hash based on scroll position
+      const sections = ['modules', 'team', 'portal'];
+      const currentSection = sections.find(section => {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          return rect.top <= 100 && rect.bottom >= 100;
+        }
+        return false;
+      });
+      
+      if (currentSection) {
+        setActiveHash(`#${currentSection}`);
+      } else if (window.scrollY < 100) {
+        setActiveHash('');
+      }
     };
 
+    // Set initial hash from URL
+    setActiveHash(window.location.hash);
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('hashchange', () => setActiveHash(window.location.hash));
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('hashchange', () => setActiveHash(window.location.hash));
+    };
   }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
-      return pathname === href;
+      return pathname === '/' && !activeHash;
     }
-    return pathname.startsWith(href);
+    // Check if the hash part matches
+    const hrefHash = href.includes('#') ? href.split('#')[1] : '';
+    return activeHash === `#${hrefHash}`;
   };
 
   return (
