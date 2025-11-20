@@ -55,20 +55,26 @@ const studentFeatures = [
 
 export default function StatsOverview() {
   return (
-    <div className='relative py-20 overflow-hidden' style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #fef3c7 50%, #fff7ed 100%)' }}>
-      {/* Animated Decorative Elements */}
-      <div className='absolute top-10 left-10 w-20 h-20 rounded-2xl blur-xl opacity-20 animate-pulse-slow' style={{ background: 'var(--brand-secondary)' }}></div>
-      <div className='absolute top-40 right-20 w-32 h-32 rounded-full blur-2xl opacity-15 animate-pulse-slow' style={{ background: 'var(--brand-primary)', animationDelay: '1s' }}></div>
-      <div className='absolute bottom-20 left-1/3 w-24 h-24 rounded-3xl blur-xl opacity-20 animate-pulse-slow' style={{ background: 'var(--brand-secondary)', animationDelay: '2s' }}></div>
-      <div className='absolute bottom-40 right-1/4 w-28 h-28 rounded-full blur-2xl opacity-15 animate-pulse-slow' style={{ background: 'var(--brand-primary)', animationDelay: '0.5s' }}></div>
+    <div className='relative py-20 overflow-hidden'>
+      {/* Gradient Background with Blur Circles - Same as Testimonials */}
+      <div className='absolute inset-0 bg-linear-to-br from-slate-50 via-white to-blue-50'>
+        <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-20" style={{ background: 'var(--brand-primary)' }}></div>
+        <div className="absolute top-40 right-20 w-96 h-96 rounded-full blur-3xl opacity-20" style={{ background: 'var(--brand-secondary)' }}></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full blur-3xl opacity-15" style={{ background: 'var(--brand-primary)' }}></div>
+      </div>
 
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='text-center mb-16'>
-          <div className='inline-flex items-center gap-2 px-6 py-3 rounded-full mb-6 shadow-lg brand-gradient'>
-            <Sparkles className='w-5 h-5 text-white animate-pulse' />
-            <span className='text-sm font-bold uppercase tracking-wider text-white'>
-              Student Portal Features
+          <div className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6'
+            style={{ 
+              backgroundColor: 'var(--brand-secondary-opacity-10)',
+              border: '1px solid var(--brand-secondary-opacity-20)'
+            }}
+          >
+            <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-secondary)' }} />
+            <span className='text-sm font-bold uppercase tracking-wider' style={{ color: 'var(--brand-secondary)' }}>
+              For Students
             </span>
           </div>
           <h3 className='text-5xl md:text-6xl font-extrabold mb-6' style={{ color: 'var(--text-heading)' }}>
