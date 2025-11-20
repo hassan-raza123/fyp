@@ -71,13 +71,19 @@ export default function ContactForm() {
     }
   }
 
-  const inputClasses = 'block w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:ring-opacity-50 transition-all duration-200 bg-white/50 hover:border-purple-200'
-  const labelClasses = 'block text-sm font-medium text-gray-700 mb-1.5'
+  const inputClasses = 'block w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue focus:ring-2 focus:ring-blue/20 transition-all duration-200 bg-white hover:border-gray-300'
+  const labelClasses = 'block text-sm font-medium text-gray-900 mb-1.5'
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
       {status.type && (
-        <div className={`p-4 rounded-lg ${status.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+        <div 
+          className={`p-4 rounded-lg ${
+            status.type === 'success' 
+              ? 'bg-orange/10 text-orange-dark border border-orange/20' 
+              : 'bg-black/5 text-black border border-black/10'
+          }`}
+        >
           {status.message}
         </div>
       )}
@@ -158,14 +164,20 @@ export default function ContactForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-medium
-            bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 
-            hover:from-purple-700 hover:via-purple-600 hover:to-indigo-700
-            focus:outline-none focus:ring-4 focus:ring-purple-200
-            shadow-lg shadow-purple-500/20
-            transform hover:scale-[1.02] active:scale-[0.98]
-            transition-all duration-200
-            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+          className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-semibold bg-brand-secondary hover:bg-brand-secondary-dark focus:outline-none focus:ring-2 focus:ring-orange/30 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          style={{
+            backgroundColor: 'var(--brand-secondary)',
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--brand-secondary-dark)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--brand-secondary)';
+            }
+          }}
         >
           {isLoading ? (
             <>
