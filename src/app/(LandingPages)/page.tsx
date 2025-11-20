@@ -1,4 +1,5 @@
 import HeroSection from '@/components/landing-page/HeroSection';
+import UniversityStatsBar from '@/components/landing-page/UniversityStatsBar';
 import OBEShowcaseSection from '@/components/landing-page/OBEShowcaseSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import StatsOverview from '@/components/landing-page/StatsOverview';
@@ -14,6 +15,9 @@ export default function LandingPage() {
     <div className='min-h-screen landing-section-gradient'>
       {/* Hero */}
       <HeroSection />
+      
+      {/* University Stats Bar */}
+      <UniversityStatsBar />
       
       {/* OBE Showcase - Combined */}
       <OBEShowcaseSection />
