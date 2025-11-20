@@ -48,48 +48,78 @@ const showcaseItems = [
 
 export default function OBEShowcaseSection() {
   const [activeTab, setActiveTab] = useState('benefits');
-  const [isInView, setIsInView] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [triggerAnimation, setTriggerAnimation] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   const activeItem = showcaseItems.find(item => item.id === activeTab) || showcaseItems[0];
   const IconComponent = activeItem.icon;
 
-  // Intersection Observer for scroll animation
+  // Intersection Observer for scroll detection
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          setTriggerAnimation(prev => prev + 1);
+        }
       },
-      { 
-        threshold: 0.1,
-        rootMargin: '0px'
-      }
+      { threshold: 0.3 }
     );
 
-    if (contentRef.current) {
-      observer.observe(contentRef.current);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
 
     return () => {
-      if (contentRef.current) {
-        observer.unobserve(contentRef.current);
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
       }
     };
   }, []);
 
-  // Reset animation when tab changes
+  // Re-trigger animation on tab change
   useEffect(() => {
-    setIsInView(false);
-    const timer = setTimeout(() => setIsInView(true), 100);
-    return () => clearTimeout(timer);
-  }, [activeTab]);
+    if (isVisible) {
+      setTriggerAnimation(prev => prev + 1);
+    }
+  }, [activeTab, isVisible]);
 
   return (
     <div className='py-24 bg-white relative overflow-hidden'>
+      <style jsx global>{`
+        @keyframes slideInFromLeft {
+          0% {
+            opacity: 0;
+            transform: translateX(-100px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideInFromRight {
+          0% {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        .animate-slide-left {
+          animation: slideInFromLeft 1s ease-out forwards;
+        }
+        
+        .animate-slide-right {
+          animation: slideInFromRight 1s ease-out 0.2s forwards;
+          opacity: 0;
+        }
+      `}</style>
+
       {/* Decorative Background */}
       <div className='absolute inset-0 opacity-[0.03]' suppressHydrationWarning>
         <div className='absolute top-20 left-0 w-96 h-96 bg-brand-primary rounded-full blur-3xl' suppressHydrationWarning></div>
@@ -142,16 +172,12 @@ export default function OBEShowcaseSection() {
         </div>
 
          {/* Content Area */}
-         <div ref={contentRef} className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-           {/* Left - Image with Scroll Animation */}
+         <div ref={sectionRef} className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
+           {/* Left - Image */}
            <div className='order-2 lg:order-1'>
              <div 
-               className='relative group transition-all duration-1200 ease-out'
-               style={{
-                 opacity: isInView ? 1 : 0,
-                 transform: isInView ? 'translateX(0)' : 'translateX(-100px)',
-                 transitionDelay: '0.2s'
-               }}
+               key={`image-${triggerAnimation}`}
+               className={`relative group ${isVisible ? 'animate-slide-left' : 'opacity-0'}`}
              >
               <div 
                 className='absolute -inset-4 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity'
@@ -172,15 +198,11 @@ export default function OBEShowcaseSection() {
              </div>
            </div>
 
-           {/* Right - Content with Scroll Animation */}
+           {/* Right - Content */}
            <div className='order-1 lg:order-2'>
              <div 
-               className='space-y-8 transition-all duration-1200 ease-out'
-               style={{
-                 opacity: isInView ? 1 : 0,
-                 transform: isInView ? 'translateX(0)' : 'translateX(100px)',
-                 transitionDelay: '0.4s'
-               }}
+               key={`content-${triggerAnimation}`}
+               className={`space-y-8 ${isVisible ? 'animate-slide-right' : 'opacity-0'}`}
              >
             {/* Title with Icon */}
             <div>
