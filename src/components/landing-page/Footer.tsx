@@ -21,17 +21,17 @@ export default function Footer() {
             <div className='flex items-center space-x-3 mb-4'>
               <img
                 src="/logo's/logo.png"
-                alt='Smart Campus Logo'
+                alt='EduTrack Logo'
                 className='w-10 h-10 rounded-lg object-cover'
               />
               <h3 className='text-xl font-semibold text-white'>
-                Smart Campus for MNSUET
+                EduTrack for MNSUET
               </h3>
             </div>
             <p className='text-slate-400 max-w-md mb-4 text-sm leading-relaxed'>
-              A comprehensive education management system designed to streamline
-              attendance tracking, assessment management, and academic progress
-              monitoring for modern universities.
+              Transforming education through outcomes. A comprehensive OBE management 
+              system for tracking learning outcomes, assessments, and academic excellence 
+              at MNS University of Engineering & Technology.
             </p>
             <div className='flex space-x-3'>
               <a
@@ -127,7 +127,7 @@ export default function Footer() {
         <div className='mt-8 pt-6 border-t border-slate-800'>
           <div className='flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0'>
             <p className='text-slate-400 text-sm'>
-              &copy; {new Date().getFullYear()} Smart Campus for MNSUET. All rights reserved.
+              &copy; {new Date().getFullYear()} EduTrack - OBE Management System. All rights reserved.
             </p>
             <div className='flex space-x-6 text-sm'>
               <Link

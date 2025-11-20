@@ -50,7 +50,7 @@ export default function NavbarClient() {
             >
               <img
                 src="/logo's/logo.png"
-                alt='Smart Campus Logo'
+                alt='EduTrack Logo'
                 className='w-12 h-12 rounded-full shadow-md object-cover'
                 onError={(e) => {
                   console.error('Logo failed to load:', e);
@@ -61,7 +61,7 @@ export default function NavbarClient() {
                   isScrolled ? 'landing-text-heading' : 'text-white'
                 }`}
               >
-                Smart Campus
+                EduTrack
               </span>
             </Link>
           </div>

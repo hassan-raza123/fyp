@@ -8,8 +8,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 // Metadata configuration
 export const metadata: Metadata = {
-  title: 'Smart Campus for MNSUET',
-  description: 'Your comprehensive university management system - Outcome Based Education Management Platform',
+  title: 'EduTrack - OBE Management System',
+  description: 'Transforming Education Through Outcomes - Comprehensive Outcome-Based Education Management Platform for MNS University',
   icons: {
     icon: [
       { url: "/logo's/logo.png", sizes: 'any' },

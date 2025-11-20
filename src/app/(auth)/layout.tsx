@@ -23,7 +23,7 @@ export default function AuthLayout({
               <div className='w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/30 mx-auto mb-6 flex items-center justify-center overflow-hidden'>
                 <Image
                   src="/logo's/logo.png"
-                  alt='MNS UET Logo'
+                  alt='EduTrack Logo'
                   width={96}
                   height={96}
                   className='object-contain'
@@ -31,10 +31,10 @@ export default function AuthLayout({
                 />
               </div>
               <h1 className='text-3xl font-bold text-white mb-2'>
-                Smart Campus for MNSUET
+                EduTrack
               </h1>
               <p className='text-white/80 text-xl leading-relaxed'>
-                Your comprehensive OBE-based educational management system
+                Transforming Education Through Outcomes
               </p>
             </div>
 

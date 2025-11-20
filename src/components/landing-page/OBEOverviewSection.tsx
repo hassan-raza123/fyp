@@ -4,8 +4,9 @@ import { BookOpen, Target, Award } from 'lucide-react';
 export default function OBEOverviewSection() {
   return (
     <div className='relative py-24 bg-white overflow-hidden'>
-      {/* Background Image with Blur - Using generic tech/education image to avoid conflict with foreground */}
-      <div className="absolute inset-0 bg-[url('/info-images/1682065986635.png')] bg-cover bg-center opacity-5 blur-sm" />
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 bg-[url('/bg/Applying-to-university-college.jpg')] bg-cover bg-center opacity-15" />
+      <div className="absolute inset-0 bg-white/85" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16 animate-fade-in-up'>

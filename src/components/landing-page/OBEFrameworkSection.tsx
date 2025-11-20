@@ -31,8 +31,9 @@ const steps = [
 export default function OBEFrameworkSection() {
   return (
     <div className='relative py-24 bg-white overflow-hidden'>
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('/info-images/photo1.png')] bg-cover bg-center opacity-3 blur-sm" />
+      {/* Background Image */}
+      <div className="absolute inset-0 bg-[url('/bg/download.jpeg')] bg-cover bg-center opacity-15" />
+      <div className="absolute inset-0 bg-white/85" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>

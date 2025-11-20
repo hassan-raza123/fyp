@@ -7,9 +7,9 @@ export default function HeroSection() {
     <div className='relative landing-hero-bg overflow-hidden'>
       <NavbarClient />
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0 bg-[url('/info-images/maxresdefault.jpg')] bg-cover bg-center opacity-10" />
-      <div className="absolute inset-0 landing-hero-bg opacity-95" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-[url('/bg/path-foward-banner.jpg')] bg-cover bg-center opacity-30" />
+      <div className="absolute inset-0 landing-hero-bg opacity-75" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
       
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-72 h-72 landing-decorative-blur-1 rounded-full blur-3xl" />
