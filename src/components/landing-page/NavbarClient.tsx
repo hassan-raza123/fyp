@@ -22,34 +22,21 @@ export default function NavbarClient() {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
-      
-      // Update active hash based on scroll position
-      const sections = ['how-it-works', 'modules', 'team', 'portal'];
-      const currentSection = sections.find(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 100 && rect.bottom >= 100;
-        }
-        return false;
-      });
-      
-      if (currentSection) {
-        setActiveHash(`#${currentSection}`);
-      } else if (window.scrollY < 100) {
-        setActiveHash('');
-      }
+    };
+
+    const handleHashChange = () => {
+      setActiveHash(window.location.hash);
     };
 
     // Set initial hash from URL
     setActiveHash(window.location.hash);
 
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('hashchange', () => setActiveHash(window.location.hash));
+    window.addEventListener('hashchange', handleHashChange);
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('hashchange', () => setActiveHash(window.location.hash));
+      window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
 
@@ -57,9 +44,8 @@ export default function NavbarClient() {
     if (href === '/') {
       return pathname === '/' && !activeHash;
     }
-    // Check if the hash part matches
-    const hrefHash = href.includes('#') ? href.split('#')[1] : '';
-    return activeHash === `#${hrefHash}`;
+    // Check if the hash part matches exactly with URL hash
+    return activeHash && href.includes(activeHash);
   };
 
   return (
