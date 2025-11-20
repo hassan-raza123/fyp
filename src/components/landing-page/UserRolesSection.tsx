@@ -4,9 +4,9 @@ import { userRoles } from '@/constants/landing-page';
 export default function UserRolesSection() {
   return (
     <div id="portals" className='relative py-24 landing-section-gradient scroll-mt-20 overflow-hidden'>
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-[url('/bg/5007.webp')] bg-cover bg-center opacity-20" />
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/90 via-blue-50/90 to-slate-50/90" />
+      {/* Background Image with Light Overlay */}
+      <div className="absolute inset-0 bg-[url('/bg/5007.webp')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/65 via-blue-50/65 to-slate-50/65" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>

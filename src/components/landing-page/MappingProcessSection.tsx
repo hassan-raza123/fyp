@@ -31,9 +31,9 @@ const mappingFeatures = [
 export default function MappingProcessSection() {
   return (
     <div className='relative py-24 landing-section-gradient overflow-hidden'>
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-[url('/bg/uni-connect-evaluation-reports.jpg')] bg-cover bg-center opacity-20" />
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/90 via-blue-50/90 to-slate-50/90" />
+      {/* Background Image with Light Overlay */}
+      <div className="absolute inset-0 bg-[url('/bg/uni-connect-evaluation-reports.jpg')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/65 via-blue-50/65 to-slate-50/65" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>

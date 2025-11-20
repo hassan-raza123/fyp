@@ -3,9 +3,9 @@ import { features } from '@/constants/landing-page';
 export default function FeaturesSection() {
   return (
     <div id="modules" className='relative py-24 bg-white scroll-mt-20 overflow-hidden'>
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 bg-[url('/bg/istockphoto-1480277406-612x612.jpg')] bg-cover bg-center opacity-15" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/85 to-white/90" />
+      {/* Background Image with Light Overlay */}
+      <div className="absolute inset-0 bg-[url('/bg/istockphoto-1480277406-612x612.jpg')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/65 to-white/70" />
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <div className='inline-block px-4 py-2 rounded-full landing-badge font-semibold text-sm mb-4'>
