@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Target, Award, BarChart3, Zap, Workflow, RefreshCw, GitBranch } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const showcaseItems = [
   {
@@ -48,16 +48,52 @@ const showcaseItems = [
 
 export default function OBEShowcaseSection() {
   const [activeTab, setActiveTab] = useState('benefits');
+  const [isInView, setIsInView] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const activeItem = showcaseItems.find(item => item.id === activeTab) || showcaseItems[0];
   const IconComponent = activeItem.icon;
 
+  // Intersection Observer for scroll animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+          }
+        });
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '0px'
+      }
+    );
+
+    if (contentRef.current) {
+      observer.observe(contentRef.current);
+    }
+
+    return () => {
+      if (contentRef.current) {
+        observer.unobserve(contentRef.current);
+      }
+    };
+  }, []);
+
+  // Reset animation when tab changes
+  useEffect(() => {
+    setIsInView(false);
+    const timer = setTimeout(() => setIsInView(true), 100);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
   return (
     <div className='py-24 bg-white relative overflow-hidden'>
       {/* Decorative Background */}
-      <div className='absolute inset-0 opacity-[0.03]'>
-        <div className='absolute top-20 left-0 w-96 h-96 bg-brand-primary rounded-full blur-3xl'></div>
-        <div className='absolute bottom-20 right-0 w-96 h-96 bg-brand-secondary rounded-full blur-3xl'></div>
+      <div className='absolute inset-0 opacity-[0.03]' suppressHydrationWarning>
+        <div className='absolute top-20 left-0 w-96 h-96 bg-brand-primary rounded-full blur-3xl' suppressHydrationWarning></div>
+        <div className='absolute bottom-20 right-0 w-96 h-96 bg-brand-secondary rounded-full blur-3xl' suppressHydrationWarning></div>
       </div>
 
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -105,11 +141,18 @@ export default function OBEShowcaseSection() {
           })}
         </div>
 
-        {/* Content Area */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-          {/* Left - Image with Animation */}
-          <div className='order-2 lg:order-1'>
-            <div className='relative group'>
+         {/* Content Area */}
+         <div ref={contentRef} className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
+           {/* Left - Image with Scroll Animation */}
+           <div className='order-2 lg:order-1'>
+             <div 
+               className='relative group transition-all duration-1200 ease-out'
+               style={{
+                 opacity: isInView ? 1 : 0,
+                 transform: isInView ? 'translateX(0)' : 'translateX(-100px)',
+                 transitionDelay: '0.2s'
+               }}
+             >
               <div 
                 className='absolute -inset-4 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity'
                 style={{ 
@@ -125,12 +168,20 @@ export default function OBEShowcaseSection() {
                   className='w-full h-auto'
                   priority
                 />
-              </div>
-            </div>
-          </div>
+               </div>
+             </div>
+           </div>
 
-          {/* Right - Content */}
-          <div className='order-1 lg:order-2 space-y-8'>
+           {/* Right - Content with Scroll Animation */}
+           <div className='order-1 lg:order-2'>
+             <div 
+               className='space-y-8 transition-all duration-1200 ease-out'
+               style={{
+                 opacity: isInView ? 1 : 0,
+                 transform: isInView ? 'translateX(0)' : 'translateX(100px)',
+                 transitionDelay: '0.4s'
+               }}
+             >
             {/* Title with Icon */}
             <div>
               <div 
@@ -187,6 +238,7 @@ export default function OBEShowcaseSection() {
                 );
               })}
             </div>
+           </div>
           </div>
         </div>
       </div>
