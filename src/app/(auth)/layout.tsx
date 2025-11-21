@@ -1,6 +1,5 @@
 import '@/styles/globals.css';
 import { Metadata } from 'next';
-import { BookOpen, Clock, School } from 'lucide-react';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
@@ -14,47 +13,89 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className='min-h-screen bg-background flex items-center justify-center p-4'>
-      <div className='w-full max-w-6xl bg-card rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row border border-border'>
-        {/* Left Side */}
-        <div className='hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground bg-linear-to-br from-primary via-primary to-accent items-center justify-center p-12'>
-          <div className='max-w-lg text-center'>
-            <div className='mb-8'>
-              <div className='w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/30 mx-auto mb-6 flex items-center justify-center overflow-hidden'>
-                <Image
-                  src="/logo's/logo.png"
-                  alt='EduTrack Logo'
-                  width={96}
-                  height={96}
-                  className='object-contain'
-                  priority
-                />
-              </div>
-              <h1 className='text-3xl font-bold text-white mb-2'>
-                EduTrack
-              </h1>
-              <p className='text-white/80 text-xl leading-relaxed'>
-                Transforming Education Through Outcomes
-              </p>
-            </div>
+    <div 
+      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden'
+      style={{
+        backgroundImage: 'url(/bg/login-background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Dark Blur Overlay */}
+      <div 
+        className='absolute inset-0'
+        style={{
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)'
+        }}
+      />
 
-            <div className='space-y-4'>
-              <div className='flex items-center justify-center space-x-4 text-white/80'>
-                <div className='flex items-center space-x-2'>
-                  <BookOpen className='w-5 h-5' />
-                  <span>Attendance Tracking</span>
-                </div>
-                <div className='flex items-center space-x-2'>
-                  <Clock className='w-5 h-5' />
-                  <span>Real-time Updates</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Logo - Top Left Corner */}
+      <div className='absolute top-8 left-8 z-30 flex items-center gap-4'>
+        <div className='relative'>
+          {/* White Spot Below Logo */}
+          <div 
+            className='absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full blur-3xl'
+            style={{
+              background: 'var(--white)',
+              opacity: 0.6
+            }}
+          />
+          {/* Logo - Direct, No Box */}
+          <Image
+            src="/logo's/logo.png"
+            alt='EduTrack Logo'
+            width={80}
+            height={80}
+            className='object-contain relative z-10'
+            priority
+            style={{
+              filter: 'drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5))',
+              display: 'block'
+            }}
+          />
+        </div>
+        <div>
+          <h1 
+            className='text-3xl font-bold'
+            style={{ 
+              color: 'var(--brand-secondary)',
+              textShadow: '0 3px 10px rgba(0,0,0,0.6)'
+            }}
+          >
+            EduTrack
+          </h1>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className='w-full max-w-6xl mx-auto relative z-10 flex items-center gap-4'>
+        {/* Left Side - Content */}
+        <div className='hidden lg:block max-w-xl ml-auto'>
+          <h1 className='text-3xl font-bold text-white mb-4 leading-tight'>
+            Outcome-Based Education Management System
+          </h1>
+          <p className='text-base text-white/90 leading-relaxed'>
+            MNS University of Engineering & Technology's dedicated platform for tracking CLO & PLO attainments, managing assessments, and generating OBE compliance reports.
+          </p>
         </div>
 
-        {/* Right Side - Login Form */}
-        <div className='w-full lg:w-1/2 p-8 lg:p-12'>{children}</div>
+        {/* Right Side - Login Form Card */}
+        <div 
+          className='w-full lg:w-auto lg:min-w-[450px] p-10 rounded-3xl shadow-2xl'
+          style={{
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          {children}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className='absolute bottom-6 left-8 text-white/60 text-sm z-20'>
+        © 2024 EduTrack - MNS UET. All rights reserved.
       </div>
     </div>
   );

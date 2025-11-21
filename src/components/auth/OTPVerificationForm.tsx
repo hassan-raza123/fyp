@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail } from 'lucide-react';
 import Link from 'next/link';
 
 function OTPVerificationFormContent() {
@@ -25,7 +24,6 @@ function OTPVerificationFormContent() {
       return;
     }
 
-    // Auto focus the first input field
     inputRefs.current[0]?.focus();
 
     const interval = setInterval(() => {
@@ -43,7 +41,6 @@ function OTPVerificationFormContent() {
   }, [email, userType, router]);
 
   const handleInputChange = (index: number, value: string) => {
-    // Only allow numbers
     const numericValue = value.replace(/[^0-9]/g, '');
     if (numericValue.length > 1) {
       value = numericValue.slice(0, 1);
@@ -56,7 +53,6 @@ function OTPVerificationFormContent() {
     setOtp(newOtp);
     setError('');
 
-    // Move to next input if current input is filled
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -67,7 +63,6 @@ function OTPVerificationFormContent() {
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      // Move to previous input on backspace if current input is empty
       inputRefs.current[index - 1]?.focus();
     }
   };
@@ -118,7 +113,6 @@ function OTPVerificationFormContent() {
     setIsLoading(true);
     setError('');
 
-    // Validate OTP length
     const otpString = otp.join('');
     if (otpString.length !== 6) {
       setError('Please enter a valid 6-digit OTP');
@@ -145,7 +139,6 @@ function OTPVerificationFormContent() {
         return;
       }
 
-      // Redirect to the dashboard based on the server response
       window.location.href = data.data.redirectTo;
     } catch (error) {
       setError('Network error. Please check your connection and try again.');
@@ -155,26 +148,31 @@ function OTPVerificationFormContent() {
   };
 
   return (
-    <div className='max-w-md w-full mx-auto p-6'>
-      <div className='text-center mb-8'>
-        <div className='bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <Mail className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
-        </div>
-        <h2 className='text-3xl font-bold text-primary'>Verify Your Email</h2>
-        <p className='text-text-light mt-2'>
-          We've sent a verification code to {email}
+    <div className='w-full'>
+      {/* Header */}
+      <div className='mb-8'>
+        <h2 
+          className='text-3xl font-bold mb-2'
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Verify Your Email
+        </h2>
+        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
+          We've sent a 6-digit code to <span className='font-medium'>{email}</span>
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        <div className='space-y-2'>
+      <form onSubmit={handleSubmit} className='space-y-5'>
+        {/* OTP Input */}
+        <div>
           <label
             htmlFor='otp'
-            className='block text-sm font-semibold text-primary'
+            className='block text-sm font-medium text-center mb-3'
+            style={{ color: 'var(--brand-primary)' }}
           >
             Enter Verification Code
           </label>
-          <div className='flex justify-center space-x-2'>
+          <div className='flex justify-center gap-3'>
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -189,57 +187,93 @@ function OTPVerificationFormContent() {
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className='w-12 h-12 text-center text-xl font-semibold rounded-xl border-2 border-gray-200 bg-white text-primary focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50'
+                className='w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all focus:outline-none'
+                style={{
+                  borderColor: 'var(--gray-300)',
+                  color: 'var(--brand-primary)'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--brand-secondary)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
+                  e.target.style.transform = 'scale(1.05)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--gray-300)';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.transform = 'scale(1)';
+                }}
               />
             ))}
           </div>
         </div>
 
+        {/* Error */}
         {error && (
-          <div className='text-red-500 text-sm text-center'>{error}</div>
+          <div 
+            className='px-4 py-3 rounded-lg border text-center text-sm'
+            style={{
+              background: 'rgba(239, 68, 68, 0.05)',
+              borderColor: 'rgba(239, 68, 68, 0.2)',
+              color: '#dc2626'
+            }}
+          >
+            <span className='font-medium'>{error}</span>
+          </div>
         )}
 
-        <div className='flex items-center justify-between'>
+        {/* Resend & Back */}
+        <div className='flex items-center justify-between text-sm'>
           <button
             type='button'
             onClick={handleResendOTP}
             disabled={!canResend || isResending}
-            className={`text-sm ${
-              canResend
-                ? 'text-primary hover:text-primary-light'
-                : 'text-gray-400'
-            }`}
+            className='font-medium transition-colors'
+            style={{ 
+              color: canResend ? 'var(--brand-primary)' : 'var(--gray-400)',
+              cursor: canResend ? 'pointer' : 'not-allowed'
+            }}
           >
             {isResending
-              ? 'Sending...'
+              ? '⏳ Sending...'
               : canResend
-              ? 'Resend Code'
-              : `Resend in ${timer}s`}
+              ? '🔄 Resend Code'
+              : `⏱️ Resend in ${timer}s`}
           </button>
           <Link
             href='/login'
-            className='text-sm text-primary hover:text-primary-light'
+            className='font-medium hover:underline'
+            style={{ color: 'var(--brand-primary)' }}
           >
             Back to Login
           </Link>
         </div>
 
+        {/* Submit Button */}
         <button
           type='submit'
           disabled={isLoading}
-          className='relative w-full bg-linear-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
+          style={{
+            background: 'linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%)'
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px var(--brand-secondary-opacity-30)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+          }}
         >
-          <span
-            className={`inline-flex items-center justify-center ${
-              isLoading ? 'invisible' : ''
-            }`}
-          >
-            Verify
-          </span>
-          {isLoading && (
-            <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
-            </div>
+          {isLoading ? (
+            <span className='flex items-center justify-center'>
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+              Verifying...
+            </span>
+          ) : (
+            'Verify & Continue'
           )}
         </button>
       </form>
