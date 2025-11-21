@@ -96,9 +96,12 @@ export default function NavbarClient() {
                     EduTrack
                   </span>
                 </div>
-                <div className={`text-xs font-bold tracking-wide transition-colors duration-300 ${
-                  isScrolled ? 'text-brand-secondary' : 'text-orange-200'
-                }`}>
+                <div 
+                  className='text-xs font-bold tracking-wide transition-colors duration-300'
+                  style={{ 
+                    color: isScrolled ? 'var(--brand-secondary)' : 'var(--white-opacity-80)'
+                  }}
+                >
                   OBE Management System
                 </div>
               </div>
@@ -132,7 +135,7 @@ export default function NavbarClient() {
                 className='px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 shadow-lg'
                 style={{
                   backgroundColor: 'var(--brand-secondary)',
-                  boxShadow: '0 4px 20px rgba(252, 153, 40, 0.3)'
+                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
                 }}
               >
                 <span className='relative z-10 flex items-center gap-2'>
@@ -199,7 +202,7 @@ export default function NavbarClient() {
                 className='block px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4 shadow-lg'
                 style={{
                   backgroundColor: 'var(--brand-secondary)',
-                  boxShadow: '0 4px 20px rgba(252, 153, 40, 0.3)'
+                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
                 }}
               >
                 Login to Portal

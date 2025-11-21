@@ -139,22 +139,22 @@ function ResetPasswordFormContent() {
         <div 
           className='rounded-2xl p-8 border-2'
           style={{
-            background: 'rgba(239, 68, 68, 0.05)',
-            borderColor: 'rgba(239, 68, 68, 0.2)'
+            background: 'var(--error-opacity-05)',
+            borderColor: 'var(--error-opacity-20)'
           }}
         >
           <div 
             className='w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'
             style={{
-              background: 'rgba(239, 68, 68, 0.1)'
+              background: 'var(--error-opacity-10)'
             }}
           >
-            <AlertCircle className='w-8 h-8' style={{ color: '#dc2626' }} />
+            <AlertCircle className='w-8 h-8' style={{ color: 'var(--error-dark)' }} />
           </div>
-          <h3 className='font-bold text-xl mb-2' style={{ color: '#991b1b' }}>
+          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--error-darker)' }}>
             Invalid Reset Link
           </h3>
-          <p className='text-sm mb-6' style={{ color: '#b91c1c' }}>
+          <p className='text-sm mb-6' style={{ color: 'var(--error-light)' }}>
             This password reset link is invalid or has expired.
           </p>
           <Link
@@ -162,7 +162,7 @@ function ResetPasswordFormContent() {
             className='inline-block font-semibold text-white py-3 px-6 rounded-xl transition-all duration-300 hover:-translate-y-0.5'
             style={{
               background: 'var(--brand-primary)',
-              boxShadow: '0 10px 25px rgba(38, 40, 149, 0.3)'
+              boxShadow: `0 10px 25px var(--brand-primary-opacity-30)`
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'var(--brand-primary-dark)';
@@ -184,22 +184,22 @@ function ResetPasswordFormContent() {
         <div 
           className='rounded-2xl p-8 border-2'
           style={{
-            background: 'rgba(34, 197, 94, 0.05)',
-            borderColor: 'rgba(34, 197, 94, 0.2)'
+            background: 'var(--success-green-opacity-05)',
+            borderColor: 'var(--success-green-opacity-20)'
           }}
         >
           <div 
             className='w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'
             style={{
-              background: 'rgba(34, 197, 94, 0.1)'
+              background: 'var(--success-green-opacity-10)'
             }}
           >
-            <CheckCircle2 className='w-8 h-8' style={{ color: '#22c55e' }} />
+            <CheckCircle2 className='w-8 h-8' style={{ color: 'var(--success-green)' }} />
           </div>
-          <h3 className='font-bold text-xl mb-2' style={{ color: '#15803d' }}>
+          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--success-green-dark)' }}>
             Password Reset Successful! 🎉
           </h3>
-          <p className='text-sm' style={{ color: '#16a34a' }}>
+          <p className='text-sm' style={{ color: 'var(--success-green-light)' }}>
             Your password has been reset successfully. Redirecting to login page...
           </p>
         </div>
@@ -240,7 +240,7 @@ function ResetPasswordFormContent() {
               onChange={(e) => setPassword(e.target.value)}
               className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
               style={{
-                borderColor: errors.password ? '#ef4444' : 'var(--gray-300)'
+                borderColor: errors.password ? 'var(--error)' : 'var(--gray-300)'
               }}
               onFocus={(e) => {
                 if (!errors.password) {
@@ -297,7 +297,7 @@ function ResetPasswordFormContent() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
               style={{
-                borderColor: errors.confirmPassword ? '#ef4444' : 'var(--gray-300)'
+                borderColor: errors.confirmPassword ? 'var(--error)' : 'var(--gray-300)'
               }}
               onFocus={(e) => {
                 if (!errors.confirmPassword) {
@@ -341,8 +341,8 @@ function ResetPasswordFormContent() {
         <div 
           className='rounded-xl p-4 border text-sm'
           style={{
-            background: 'rgba(38, 40, 149, 0.03)',
-            borderColor: 'rgba(38, 40, 149, 0.1)'
+            background: 'var(--brand-primary-opacity-10)',
+            borderColor: 'var(--brand-primary-opacity-10)'
           }}
         >
           <p className='font-semibold mb-2' style={{ color: 'var(--brand-primary)' }}>
@@ -362,8 +362,8 @@ function ResetPasswordFormContent() {
           <div 
             className='px-4 py-3 rounded-lg border-2 border-red-200'
             style={{
-              background: 'rgba(239, 68, 68, 0.05)',
-              color: '#dc2626'
+              background: 'var(--error-opacity-05)',
+              color: 'var(--error-dark)'
             }}
           >
             <div className='flex items-center gap-2 justify-center'>
@@ -385,7 +385,7 @@ function ResetPasswordFormContent() {
             if (!isLoading) {
               e.currentTarget.style.transform = 'translateY(-1px)';
               e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(38, 40, 149, 0.3)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
             }
           }}
           onMouseLeave={(e) => {

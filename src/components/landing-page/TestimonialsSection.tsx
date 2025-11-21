@@ -108,8 +108,8 @@ export default function TestimonialsSection() {
         <div className='text-center mb-12'>
           <div className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6 backdrop-blur-md' 
             style={{ 
-              backgroundColor: 'rgba(252, 153, 40, 0.1)',
-              border: '1px solid rgba(252, 153, 40, 0.2)'
+              backgroundColor: 'var(--brand-secondary-opacity-10)',
+              border: `1px solid var(--brand-secondary-opacity-20)`
             }}
           >
             <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-secondary)' }} />
@@ -147,20 +147,20 @@ export default function TestimonialsSection() {
               key={index}
               className='flex-none w-[360px] rounded-3xl p-6 backdrop-blur-xl shadow-xl border transition-all duration-500 hover:scale-105 group cursor-pointer'
               style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+                backgroundColor: 'var(--white-opacity-70)',
+                borderColor: 'var(--white-opacity-50)',
+                boxShadow: '0 8px 32px var(--black-opacity-05)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.backgroundColor = 'var(--white-opacity-90)';
                 e.currentTarget.style.borderColor = 'var(--brand-primary)';
-                e.currentTarget.style.boxShadow = '0 20px 60px rgba(38, 40, 149, 0.2)';
+                e.currentTarget.style.boxShadow = `0 20px 60px var(--brand-primary-opacity-20)`;
                 e.currentTarget.style.transform = 'scale(1.03) translateY(-4px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.backgroundColor = 'var(--white-opacity-70)';
+                e.currentTarget.style.borderColor = 'var(--white-opacity-50)';
+                e.currentTarget.style.boxShadow = '0 8px 32px var(--black-opacity-05)';
                 e.currentTarget.style.transform = 'scale(1) translateY(0)';
               }}
             >

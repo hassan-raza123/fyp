@@ -23,11 +23,11 @@ export default function FloatingChatButton() {
         aria-label='Open contact form'
         style={{ 
           backgroundColor: 'var(--brand-primary)',
-          boxShadow: '0 10px 25px rgba(38, 40, 149, 0.3)'
+          boxShadow: `0 10px 25px var(--brand-primary-opacity-30)`
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = 'var(--brand-primary-dark)';
-          e.currentTarget.style.boxShadow = '0 12px 30px rgba(38, 40, 149, 0.4)';
+          e.currentTarget.style.boxShadow = `0 12px 30px var(--brand-primary-opacity-40)`;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'var(--brand-primary)';

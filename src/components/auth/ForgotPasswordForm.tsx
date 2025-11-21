@@ -104,7 +104,7 @@ export default function ForgotPasswordForm() {
               onChange={(e) => setEmail(e.target.value)}
               className='w-full px-4 py-3 rounded-lg border transition-all focus:outline-none'
               style={{
-                borderColor: errors.email ? '#ef4444' : 'var(--gray-300)'
+                borderColor: errors.email ? 'var(--error)' : 'var(--gray-300)'
               }}
               onFocus={(e) => {
                 if (!errors.email) {
@@ -131,9 +131,9 @@ export default function ForgotPasswordForm() {
             <div 
               className='px-4 py-3 rounded-lg border text-sm'
               style={{
-                background: 'rgba(239, 68, 68, 0.05)',
-                borderColor: 'rgba(239, 68, 68, 0.2)',
-                color: '#dc2626'
+                background: 'var(--error-opacity-05)',
+                borderColor: 'var(--error-opacity-20)',
+                color: 'var(--error-dark)'
               }}
             >
               <div className='flex items-center gap-2'>
@@ -167,7 +167,7 @@ export default function ForgotPasswordForm() {
             if (!isLoading) {
               e.currentTarget.style.transform = 'translateY(-1px)';
               e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(38, 40, 149, 0.3)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
             }
           }}
           onMouseLeave={(e) => {
@@ -191,12 +191,12 @@ export default function ForgotPasswordForm() {
           <div 
             className='px-6 py-5 rounded-xl border-2'
             style={{
-              background: 'rgba(34, 197, 94, 0.05)',
-              borderColor: 'rgba(34, 197, 94, 0.2)'
+              background: 'var(--success-green-opacity-05)',
+              borderColor: 'var(--success-green-opacity-20)'
             }}
           >
-            <CheckCircle2 className='w-12 h-12 mx-auto mb-3' style={{ color: '#22c55e' }} />
-            <p className='font-medium' style={{ color: '#15803d' }}>
+            <CheckCircle2 className='w-12 h-12 mx-auto mb-3' style={{ color: 'var(--success-green)' }} />
+            <p className='font-medium' style={{ color: 'var(--success-green-dark)' }}>
               Reset instructions have been sent to your email.
             </p>
           </div>

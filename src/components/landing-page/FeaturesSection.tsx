@@ -19,7 +19,7 @@ export default function FeaturesSection() {
             <h2 className='text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight'>
               Powerful Features for Complete OBE
             </h2>
-            <p className='text-xl text-indigo-100 max-w-2xl mx-auto'>
+            <p className='text-xl max-w-2xl mx-auto' style={{ color: 'var(--white-opacity-90)' }}>
               Everything you need to implement, track, and report outcome-based education seamlessly
             </p>
           </div>
@@ -41,7 +41,7 @@ export default function FeaturesSection() {
                   <h3 className='text-xl font-bold text-white mb-3'>
                     {feature.title}
                   </h3>
-                  <p className='text-indigo-100 text-sm leading-relaxed'>
+                  <p className='text-sm leading-relaxed' style={{ color: 'var(--white-opacity-90)' }}>
                     {feature.description}
                   </p>
                 </div>

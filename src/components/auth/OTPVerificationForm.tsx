@@ -212,9 +212,9 @@ function OTPVerificationFormContent() {
           <div 
             className='px-4 py-3 rounded-lg border text-center text-sm'
             style={{
-              background: 'rgba(239, 68, 68, 0.05)',
-              borderColor: 'rgba(239, 68, 68, 0.2)',
-              color: '#dc2626'
+              background: 'var(--error-opacity-05)',
+              borderColor: 'var(--error-opacity-20)',
+              color: 'var(--error-dark)'
             }}
           >
             <span className='font-medium'>{error}</span>
@@ -260,7 +260,7 @@ function OTPVerificationFormContent() {
             if (!isLoading) {
               e.currentTarget.style.transform = 'translateY(-1px)';
               e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(38, 40, 149, 0.3)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
             }
           }}
           onMouseLeave={(e) => {

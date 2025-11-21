@@ -14,7 +14,7 @@ export default function HeroSection() {
       <div 
         className='absolute inset-0'
         style={{ 
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(0, 0, 0, 0.80))'
+          background: `linear-gradient(135deg, var(--overlay-slate-85), var(--overlay-dark-80))`
         }}
       ></div>
 
@@ -38,7 +38,7 @@ export default function HeroSection() {
           </div>
 
           {/* Description */}
-          <p className='text-xl text-indigo-100 mb-12 max-w-3xl mx-auto leading-relaxed'>
+          <p className='text-xl mb-12 max-w-3xl mx-auto leading-relaxed' style={{ color: 'var(--white-opacity-90)' }}>
             Comprehensive platform for managing Outcome-Based Education at MNS UET. 
             Track learning outcomes, manage assessments, and access detailed reports.
           </p>
@@ -50,7 +50,7 @@ export default function HeroSection() {
               className='inline-flex items-center justify-center px-10 py-5 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300'
               style={{
                 backgroundColor: 'var(--brand-secondary)',
-                boxShadow: '0 8px 30px rgba(252, 153, 40, 0.4)'
+                boxShadow: `0 8px 30px var(--brand-secondary-opacity-40)`
               }}
             >
               Access Portal
@@ -61,7 +61,7 @@ export default function HeroSection() {
               className='inline-flex items-center justify-center px-10 py-5 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300'
               style={{
                 backgroundColor: 'var(--brand-primary)',
-                boxShadow: '0 8px 30px rgba(38, 40, 149, 0.4)'
+                boxShadow: `0 8px 30px var(--brand-primary-opacity-40)`
               }}
             >
               Learn More
@@ -74,39 +74,39 @@ export default function HeroSection() {
               href='/login'
               className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
               style={{
-                border: '2px solid rgba(252, 153, 40, 0.3)'
+                border: `2px solid var(--brand-secondary-opacity-30)`
               }}
             >
               <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-secondary)' }}></div>
               <GraduationCap className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-secondary)' }} />
               <div className='text-lg font-bold text-white mb-2 relative z-10'>Student</div>
-              <div className='text-sm text-gray-200 relative z-10'>View results & progress</div>
+              <div className='text-sm relative z-10' style={{ color: 'var(--white-opacity-80)' }}>View results & progress</div>
             </Link>
 
             <Link
               href='/login'
               className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
               style={{
-                border: '2px solid rgba(38, 40, 149, 0.3)'
+                border: `2px solid var(--brand-primary-opacity-30)`
               }}
             >
               <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-primary)' }}></div>
               <BookOpen className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-primary)' }} />
               <div className='text-lg font-bold text-white mb-2 relative z-10'>Faculty</div>
-              <div className='text-sm text-gray-200 relative z-10'>Manage courses</div>
+              <div className='text-sm relative z-10' style={{ color: 'var(--white-opacity-80)' }}>Manage courses</div>
             </Link>
 
             <Link
               href='/login'
               className='group relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 transition-all duration-300 overflow-hidden'
               style={{
-                border: '2px solid rgba(252, 153, 40, 0.3)'
+                border: `2px solid var(--brand-secondary-opacity-30)`
               }}
             >
               <div className='absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-20 group-hover:opacity-30 transition-opacity' style={{ backgroundColor: 'var(--brand-secondary)' }}></div>
               <Users className='w-12 h-12 mb-3 mx-auto relative z-10' style={{ color: 'var(--brand-secondary)' }} />
               <div className='text-lg font-bold text-white mb-2 relative z-10'>Admin</div>
-              <div className='text-sm text-gray-200 relative z-10'>System management</div>
+              <div className='text-sm relative z-10' style={{ color: 'var(--white-opacity-80)' }}>System management</div>
             </Link>
           </div>
         </div>

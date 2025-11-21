@@ -21,7 +21,7 @@ export default function Footer() {
       <div 
         className='absolute inset-0'
         style={{ 
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(0, 0, 0, 0.92))'
+          background: `linear-gradient(135deg, var(--overlay-slate-85), var(--overlay-dark-92))`
         }}
       ></div>
 
@@ -77,18 +77,18 @@ export default function Footer() {
                     className='relative w-12 h-12 rounded-xl backdrop-blur-md flex items-center justify-center text-white transition-all group overflow-hidden'
                     aria-label={label}
                     style={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                      backgroundColor: 'var(--white-opacity-08)',
+                      border: `1px solid var(--white-opacity-15)`
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--brand-secondary)';
                       e.currentTarget.style.borderColor = 'var(--brand-secondary)';
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(252, 153, 40, 0.4)';
+                      e.currentTarget.style.boxShadow = `0 10px 30px var(--brand-secondary-opacity-40)`;
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.backgroundColor = 'var(--white-opacity-08)';
+                      e.currentTarget.style.borderColor = 'var(--white-opacity-15)';
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
@@ -120,8 +120,8 @@ export default function Footer() {
                     <div 
                       className='w-10 h-10 rounded-lg backdrop-blur-md flex items-center justify-center transition-all'
                       style={{ 
-                        backgroundColor: 'rgba(252, 153, 40, 0.1)',
-                        border: '1px solid rgba(252, 153, 40, 0.2)'
+                        backgroundColor: 'var(--brand-secondary-opacity-10)',
+                        border: `1px solid var(--brand-secondary-opacity-20)`
                       }}
                     >
                       <Icon className='w-5 h-5' style={{ color: 'var(--brand-secondary)' }} />
@@ -143,8 +143,8 @@ export default function Footer() {
               <li className='group'>
                 <div className='flex items-start gap-4 p-4 rounded-xl backdrop-blur-md transition-all' 
                   style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    backgroundColor: 'var(--white-opacity-08)',
+                    border: `1px solid var(--white-opacity-10)`
                   }}
                 >
                   <div className='w-11 h-11 rounded-lg flex items-center justify-center shrink-0' style={{ backgroundColor: 'var(--brand-secondary)' }}>
@@ -161,8 +161,8 @@ export default function Footer() {
               <li className='group'>
                 <a href='tel:+92619330592' className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10' 
                   style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    backgroundColor: 'var(--white-opacity-08)',
+                    border: `1px solid var(--white-opacity-10)`
                   }}
                 >
                   <div className='w-11 h-11 rounded-lg flex items-center justify-center shrink-0' style={{ backgroundColor: 'var(--brand-secondary)' }}>
@@ -177,8 +177,8 @@ export default function Footer() {
               <li className='group'>
                 <a href='mailto:info@mnsuet.edu.pk' className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10' 
                   style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    backgroundColor: 'var(--white-opacity-08)',
+                    border: `1px solid var(--white-opacity-10)`
                   }}
                 >
                   <div className='w-11 h-11 rounded-lg flex items-center justify-center shrink-0' style={{ backgroundColor: 'var(--brand-secondary)' }}>
@@ -195,7 +195,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar - Modern */}
-        <div className='pt-10 mt-10 border-t' style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <div className='pt-10 mt-10 border-t' style={{ borderColor: 'var(--white-opacity-10)' }}>
           <div className='flex flex-col md:flex-row items-center justify-between gap-6'>
             <div className='flex flex-col md:flex-row items-center gap-4 text-sm text-white/70'>
               <p className='font-medium'>&copy; {new Date().getFullYear()} <span className='text-white'>EduTrack</span> — All rights reserved.</p>

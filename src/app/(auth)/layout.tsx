@@ -77,7 +77,7 @@ export default function AuthLayout({
             className='text-2xl font-bold'
             style={{ 
               color: 'var(--brand-secondary)',
-              textShadow: '0 2px 8px rgba(252, 153, 40, 0.5)'
+              textShadow: `0 2px 8px var(--brand-secondary-opacity-50)`
             }}
           >
             EduTrack

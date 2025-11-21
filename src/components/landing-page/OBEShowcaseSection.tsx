@@ -95,7 +95,7 @@ export default function OBEShowcaseSection() {
       <div 
         className='absolute inset-0'
         style={{ 
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.80), rgba(0, 0, 0, 0.75))'
+          background: `linear-gradient(135deg, var(--overlay-slate-85), var(--overlay-dark-75))`
         }}
       ></div>
 
@@ -143,7 +143,7 @@ export default function OBEShowcaseSection() {
           <h2 className='text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight'>
             Complete OBE Solution
           </h2>
-          <p className='text-xl text-indigo-100 max-w-2xl mx-auto'>
+          <p className='text-xl max-w-2xl mx-auto' style={{ color: 'var(--white-opacity-90)' }}>
             Everything you need for outcome-based education in one intelligent platform
           </p>
         </div>

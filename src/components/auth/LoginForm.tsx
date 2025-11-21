@@ -247,7 +247,7 @@ export default function LoginForm() {
             onChange={handleInputChange}
             className='w-full px-4 py-3 rounded-lg border transition-all focus:outline-none'
             style={{
-              borderColor: errors.email ? '#ef4444' : 'var(--gray-300)'
+              borderColor: errors.email ? 'var(--error)' : 'var(--gray-300)'
             }}
             onFocus={(e) => {
               if (!errors.email) {
@@ -296,7 +296,7 @@ export default function LoginForm() {
               onChange={handleInputChange}
               className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
               style={{
-                borderColor: errors.password ? '#ef4444' : 'var(--gray-300)'
+                borderColor: errors.password ? 'var(--error)' : 'var(--gray-300)'
               }}
               onFocus={(e) => {
                 if (!errors.password) {
@@ -353,7 +353,7 @@ export default function LoginForm() {
             if (!isLoading) {
               e.currentTarget.style.transform = 'translateY(-1px)';
               e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(38, 40, 149, 0.3)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
             }
           }}
           onMouseLeave={(e) => {

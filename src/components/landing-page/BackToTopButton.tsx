@@ -28,11 +28,11 @@ export default function BackToTopButton() {
       aria-label='Back to top'
       style={{
         backgroundColor: 'var(--brand-primary)',
-        boxShadow: '0 4px 15px rgba(38, 40, 149, 0.3)'
+        boxShadow: `0 4px 15px var(--brand-primary-opacity-30)`
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--brand-primary-dark)';
-        e.currentTarget.style.boxShadow = '0 6px 20px rgba(38, 40, 149, 0.4)';
+        e.currentTarget.style.boxShadow = `0 6px 20px var(--brand-primary-opacity-40)`;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
