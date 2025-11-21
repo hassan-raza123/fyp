@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import NavbarClient from './NavbarClient';
 
@@ -8,6 +9,16 @@ export default function HeroSection() {
       className='relative overflow-hidden bg-fixed bg-center bg-cover'
       style={{ backgroundImage: "url('/bg/hero-university-building.jpg')" }}
     >
+      {/* Preload Background Image - Same as Login Page */}
+      <Image
+        src='/bg/hero-university-building.jpg'
+        alt=''
+        width={1920}
+        height={1080}
+        className='hidden'
+        priority
+        style={{ display: 'none' }}
+      />
       <NavbarClient />
 
       {/* Dark Overlay */}
