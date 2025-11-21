@@ -33,11 +33,11 @@ export default function AuthLayout({
       />
 
       {/* Logo - Top Left Corner */}
-      <Link href='/' className='absolute top-8 left-8 z-30 flex items-center gap-4 hover:opacity-90 transition-opacity cursor-pointer'>
+      <Link href='/' className='absolute top-6 left-6 z-30 flex items-center gap-3 hover:opacity-90 transition-opacity cursor-pointer'>
         <div className='relative'>
           {/* White Spot Below Logo */}
           <div 
-            className='absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full blur-3xl'
+            className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full blur-2xl'
             style={{
               background: 'var(--white)',
               opacity: 0.6
@@ -47,26 +47,29 @@ export default function AuthLayout({
           <Image
             src="/logo's/logo.png"
             alt='EduTrack Logo'
-            width={80}
-            height={80}
+            width={70}
+            height={70}
             className='object-contain relative z-10'
             priority
             style={{
-              filter: 'drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5))',
+              filter: 'drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5))',
               display: 'block'
             }}
           />
         </div>
         <div>
           <h1 
-            className='text-3xl font-bold'
+            className='text-2xl font-bold'
             style={{ 
               color: 'var(--brand-secondary)',
-              textShadow: '0 3px 10px rgba(0,0,0,0.6)'
+              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
             }}
           >
             EduTrack
           </h1>
+          <p className='text-xs text-white mt-0.5' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
+            MNS University of Engineering & Technology
+          </p>
         </div>
       </Link>
 
