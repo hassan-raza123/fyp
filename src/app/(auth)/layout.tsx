@@ -16,13 +16,28 @@ export default function AuthLayout({
   return (
     <div 
       className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden'
-      style={{
-        backgroundImage: 'url(/bg/login-background.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
     >
+      {/* Preload Background Image */}
+      <img
+        src='/bg/login-background.jpg'
+        alt=''
+        className='hidden'
+        fetchPriority='high'
+        loading='eager'
+        style={{ display: 'none' }}
+      />
+      
+      {/* Background Image - Optimized */}
+      <div
+        className='absolute inset-0 -z-10'
+        style={{
+          backgroundImage: 'url(/bg/login-background.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
       {/* Dark Blur Overlay */}
       <div 
         className='absolute inset-0'
