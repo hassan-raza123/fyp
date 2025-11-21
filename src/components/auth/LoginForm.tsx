@@ -205,7 +205,7 @@ export default function LoginForm() {
             style={
               formData.userType === type
                 ? {
-                    background: 'linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%)',
+                    background: 'var(--brand-primary)',
                     color: 'var(--white)'
                   }
                 : {
@@ -347,17 +347,17 @@ export default function LoginForm() {
           disabled={isLoading}
           className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
           style={{
-            background: 'linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%)'
+            background: 'var(--brand-primary)'
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
               e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px var(--brand-secondary-opacity-30)';
+              e.currentTarget.style.background = 'var(--brand-primary-dark)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(38, 40, 149, 0.3)';
             }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+            e.currentTarget.style.background = 'var(--brand-primary)';
           }}
         >
           {isLoading ? (

@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Login | Smart Campus for MNSUET',
@@ -32,7 +33,7 @@ export default function AuthLayout({
       />
 
       {/* Logo - Top Left Corner */}
-      <div className='absolute top-8 left-8 z-30 flex items-center gap-4'>
+      <Link href='/' className='absolute top-8 left-8 z-30 flex items-center gap-4 hover:opacity-90 transition-opacity cursor-pointer'>
         <div className='relative'>
           {/* White Spot Below Logo */}
           <div 
@@ -67,7 +68,7 @@ export default function AuthLayout({
             EduTrack
           </h1>
         </div>
-      </div>
+      </Link>
 
       {/* Main Content Area */}
       <div className='w-full max-w-6xl mx-auto relative z-10 flex items-center gap-4'>
