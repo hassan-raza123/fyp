@@ -100,40 +100,6 @@ export default function OBEShowcaseSection() {
       ></div>
 
       <div className='relative'>
-      <style jsx global>{`
-        @keyframes slideInFromLeft {
-          0% {
-            opacity: 0;
-            transform: translateX(-100px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slideInFromRight {
-          0% {
-            opacity: 0;
-            transform: translateX(100px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        .animate-slide-left {
-          animation: slideInFromLeft 1s ease-out forwards;
-        }
-        
-        .animate-slide-right {
-          animation: slideInFromRight 1s ease-out 0.2s forwards;
-          opacity: 0;
-        }
-      `}</style>
-
-
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
