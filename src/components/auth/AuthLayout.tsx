@@ -20,7 +20,13 @@ export default function AuthLayout({
     <div className='max-w-md w-full'>
       {/* Header */}
       <div className='text-center mb-10'>
-        <div className='bg-linear-to-br from-primary to-primary-light w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
+        <div 
+          className='w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg'
+          style={{
+            background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-light))`,
+            boxShadow: '0 10px 25px var(--brand-primary-opacity-20)'
+          }}
+        >
           <School className='w-12 h-12 text-accent group-hover:scale-110 transition-transform' />
         </div>
         <h2 className='text-3xl font-bold text-primary'>{title}</h2>

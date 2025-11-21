@@ -32,7 +32,10 @@ export default function LogoutButton({ variant = 'header' }: LogoutButtonProps) 
     return (
       <button
         onClick={handleLogout}
-        className="flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg bg-linear-to-br from-purple-500 to-indigo-600 hover:-translate-y-0.5 text-accent transition-all duration-200"
+        className="flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg hover:-translate-y-0.5 text-accent transition-all duration-200"
+        style={{
+          background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
+        }}
       >
         <LogOut size={18} />
         <span className="text-sm font-medium hidden sm:block">Logout</span>

@@ -145,7 +145,12 @@ export default function NavbarClient() {
                   </svg>
                 </span>
                 {/* Shine effect */}
-                <div className='absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
+                <div 
+                  className='absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000'
+                  style={{
+                    background: `linear-gradient(to right, transparent, var(--white-opacity-20), transparent)`
+                  }}
+                ></div>
               </Link>
             </div>
 

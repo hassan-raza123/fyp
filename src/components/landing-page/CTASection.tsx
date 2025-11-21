@@ -10,7 +10,11 @@ export default function CTASection() {
       className='relative bg-fixed bg-center bg-cover scroll-mt-20'
       style={{ backgroundImage: "url('/bg/graduation-ceremony.webp')" }}
     >
-      <div className='bg-linear-to-b from-black/50 via-black/40 to-black/55'>
+      <div 
+        style={{
+          background: `linear-gradient(to bottom, var(--black-opacity-50), rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.55))`
+        }}
+      >
         <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24'>
           <div className='text-center mb-12'>
             <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur text-sm font-semibold mb-4'>

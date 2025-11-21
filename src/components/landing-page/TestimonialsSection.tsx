@@ -97,7 +97,13 @@ export default function TestimonialsSection() {
   return (
     <div className='relative py-24 overflow-hidden'>
       {/* Gradient Background with Blur Circles */}
-      <div className='absolute inset-0 bg-linear-to-br from-slate-50 via-white to-blue-50'>
+      <div 
+        className='absolute inset-0'
+        style={{
+          background: 'linear-gradient(to bottom right, var(--gray-50), var(--white), var(--gray-50))'
+        }}
+        suppressHydrationWarning
+      >
         <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-20" style={{ background: 'var(--brand-primary)' }}></div>
         <div className="absolute top-40 right-20 w-96 h-96 rounded-full blur-3xl opacity-20" style={{ background: 'var(--brand-secondary)' }}></div>
         <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full blur-3xl opacity-15" style={{ background: 'var(--brand-primary)' }}></div>
@@ -237,17 +243,6 @@ export default function TestimonialsSection() {
         </div>
 
       </div>
-
-      {/* Hide scrollbar */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

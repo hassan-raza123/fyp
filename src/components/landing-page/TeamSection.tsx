@@ -6,7 +6,13 @@ import { supervisor, teamMembers } from '@/constants/landing-page';
 
 export default function TeamSection() {
   return (
-    <div id="team" className='relative py-24 bg-linear-to-b from-gray-50 to-white scroll-mt-20 overflow-hidden'>
+    <div 
+      id="team" 
+      className='relative py-24 scroll-mt-20 overflow-hidden'
+      style={{
+        background: `linear-gradient(to bottom, var(--gray-50), var(--white))`
+      }}
+    >
       {/* Subtle decorative background */}
       <div className="absolute inset-0 opacity-[0.03]">
         <div className="absolute top-20 right-1/4 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: 'var(--brand-primary)' }}></div>
@@ -42,7 +48,12 @@ export default function TeamSection() {
                   className='object-cover w-full h-full'
                 />
                 {/* Gradient Overlay on Hover */}
-                <div className='absolute inset-0 rounded-[7rem] bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                <div 
+                  className='absolute inset-0 rounded-[7rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+                  style={{
+                    background: `linear-gradient(to top, var(--black-opacity-80), rgba(0, 0, 0, 0.4), transparent)`
+                  }}
+                ></div>
               </div>
               
               {/* Social Icons on Hover */}
@@ -88,7 +99,12 @@ export default function TeamSection() {
                   className='object-cover w-full h-full'
                 />
                 {/* Gradient Overlay on Hover */}
-                <div className='absolute inset-0 rounded-[7rem] bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                <div 
+                  className='absolute inset-0 rounded-[7rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+                  style={{
+                    background: `linear-gradient(to top, var(--black-opacity-80), rgba(0, 0, 0, 0.4), transparent)`
+                  }}
+                ></div>
               </div>
               
               {/* Social Icons on Hover */}
@@ -130,7 +146,12 @@ export default function TeamSection() {
                   className='object-cover w-full h-full'
                 />
                 {/* Gradient Overlay on Hover */}
-                <div className='absolute inset-0 rounded-[7rem] bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                <div 
+                  className='absolute inset-0 rounded-[7rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+                  style={{
+                    background: `linear-gradient(to top, var(--black-opacity-80), rgba(0, 0, 0, 0.4), transparent)`
+                  }}
+                ></div>
               </div>
               
               {/* Social Icons on Hover */}
@@ -179,7 +200,12 @@ export default function TeamSection() {
                     className='object-cover w-full h-full'
                   />
                   {/* Gradient Overlay on Hover */}
-                  <div className='absolute inset-0 rounded-[7rem] bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                  <div 
+                  className='absolute inset-0 rounded-[7rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+                  style={{
+                    background: `linear-gradient(to top, var(--black-opacity-80), rgba(0, 0, 0, 0.4), transparent)`
+                  }}
+                ></div>
                 </div>
                 
                 {/* Social Icons on Hover */}

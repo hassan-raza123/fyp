@@ -931,3 +931,33 @@
   animation: slideInFromRight 1s ease-out 0.2s forwards;
   opacity: 0;
 }
+
+/* Hover Background with Brand Primary Opacity */
+.hover-bg-brand-primary-10:hover {
+  background-color: var(--brand-primary-opacity-10);
+}
+
+/* Print Styles */
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:border-0 {
+    border: none !important;
+  }
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  .print\:p-4 {
+    padding: 1rem !important;
+  }
+  .print\:space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  .print\:break-inside-avoid {
+    break-inside: avoid !important;
+  }
+  .print\:mt-8 {
+    margin-top: 2rem !important;
+  }
+}

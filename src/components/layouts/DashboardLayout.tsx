@@ -96,10 +96,10 @@ const SidebarNavLink = ({
         transition-all duration-300 ease-in-out
         ${
           isActive
-            ? 'bg-linear-to-r from-purple-500/10 to-indigo-500/10 text-primary shadow-sm relative'
+            ? 'text-primary shadow-sm relative'
             : isDarkMode
-            ? 'text-gray-400 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
-            : 'text-gray-600 hover:bg-purple-500/10 hover:text-primary hover:translate-x-1'
+            ? 'text-gray-400 hover:text-primary hover:translate-x-1'
+            : 'text-gray-600 hover:text-primary hover:translate-x-1'
         }
         ${isChild ? 'pl-8' : ''}
         group
@@ -111,17 +111,25 @@ const SidebarNavLink = ({
           p-2 rounded-lg transition-all duration-300
           ${
             isActive
-              ? 'bg-linear-to-r from-purple-500 to-indigo-500 text-white shadow-md'
+              ? 'text-white shadow-md'
               : 'text-current group-hover:scale-110'
           }
         `}
+          style={isActive ? {
+            background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
+          } : {}}
         >
           <item.icon
             className={`flex-shrink-0 ${isSidebarOpen ? 'w-5 h-5' : 'w-6 h-6'}`}
           />
         </div>
         {isActive && (
-          <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-indigo-500/5 rounded-lg" />
+          <div 
+            className="absolute inset-0 rounded-lg"
+            style={{
+              background: `linear-gradient(to right, var(--brand-primary-opacity-10), var(--brand-primary-opacity-10))`
+            }}
+          />
         )}
       </div>
       {isSidebarOpen && (
@@ -140,9 +148,12 @@ const SidebarNavLink = ({
             ${
               isActive
                 ? 'bg-white text-primary shadow-sm'
-                : 'bg-linear-to-r from-purple-500 to-indigo-500 text-white shadow-sm'
+                : 'text-white shadow-sm'
             }
           `}
+          style={!isActive ? {
+            background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
+          } : {}}
         >
           {item.badge}
         </span>
@@ -323,7 +334,10 @@ export default function DashboardLayout({
             <div
               className={`flex-shrink-0 ${
                 isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
-              } rounded-xl bg-linear-to-br from-purple-500 to-indigo-600 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
+              } rounded-xl hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
+              style={{
+                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
+              }}
             >
               <Shield
                 className={`${
@@ -357,7 +371,12 @@ export default function DashboardLayout({
                     {role === 'student' && 'Student Access'}
                     {!role && 'v2.0.1'}
                   </span>
-                  <span className="px-1.5 py-0.5 text-[10px] bg-linear-to-r from-purple-500 to-indigo-500 text-white rounded-full shadow-sm">
+                  <span 
+                    className="px-1.5 py-0.5 text-[10px] text-white rounded-full shadow-sm"
+                    style={{
+                      background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
+                    }}
+                  >
                     {role === 'admin' && 'Admin'}
                     {role === 'super_admin' && 'Super Admin'}
                     {role === 'faculty' && 'Faculty'}
@@ -374,8 +393,8 @@ export default function DashboardLayout({
               p-1 rounded-lg transition-all duration-300 hover:scale-110
               ${
                 isDarkMode
-                  ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
-                  : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
+                  ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
+                  : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
               }
             `}
           >
@@ -437,12 +456,17 @@ export default function DashboardLayout({
               transition-all duration-300
               ${
                 isDarkMode
-                  ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
-                  : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
+                  ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
+                  : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
               }
             `}
           >
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-linear-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
+            <div 
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110"
+              style={{
+                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
+              }}
+            >
               <User className="w-4 h-4 text-white" />
             </div>
             {isSidebarOpen && (
@@ -489,7 +513,7 @@ export default function DashboardLayout({
         >
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden mr-4 p-2 rounded-lg hover:bg-purple-500/10 text-gray-600 hover:text-primary transition-all duration-300"
+            className="lg:hidden mr-4 p-2 rounded-lg hover-bg-brand-primary-10 text-gray-600 hover:text-primary transition-all duration-300"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu size={22} />
@@ -541,8 +565,8 @@ export default function DashboardLayout({
                 p-2 rounded-lg
                 ${
                   isDarkMode
-                    ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
-                    : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
+                    ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
+                    : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
                 }
                 transition-all duration-300 hover:scale-110
               `}
@@ -558,8 +582,8 @@ export default function DashboardLayout({
                   p-2 rounded-lg
                   ${
                     isDarkMode
-                      ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
-                      : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
+                      ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
+                      : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
                   }
                   transition-all duration-300 hover:scale-110
                 `}
@@ -576,8 +600,8 @@ export default function DashboardLayout({
                   p-2 rounded-lg
                   ${
                     isDarkMode
-                      ? 'hover:bg-purple-500/10 text-gray-400 hover:text-primary'
-                      : 'hover:bg-purple-500/10 text-gray-600 hover:text-primary'
+                      ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
+                      : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
                   }
                   transition-all duration-300 hover:scale-110
                 `}
@@ -597,8 +621,8 @@ export default function DashboardLayout({
                       onClick={handleLogout}
                       className={`w-full flex items-center px-4 py-2 text-sm ${
                         isDarkMode
-                          ? 'text-gray-300 hover:bg-purple-500/10 hover:text-primary'
-                          : 'text-gray-700 hover:bg-purple-500/10 hover:text-primary'
+                          ? 'text-gray-300 hover-bg-brand-primary-10 hover:text-primary'
+                          : 'text-gray-700 hover-bg-brand-primary-10 hover:text-primary'
                       } transition-all duration-300`}
                     >
                       <LogOut className="w-4 h-4 mr-3" />
