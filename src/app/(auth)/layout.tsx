@@ -62,7 +62,7 @@ export default function AuthLayout({
             className='text-2xl font-bold'
             style={{ 
               color: 'var(--brand-secondary)',
-              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
+              textShadow: '0 2px 8px rgba(252, 153, 40, 0.5)'
             }}
           >
             EduTrack
@@ -77,7 +77,13 @@ export default function AuthLayout({
       <div className='w-full max-w-6xl mx-auto relative z-10 flex items-center gap-4'>
         {/* Left Side - Content */}
         <div className='hidden lg:block max-w-xl ml-auto'>
-          <h1 className='text-3xl font-bold text-white mb-4 leading-tight'>
+          <h1 
+            className='text-3xl font-bold mb-4 leading-tight'
+            style={{ 
+              color: 'var(--brand-secondary)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.5)'
+            }}
+          >
             Outcome-Based Education Management System
           </h1>
           <p className='text-base text-white/90 leading-relaxed'>
