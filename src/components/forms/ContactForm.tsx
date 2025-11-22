@@ -71,19 +71,41 @@ export default function ContactForm() {
     }
   }
 
-  const inputClasses = 'block w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 focus:ring-opacity-50 transition-all duration-200 bg-white/50 hover:border-purple-200'
-  const labelClasses = 'block text-sm font-medium text-gray-700 mb-1.5'
+  const inputClasses = 'block w-full px-4 py-3 rounded-lg border-2 transition-all duration-200'
+  const inputBaseStyle: React.CSSProperties = {
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--white)',
+  }
+  const inputFocusStyle: React.CSSProperties = {
+    borderColor: 'var(--brand-primary)',
+    '--tw-ring-color': 'var(--brand-primary-opacity-20)',
+  } as React.CSSProperties
+  const labelClasses = 'block text-sm font-medium mb-1.5'
+  const labelStyle: React.CSSProperties = {
+    color: 'var(--text-heading)',
+  }
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
       {status.type && (
-        <div className={`p-4 rounded-lg ${status.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+        <div 
+          className='p-4 rounded-lg border'
+          style={{
+            backgroundColor: status.type === 'success' 
+              ? 'var(--brand-secondary-opacity-10)' 
+              : 'var(--black-opacity-05)',
+            color: status.type === 'success' ? 'var(--brand-secondary-dark)' : 'var(--black)',
+            borderColor: status.type === 'success' 
+              ? 'var(--brand-secondary-opacity-20)' 
+              : 'var(--black-opacity-10)',
+          } as React.CSSProperties}
+        >
           {status.message}
         </div>
       )}
       <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
         <div className='space-y-1'>
-          <label htmlFor='name' className={labelClasses}>
+          <label htmlFor='name' className={labelClasses} style={labelStyle}>
             Your Name
           </label>
           <input
@@ -94,13 +116,16 @@ export default function ContactForm() {
             onChange={handleChange}
             required
             className={inputClasses}
+            style={inputBaseStyle}
+            onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+            onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
             placeholder='John Doe'
             minLength={2}
             maxLength={50}
           />
         </div>
         <div className='space-y-1'>
-          <label htmlFor='email' className={labelClasses}>
+          <label htmlFor='email' className={labelClasses} style={labelStyle}>
             Email Address
           </label>
           <input
@@ -111,6 +136,9 @@ export default function ContactForm() {
             onChange={handleChange}
             required
             className={inputClasses}
+            style={inputBaseStyle}
+            onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+            onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
             placeholder='john@example.com'
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
             title="Please enter a valid email address"
@@ -119,7 +147,7 @@ export default function ContactForm() {
       </div>
 
       <div className='space-y-1'>
-        <label htmlFor='subject' className={labelClasses}>
+        <label htmlFor='subject' className={labelClasses} style={labelStyle}>
           Subject
         </label>
         <input
@@ -130,6 +158,9 @@ export default function ContactForm() {
           onChange={handleChange}
           required
           className={inputClasses}
+          style={inputBaseStyle}
+          onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+          onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
           placeholder='How can we help you?'
           minLength={5}
           maxLength={100}
@@ -137,7 +168,7 @@ export default function ContactForm() {
       </div>
 
       <div className='space-y-1'>
-        <label htmlFor='message' className={labelClasses}>
+        <label htmlFor='message' className={labelClasses} style={labelStyle}>
           Message
         </label>
         <textarea
@@ -148,6 +179,9 @@ export default function ContactForm() {
           required
           rows={6}
           className={inputClasses}
+          style={inputBaseStyle}
+          onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+          onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
           placeholder='Tell us more about your inquiry...'
           minLength={10}
           maxLength={1000}
@@ -158,14 +192,22 @@ export default function ContactForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-medium
-            bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 
-            hover:from-purple-700 hover:via-purple-600 hover:to-indigo-700
-            focus:outline-none focus:ring-4 focus:ring-purple-200
-            shadow-lg shadow-purple-500/20
-            transform hover:scale-[1.02] active:scale-[0.98]
-            transition-all duration-200
-            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+          className='w-full flex justify-center items-center py-3 px-6 rounded-lg text-white font-semibold focus:outline-none focus:ring-2 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          style={{
+            backgroundColor: isLoading ? 'var(--gray-400)' : 'var(--brand-primary)',
+            '--tw-ring-color': 'var(--brand-primary-opacity-30)',
+            color: 'var(--white)',
+          } as React.CSSProperties}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-dark)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
+            }
+          }}
         >
           {isLoading ? (
             <>

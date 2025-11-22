@@ -434,33 +434,6 @@ const TranscriptPage = () => {
           <p className="mt-2">For official transcript, please contact the registrar's office</p>
         </div>
       </div>
-
-      {/* Print Styles */}
-      <style jsx global>{`
-        @media print {
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:border-0 {
-            border: none !important;
-          }
-          .print\\:shadow-none {
-            box-shadow: none !important;
-          }
-          .print\\:p-4 {
-            padding: 1rem !important;
-          }
-          .print\\:space-y-4 > * + * {
-            margin-top: 1rem !important;
-          }
-          .print\\:break-inside-avoid {
-            break-inside: avoid !important;
-          }
-          .print\\:mt-8 {
-            margin-top: 2rem !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

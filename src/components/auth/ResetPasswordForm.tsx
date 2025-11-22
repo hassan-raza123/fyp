@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 type ValidationErrors = { [key: string]: string };
@@ -121,7 +121,6 @@ function ResetPasswordFormContent() {
       }
 
       setIsSuccess(true);
-      // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push('/login');
       }, 3000);
@@ -136,22 +135,43 @@ function ResetPasswordFormContent() {
 
   if (!token) {
     return (
-      <div className='max-w-md w-full space-y-8 text-center'>
-        <div className='bg-red-50 border border-red-200 rounded-xl p-6'>
-          <div className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-            <AlertCircle className='w-6 h-6 text-red-600' />
+      <div className='w-full text-center'>
+        <div 
+          className='rounded-2xl p-8 border-2'
+          style={{
+            background: 'var(--error-opacity-05)',
+            borderColor: 'var(--error-opacity-20)'
+          }}
+        >
+          <div 
+            className='w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'
+            style={{
+              background: 'var(--error-opacity-10)'
+            }}
+          >
+            <AlertCircle className='w-8 h-8' style={{ color: 'var(--error-dark)' }} />
           </div>
-          <h3 className='text-red-800 font-semibold text-lg mb-2'>
+          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--error-darker)' }}>
             Invalid Reset Link
           </h3>
-          <p className='text-red-700 text-sm mb-4'>
+          <p className='text-sm mb-6' style={{ color: 'var(--error-light)' }}>
             This password reset link is invalid or has expired.
           </p>
           <Link
             href='/forgot-password'
-            className='text-primary hover:text-primary-light font-medium transition-colors'
+            className='inline-block font-semibold text-white py-3 px-6 rounded-xl transition-all duration-300 hover:-translate-y-0.5'
+            style={{
+              background: 'var(--brand-primary)',
+              boxShadow: `0 10px 25px var(--brand-primary-opacity-30)`
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--brand-primary-dark)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--brand-primary)';
+            }}
           >
-            Request a new reset link
+            Request New Reset Link
           </Link>
         </div>
       </div>
@@ -160,17 +180,27 @@ function ResetPasswordFormContent() {
 
   if (isSuccess) {
     return (
-      <div className='max-w-md w-full space-y-8 text-center'>
-        <div className='bg-green-50 border border-green-100 rounded-xl p-6'>
-          <div className='w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-            <CheckCircle2 className='w-6 h-6 text-green-600' />
+      <div className='w-full text-center'>
+        <div 
+          className='rounded-2xl p-8 border-2'
+          style={{
+            background: 'var(--success-green-opacity-05)',
+            borderColor: 'var(--success-green-opacity-20)'
+          }}
+        >
+          <div 
+            className='w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'
+            style={{
+              background: 'var(--success-green-opacity-10)'
+            }}
+          >
+            <CheckCircle2 className='w-8 h-8' style={{ color: 'var(--success-green)' }} />
           </div>
-          <h3 className='text-green-800 font-semibold text-lg mb-2'>
-            Password Reset Successful
+          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--success-green-dark)' }}>
+            Password Reset Successful! 🎉
           </h3>
-          <p className='text-green-700 text-sm mb-4'>
-            Your password has been reset successfully. You will be redirected to
-            the login page.
+          <p className='text-sm' style={{ color: 'var(--success-green-light)' }}>
+            Your password has been reset successfully. Redirecting to login page...
           </p>
         </div>
       </div>
@@ -178,121 +208,202 @@ function ResetPasswordFormContent() {
   }
 
   return (
-    <div className='max-w-md w-full mx-auto p-6'>
-      <div className='text-center mb-8'>
-        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <Lock className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
-        </div>
-        <h2 className='text-3xl font-bold text-primary'>Reset Password</h2>
-        <p className='text-text-light mt-2'>Enter your new password below</p>
+    <div className='w-full'>
+      {/* Header */}
+      <div className='mb-8'>
+        <h2 
+          className='text-3xl font-bold mb-2'
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Reset Password
+        </h2>
+        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
+          Enter your new password below
+        </p>
       </div>
 
-      {!isSuccess ? (
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='space-y-2'>
-            <label
-              htmlFor='password'
-              className='block text-sm font-semibold text-primary'
-            >
-              New Password
-            </label>
-            <div className='relative group'>
-              <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-              <input
-                id='password'
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={() => validatePassword(password)}
-                className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                  errors.password ? 'border-red-500' : 'border-gray-200'
-                } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-                placeholder='Enter your new password'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPassword(!showPassword)}
-                className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className='text-red-500 text-sm mt-1'>{errors.password}</p>
-            )}
-          </div>
-
-          <div className='space-y-2'>
-            <label
-              htmlFor='confirmPassword'
-              className='block text-sm font-semibold text-primary'
-            >
-              Confirm New Password
-            </label>
-            <div className='relative group'>
-              <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-              <input
-                id='confirmPassword'
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onBlur={() => validateConfirmPassword(confirmPassword)}
-                className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-                } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-                placeholder='Confirm your new password'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPassword(!showPassword)}
-                className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className='text-red-500 text-sm mt-1'>
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          {serverError && (
-            <div className='text-red-500 text-sm text-center'>
-              {serverError}
-            </div>
-          )}
-
-          <button
-            type='submit'
-            disabled={isLoading}
-            className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+      <form onSubmit={handleSubmit} className='space-y-5'>
+        {/* Password Field */}
+        <div>
+          <label
+            htmlFor='password'
+            className='block text-sm font-medium mb-2'
+            style={{ color: 'var(--gray-700)' }}
           >
-            <span
-              className={`inline-flex items-center justify-center ${
-                isLoading ? 'invisible' : ''
-              }`}
+            New Password
+          </label>
+          <div className='relative'>
+            <input
+              id='password'
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
+              style={{
+                borderColor: errors.password ? 'var(--error)' : 'var(--gray-300)'
+              }}
+              onFocus={(e) => {
+                if (!errors.password) {
+                  e.target.style.borderColor = 'var(--brand-secondary)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
+                }
+              }}
+              onBlur={(e) => {
+                validatePassword(password);
+                if (!errors.password) {
+                  e.target.style.borderColor = 'var(--gray-300)';
+                  e.target.style.boxShadow = 'none';
+                }
+              }}
+              placeholder='Enter your new password'
+            />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors'
+              style={{ color: 'var(--gray-400)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--gray-600)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--gray-400)';
+              }}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              Reset Password
-            </span>
-            {isLoading && (
-              <div className='absolute inset-0 flex items-center justify-center'>
-                <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
-              </div>
-            )}
-          </button>
-        </form>
-      ) : (
-        <div className='text-center space-y-6'>
-          <div className='bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl'>
-            <CheckCircle2 className='w-6 h-6 mx-auto mb-2' />
-            <p>Your password has been reset successfully.</p>
-            <p className='text-sm mt-2'>Redirecting to login...</p>
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
+          {errors.password && (
+            <p className='text-red-500 text-xs mt-1 flex items-center gap-1'>
+              <span>⚠</span> {errors.password}
+            </p>
+          )}
         </div>
-      )}
+
+        {/* Confirm Password Field */}
+        <div>
+          <label
+            htmlFor='confirmPassword'
+            className='block text-sm font-medium mb-2'
+            style={{ color: 'var(--gray-700)' }}
+          >
+            Confirm New Password
+          </label>
+          <div className='relative'>
+            <input
+              id='confirmPassword'
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
+              style={{
+                borderColor: errors.confirmPassword ? 'var(--error)' : 'var(--gray-300)'
+              }}
+              onFocus={(e) => {
+                if (!errors.confirmPassword) {
+                  e.target.style.borderColor = 'var(--brand-secondary)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
+                }
+              }}
+              onBlur={(e) => {
+                validateConfirmPassword(confirmPassword);
+                if (!errors.confirmPassword) {
+                  e.target.style.borderColor = 'var(--gray-300)';
+                  e.target.style.boxShadow = 'none';
+                }
+              }}
+              placeholder='Confirm your new password'
+            />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors'
+              style={{ color: 'var(--gray-400)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--gray-600)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--gray-400)';
+              }}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <p className='text-red-500 text-xs mt-1 flex items-center gap-1'>
+              <span>⚠</span> {errors.confirmPassword}
+            </p>
+          )}
+        </div>
+
+        {/* Password Requirements */}
+        <div 
+          className='rounded-xl p-4 border text-sm'
+          style={{
+            background: 'var(--brand-primary-opacity-10)',
+            borderColor: 'var(--brand-primary-opacity-10)'
+          }}
+        >
+          <p className='font-semibold mb-2' style={{ color: 'var(--brand-primary)' }}>
+            Password must contain:
+          </p>
+          <ul className='space-y-1' style={{ color: 'var(--gray-600)' }}>
+            <li className='text-xs'>• At least 8 characters</li>
+            <li className='text-xs'>• One uppercase letter (A-Z)</li>
+            <li className='text-xs'>• One lowercase letter (a-z)</li>
+            <li className='text-xs'>• One number (0-9)</li>
+            <li className='text-xs'>• One special character (@$!%*?&)</li>
+          </ul>
+        </div>
+
+        {/* Server Error */}
+        {serverError && (
+          <div 
+            className='px-4 py-3 rounded-lg border-2 border-red-200'
+            style={{
+              background: 'var(--error-opacity-05)',
+              color: 'var(--error-dark)'
+            }}
+          >
+            <div className='flex items-center gap-2 justify-center'>
+              <AlertCircle className='w-4 h-4' />
+              <span className='font-medium text-sm'>{serverError}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <button
+          type='submit'
+          disabled={isLoading}
+          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
+          style={{
+            background: 'var(--brand-primary)'
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = 'var(--brand-primary-dark)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = 'var(--brand-primary)';
+            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+          }}
+        >
+          {isLoading ? (
+            <span className='flex items-center justify-center'>
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+              Resetting...
+            </span>
+          ) : (
+            'Reset Password'
+          )}
+        </button>
+      </form>
     </div>
   );
 }

@@ -1,14 +1,7 @@
-// components/auth/ForgotPasswordForm.tsx
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Mail,
-  ArrowLeft,
-  School,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 type ValidationErrors = { [key: string]: string };
@@ -77,13 +70,16 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <div className='max-w-md w-full mx-auto p-6'>
-      <div className='text-center mb-8'>
-        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <School className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
-        </div>
-        <h2 className='text-3xl font-bold text-primary'>Forgot Password?</h2>
-        <p className='text-text-light mt-2'>
+    <div className='w-full'>
+      {/* Header */}
+      <div className='mb-8'>
+        <h2 
+          className='text-3xl font-bold mb-2'
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Forgot Password?
+        </h2>
+        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
           {!isEmailSent
             ? "No worries, we'll send you reset instructions"
             : 'Check your email for reset instructions'}
@@ -91,77 +87,123 @@ export default function ForgotPasswordForm() {
       </div>
 
       {!isEmailSent ? (
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='space-y-2'>
+        <form onSubmit={handleSubmit} className='space-y-5'>
+          {/* Email Field */}
+          <div>
             <label
               htmlFor='email'
-              className='block text-sm font-semibold text-primary'
+              className='block text-sm font-medium mb-2'
+              style={{ color: 'var(--gray-700)' }}
             >
               Email Address
             </label>
-            <div className='relative group'>
-              <Mail className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-              <input
-                id='email'
-                type='email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => validateEmail(email)}
-                className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${
-                  errors.email ? 'border-red-500' : 'border-gray-200'
-                } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-                placeholder='Enter your registered email'
-              />
-            </div>
+            <input
+              id='email'
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className='w-full px-4 py-3 rounded-lg border transition-all focus:outline-none'
+              style={{
+                borderColor: errors.email ? 'var(--error)' : 'var(--gray-300)'
+              }}
+              onFocus={(e) => {
+                if (!errors.email) {
+                  e.target.style.borderColor = 'var(--brand-secondary)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
+                }
+              }}
+              onBlur={(e) => {
+                validateEmail(email);
+                if (!errors.email) {
+                  e.target.style.borderColor = 'var(--gray-300)';
+                  e.target.style.boxShadow = 'none';
+                }
+              }}
+              placeholder='Enter your registered email'
+            />
             {errors.email && (
               <p className='text-red-500 text-sm mt-1'>{errors.email}</p>
             )}
           </div>
 
+          {/* Server Error */}
           {serverError && (
-            <div className='text-red-500 text-sm text-center'>
-              {serverError}
+            <div 
+              className='px-4 py-3 rounded-lg border text-sm'
+              style={{
+                background: 'var(--error-opacity-05)',
+                borderColor: 'var(--error-opacity-20)',
+                color: 'var(--error-dark)'
+              }}
+            >
+              <div className='flex items-center gap-2'>
+                <AlertCircle className='w-4 h-4' />
+                <span>{serverError}</span>
+              </div>
             </div>
           )}
 
-          <div className='flex items-center justify-between'>
+          {/* Back to Login */}
+          <div className='flex items-center justify-between pt-2'>
             <Link
               href='/login'
-              className='text-sm text-primary hover:text-primary-light inline-flex items-center'
+              className='text-sm font-medium inline-flex items-center hover:underline'
+              style={{ color: 'var(--brand-primary)' }}
             >
               <ArrowLeft className='w-4 h-4 mr-1' />
               Back to Login
             </Link>
           </div>
 
+          {/* Submit Button */}
           <button
             type='submit'
             disabled={isLoading}
-            className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
+          style={{
+            background: 'var(--brand-primary)'
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = 'var(--brand-primary-dark)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = 'var(--brand-primary)';
+            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+          }}
           >
-            <span
-              className={`inline-flex items-center justify-center ${
-                isLoading ? 'invisible' : ''
-              }`}
-            >
-              Send Reset Instructions
-            </span>
-            {isLoading && (
-              <div className='absolute inset-0 flex items-center justify-center'>
-                <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
-              </div>
+            {isLoading ? (
+              <span className='flex items-center justify-center'>
+                <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+                Sending...
+              </span>
+            ) : (
+              'Send Reset Instructions'
             )}
           </button>
         </form>
       ) : (
         <div className='text-center space-y-6'>
-          <div className='bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl'>
-            <CheckCircle2 className='w-6 h-6 mx-auto mb-2' />
-            <p>Reset instructions have been sent to your email.</p>
+          <div 
+            className='px-6 py-5 rounded-xl border-2'
+            style={{
+              background: 'var(--success-green-opacity-05)',
+              borderColor: 'var(--success-green-opacity-20)'
+            }}
+          >
+            <CheckCircle2 className='w-12 h-12 mx-auto mb-3' style={{ color: 'var(--success-green)' }} />
+            <p className='font-medium' style={{ color: 'var(--success-green-dark)' }}>
+              Reset instructions have been sent to your email.
+            </p>
           </div>
           <Link
             href='/login'
-            className='text-primary hover:text-primary-light font-medium transition-colors inline-flex items-center'
+            className='font-medium transition-colors inline-flex items-center hover:underline'
+            style={{ color: 'var(--brand-primary)' }}
           >
             <ArrowLeft className='w-4 h-4 mr-1' />
             Back to Login

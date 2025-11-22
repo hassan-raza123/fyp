@@ -1,6 +1,8 @@
-# Smart Campus for MNSUET
+# EduTrack - OBE Management System
 
-A comprehensive University Management System built with Next.js 15, React 18, TypeScript, and Prisma ORM, implementing an Outcome-Based Education (OBE) framework.
+**Transforming Education Through Outcomes**
+
+A comprehensive Outcome-Based Education (OBE) Management System built with Next.js 15, React 18, TypeScript, and Prisma ORM for MNS University of Engineering & Technology.
 
 ## 🚀 Live Deployment
 
@@ -182,4 +184,4 @@ This project is developed for MNSUET as a Final Year Project.
 
 ---
 
-**Smart Campus for MNSUET** - Transforming Education Management
+**EduTrack** - Transforming Education Through Outcomes | MNS University of Engineering & Technology
