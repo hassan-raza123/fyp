@@ -102,6 +102,7 @@ async function seedDatabase() {
     update: {},
     create: {
       email: 'hassan.officialmail00@gmail.com',
+      username: 'hassan.officialmail00',
       password_hash: defaultPassword,
       first_name: 'Hassan',
       last_name: 'Admin',

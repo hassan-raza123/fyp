@@ -307,9 +307,63 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Handle students and faculty
-    if (userType === 'student' || userType === 'faculty') {
-      // Check if user has the specific role
+    // Handle faculty users - always require OTP (like admin)
+    if (userType === 'faculty') {
+      // Check if user has faculty role
+      const requestedRole = mapUserTypeToRole(userType);
+      if (!userRoles.includes(requestedRole)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `User does not have ${userType} role`,
+          },
+          { status: 403 }
+        );
+      }
+
+      // For faculty users, always send OTP (every login)
+      const otp = generateOTP();
+      const hashedOTP = await bcrypt.hash(otp, 10);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+
+      // Delete any existing OTPs for this user
+      await prisma.otps.deleteMany({
+        where: {
+          email,
+          userType,
+          isUsed: false,
+        },
+      });
+
+      // Save OTP to database
+      await prisma.otps.create({
+        data: {
+          email,
+          userType,
+          code: hashedOTP,
+          expiresAt,
+          isUsed: false,
+        },
+      });
+
+      // Send OTP via email
+      await sendOTPEmail(email, otp);
+
+      return NextResponse.json({
+        success: true,
+        message: 'OTP sent successfully. Please check your email.',
+        data: {
+          redirectTo: '/verify-otp',
+          email: email,
+          userType: userType,
+          otpSent: true,
+        },
+      });
+    }
+
+    // Handle students - OTP only on first login (email verification)
+    if (userType === 'student') {
+      // Check if user has student role
       const requestedRole = mapUserTypeToRole(userType);
       if (!userRoles.includes(requestedRole)) {
         return NextResponse.json(
@@ -362,8 +416,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Verified student/faculty - direct login
-      // Map database role to frontend role (admin maps to 'admin' in frontend)
+      // Verified student - direct login (no OTP required)
       const frontendRole = userType;
       const userData = createUserData(user, frontendRole as AllRoles);
       const tokenPayload: TokenPayload = {
@@ -393,6 +446,7 @@ export async function POST(request: NextRequest) {
           redirectTo: redirectTo,
           token,
           userType,
+          shouldRedirect: true,
         },
       });
 

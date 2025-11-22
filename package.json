@@ -7,7 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "db:setup": "prisma generate && prisma db push && prisma db seed",
+    "db:reset": "prisma migrate reset --force && prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
