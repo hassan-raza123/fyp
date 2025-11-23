@@ -6,12 +6,11 @@ import {
   Users,
   Plus,
   Edit,
-  Trash2,
   Search,
   Shield,
   CheckCircle,
-  XCircle,
   AlertCircle,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,10 +77,83 @@ interface AdminUser {
   status: string;
 }
 
+interface DashboardData {
+  stats: {
+    totalDepartments: number;
+    totalAdmins: number;
+    assignedDepartments: number;
+    unassignedDepartments: number;
+  };
+  recentActivities: Array<{
+    id: string;
+    summary: string;
+    createdAt: string;
+    user: string;
+    userRole: string;
+    userEmail: string;
+  }>;
+  currentSemester: {
+    name: string;
+    startDate: string;
+    endDate: string;
+  } | null;
+}
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+}
+
+const StatCard = ({ title, value, icon }: StatCardProps) => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          {title}
+        </p>
+        <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">
+          {value}
+        </h3>
+      </div>
+      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+        {icon}
+      </div>
+    </div>
+  </div>
+);
+
+interface ActivityItemProps {
+  summary: string;
+  user: string;
+  userRole: string;
+  time: string;
+  icon: React.ReactNode;
+}
+
+const ActivityItem = ({ summary, user, userRole, time, icon }: ActivityItemProps) => (
+  <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
+    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+      {icon}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-gray-900 dark:text-white">
+        {summary}
+      </p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        By {user} ({userRole})
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{time}</p>
+    </div>
+  </div>
+);
+
 // This is now the only (overview) component for /super-admin
 export default function SuperAdminDashboard() {
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -110,7 +182,27 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     fetchDepartments();
     fetchAdminUsers();
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setDashboardLoading(true);
+      const response = await fetch('/api/super-admin/overview', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
 
   const fetchDepartments = async () => {
     try {
@@ -331,89 +423,185 @@ export default function SuperAdminDashboard() {
     [departments, search]
   );
 
+  if (loading || dashboardLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-10 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
-            Super Admin Overview
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Shield className="h-7 w-7" />
+            Super Admin Dashboard
           </h1>
-          <p className="text-muted-foreground">
-            High-level snapshot of departments and admin users.
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            System-wide overview and analytics
           </p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Department
+          </Button>
         </div>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Departments
-            </CardTitle>
-            <CardDescription>Total departments in the system</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{departments.length}</div>
-          </CardContent>
-        </Card>
+      {/* Main Stats Grid */}
+      {dashboardData && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Departments"
+            value={dashboardData.stats.totalDepartments}
+            icon={
+              <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            }
+          />
+          <StatCard
+            title="Active Admins"
+            value={dashboardData.stats.totalAdmins}
+            icon={
+              <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            }
+          />
+          <StatCard
+            title="Assigned Departments"
+            value={dashboardData.stats.assignedDepartments}
+            icon={
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+            }
+          />
+          <StatCard
+            title="Unassigned Departments"
+            value={dashboardData.stats.unassignedDepartments}
+            icon={
+              <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            }
+          />
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Admin Users
-            </CardTitle>
-            <CardDescription>Active admin accounts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {adminUsers.filter((a) => a.status === 'active').length}
+      {/* Main Content Grid */}
+      {dashboardData && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activity */}
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Recent Activity
+              </h2>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
-              Assigned Departments
-            </CardTitle>
-            <CardDescription>Departments with admin assigned</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {departments.filter((d) => d.admin).length}
+            <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
+              {dashboardData.recentActivities.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 dark:text-gray-500">
+                  No recent activity.
+                </div>
+              ) : (
+                dashboardData.recentActivities.map((activity) => (
+                  <ActivityItem
+                    key={activity.id}
+                    summary={activity.summary}
+                    user={activity.user}
+                    userRole={activity.userRole}
+                    time={new Date(activity.createdAt).toLocaleString()}
+                    icon={
+                      <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    }
+                  />
+                ))
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              Unassigned Departments
-            </CardTitle>
-            <CardDescription>No admin mapped yet</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {departments.filter((d) => !d.admin).length}
+          {/* Quick Stats */}
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Quick Info
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Current Semester
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {dashboardData.currentSemester
+                      ? dashboardData.currentSemester.name
+                      : 'No active semester'}
+                  </span>
+                </div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Quick list of departments (read‑only preview) */}
+            <div
+              className="rounded-xl shadow-sm p-6 text-white"
+              style={{
+                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`,
+              }}
+            >
+              <h2 className="text-lg font-semibold mb-2">System Overview</h2>
+              <p className="text-sm text-purple-100 mb-4">
+                Manage departments, admins, and system-wide settings
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-purple-100">Departments</span>
+                  <span className="font-semibold">
+                    {dashboardData.stats.totalDepartments}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-purple-100">Admins</span>
+                  <span className="font-semibold">
+                    {dashboardData.stats.totalAdmins}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-purple-100">Assigned</span>
+                  <span className="font-semibold">
+                    {dashboardData.stats.assignedDepartments}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-purple-100">Unassigned</span>
+                  <span className="font-semibold">
+                    {dashboardData.stats.unassignedDepartments}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Departments Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Departments</CardTitle>
-          <CardDescription>
-            Quick preview of departments and their admins. Full management in
-            the Departments module.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Departments Overview</CardTitle>
+              <CardDescription>
+                Quick preview of departments and their assigned admins. Full management available in the Departments module.
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/super-admin/departments'}
+            >
+              View All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
@@ -437,7 +625,7 @@ export default function SuperAdminDashboard() {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Admin</TableHead>
-                  <TableHead>Stats</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -461,19 +649,18 @@ export default function SuperAdminDashboard() {
                             </div>
                           </div>
                         ) : (
-                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
                             <AlertCircle className="h-4 w-4" />
-                            No admin
+                            Unassigned
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="text-xs space-y-1 text-muted-foreground">
-                          <div>Fac: {dept.counts.faculties}</div>
-                          <div>Std: {dept.counts.students}</div>
-                          <div>Prog: {dept.counts.programs}</div>
-                          <div>Cr: {dept.counts.courses}</div>
-                        </div>
+                        <Badge
+                          variant={dept.status === 'active' ? 'default' : 'secondary'}
+                        >
+                          {dept.status}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))
@@ -481,6 +668,16 @@ export default function SuperAdminDashboard() {
               </TableBody>
             </Table>
           </div>
+          {filteredDepartments.length > 5 && (
+            <div className="mt-4 text-center">
+              <Button
+                variant="link"
+                onClick={() => window.location.href = '/super-admin/departments'}
+              >
+                View all {filteredDepartments.length} departments →
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
