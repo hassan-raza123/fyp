@@ -386,31 +386,34 @@ export default function DashboardLayout({
             onClick={() => setActiveTab('overview')}
           >
             {/* Logo with Orange Spot in Dark Mode */}
-            <div className="relative">
+            <div className="relative w-8 h-8 flex items-center justify-center">
               {/* Orange Spot Behind Logo - Only in Dark Mode, Top Section Only */}
               {isDarkMode && (
                 <div 
-                  className="absolute top-0 left-1/2 rounded-full blur-lg transition-opacity duration-300"
+                  className="absolute top-0 left-1/2 rounded-full blur-xl"
                   style={{ 
                     background: 'var(--orange-dark)',
-                    width: '10px',
-                    height: '10px',
-                    transform: 'translateX(-50%) translateY(-2px)',
-                    opacity: 0.8,
+                    width: '24px',
+                    height: '24px',
+                    transform: 'translateX(-50%) translateY(-6px)',
+                    opacity: 1,
+                    zIndex: 0,
                   }}
                 />
               )}
               
               {/* Logo */}
               <div
-                className="relative w-8 h-8 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                className="relative w-full h-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                style={{ zIndex: 1 }}
               >
                 <img
                   src="/logo's/logo.png"
                   alt="Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain relative"
                   style={{
                     filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+                    zIndex: 2,
                   }}
                 />
               </div>
