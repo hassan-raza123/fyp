@@ -78,7 +78,7 @@
   --neutral-800: var(--gray-800);
   --neutral-900: var(--gray-900);
   
-  /* Semantic Colors - Light Theme */
+  /* Semantic Colors - Light Theme (Default) */
   --background: var(--white);
   --foreground: var(--black);
   --card-bg: var(--white);
@@ -305,7 +305,9 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .dark {
+  /* Dark Mode - Applied to html element by next-themes */
+  html.dark,
+  :root.dark {
     color-scheme: dark;
     --background: var(--black);
     --foreground: var(--white);
@@ -366,6 +368,83 @@
 
   .text-muted {
     color: var(--text-muted);
+  }
+
+  /* Page Background - Auto dark mode */
+  .bg-page {
+    background-color: var(--background);
+  }
+  
+  html.dark .bg-page,
+  .dark .bg-page {
+    background-color: var(--black);
+  }
+
+  /* Text Colors - Auto dark mode */
+  .text-page {
+    color: var(--foreground);
+  }
+  
+  html.dark .text-page,
+  .dark .text-page {
+    color: var(--white);
+  }
+
+  .text-primary-text {
+    color: var(--text-primary);
+  }
+  
+  html.dark .text-primary-text,
+  .dark .text-primary-text {
+    color: var(--white);
+  }
+
+  .text-secondary-text {
+    color: var(--text-secondary);
+  }
+  
+  html.dark .text-secondary-text,
+  .dark .text-secondary-text {
+    color: var(--gray-400);
+  }
+
+  .text-muted-text {
+    color: var(--text-muted);
+  }
+  
+  html.dark .text-muted-text,
+  .dark .text-muted-text {
+    color: var(--gray-500);
+  }
+
+  /* Border Colors - Auto dark mode */
+  .border-page {
+    border-color: var(--border-color);
+  }
+  
+  html.dark .border-page,
+  .dark .border-page {
+    border-color: var(--gray-800);
+  }
+
+  .border-card-border {
+    border-color: var(--card-border);
+  }
+  
+  html.dark .border-card-border,
+  .dark .border-card-border {
+    border-color: var(--gray-800);
+  }
+  
+  /* Card Background - Auto dark mode */
+  html.dark .bg-card,
+  .dark .bg-card {
+    background-color: var(--gray-900);
+  }
+  
+  html.dark .border-card,
+  .dark .border-card {
+    border-color: var(--gray-800);
   }
 
   /* Button Styles */

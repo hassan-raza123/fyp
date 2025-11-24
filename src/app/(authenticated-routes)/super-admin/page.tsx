@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Building2,
   Users,
@@ -103,25 +104,46 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
+  isDarkMode?: boolean;
 }
 
-const StatCard = ({ title, value, icon }: StatCardProps) => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          {title}
-        </p>
-        <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">
-          {value}
-        </h3>
-      </div>
-      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-        {icon}
+const StatCard = ({ title, value, icon, isDarkMode = false }: StatCardProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.1)' // Orange opacity for dark mode
+    : 'rgba(38, 40, 149, 0.1)'; // Blue opacity for light mode
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div 
+      className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-colors"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p 
+            className="text-xs font-medium text-secondary-text"
+          >
+            {title}
+          </p>
+          <h3 
+            className="text-xl font-bold mt-1 text-primary-text"
+          >
+            {value}
+          </h3>
+        </div>
+        <div 
+          className="p-2 rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <div style={{ color: iconColor }}>
+            {icon}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ActivityItemProps {
   summary: string;
@@ -129,27 +151,68 @@ interface ActivityItemProps {
   userRole: string;
   time: string;
   icon: React.ReactNode;
+  isDarkMode?: boolean;
 }
 
-const ActivityItem = ({ summary, user, userRole, time, icon }: ActivityItemProps) => (
-  <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
-    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-      {icon}
+const ActivityItem = ({ summary, user, userRole, time, icon, isDarkMode = false }: ActivityItemProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.1)' 
+    : 'rgba(38, 40, 149, 0.1)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  const hoverBg = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.05)' 
+    : 'rgba(38, 40, 149, 0.05)';
+  
+  return (
+    <div 
+      className="flex items-start space-x-3 p-3 rounded-lg transition-colors"
+      style={{ 
+        '--hover-bg': hoverBg,
+      } as React.CSSProperties & { '--hover-bg': string }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+      }}
+    >
+      <div 
+        className="p-1.5 rounded-lg shrink-0"
+        style={{ backgroundColor: iconBgColor }}
+      >
+        <div style={{ color: iconColor, width: '16px', height: '16px' }}>
+          {icon}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p 
+          className="text-sm font-medium text-primary-text"
+        >
+          {summary}
+        </p>
+        <p 
+          className="text-xs mt-0.5 text-secondary-text"
+        >
+          By {user} ({userRole})
+        </p>
+        <p 
+          className="text-xs mt-1 text-muted-text"
+        >
+          {time}
+        </p>
+      </div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium text-gray-900 dark:text-white">
-        {summary}
-      </p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">
-        By {user} ({userRole})
-      </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{time}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 // This is now the only (overview) component for /super-admin
 export default function SuperAdminDashboard() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const [departments, setDepartments] = useState<Department[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,6 +225,10 @@ export default function SuperAdminDashboard() {
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [newDepartment, setNewDepartment] = useState({
     name: '',
@@ -423,31 +490,58 @@ export default function SuperAdminDashboard() {
     [departments, search]
   );
 
-  if (loading || dashboardLoading) {
+  if (!mounted || loading || dashboardLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div 
+        className="flex items-center justify-center min-h-screen bg-page"
+      >
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+          style={{ 
+            borderTopColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+            borderBottomColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+          }}
+        ></div>
       </div>
     );
   }
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  
   return (
-    <div className="container mx-auto py-10 space-y-6">
+    <div 
+      className="container mx-auto py-6 space-y-4 min-h-screen bg-page text-page"
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Shield className="h-7 w-7" />
+          <h1 
+            className="text-xl font-bold flex items-center gap-2 text-primary-text"
+          >
+            <Shield className="h-5 w-5" style={{ color: primaryColor }} />
             Super Admin Dashboard
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p 
+            className="text-sm mt-0.5 text-secondary-text"
+          >
             System-wide overview and analytics
           </p>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-purple-600 hover:bg-purple-700"
+            style={{
+              backgroundColor: primaryColor,
+              color: 'white',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColorDark;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColor;
+            }}
+            className="transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Department
@@ -457,51 +551,57 @@ export default function SuperAdminDashboard() {
 
       {/* Main Stats Grid */}
       {dashboardData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Total Departments"
             value={dashboardData.stats.totalDepartments}
-            icon={
-              <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            }
+            icon={<Building2 className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
           />
           <StatCard
             title="Active Admins"
             value={dashboardData.stats.totalAdmins}
-            icon={
-              <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            }
+            icon={<Shield className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
           />
           <StatCard
             title="Assigned Departments"
             value={dashboardData.stats.assignedDepartments}
-            icon={
-              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-            }
+            icon={<CheckCircle className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
           />
           <StatCard
             title="Unassigned Departments"
             value={dashboardData.stats.unassignedDepartments}
-            icon={
-              <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-            }
+            icon={<AlertCircle className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
           />
         </div>
       )}
 
       {/* Main Content Grid */}
       {dashboardData && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div 
+            className="lg:col-span-2 rounded-xl shadow-sm border bg-card border-card-border"
+          >
+            <div 
+              className="p-4 border-b border-card-border"
+            >
+              <h2 
+                className="text-base font-semibold text-primary-text"
+              >
                 Recent Activity
               </h2>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
+            <div 
+              className="divide-y divide-card-border max-h-[400px] overflow-y-auto"
+            >
               {dashboardData.recentActivities.length === 0 ? (
-                <div className="p-6 text-center text-gray-400 dark:text-gray-500">
+                <div 
+                  className="p-6 text-center text-muted-text"
+                >
                   No recent activity.
                 </div>
               ) : (
@@ -512,9 +612,8 @@ export default function SuperAdminDashboard() {
                     user={activity.user}
                     userRole={activity.userRole}
                     time={new Date(activity.createdAt).toLocaleString()}
-                    icon={
-                      <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    }
+                    icon={<Users className="w-4 h-4" />}
+                    isDarkMode={isDarkMode}
                   />
                 ))
               )}
@@ -522,20 +621,31 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Quick Stats */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="space-y-4">
+            <div 
+              className="rounded-xl shadow-sm border p-4 bg-card border-card-border"
+            >
+              <h2 
+                className="text-base font-semibold mb-3 text-primary-text"
+              >
                 Quick Info
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center space-x-2">
+                    <Calendar 
+                      className="w-4 h-4" 
+                      style={{ color: primaryColor }} 
+                    />
+                    <span 
+                      className="text-xs text-secondary-text"
+                    >
                       Current Semester
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  <span 
+                    className="text-xs font-medium text-primary-text"
+                  >
                     {dashboardData.currentSemester
                       ? dashboardData.currentSemester.name
                       : 'No active semester'}
@@ -545,36 +655,36 @@ export default function SuperAdminDashboard() {
             </div>
 
             <div
-              className="rounded-xl shadow-sm p-6 text-white"
+              className="rounded-xl shadow-sm p-4 text-white"
               style={{
-                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`,
+                background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColorDark})`,
               }}
             >
-              <h2 className="text-lg font-semibold mb-2">System Overview</h2>
-              <p className="text-sm text-purple-100 mb-4">
+              <h2 className="text-base font-semibold mb-2">System Overview</h2>
+              <p className="text-xs opacity-90 mb-3">
                 Manage departments, admins, and system-wide settings
               </p>
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-purple-100">Departments</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="opacity-90">Departments</span>
                   <span className="font-semibold">
                     {dashboardData.stats.totalDepartments}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-purple-100">Admins</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="opacity-90">Admins</span>
                   <span className="font-semibold">
                     {dashboardData.stats.totalAdmins}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-purple-100">Assigned</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="opacity-90">Assigned</span>
                   <span className="font-semibold">
                     {dashboardData.stats.assignedDepartments}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-purple-100">Unassigned</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="opacity-90">Unassigned</span>
                   <span className="font-semibold">
                     {dashboardData.stats.unassignedDepartments}
                   </span>
@@ -586,71 +696,112 @@ export default function SuperAdminDashboard() {
       )}
 
       {/* Departments Overview */}
-      <Card>
-        <CardHeader>
+      <Card className="bg-card border-card-border">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Departments Overview</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-base text-primary-text">
+                Departments Overview
+              </CardTitle>
+              <CardDescription className="text-xs mt-1 text-secondary-text">
                 Quick preview of departments and their assigned admins. Full management available in the Departments module.
               </CardDescription>
             </div>
             <Button
               variant="outline"
               onClick={() => window.location.href = '/super-admin/departments'}
+              className="text-xs h-8"
+              style={{
+                borderColor: primaryColor,
+                color: primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode 
+                  ? 'rgba(252, 153, 40, 0.1)' 
+                  : 'rgba(38, 40, 149, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               View All
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
+        <CardContent className="pt-0">
+          <div className="flex gap-3 mb-3">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search 
+                  className="absolute left-2 top-2.5 h-3.5 w-3.5" 
+                  style={{ color: 'var(--text-muted)' }}
+                />
                 <Input
                   placeholder="Search departments..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 h-9 text-sm bg-page border-page text-page"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border bg-card border-card-border">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Admin</TableHead>
-                  <TableHead>Status</TableHead>
+                <TableRow className="border-card-border">
+                  <TableHead className="text-xs h-9 text-secondary-text">
+                    Code
+                  </TableHead>
+                  <TableHead className="text-xs h-9 text-secondary-text">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-xs h-9 text-secondary-text">
+                    Admin
+                  </TableHead>
+                  <TableHead className="text-xs h-9 text-secondary-text">
+                    Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDepartments.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
+                  <TableRow className="border-card-border">
+                    <TableCell 
+                      colSpan={4} 
+                      className="text-center py-6 text-sm text-muted-text"
+                    >
                       No departments found
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredDepartments.slice(0, 5).map((dept) => (
-                    <TableRow key={dept.id}>
-                      <TableCell className="font-medium">{dept.code}</TableCell>
-                      <TableCell>{dept.name}</TableCell>
-                      <TableCell>
+                    <TableRow 
+                      key={dept.id} 
+                      className="h-10 border-card-border hover:bg-accent/5"
+                    >
+                      <TableCell className="font-medium text-xs text-primary-text">
+                        {dept.code}
+                      </TableCell>
+                      <TableCell className="text-xs text-primary-text">
+                        {dept.name}
+                      </TableCell>
+                      <TableCell className="text-xs">
                         {dept.admin ? (
                           <div>
-                            <div className="font-medium">{dept.admin.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="font-medium text-primary-text">
+                              {dept.admin.name}
+                            </div>
+                            <div className="text-xs text-muted-text">
                               {dept.admin.email}
                             </div>
                           </div>
                         ) : (
-                          <span className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
-                            <AlertCircle className="h-4 w-4" />
+                          <span 
+                            className="flex items-center gap-1 text-xs" 
+                            style={{ color: isDarkMode ? 'var(--orange)' : 'var(--orange-dark)' }}
+                          >
+                            <AlertCircle className="h-3.5 w-3.5" />
                             Unassigned
                           </span>
                         )}
@@ -658,6 +809,20 @@ export default function SuperAdminDashboard() {
                       <TableCell>
                         <Badge
                           variant={dept.status === 'active' ? 'default' : 'secondary'}
+                          className="text-xs h-5"
+                          style={
+                            dept.status === 'active'
+                              ? {
+                                  backgroundColor: primaryColor,
+                                  color: 'white',
+                                }
+                              : {
+                                  backgroundColor: isDarkMode 
+                                    ? 'rgba(252, 153, 40, 0.2)' 
+                                    : 'rgba(38, 40, 149, 0.1)',
+                                  color: primaryColor,
+                                }
+                          }
                         >
                           {dept.status}
                         </Badge>
@@ -669,10 +834,12 @@ export default function SuperAdminDashboard() {
             </Table>
           </div>
           {filteredDepartments.length > 5 && (
-            <div className="mt-4 text-center">
+            <div className="mt-3 text-center">
               <Button
                 variant="link"
                 onClick={() => window.location.href = '/super-admin/departments'}
+                className="text-xs h-auto p-0"
+                style={{ color: primaryColor }}
               >
                 View all {filteredDepartments.length} departments →
               </Button>
@@ -683,16 +850,20 @@ export default function SuperAdminDashboard() {
 
       {/* Create Department Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Create New Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">
+              Create New Department
+            </DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Add a new department to the system
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Department Name *</Label>
+              <Label htmlFor="name" className="text-primary-text">
+                Department Name *
+              </Label>
               <Input
                 id="name"
                 placeholder="e.g., Computer Science"
@@ -700,10 +871,13 @@ export default function SuperAdminDashboard() {
                 onChange={(e) =>
                   setNewDepartment({ ...newDepartment, name: e.target.value })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">Department Code *</Label>
+              <Label htmlFor="code" className="text-primary-text">
+                Department Code *
+              </Label>
               <Input
                 id="code"
                 placeholder="e.g., CS"
@@ -714,10 +888,13 @@ export default function SuperAdminDashboard() {
                     code: e.target.value.toUpperCase(),
                   })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-primary-text">
+                Description
+              </Label>
               <Textarea
                 id="description"
                 placeholder="Department description (optional)"
@@ -728,6 +905,7 @@ export default function SuperAdminDashboard() {
                     description: e.target.value,
                   })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
           </div>
@@ -735,10 +913,28 @@ export default function SuperAdminDashboard() {
             <Button
               variant="outline"
               onClick={() => setShowCreateModal(false)}
+              className="border-card-border text-primary-text"
             >
               Cancel
             </Button>
-            <Button onClick={handleCreateDepartment} disabled={isCreating}>
+            <Button 
+              onClick={handleCreateDepartment} 
+              disabled={isCreating}
+              style={{
+                backgroundColor: primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
               {isCreating ? 'Creating...' : 'Create Department'}
             </Button>
           </DialogFooter>
@@ -747,16 +943,20 @@ export default function SuperAdminDashboard() {
 
       {/* Edit Department Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Edit Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">
+              Edit Department
+            </DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Update department information
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Department Name *</Label>
+              <Label htmlFor="edit-name" className="text-primary-text">
+                Department Name *
+              </Label>
               <Input
                 id="edit-name"
                 placeholder="e.g., Computer Science"
@@ -764,10 +964,13 @@ export default function SuperAdminDashboard() {
                 onChange={(e) =>
                   setEditDepartment({ ...editDepartment, name: e.target.value })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-code">Department Code *</Label>
+              <Label htmlFor="edit-code" className="text-primary-text">
+                Department Code *
+              </Label>
               <Input
                 id="edit-code"
                 placeholder="e.g., CS"
@@ -778,10 +981,13 @@ export default function SuperAdminDashboard() {
                     code: e.target.value.toUpperCase(),
                   })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description" className="text-primary-text">
+                Description
+              </Label>
               <Textarea
                 id="edit-description"
                 placeholder="Department description (optional)"
@@ -792,6 +998,7 @@ export default function SuperAdminDashboard() {
                     description: e.target.value,
                   })
                 }
+                className="bg-page border-page text-page"
               />
             </div>
           </div>
@@ -803,10 +1010,28 @@ export default function SuperAdminDashboard() {
                 setSelectedDepartment(null);
                 setEditDepartment({ name: '', code: '', description: '' });
               }}
+              className="border-card-border text-primary-text"
             >
               Cancel
             </Button>
-            <Button onClick={handleUpdateDepartment} disabled={isUpdating}>
+            <Button 
+              onClick={handleUpdateDepartment} 
+              disabled={isUpdating}
+              style={{
+                backgroundColor: primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
               {isUpdating ? 'Updating...' : 'Update Department'}
             </Button>
           </DialogFooter>
@@ -815,10 +1040,12 @@ export default function SuperAdminDashboard() {
 
       {/* Delete Department Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Delete Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">
+              Delete Department
+            </DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Are you sure you want to delete{' '}
               {selectedDepartment?.name || 'this department'}? This action
               cannot be undone. The department can only be deleted if it has no
@@ -833,6 +1060,7 @@ export default function SuperAdminDashboard() {
                 setSelectedDepartment(null);
               }}
               disabled={isDeleting}
+              className="border-card-border text-primary-text"
             >
               Cancel
             </Button>
@@ -840,6 +1068,20 @@ export default function SuperAdminDashboard() {
               variant="destructive"
               onClick={handleDeleteDepartment}
               disabled={isDeleting}
+              style={{
+                backgroundColor: 'var(--error)',
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = 'var(--error-dark)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = 'var(--error)';
+                }
+              }}
             >
               {isDeleting ? 'Deleting...' : 'Delete Department'}
             </Button>
@@ -849,26 +1091,30 @@ export default function SuperAdminDashboard() {
 
       {/* Assign Admin Modal */}
       <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Assign Admin to Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">
+              Assign Admin to Department
+            </DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Select an admin user to assign to{' '}
               {selectedDepartment?.name || 'this department'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="admin">Select Admin *</Label>
+              <Label htmlFor="admin" className="text-primary-text">
+                Select Admin *
+              </Label>
               <Select
                 value={selectedAdminId}
                 onValueChange={setSelectedAdminId}
                 disabled={loadingAdmins}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-page border-page text-page">
                   <SelectValue placeholder="Select an admin user" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {adminUsers.length === 0 ? (
                     <SelectItem value="none" disabled>
                       No admin users available
@@ -880,6 +1126,7 @@ export default function SuperAdminDashboard() {
                         <SelectItem
                           key={admin.id}
                           value={admin.id.toString()}
+                          className="text-primary-text"
                         >
                           {admin.name} ({admin.email})
                         </SelectItem>
@@ -888,7 +1135,7 @@ export default function SuperAdminDashboard() {
                 </SelectContent>
               </Select>
               {adminUsers.length === 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-text">
                   No admin users found. Please create admin users first.
                 </p>
               )}
@@ -902,12 +1149,27 @@ export default function SuperAdminDashboard() {
                 setSelectedDepartment(null);
                 setSelectedAdminId('');
               }}
+              className="border-card-border text-primary-text"
             >
               Cancel
             </Button>
             <Button
               onClick={handleAssignAdmin}
               disabled={isAssigning || !selectedAdminId || loadingAdmins}
+              style={{
+                backgroundColor: primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
             >
               {isAssigning ? 'Assigning...' : 'Assign Admin'}
             </Button>
