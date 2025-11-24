@@ -386,15 +386,15 @@ export default function DashboardLayout({
             onClick={() => setActiveTab('overview')}
           >
             {/* Logo with Orange Spot in Dark Mode */}
-            <div className="relative w-8 h-8 flex items-center justify-center">
+            <div className="relative w-10 h-10 flex items-center justify-center">
               {/* Orange Spot Behind Logo - Only in Dark Mode, Top Section Only */}
               {isDarkMode && (
                 <div 
                   className="absolute top-0 left-1/2 rounded-full blur-xl"
                   style={{ 
-                    background: 'var(--orange-dark)',
-                    width: '24px',
-                    height: '24px',
+                    background: 'var(--secondary-700)', // Darker orange from global
+                    width: '28px',
+                    height: '28px',
                     transform: 'translateX(-50%) translateY(-6px)',
                     opacity: 1,
                     zIndex: 0,
