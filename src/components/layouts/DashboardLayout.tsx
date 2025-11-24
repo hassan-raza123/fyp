@@ -20,7 +20,6 @@ import {
   Filter,
   Download,
   TrendingUp,
-  Shield,
   Sun,
   Moon,
   Layers,
@@ -44,12 +43,13 @@ import {
   HelpCircle,
   Settings2,
   Building2,
-  Link,
+  Link as LinkIcon,
   LayoutDashboard,
   UserCog,
 } from 'lucide-react';
 import { LucideProps } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { logout } from '@/app/actions/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { roleBasedNavigation } from '@/config/navigation';
@@ -92,68 +92,85 @@ const SidebarNavLink = ({
         }
       }}
       className={`
-        w-full flex items-center px-4 py-2.5 rounded-lg
-        transition-all duration-300 ease-in-out
-        ${
-          isActive
-            ? 'text-primary shadow-sm relative'
-            : isDarkMode
-            ? 'text-gray-400 hover:text-primary hover:translate-x-1'
-            : 'text-gray-600 hover:text-primary hover:translate-x-1'
-        }
-        ${isChild ? 'pl-8' : ''}
+        w-full flex items-center gap-2.5 px-2.5 py-2 relative rounded-md
+        transition-all duration-200
+        ${isChild ? 'pl-6' : ''}
         group
       `}
+      style={{
+        color: isActive
+          ? isDarkMode 
+            ? 'var(--orange)' // Orange for active in dark mode
+            : 'var(--blue)' // Blue for active in light mode
+          : isDarkMode
+          ? 'var(--gray-400)'
+          : 'var(--gray-600)',
+        backgroundColor: isActive
+          ? isDarkMode
+            ? 'var(--brand-secondary-opacity-20)' // Orange background in dark mode
+            : 'var(--brand-primary-opacity-10)' // Blue background in light mode
+          : 'transparent',
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.backgroundColor = isDarkMode
+            ? 'var(--brand-secondary-opacity-10)' // Orange hover in dark mode
+            : 'var(--brand-primary-opacity-10)'; // Blue hover in light mode
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }
+      }}
     >
-      <div className="relative flex items-center">
-        <div
-          className={`
-          p-2 rounded-lg transition-all duration-300
-          ${
-            isActive
-              ? 'text-white shadow-md'
-              : 'text-current group-hover:scale-110'
-          }
-        `}
-          style={isActive ? {
-            background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
-          } : {}}
-        >
-          <item.icon
-            className={`flex-shrink-0 ${isSidebarOpen ? 'w-5 h-5' : 'w-6 h-6'}`}
-          />
-        </div>
-        {isActive && (
-          <div 
-            className="absolute inset-0 rounded-lg"
-            style={{
-              background: `linear-gradient(to right, var(--brand-primary-opacity-10), var(--brand-primary-opacity-10))`
-            }}
-          />
-        )}
-      </div>
-      {isSidebarOpen && (
-        <span
-          className={`ml-3 text-sm font-medium transition-all duration-300 ${
-            isActive ? 'font-semibold' : ''
-          }`}
-        >
-          {item.label}
-        </span>
+      {/* Vertical bar for active item - Orange in dark mode, Blue in light mode */}
+      {isActive && (
+        <div 
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
+          style={{
+            backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+          }}
+        />
       )}
+      
+      {/* Icon */}
+      <item.icon
+        className={`flex-shrink-0 ${isSidebarOpen ? 'w-4 h-4' : 'w-5 h-5'}`}
+        style={{
+          color: isActive 
+            ? isDarkMode 
+              ? 'var(--orange)' 
+              : 'var(--blue)' 
+            : 'currentColor',
+        }}
+      />
+      
+      {/* Label */}
+      {isSidebarOpen && (
+        <span className="flex-1 text-left font-medium text-xs">{item.label}</span>
+      )}
+      
+      {/* Badge */}
       {item.badge && isSidebarOpen && (
         <span
-          className={`
-            ml-auto px-2 py-0.5 text-xs font-medium rounded-full
-            ${
-              isActive
-                ? 'bg-white text-primary shadow-sm'
-                : 'text-white shadow-sm'
-            }
-          `}
-          style={!isActive ? {
-            background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
-          } : {}}
+          className="px-1.5 py-0.5 text-[10px] rounded-full font-semibold"
+          style={{
+            backgroundColor: isActive 
+              ? isDarkMode 
+                ? 'var(--brand-secondary-opacity-20)' 
+                : 'var(--brand-primary-opacity-20)'
+              : isDarkMode
+              ? 'var(--brand-secondary-opacity-10)'
+              : 'var(--brand-primary-opacity-10)',
+            color: isActive
+              ? isDarkMode 
+                ? 'var(--orange)' 
+                : 'var(--blue)'
+              : isDarkMode
+              ? 'var(--orange)'
+              : 'var(--blue)',
+          }}
         >
           {item.badge}
         </span>
@@ -179,8 +196,16 @@ export default function DashboardLayout({
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Theme from next-themes
-  const { theme, setTheme } = useTheme();
-  const isDarkMode = theme === 'dark';
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  // Use resolvedTheme to handle 'system' theme properly
+  const isDarkMode = resolvedTheme === 'dark';
+  
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Get navigation items based on user role
   const navigationSections = role
@@ -278,12 +303,30 @@ export default function DashboardLayout({
   }, []);
 
   // While auth is loading or role not yet resolved, avoid flashing wrong sidebar
-  if (loading || !role) {
+  if (loading || !role || !mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{ 
+          backgroundColor: mounted && isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)' 
+        }}
+      >
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Loading your dashboard...</p>
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderColor: 'var(--blue)',
+              borderTopColor: 'transparent',
+            }}
+          />
+          <p 
+            className="text-sm"
+            style={{ 
+              color: mounted && isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)' 
+            }}
+          >
+            Loading your dashboard...
+          </p>
         </div>
       </div>
     );
@@ -291,9 +334,10 @@ export default function DashboardLayout({
 
   return (
     <div
-      className={`min-h-screen ${
-        isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}
+      className="min-h-screen"
+      style={{
+        backgroundColor: isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)',
+      }}
     >
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -308,119 +352,105 @@ export default function DashboardLayout({
         className={`
         fixed top-0 left-0 h-full
         transition-all duration-300 ease-in-out
-        ${
-          isDarkMode
-            ? 'bg-gray-800/95 backdrop-blur-md border-gray-700'
-            : 'bg-white/95 backdrop-blur-md border-gray-200'
-        }
-        border-r shadow-lg
-        ${isSidebarOpen ? 'w-72' : 'w-20'}
-        ${!isSidebarOpen && 'lg:w-20'}
+        border-r
+        ${isSidebarOpen ? 'w-64' : 'w-16'}
+        ${!isSidebarOpen && 'lg:w-16'}
         ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }
         z-50
       `}
+        style={{
+          backgroundColor: isDarkMode 
+            ? 'var(--gray-900)' 
+            : 'var(--white)',
+          borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
+        }}
       >
-        {/* Sidebar Header */}
+        {/* Sidebar Header - Compact */}
         <div
-          className={`
-          h-16 flex items-center justify-between px-4
-          ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}
-          border-b
-        `}
+          className="h-16 flex items-center px-4 border-b"
+          style={{
+            borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
+          }}
         >
-          <div className="flex items-center space-x-3">
-            <div
-              className={`flex-shrink-0 ${
-                isSidebarOpen ? 'w-12 h-12' : 'w-8 h-8'
-              } rounded-xl hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center shadow-lg transition-all duration-300`}
-              style={{
-                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
-              }}
-            >
-              <Shield
-                className={`${
-                  isSidebarOpen ? 'w-7 h-7' : 'w-5 h-5'
-                } text-white transition-transform duration-300 hover:scale-110`}
-              />
+          <Link
+            href={
+              role === 'super_admin' ? '/super-admin' :
+              role === 'admin' ? '/admin' :
+              role === 'faculty' ? '/faculty' :
+              role === 'student' ? '/student' :
+              '/'
+            }
+            className="flex items-center gap-2.5 group cursor-pointer"
+            onClick={() => setActiveTab('overview')}
+          >
+            {/* Logo with Orange Spot in Dark Mode */}
+            <div className="relative">
+              {/* Orange Spot Behind Logo - Only in Dark Mode, Top Section Only */}
+              {isDarkMode && (
+                <div 
+                  className="absolute top-0 left-1/2 rounded-full blur-lg transition-opacity duration-300"
+                  style={{ 
+                    background: 'var(--orange-dark)',
+                    width: '10px',
+                    height: '10px',
+                    transform: 'translateX(-50%) translateY(-2px)',
+                    opacity: 0.8,
+                  }}
+                />
+              )}
+              
+              {/* Logo */}
+              <div
+                className="relative w-8 h-8 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+              >
+                <img
+                  src="/logo's/logo.png"
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+                  }}
+                />
+              </div>
             </div>
 
+            {/* App Name */}
             {isSidebarOpen && (
-              <div className="flex flex-col">
-                <h1
-                  className={`font-bold text-lg tracking-tight ${
-                    isDarkMode ? 'text-white' : 'text-gray-800'
-                  }`}
-                >
-                  {role === 'admin' && 'Admin Panel'}
-                  {role === 'super_admin' && 'Super Admin Panel'}
-                  {role === 'faculty' && 'Faculty Panel'}
-                  {role === 'student' && 'Student Portal'}
-                  {!role && 'Dashboard'}
-                </h1>
-                <div className="flex items-center space-x-1">
-                  <span
-                    className={`text-xs ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    {role === 'admin' && 'Admin Access'}
-                    {role === 'super_admin' && 'Super Admin Access'}
-                    {role === 'faculty' && 'Faculty Access'}
-                    {role === 'student' && 'Student Access'}
-                    {!role && 'v2.0.1'}
-                  </span>
-                  <span 
-                    className="px-1.5 py-0.5 text-[10px] text-white rounded-full shadow-sm"
-                    style={{
-                      background: `linear-gradient(to right, var(--brand-primary), var(--brand-primary-light))`
-                    }}
-                  >
-                    {role === 'admin' && 'Admin'}
-                    {role === 'super_admin' && 'Super Admin'}
-                    {role === 'faculty' && 'Faculty'}
-                    {role === 'student' && 'Student'}
-                    {!role && 'Beta'}
-                  </span>
-                </div>
-              </div>
+              <h1
+                className="font-bold text-lg tracking-tight transition-colors duration-300 group-hover:opacity-80"
+                style={{
+                  color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                }}
+              >
+                EduTrack
+              </h1>
             )}
-          </div>
-          <button
-            onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className={`
-              p-1 rounded-lg transition-all duration-300 hover:scale-110
-              ${
-                isDarkMode
-                  ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
-                  : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
-              }
-            `}
-          >
-            {isSidebarOpen ? (
-              <ChevronLeft size={22} />
-            ) : (
-              <ChevronRight size={21} />
-            )}
-          </button>
+          </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent">
+        {/* Navigation - Compact */}
+        <nav 
+          className="px-3 py-3 overflow-y-auto max-h-[calc(100vh-64px)]"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${isDarkMode ? 'var(--gray-700)' : 'var(--gray-300)'} transparent`,
+          } as React.CSSProperties}
+        >
           {navigationSections.map((section, idx) => (
-            <div key={idx} className="mb-8">
+            <div key={idx} className="mb-4">
               {isSidebarOpen && (
                 <h2
-                  className={`
-                  px-4 mb-3 text-xs font-semibold uppercase tracking-wider
-                  ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
-                `}
+                  className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{
+                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
+                  }}
                 >
                   {section.title}
                 </h2>
               )}
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {section.items.map((item) => (
                   <SidebarNavLink
                     key={item.id}
@@ -436,159 +466,164 @@ export default function DashboardLayout({
           ))}
         </nav>
 
-        {/* User Profile */}
-        <div
-          ref={profileRef}
-          className={`
-          absolute bottom-0 left-0 right-0 p-4
-          ${
-            isDarkMode
-              ? 'border-gray-700 bg-gray-800/50'
-              : 'border-gray-200 bg-gray-50/50'
-          }
-          border-t backdrop-blur-sm
-        `}
-        >
-          <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className={`
-              w-full flex items-center space-x-3 p-2 rounded-lg
-              transition-all duration-300
-              ${
-                isDarkMode
-                  ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
-                  : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
-              }
-            `}
-          >
-            <div 
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110"
-              style={{
-                background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
-              }}
-            >
-              <User className="w-4 h-4 text-white" />
-            </div>
-            {isSidebarOpen && (
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-medium truncate ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}
-                >
-                  {user?.userData.firstName} {user?.userData.lastName}
-                </p>
-                <p
-                  className={`text-xs truncate ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  {user?.email}
-                </p>
-              </div>
-            )}
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}
       <div
         className={`
         transition-all duration-300
-        ${isSidebarOpen ? 'lg:ml-72' : 'lg:ml-20'}
+        ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
         ml-0
       `}
       >
-        {/* Enhanced Header */}
+        {/* Compact Header */}
         <header
-          className={`
-          h-16 flex items-center justify-between px-4 lg:px-12 sticky top-0 z-40
-          ${
-            isDarkMode
-              ? 'bg-gray-800/95 border-gray-700'
-              : 'bg-white/95 border-gray-200'
-          }
-          border-b backdrop-blur-md shadow-sm
-        `}
+          className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 border-b"
+          style={{
+            backgroundColor: isDarkMode 
+              ? 'var(--gray-900)' 
+              : 'var(--white)',
+            borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
+          }}
         >
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden mr-4 p-2 rounded-lg hover-bg-brand-primary-10 text-gray-600 hover:text-primary transition-all duration-300"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu size={22} />
-          </button>
+          <div className="flex items-center flex-1 min-w-0 gap-2">
+            {/* Menu Toggle Button */}
+            <button
+              className="p-1.5 rounded-md transition-all duration-200"
+              style={{
+                color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode 
+                  ? 'var(--brand-secondary-opacity-10)' 
+                  : 'var(--brand-primary-opacity-10)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onClick={() => setSidebarOpen(!isSidebarOpen)}
+            >
+              <Menu size={18} />
+            </button>
 
-          <div className="flex items-center flex-1 min-w-0">
             {/* Search Bar */}
             <div
               ref={searchRef}
               className={`
-              relative flex-1 max-w-2xl
-              ${isMobileSearchOpen ? 'block' : 'hidden lg:block'}
+              relative flex-1 max-w-sm
+              ${isMobileSearchOpen ? 'block' : 'hidden md:block'}
             `}
             >
               <div className="relative">
                 <Search
-                  className={`
-                  absolute left-3 top-1/2 -translate-y-1/2
-                  ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}
-                `}
-                  size={18}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2"
+                  size={14}
+                  style={{
+                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
+                  }}
                 />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`
-                  w-full pl-10 pr-4 py-2 rounded-lg
-                  ${
-                    isDarkMode
-                      ? 'bg-gray-700 text-white placeholder-gray-400'
-                      : 'bg-gray-100 text-gray-900 placeholder-gray-500'
-                  }
-                  focus:outline-none focus:ring-2 focus:ring-purple-500
-                  transition-all duration-300
-                  shadow-sm
-                `}
+                  className="w-full pl-9 pr-3 py-1.5 rounded-md text-sm focus:outline-none transition-all duration-200"
+                  style={{
+                    backgroundColor: isDarkMode 
+                      ? 'var(--gray-800)' 
+                      : 'var(--gray-100)',
+                    color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'transparent'}`,
+                  }}
+                  onFocus={(e) => {
+                    const focusColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+                    e.currentTarget.style.borderColor = focusColor;
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${isDarkMode ? 'var(--brand-secondary-opacity-20)' : 'var(--brand-primary-opacity-20)'}`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'transparent';
+                    e.currentTarget.style.boxShadow = '';
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
+          <div className="flex items-center gap-1.5">
+            {/* Mobile Search Button */}
             <button
-              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-              className={`
-                p-2 rounded-lg
-                ${
-                  isDarkMode
-                    ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
-                    : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
-                }
-                transition-all duration-300 hover:scale-110
-              `}
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="md:hidden p-1.5 rounded-md transition-all duration-200"
+              style={{
+                color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode 
+                  ? 'var(--brand-secondary-opacity-10)' 
+                  : 'var(--brand-primary-opacity-10)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              <Search size={18} />
             </button>
+
+            {/* Theme Toggle */}
+            {mounted && (
+              <button
+                onClick={() => {
+                  if (theme === 'system') {
+                    // If system, switch to opposite of current resolved theme
+                    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+                  } else {
+                    // Toggle between light and dark
+                    setTheme(theme === 'dark' ? 'light' : 'dark');
+                  }
+                }}
+                className="p-1.5 rounded-md transition-all duration-200"
+                style={{
+                  color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode 
+                    ? 'var(--brand-secondary-opacity-10)' 
+                    : 'var(--brand-primary-opacity-10)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            )}
 
             {/* Notifications */}
             <div ref={notificationRef} className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`
-                  p-2 rounded-lg
-                  ${
-                    isDarkMode
-                      ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
-                      : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
-                  }
-                  transition-all duration-300 hover:scale-110
-                `}
+                className="p-1.5 rounded-md transition-all duration-200 relative"
+                style={{
+                  color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode 
+                    ? 'var(--brand-secondary-opacity-10)' 
+                    : 'var(--brand-primary-opacity-10)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
-                <Bell size={20} />
+                <Bell size={18} />
+                {/* Notification Badge */}
+                <span 
+                  className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: '#ef4444',
+                  }}
+                ></span>
               </button>
             </div>
 
@@ -596,37 +631,189 @@ export default function DashboardLayout({
             <div ref={profileRef} className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={`
-                  p-2 rounded-lg
-                  ${
-                    isDarkMode
-                      ? 'hover-bg-brand-primary-10 text-gray-400 hover:text-primary'
-                      : 'hover-bg-brand-primary-10 text-gray-600 hover:text-primary'
-                  }
-                  transition-all duration-300 hover:scale-110
-                `}
+                className="p-0 rounded-full transition-all duration-200"
+                onMouseEnter={(e) => {
+                  const color = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${color}, 0 0 0 4px ${isDarkMode ? 'var(--gray-900)' : 'var(--white)'}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '';
+                }}
               >
-                <User size={20} />
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{
+                    background: isDarkMode
+                      ? `linear-gradient(135deg, var(--orange), var(--orange-dark))`
+                      : `linear-gradient(135deg, var(--blue), var(--blue-dark))`
+                  }}
+                >
+                  <User className="w-4 h-4 text-white" />
+                </div>
               </button>
 
-              {/* Profile Menu Dropdown */}
+              {/* Profile Menu Dropdown - Image Style */}
               {showProfileMenu && (
                 <div
-                  className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${
-                    isDarkMode ? 'bg-gray-800' : 'bg-white'
-                  } ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-300 origin-top-right`}
+                  className="absolute right-0 mt-2 w-64 rounded-xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden"
+                  style={{
+                    backgroundColor: isDarkMode 
+                      ? 'var(--gray-900)' 
+                      : 'var(--white)',
+                    border: `1px solid ${isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)'}`,
+                    boxShadow: isDarkMode
+                      ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)'
+                      : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  }}
                 >
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b" style={{ borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)' }}>
+                    <p 
+                      className="text-sm font-bold"
+                      style={{
+                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                      }}
+                    >
+                      {user?.userData.firstName} {user?.userData.lastName}
+                    </p>
+                    <p 
+                      className="text-xs mt-0.5 truncate"
+                      style={{
+                        color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
+                      }}
+                    >
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  {/* Menu Items */}
                   <div className="py-1">
+                    {/* Profile */}
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        router.push('/admin/settings');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
+                      style={{
+                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode 
+                          ? 'var(--gray-800)' 
+                          : 'var(--gray-100)';
+                        // Show blue bar
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '1';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '0';
+                        }
+                      }}
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="flex-1 text-left">Profile</span>
+                      <div 
+                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
+                        style={{
+                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+                          opacity: 0,
+                        }}
+                      ></div>
+                    </button>
+
+                    {/* Divider */}
+                    <div 
+                      className="h-px my-1"
+                      style={{
+                        backgroundColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
+                      }}
+                    />
+
+                    {/* Settings */}
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        router.push('/admin/settings');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
+                      style={{
+                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode 
+                          ? 'var(--gray-800)' 
+                          : 'var(--gray-100)';
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '1';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '0';
+                        }
+                      }}
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="flex-1 text-left">Settings</span>
+                      <div 
+                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
+                        style={{
+                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+                          opacity: 0,
+                        }}
+                      ></div>
+                    </button>
+
+                    {/* Divider */}
+                    <div 
+                      className="h-px my-1"
+                      style={{
+                        backgroundColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
+                      }}
+                    />
+
+                    {/* Log out */}
                     <button
                       onClick={handleLogout}
-                      className={`w-full flex items-center px-4 py-2 text-sm ${
-                        isDarkMode
-                          ? 'text-gray-300 hover-bg-brand-primary-10 hover:text-primary'
-                          : 'text-gray-700 hover-bg-brand-primary-10 hover:text-primary'
-                      } transition-all duration-300`}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
+                      style={{
+                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode 
+                          ? 'var(--gray-800)' 
+                          : 'var(--gray-100)';
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '1';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
+                        if (blueBar) {
+                          (blueBar as HTMLElement).style.opacity = '0';
+                        }
+                      }}
                     >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Logout
+                      <LogOut className="w-4 h-4" />
+                      <span className="flex-1 text-left">Log out</span>
+                      <div 
+                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
+                        style={{
+                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+                          opacity: 0,
+                        }}
+                      ></div>
                     </button>
                   </div>
                 </div>
@@ -636,7 +823,14 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="p-6">{children}</main>
+        <main 
+          className="p-6 min-h-[calc(100vh-64px)]"
+          style={{
+            backgroundColor: isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)',
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
