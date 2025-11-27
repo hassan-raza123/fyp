@@ -6,10 +6,11 @@ import { hash } from 'bcryptjs';
 // GET /api/users/[id] - Get a specific user
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
@@ -77,7 +78,7 @@ export async function GET(
 // PUT /api/users/[id] - Update a user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication and get user data
@@ -91,6 +92,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const { id } = await context.params;
     const body = await request.json();
     const { email, first_name, last_name, phone_number, status } = body;
 
@@ -104,7 +106,7 @@ export async function PUT(
 
     // Check if user exists
     const existingUser = await prisma.users.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     if (!existingUser) {
@@ -126,7 +128,7 @@ export async function PUT(
 
     // Update user data
     const updatedUser = await prisma.users.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         email,
         first_name,
@@ -168,11 +170,12 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete a user
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // First validate the user ID
-    const userId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
