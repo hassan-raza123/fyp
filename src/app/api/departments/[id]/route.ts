@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/api-utils';
 // GET /api/departments/[id] - Get a single department
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, user } = requireAuth(request);
@@ -24,7 +24,8 @@ export async function GET(
       );
     }
 
-    const departmentId = parseInt(params.id);
+    const { id } = await params;
+    const departmentId = parseInt(id);
     if (isNaN(departmentId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid department ID' },
@@ -98,7 +99,7 @@ export async function GET(
 // PUT /api/departments/[id] - Update a department
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, user, error } = requireAuth(request);
@@ -117,7 +118,8 @@ export async function PUT(
       );
     }
 
-    const departmentId = parseInt(params.id);
+    const { id } = await params;
+    const departmentId = parseInt(id);
     if (isNaN(departmentId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid department ID' },
@@ -197,7 +199,7 @@ export async function PUT(
 // DELETE /api/departments/[id] - Delete a department
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, user, error } = requireAuth(request);
@@ -216,7 +218,8 @@ export async function DELETE(
       );
     }
 
-    const departmentId = parseInt(params.id);
+    const { id } = await params;
+    const departmentId = parseInt(id);
     if (isNaN(departmentId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid department ID' },
