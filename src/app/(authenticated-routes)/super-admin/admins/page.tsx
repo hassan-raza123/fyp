@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -20,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -30,7 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface Admin {
   id: number | null;
@@ -51,8 +52,57 @@ interface Admin {
   } | null;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  subtitle?: string;
+  isDarkMode?: boolean;
+}
+
+const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCardProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-secondary-text mb-1.5">
+            {title}
+          </p>
+          <h3 className="text-2xl font-bold text-primary-text mb-1">
+            {value}
+          </h3>
+          {subtitle && (
+            <p className="text-[10px] text-muted-text">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <div 
+          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <div style={{ color: iconColor }}>
+            {icon}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function SuperAdminAdminsPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,8 +112,14 @@ export default function SuperAdminAdminsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    fetchAdmins();
-  }, [search, statusFilter]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchAdmins();
+    }
+  }, [mounted, search, statusFilter]);
 
   const fetchAdmins = async () => {
     try {
@@ -140,120 +196,222 @@ export default function SuperAdminAdminsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return <Badge variant="success">Active</Badge>;
-      case 'inactive':
-        return <Badge variant="secondary">Inactive</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'active') {
+      return (
+        <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+          Active
+        </Badge>
+      );
+    } else if (statusLower === 'inactive') {
+      return (
+        <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+          Inactive
+        </Badge>
+      );
     }
+    return (
+      <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+        {status}
+      </Badge>
+    );
   };
 
-  if (loading) {
+  // Calculate stats
+  const stats = {
+    total: admins.length,
+    active: admins.filter(a => a.user.status.toLowerCase() === 'active').length,
+    inactive: admins.filter(a => a.user.status.toLowerCase() === 'inactive').length,
+    withDepartment: admins.filter(a => a.department !== null).length,
+    withoutDepartment: admins.filter(a => a.department === null).length,
+  };
+
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor }}
+          />
+          <p className="text-sm text-secondary-text">
+            Loading admins...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-5">
+      {/* Header - Modern & Compact */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
+          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-primary-text">
+            <div 
+              className="p-2 rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,
+              }}
+            >
+              <Shield className="h-5 w-5 text-white" />
+            </div>
             System Admins
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xs mt-1.5 text-secondary-text">
             View and manage all admin users across departments
           </p>
         </div>
-        {/* TODO: Add dedicated super admin create page in future */}
         <Button
           onClick={() => {
             toast.info(
               'Admin creation is currently handled from the department admin side. Super admin can assign departments to existing admins.'
             );
           }}
+          className="text-xs h-8 px-3 text-white"
+          style={{
+            backgroundColor: primaryColor,
+            color: 'white',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColorDark;
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+            e.currentTarget.style.color = 'white';
+          }}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-3 w-3 mr-1.5" />
           Add Admin
         </Button>
       </div>
 
-      <Card>
+      {/* Key Stats - Essential Only */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
+          title="Total Admins"
+          value={stats.total}
+          subtitle={`${stats.active} active`}
+          icon={<Shield className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="Active"
+          value={stats.active}
+          subtitle={`${stats.inactive} inactive`}
+          icon={<UserCheck className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="With Department"
+          value={stats.withDepartment}
+          subtitle={`${stats.withoutDepartment} unassigned`}
+          icon={<Users className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="Without Department"
+          value={stats.withoutDepartment}
+          subtitle="Need assignment"
+          icon={<Users className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+      </div>
+
+      {/* Admins Table */}
+      <Card className="rounded-xl shadow-sm border bg-card border-card-border">
         <CardHeader>
-          <CardTitle>Admin Users</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-primary-text">Admin Users</CardTitle>
+              <CardDescription className="text-secondary-text">
+                View and manage all admin users
+              </CardDescription>
+            </div>
+            <div className="flex gap-3">
+              <div className="relative w-64">
+                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-text`} />
                 <Input
                   placeholder="Search admins..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-10 bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px] bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
-
-          <div className="rounded-md border">
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-card-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Employee ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Password</TableHead>
-                  <TableHead>Designation</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-card hover:bg-card border-card-border">
+                  <TableHead className="text-secondary-text">Employee ID</TableHead>
+                  <TableHead className="text-secondary-text">Name</TableHead>
+                  <TableHead className="text-secondary-text">Email</TableHead>
+                  <TableHead className="text-secondary-text">Password</TableHead>
+                  <TableHead className="text-secondary-text">Designation</TableHead>
+                  <TableHead className="text-secondary-text">Department</TableHead>
+                  <TableHead className="text-secondary-text">Status</TableHead>
+                  <TableHead className="text-right text-secondary-text">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {admins.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
-                      No admin users found
+                    <TableCell colSpan={8} className="text-center py-12 text-secondary-text">
+                      <div className="flex flex-col items-center gap-2">
+                        <Shield className="h-8 w-8 text-muted-text" />
+                        <p>No admin users found</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   admins.map((admin) => (
-                    <TableRow key={admin.userId}>
-                      <TableCell>{admin.employeeId || 'N/A'}</TableCell>
-                      <TableCell>
+                    <TableRow 
+                      key={admin.userId}
+                      className="border-card-border hover:bg-card/50"
+                    >
+                      <TableCell className="text-primary-text">
+                        {admin.employeeId || <span className="text-muted-text italic">N/A</span>}
+                      </TableCell>
+                      <TableCell className="text-primary-text">
                         {admin.user.first_name} {admin.user.last_name}
                       </TableCell>
-                      <TableCell>{admin.user.email}</TableCell>
+                      <TableCell className="text-primary-text">{admin.user.email}</TableCell>
                       <TableCell>
-                        <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                        <code 
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                            color: isDarkMode ? '#ffffff' : '#111827',
+                          }}
+                        >
                           11223344
                         </code>
-                        <span className="text-xs text-muted-foreground ml-2">
+                        <span className="text-xs text-muted-text ml-2">
                           (default)
                         </span>
                       </TableCell>
-                      <TableCell>{admin.designation || 'Admin'}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-primary-text">{admin.designation || 'Admin'}</TableCell>
+                      <TableCell className="text-primary-text">
                         {admin.department
                           ? `${admin.department.name} (${admin.department.code})`
-                          : 'N/A'}
+                          : <span className="text-muted-text italic">N/A</span>}
                       </TableCell>
                       <TableCell>{getStatusBadge(admin.user.status)}</TableCell>
                       <TableCell className="text-right">
@@ -264,9 +422,25 @@ export default function SuperAdminAdminsPage() {
                             onClick={() =>
                               router.push(`/admin/admins/${admin.userId}`)
                             }
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                              backgroundColor: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                           >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
+                            <Eye className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>View</span>
                           </Button>
                           <Button
                             variant="outline"
@@ -274,9 +448,25 @@ export default function SuperAdminAdminsPage() {
                             onClick={() =>
                               router.push(`/admin/admins/${admin.userId}/edit`)
                             }
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                              backgroundColor: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            <Edit className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Edit</span>
                           </Button>
                           <Button
                             variant="destructive"
@@ -285,9 +475,21 @@ export default function SuperAdminAdminsPage() {
                               setSelectedAdmin(admin);
                               setShowDeleteDialog(true);
                             }}
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 text-white"
+                            style={{
+                              backgroundColor: '#dc2626',
+                              color: '#ffffff',
+                              borderColor: '#dc2626',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#b91c1c';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#dc2626';
+                            }}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" style={{ color: '#ffffff' }} />
+                            <span style={{ color: '#ffffff' }}>Delete</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -300,15 +502,18 @@ export default function SuperAdminAdminsPage() {
         </CardContent>
       </Card>
 
+      {/* Delete Admin Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Delete Admin</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Delete Admin</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Are you sure you want to delete{' '}
-              {selectedAdmin
-                ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
-                : 'this admin'}
+              <span className="font-semibold text-primary-text">
+                {selectedAdmin
+                  ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
+                  : 'this admin'}
+              </span>
               ? This action cannot be undone and will remove their admin
               privileges.
             </DialogDescription>
@@ -321,6 +526,23 @@ export default function SuperAdminAdminsPage() {
                 setSelectedAdmin(null);
               }}
               disabled={isDeleting}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+                opacity: isDeleting ? 0.5 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827');
+              }}
             >
               Cancel
             </Button>
@@ -328,6 +550,23 @@ export default function SuperAdminAdminsPage() {
               variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
+              className="text-white"
+              style={{
+                backgroundColor: isDeleting ? '#9ca3af' : '#dc2626',
+                color: '#ffffff',
+                borderColor: isDeleting ? '#9ca3af' : '#dc2626',
+                opacity: isDeleting ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }
+              }}
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
@@ -337,5 +576,3 @@ export default function SuperAdminAdminsPage() {
     </div>
   );
 }
-
-
