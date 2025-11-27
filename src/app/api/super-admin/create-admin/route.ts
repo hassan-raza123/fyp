@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { hash } from 'bcryptjs';
+import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 
 // POST /api/super-admin/create-admin - Create admin user and assign department
 export async function POST(request: NextRequest) {
@@ -140,6 +141,29 @@ export async function POST(request: NextRequest) {
 
       return newUser;
     });
+
+    // Send email if department was assigned
+    if (departmentId) {
+      try {
+        const department = await prisma.departments.findUnique({
+          where: { id: parseInt(departmentId) },
+          select: { name: true, code: true },
+        });
+
+        if (department) {
+          await sendAdminAssignmentEmail({
+            email: result.email,
+            firstName: result.first_name,
+            lastName: result.last_name,
+            departmentName: department.name,
+            departmentCode: department.code,
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending admin assignment email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,

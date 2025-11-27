@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getUserIdFromRequest } from '@/lib/api-utils';
+import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 
 // POST /api/super-admin/assign-admin-to-department - Assign admin user to a department
 export async function POST(request: NextRequest) {
@@ -126,6 +127,20 @@ export async function POST(request: NextRequest) {
 
       return { success: true };
     });
+
+    // Send email notification to admin
+    try {
+      await sendAdminAssignmentEmail({
+        email: targetUser.email,
+        firstName: targetUser.first_name,
+        lastName: targetUser.last_name,
+        departmentName: department.name,
+        departmentCode: department.code,
+      });
+    } catch (emailError) {
+      console.error('Error sending admin assignment email:', emailError);
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({
       success: true,

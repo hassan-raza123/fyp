@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { faculty_status } from '@prisma/client';
+import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 
 interface UserRole {
   role: {
@@ -154,7 +155,15 @@ export async function PUT(
     const existingFaculty = await prisma.faculties.findUnique({
       where: { id: facultyId },
       include: {
-        user: true,
+        user: {
+          include: {
+            userrole: {
+              include: {
+                role: true,
+              },
+            },
+          },
+        },
         department: true,
       },
     });
@@ -165,6 +174,12 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    // Check if this is an admin and department is being changed
+    const isAdmin = existingFaculty.user.userrole?.role?.name === 'admin';
+    const oldDepartmentId = existingFaculty.departmentId;
+    const newDepartmentId = departmentId !== undefined && departmentId !== null ? parseInt(departmentId) : oldDepartmentId;
+    const departmentChanged = isAdmin && newDepartmentId !== oldDepartmentId && newDepartmentId !== null;
 
     // Prepare update data
     const updateData: any = {
@@ -199,6 +214,22 @@ export async function PUT(
         },
       },
     });
+
+    // Send email if admin's department was changed
+    if (departmentChanged && updatedFaculty.department) {
+      try {
+        await sendAdminAssignmentEmail({
+          email: updatedFaculty.user.email,
+          firstName: updatedFaculty.user.first_name,
+          lastName: updatedFaculty.user.last_name,
+          departmentName: updatedFaculty.department.name,
+          departmentCode: updatedFaculty.department.code,
+        });
+      } catch (emailError) {
+        console.error('Error sending admin assignment email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
