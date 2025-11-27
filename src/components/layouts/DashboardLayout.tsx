@@ -54,6 +54,16 @@ import { logout } from '@/app/actions/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { roleBasedNavigation } from '@/config/navigation';
 import { useTheme } from 'next-themes';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface SidebarNavLinkProps {
   item: {
@@ -194,6 +204,7 @@ export default function DashboardLayout({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // Theme from next-themes
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -219,7 +230,18 @@ export default function DashboardLayout({
 
   // Handle logout using server action
   const handleLogout = async () => {
+    setShowLogoutDialog(false);
     await logout();
+  };
+
+  // Get role-based settings path
+  const getSettingsPath = () => {
+    if (role === 'admin') return '/admin/settings';
+    if (role === 'faculty') return '/faculty/settings';
+    if (role === 'student') return '/student/settings';
+    // Super admin doesn't have a settings page, redirect to admin settings as fallback
+    if (role === 'super_admin') return '/admin/settings';
+    return '/admin/settings';
   };
 
   // Update active tab based on URL
@@ -344,7 +366,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-200/80 dark:border-gray-800/80 bg-gradient-to-b from-white/98 to-white/95 dark:from-gray-900/98 dark:to-gray-900/95">
+        <div className="h-16 flex-shrink-0 flex items-center px-4 border-b border-gray-200/80 dark:border-gray-800/80 bg-gradient-to-b from-white/98 to-white/95 dark:from-gray-900/98 dark:to-gray-900/95">
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -401,7 +423,7 @@ export default function DashboardLayout({
 
         {/* Navigation - Compact */}
         <nav 
-          className="px-3 py-3 overflow-y-auto max-h-[calc(100vh-64px)]"
+          className="px-3 py-3 overflow-y-auto flex-1"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: `${isDarkMode ? 'var(--gray-700)' : 'var(--gray-300)'} transparent`,
@@ -460,7 +482,13 @@ export default function DashboardLayout({
             `}
             >
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" size={14} />
+                <Search 
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10" 
+                  size={14}
+                  style={{
+                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
+                  }}
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -556,7 +584,7 @@ export default function DashboardLayout({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        router.push('/admin/settings');
+                        router.push(getSettingsPath());
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
@@ -572,7 +600,7 @@ export default function DashboardLayout({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        router.push('/admin/settings');
+                        router.push(getSettingsPath());
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
@@ -586,7 +614,7 @@ export default function DashboardLayout({
 
                     {/* Log out */}
                     <button
-                      onClick={handleLogout}
+                      onClick={() => setShowLogoutDialog(true)}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <LogOut className="w-4 h-4" />
@@ -601,10 +629,44 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className="p-6 min-h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
+        <main className="p-6 min-h-[calc(100vh-128px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
           {children}
         </main>
+
+        {/* Full Page Footer - Fixed at Bottom */}
+        <footer className="h-16 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-t border-gray-200/80 dark:border-gray-800/80 shadow-[0_-1px_3px_rgba(0,0,0,0.05),0_-1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_-1px_3px_rgba(0,0,0,0.3),0_-1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} EduTrack. All rights reserved.
+          </p>
+        </footer>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-white">
+              Confirm Logout
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+              Are you sure you want to logout? You will need to login again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
