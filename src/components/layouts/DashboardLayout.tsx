@@ -305,26 +305,10 @@ export default function DashboardLayout({
   // While auth is loading or role not yet resolved, avoid flashing wrong sidebar
   if (loading || !role || !mounted) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ 
-          backgroundColor: mounted && isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)' 
-        }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <div className="flex flex-col items-center space-y-3">
-          <div 
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderColor: 'var(--blue)',
-              borderTopColor: 'transparent',
-            }}
-          />
-          <p 
-            className="text-sm"
-            style={{ 
-              color: mounted && isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)' 
-            }}
-          >
+          <div className="w-10 h-10 border-2 border-primary dark:border-secondary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Loading your dashboard...
           </p>
         </div>
@@ -333,12 +317,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)',
-      }}
-    >
+    <div className="min-h-screen bg-page dark:bg-gray-900 transition-colors duration-200">
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div
@@ -347,12 +326,15 @@ export default function DashboardLayout({
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Enhanced Design with Proper Theme Classes */}
       <aside
         className={`
         fixed top-0 left-0 h-full
         transition-all duration-300 ease-in-out
-        border-r
+        backdrop-blur-sm
+        bg-white/95 dark:bg-gray-900/95
+        border-r border-gray-200/80 dark:border-gray-800/80
+        shadow-[2px_0_8px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.2)]
         ${isSidebarOpen ? 'w-64' : 'w-16'}
         ${!isSidebarOpen && 'lg:w-16'}
         ${
@@ -360,20 +342,9 @@ export default function DashboardLayout({
         }
         z-50
       `}
-        style={{
-          backgroundColor: isDarkMode 
-            ? 'var(--gray-900)' 
-            : 'var(--white)',
-          borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
-        }}
       >
-        {/* Sidebar Header - Compact */}
-        <div
-          className="h-16 flex items-center px-4 border-b"
-          style={{
-            borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
-          }}
-        >
+        {/* Sidebar Header - Enhanced Design with Theme Classes */}
+        <div className="h-16 flex items-center px-4 border-b border-gray-200/80 dark:border-gray-800/80 bg-gradient-to-b from-white/98 to-white/95 dark:from-gray-900/98 dark:to-gray-900/95">
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -421,12 +392,7 @@ export default function DashboardLayout({
 
             {/* App Name */}
             {isSidebarOpen && (
-              <h1
-                className="font-bold text-lg tracking-tight transition-colors duration-300 group-hover:opacity-80"
-                style={{
-                  color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                }}
-              >
+              <h1 className="font-bold text-lg tracking-tight transition-colors duration-300 group-hover:opacity-80 text-gray-900 dark:text-white">
                 EduTrack
               </h1>
             )}
@@ -444,12 +410,7 @@ export default function DashboardLayout({
           {navigationSections.map((section, idx) => (
             <div key={idx} className="mb-4">
               {isSidebarOpen && (
-                <h2
-                  className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{
-                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
-                  }}
-                >
+                <h2 className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   {section.title}
                 </h2>
               )}
@@ -479,31 +440,12 @@ export default function DashboardLayout({
         ml-0
       `}
       >
-        {/* Compact Header */}
-        <header
-          className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 border-b"
-          style={{
-            backgroundColor: isDarkMode 
-              ? 'var(--gray-900)' 
-              : 'var(--white)',
-            borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
-          }}
-        >
+        {/* Compact Header - Enhanced Design with Theme Classes */}
+        <header className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-b border-gray-200/80 dark:border-gray-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
-              className="p-1.5 rounded-md transition-all duration-200"
-              style={{
-                color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode 
-                  ? 'var(--brand-secondary-opacity-10)' 
-                  : 'var(--brand-primary-opacity-10)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
               onClick={() => setSidebarOpen(!isSidebarOpen)}
             >
               <Menu size={18} />
@@ -518,35 +460,13 @@ export default function DashboardLayout({
             `}
             >
               <div className="relative">
-                <Search
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2"
-                  size={14}
-                  style={{
-                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
-                  }}
-                />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" size={14} />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 rounded-md text-sm focus:outline-none transition-all duration-200"
-                  style={{
-                    backgroundColor: isDarkMode 
-                      ? 'var(--gray-800)' 
-                      : 'var(--gray-100)',
-                    color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'transparent'}`,
-                  }}
-                  onFocus={(e) => {
-                    const focusColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-                    e.currentTarget.style.borderColor = focusColor;
-                    e.currentTarget.style.boxShadow = `0 0 0 2px ${isDarkMode ? 'var(--brand-secondary-opacity-20)' : 'var(--brand-primary-opacity-20)'}`;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'transparent';
-                    e.currentTarget.style.boxShadow = '';
-                  }}
+                  className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none transition-all duration-200 bg-gray-100/80 dark:bg-gray-800/60 text-gray-900 dark:text-white border border-gray-200/80 dark:border-gray-700/50 backdrop-blur-sm focus:border-primary dark:focus:border-secondary focus:ring-2 focus:ring-primary/15 dark:focus:ring-secondary/15 focus:bg-white/95 dark:focus:bg-gray-800/80"
                 />
               </div>
             </div>
@@ -556,18 +476,7 @@ export default function DashboardLayout({
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-              className="md:hidden p-1.5 rounded-md transition-all duration-200"
-              style={{
-                color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode 
-                  ? 'var(--brand-secondary-opacity-10)' 
-                  : 'var(--brand-primary-opacity-10)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="md:hidden p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
             >
               <Search size={18} />
             </button>
@@ -584,18 +493,7 @@ export default function DashboardLayout({
                     setTheme(theme === 'dark' ? 'light' : 'dark');
                   }
                 }}
-                className="p-1.5 rounded-md transition-all duration-200"
-                style={{
-                  color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode 
-                    ? 'var(--brand-secondary-opacity-10)' 
-                    : 'var(--brand-primary-opacity-10)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -606,27 +504,11 @@ export default function DashboardLayout({
             <div ref={notificationRef} className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-1.5 rounded-md transition-all duration-200 relative"
-                style={{
-                  color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-600)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode 
-                    ? 'var(--brand-secondary-opacity-10)' 
-                    : 'var(--brand-primary-opacity-10)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="p-1.5 rounded-md transition-all duration-200 relative text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
               >
                 <Bell size={18} />
                 {/* Notification Badge */}
-                <span 
-                  className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full"
-                  style={{
-                    backgroundColor: '#ef4444',
-                  }}
-                ></span>
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-red-500"></span>
               </button>
             </div>
 
@@ -655,36 +537,15 @@ export default function DashboardLayout({
                 </div>
               </button>
 
-              {/* Profile Menu Dropdown - Image Style */}
+              {/* Profile Menu Dropdown - Image Style with Theme Classes */}
               {showProfileMenu && (
-                <div
-                  className="absolute right-0 mt-2 w-64 rounded-xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden"
-                  style={{
-                    backgroundColor: isDarkMode 
-                      ? 'var(--gray-900)' 
-                      : 'var(--white)',
-                    border: `1px solid ${isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)'}`,
-                    boxShadow: isDarkMode
-                      ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)'
-                      : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                  }}
-                >
+                <div className="absolute right-0 mt-2 w-64 rounded-xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.3),0_4px_6px_-2px_rgba(0,0,0,0.2)]">
                   {/* User Info Section */}
-                  <div className="px-4 py-3 border-b" style={{ borderColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)' }}>
-                    <p 
-                      className="text-sm font-bold"
-                      style={{
-                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                      }}
-                    >
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
                       {user?.userData.firstName} {user?.userData.lastName}
                     </p>
-                    <p 
-                      className="text-xs mt-0.5 truncate"
-                      style={{
-                        color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
-                      }}
-                    >
+                    <p className="text-xs mt-0.5 truncate text-gray-500 dark:text-gray-400">
                       {user?.email}
                     </p>
                   </div>
@@ -697,46 +558,15 @@ export default function DashboardLayout({
                         setShowProfileMenu(false);
                         router.push('/admin/settings');
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
-                      style={{
-                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = isDarkMode 
-                          ? 'var(--gray-800)' 
-                          : 'var(--gray-100)';
-                        // Show blue bar
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '1';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '0';
-                        }
-                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <User className="w-4 h-4" />
                       <span className="flex-1 text-left">Profile</span>
-                      <div 
-                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
-                        style={{
-                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
-                          opacity: 0,
-                        }}
-                      ></div>
+                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
                     </button>
 
                     {/* Divider */}
-                    <div 
-                      className="h-px my-1"
-                      style={{
-                        backgroundColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
-                      }}
-                    />
+                    <div className="h-px my-1 bg-gray-200 dark:bg-gray-800" />
 
                     {/* Settings */}
                     <button
@@ -744,79 +574,24 @@ export default function DashboardLayout({
                         setShowProfileMenu(false);
                         router.push('/admin/settings');
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
-                      style={{
-                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = isDarkMode 
-                          ? 'var(--gray-800)' 
-                          : 'var(--gray-100)';
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '1';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '0';
-                        }
-                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <Settings className="w-4 h-4" />
                       <span className="flex-1 text-left">Settings</span>
-                      <div 
-                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
-                        style={{
-                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
-                          opacity: 0,
-                        }}
-                      ></div>
+                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
                     </button>
 
                     {/* Divider */}
-                    <div 
-                      className="h-px my-1"
-                      style={{
-                        backgroundColor: isDarkMode ? 'var(--gray-800)' : 'var(--gray-200)',
-                      }}
-                    />
+                    <div className="h-px my-1 bg-gray-200 dark:bg-gray-800" />
 
                     {/* Log out */}
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group"
-                      style={{
-                        color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = isDarkMode 
-                          ? 'var(--gray-800)' 
-                          : 'var(--gray-100)';
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '1';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        const blueBar = e.currentTarget.querySelector('.blue-indicator');
-                        if (blueBar) {
-                          (blueBar as HTMLElement).style.opacity = '0';
-                        }
-                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <LogOut className="w-4 h-4" />
                       <span className="flex-1 text-left">Log out</span>
-                      <div 
-                        className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200"
-                        style={{
-                          backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
-                          opacity: 0,
-                        }}
-                      ></div>
+                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
                     </button>
                   </div>
                 </div>
@@ -825,13 +600,8 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Page Content */}
-        <main 
-          className="p-6 min-h-[calc(100vh-64px)]"
-          style={{
-            backgroundColor: isDarkMode ? 'var(--gray-900)' : 'var(--gray-50)',
-          }}
-        >
+        {/* Page Content - Enhanced Design with Theme Classes */}
+        <main className="p-6 min-h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
           {children}
         </main>
       </div>
