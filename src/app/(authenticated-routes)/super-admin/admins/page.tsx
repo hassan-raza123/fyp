@@ -119,8 +119,23 @@ export default function SuperAdminAdminsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [viewingAdmin, setViewingAdmin] = useState<any>(null);
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const [editAdmin, setEditAdmin] = useState({
+    email: '',
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    designation: 'Department Admin',
+    departmentId: '',
+    status: 'active' as 'active' | 'inactive',
+  });
   
   const [newAdmin, setNewAdmin] = useState({
     email: '',
@@ -248,6 +263,133 @@ export default function SuperAdminAdminsPage() {
       );
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleViewAdmin = async (admin: Admin) => {
+    setIsLoadingAdmin(true);
+    setViewingAdmin(null);
+    setShowViewModal(true);
+    try {
+      const response = await fetch(`/api/users/${admin.userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin details');
+      const data = await response.json();
+      setViewingAdmin(data);
+    } catch (error) {
+      console.error('Error fetching admin:', error);
+      toast.error('Failed to load admin details');
+      setShowViewModal(false);
+    } finally {
+      setIsLoadingAdmin(false);
+    }
+  };
+
+  const handleEditAdmin = async (admin: Admin) => {
+    setIsLoadingAdmin(true);
+    setSelectedAdmin(admin);
+    setShowEditModal(true);
+    try {
+      const response = await fetch(`/api/users/${admin.userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin details');
+      const data = await response.json();
+      setEditAdmin({
+        email: data.email || '',
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+        phone_number: data.phone_number || '',
+        designation: data.faculty?.designation || 'Department Admin',
+        departmentId: data.faculty?.department?.id?.toString() || '',
+        status: (data.status || 'active') as 'active' | 'inactive',
+      });
+    } catch (error) {
+      console.error('Error fetching admin:', error);
+      toast.error('Failed to load admin details');
+      setShowEditModal(false);
+    } finally {
+      setIsLoadingAdmin(false);
+    }
+  };
+
+  const handleUpdateAdmin = async () => {
+    if (!selectedAdmin) return;
+
+    if (!editAdmin.email || !editAdmin.first_name || !editAdmin.last_name) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      // Update user
+      const userResponse = await fetch(`/api/users/${selectedAdmin.userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: editAdmin.email.trim(),
+          first_name: editAdmin.first_name.trim(),
+          last_name: editAdmin.last_name.trim(),
+          phone_number: editAdmin.phone_number.trim() || null,
+          status: editAdmin.status,
+        }),
+      });
+
+      if (!userResponse.ok) {
+        const error = await userResponse.json();
+        throw new Error(error.error || 'Failed to update user');
+      }
+
+      // Update faculty if exists
+      const newDeptId = editAdmin.departmentId ? parseInt(editAdmin.departmentId) : null;
+      
+      if (selectedAdmin.id) {
+        const facultyResponse = await fetch(`/api/faculty/${selectedAdmin.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            designation: editAdmin.designation.trim() || 'Department Admin',
+            status: editAdmin.status === 'active' ? 'active' : 'inactive',
+            departmentId: newDeptId || null,
+          }),
+        });
+
+        if (!facultyResponse.ok) {
+          console.warn('Failed to update faculty details');
+        }
+      } else if (newDeptId) {
+        // Faculty record doesn't exist but we want to assign department
+        // Use super-admin API to assign department (this will create faculty record)
+        const assignResponse = await fetch('/api/super-admin/assign-admin-to-department', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ 
+            userId: selectedAdmin.userId,
+            departmentId: newDeptId 
+          }),
+        });
+        if (!assignResponse.ok) {
+          const error = await assignResponse.json();
+          console.warn('Failed to assign department:', error);
+        }
+      }
+
+      toast.success('Admin updated successfully');
+      setShowEditModal(false);
+      setSelectedAdmin(null);
+      fetchAdmins();
+    } catch (error) {
+      console.error('Error updating admin:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update admin'
+      );
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -467,7 +609,7 @@ export default function SuperAdminAdminsPage() {
                       className="border-card-border hover:bg-card/50"
                     >
                       <TableCell className="text-primary-text">
-                        {admin.employeeId || <span className="text-muted-text italic">N/A</span>}
+                        {admin.id ? `EMP-${String(admin.id).padStart(4, '0')}` : <span className="text-muted-text italic">N/A</span>}
                       </TableCell>
                       <TableCell className="text-primary-text">
                         {admin.user.first_name} {admin.user.last_name}
@@ -485,9 +627,8 @@ export default function SuperAdminAdminsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              router.push(`/admin/admins/${admin.userId}`)
-                            }
+                            onClick={() => handleViewAdmin(admin)}
+                            disabled={!admin.userId}
                             className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
                               color: isDarkMode ? '#ffffff' : '#111827',
@@ -511,9 +652,8 @@ export default function SuperAdminAdminsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              router.push(`/admin/admins/${admin.userId}/edit`)
-                            }
+                            onClick={() => handleEditAdmin(admin)}
+                            disabled={!admin.userId}
                             className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
                               color: isDarkMode ? '#ffffff' : '#111827',
@@ -725,6 +865,301 @@ export default function SuperAdminAdminsPage() {
               }}
             >
               {isCreating ? 'Creating...' : 'Create Admin'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Admin Modal */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-primary-text">Admin Details</DialogTitle>
+            <DialogDescription className="text-secondary-text">
+              View complete information about this admin user
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingAdmin ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-sm text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : viewingAdmin ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-secondary-text mb-3">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-text mb-1">First Name</p>
+                    <p className="text-sm text-primary-text">{viewingAdmin.first_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-text mb-1">Last Name</p>
+                    <p className="text-sm text-primary-text">{viewingAdmin.last_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-text mb-1">Email</p>
+                    <p className="text-sm text-primary-text">{viewingAdmin.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-text mb-1">Phone Number</p>
+                    <p className="text-sm text-primary-text">{viewingAdmin.phone_number || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-text mb-1">Status</p>
+                    <div className="mt-1">{getStatusBadge(viewingAdmin.status)}</div>
+                  </div>
+                </div>
+              </div>
+              {viewingAdmin.faculty && (
+                <div>
+                  <h3 className="text-sm font-semibold text-secondary-text mb-3">Admin Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-text mb-1">Employee ID</p>
+                      <p className="text-sm text-primary-text">
+                        {viewingAdmin.faculty.id ? `EMP-${String(viewingAdmin.faculty.id).padStart(4, '0')}` : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-text mb-1">Designation</p>
+                      <p className="text-sm text-primary-text">{viewingAdmin.faculty.designation || 'Department Admin'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-text mb-1">Department</p>
+                      <p className="text-sm text-primary-text">
+                        {viewingAdmin.faculty.department
+                          ? `${viewingAdmin.faculty.department.name} (${viewingAdmin.faculty.department.code})`
+                          : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-secondary-text">
+              <p>No data available</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingAdmin(null);
+              }}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+            >
+              Close
+            </Button>
+            {viewingAdmin && (
+              <Button
+                onClick={() => {
+                  const admin = admins.find(a => a.userId === viewingAdmin.id);
+                  if (admin) {
+                    setShowViewModal(false);
+                    handleEditAdmin(admin);
+                  }
+                }}
+                className="text-white"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }}
+              >
+                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                Edit Admin
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Admin Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-primary-text">Edit Admin</DialogTitle>
+            <DialogDescription className="text-secondary-text">
+              Update admin user information and department assignment
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingAdmin ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-sm text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_first_name" className="text-primary-text">First Name *</Label>
+                  <Input
+                    id="edit_first_name"
+                    placeholder="John"
+                    value={editAdmin.first_name}
+                    onChange={(e) =>
+                      setEditAdmin({ ...editAdmin, first_name: e.target.value })
+                    }
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_last_name" className="text-primary-text">Last Name *</Label>
+                  <Input
+                    id="edit_last_name"
+                    placeholder="Doe"
+                    value={editAdmin.last_name}
+                    onChange={(e) =>
+                      setEditAdmin({ ...editAdmin, last_name: e.target.value })
+                    }
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_email" className="text-primary-text">Email *</Label>
+                <Input
+                  id="edit_email"
+                  type="email"
+                  placeholder="john.doe@example.com"
+                  value={editAdmin.email}
+                  onChange={(e) =>
+                    setEditAdmin({ ...editAdmin, email: e.target.value })
+                  }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_phone_number" className="text-primary-text">Phone Number</Label>
+                <Input
+                  id="edit_phone_number"
+                  placeholder="+1234567890"
+                  value={editAdmin.phone_number}
+                  onChange={(e) =>
+                    setEditAdmin({ ...editAdmin, phone_number: e.target.value })
+                  }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_designation" className="text-primary-text">Designation</Label>
+                <Input
+                  id="edit_designation"
+                  placeholder="Department Admin"
+                  value={editAdmin.designation}
+                  onChange={(e) =>
+                    setEditAdmin({ ...editAdmin, designation: e.target.value })
+                  }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_departmentId" className="text-primary-text">Department</Label>
+                  <Select
+                    value={editAdmin.departmentId || 'none'}
+                    onValueChange={(value) =>
+                      setEditAdmin({ ...editAdmin, departmentId: value === 'none' ? '' : value })
+                    }
+                  >
+                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                      <SelectValue placeholder="Select a department" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-card-border">
+                      <SelectItem value="none" className="text-primary-text hover:bg-card/50">
+                        No Department
+                      </SelectItem>
+                      {departments.map((dept) => (
+                        <SelectItem
+                          key={dept.id}
+                          value={dept.id.toString()}
+                          className="text-primary-text hover:bg-card/50"
+                        >
+                          {dept.name} ({dept.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_status" className="text-primary-text">Status</Label>
+                  <Select
+                    value={editAdmin.status}
+                    onValueChange={(value: 'active' | 'inactive') =>
+                      setEditAdmin({ ...editAdmin, status: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-card-border">
+                      <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                      <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedAdmin(null);
+              }}
+              disabled={isUpdating}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateAdmin}
+              disabled={isUpdating}
+              className="text-white"
+              style={{
+                backgroundColor: isUpdating ? '#9ca3af' : primaryColor,
+                color: '#ffffff',
+                opacity: isUpdating ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
+              {isUpdating ? 'Updating...' : 'Update Admin'}
             </Button>
           </DialogFooter>
         </DialogContent>

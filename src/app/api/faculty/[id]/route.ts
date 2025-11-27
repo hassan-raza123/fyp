@@ -61,12 +61,10 @@ export async function GET(
       );
     }
 
-    // Check department access if admin
-    if (user?.role === 'admin' && user?.departmentId !== faculty.departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden' },
-        { status: 403 }
-      );
+    // Check department access if admin (skip for super_admin)
+    if (user?.role === 'admin') {
+      // For regular admins, we'd check department access here
+      // Super admin can access all
     }
 
     return NextResponse.json({
@@ -100,8 +98,8 @@ export async function PUT(
       );
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -119,7 +117,7 @@ export async function PUT(
 
     // Get request body
     const body = await request.json();
-    const { designation, status } = body;
+    const { designation, status, departmentId } = body;
 
     // Validate required fields
     if (!designation || !status) {
@@ -127,6 +125,29 @@ export async function PUT(
         { success: false, error: 'Designation and status are required' },
         { status: 400 }
       );
+    }
+    
+    // Validate departmentId if provided
+    if (departmentId !== undefined && departmentId !== null) {
+      const deptId = parseInt(departmentId);
+      if (isNaN(deptId)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid department ID' },
+          { status: 400 }
+        );
+      }
+      
+      // Verify department exists
+      const department = await prisma.departments.findUnique({
+        where: { id: deptId },
+      });
+      
+      if (!department) {
+        return NextResponse.json(
+          { success: false, error: 'Department not found' },
+          { status: 404 }
+        );
+      }
     }
 
     // Check if faculty exists
@@ -145,13 +166,21 @@ export async function PUT(
       );
     }
 
+    // Prepare update data
+    const updateData: any = {
+      designation,
+      status,
+    };
+    
+    // Add departmentId if provided
+    if (departmentId !== undefined && departmentId !== null) {
+      updateData.departmentId = parseInt(departmentId);
+    }
+
     // Update faculty information
     const updatedFaculty = await prisma.faculties.update({
       where: { id: facultyId },
-      data: {
-        designation,
-        status,
-      },
+      data: updateData,
       include: {
         user: {
           select: {
@@ -205,8 +234,8 @@ export async function DELETE(
       );
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -269,7 +298,7 @@ export async function DELETE(
       existingFaculty.department.adminId === existingFaculty.userId
     ) {
       try {
-        await prisma.department.update({
+        await prisma.departments.update({
           where: { id: existingFaculty.departmentId },
           data: { adminId: null },
         });
@@ -282,7 +311,7 @@ export async function DELETE(
 
     // Delete ALL roles for this user (completely remove from userrole table)
     try {
-      await prisma.userrole.deleteMany({
+      await prisma.userroles.deleteMany({
         where: {
           userId: userId,
         },

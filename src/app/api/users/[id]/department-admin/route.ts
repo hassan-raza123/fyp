@@ -13,8 +13,8 @@ export async function POST(
       return NextResponse.json({ success: false, error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }

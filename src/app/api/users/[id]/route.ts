@@ -86,8 +86,8 @@ export async function PUT(
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
