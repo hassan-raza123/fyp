@@ -641,10 +641,11 @@ export default function SuperAdminDepartmentsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditDepartment(dept)}
-                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8"
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
-                              color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
-                              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--gray-200)',
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                              backgroundColor: 'transparent',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
@@ -653,12 +654,12 @@ export default function SuperAdminDepartmentsPage() {
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'var(--gray-200)';
-                              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                             }}
                           >
-                            <Edit className="h-3.5 w-3.5 mr-1.5" />
-                            <span>Edit</span>
+                            <Edit className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Edit</span>
                           </Button>
                           <Button
                             variant="outline"
@@ -671,10 +672,11 @@ export default function SuperAdminDepartmentsPage() {
                               setSelectedDepartment(dept);
                               setShowAssignModal(true);
                             }}
-                            className="transition-all hover:scale-105 text-xs px-3 h-8"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
-                              borderColor: primaryColor + '50',
-                              color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                              borderColor: primaryColor + '80',
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              backgroundColor: 'transparent',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.borderColor = primaryColor;
@@ -682,13 +684,13 @@ export default function SuperAdminDepartmentsPage() {
                               e.currentTarget.style.color = primaryColor;
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = primaryColor + '50';
+                              e.currentTarget.style.borderColor = primaryColor + '80';
                               e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                             }}
                           >
-                            <Shield className="h-3.5 w-3.5 mr-1.5" />
-                            <span>Assign</span>
+                            <Shield className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Assign</span>
                           </Button>
                           <Button
                             variant="destructive"
@@ -701,10 +703,21 @@ export default function SuperAdminDepartmentsPage() {
                               setSelectedDepartment(dept);
                               setShowDeleteModal(true);
                             }}
-                            className="transition-all hover:scale-105 text-xs px-3 h-8 text-white"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8"
+                            style={{
+                              backgroundColor: '#dc2626',
+                              color: '#ffffff',
+                              borderColor: '#dc2626',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#b91c1c';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#dc2626';
+                            }}
                           >
-                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                            <span>Delete</span>
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" style={{ color: '#ffffff' }} />
+                            <span style={{ color: '#ffffff' }}>Delete</span>
                           </Button>
                         </div>
                       </TableCell>
