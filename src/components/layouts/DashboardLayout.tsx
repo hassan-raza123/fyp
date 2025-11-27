@@ -629,12 +629,12 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className="p-6 min-h-[calc(100vh-128px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
+        <main className="p-6 min-h-[calc(100vh-112px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
           {children}
         </main>
 
         {/* Full Page Footer - Fixed at Bottom */}
-        <footer className="h-16 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-t border-gray-200/80 dark:border-gray-800/80 shadow-[0_-1px_3px_rgba(0,0,0,0.05),0_-1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_-1px_3px_rgba(0,0,0,0.3),0_-1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
+        <footer className="h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-t border-gray-200/80 dark:border-gray-800/80 shadow-[0_-1px_3px_rgba(0,0,0,0.05),0_-1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_-1px_3px_rgba(0,0,0,0.3),0_-1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} EduTrack. All rights reserved.
           </p>
