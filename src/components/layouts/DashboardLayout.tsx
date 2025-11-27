@@ -55,15 +55,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { roleBasedNavigation } from '@/config/navigation';
 import { useTheme } from 'next-themes';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface SidebarNavLinkProps {
   item: {
@@ -651,31 +650,56 @@ export default function DashboardLayout({
       </div>
 
       {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 dark:text-white">
-              Confirm Logout
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent className="bg-card border-card-border">
+          <DialogHeader>
+            <DialogTitle className="text-primary-text">Confirm Logout</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Are you sure you want to logout? You will need to login again to access your account.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel 
-              className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
             >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="text-white"
+              style={{
+                backgroundColor: '#dc2626',
+                color: '#ffffff',
+                borderColor: '#dc2626',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#b91c1c';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#dc2626';
+              }}
             >
               Logout
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
