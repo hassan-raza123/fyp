@@ -787,17 +787,19 @@ export default function SuperAdminDepartmentsPage() {
             <Button
               variant="outline"
               onClick={() => setShowCreateModal(false)}
-              className="border-card-border transition-all"
+              className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
             >
               Cancel
@@ -807,16 +809,21 @@ export default function SuperAdminDepartmentsPage() {
               disabled={isCreating}
               className="text-white"
               style={{
-                backgroundColor: primaryColor,
-                color: 'white',
+                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: '#ffffff',
+                borderColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-                e.currentTarget.style.color = 'white';
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
-                e.currentTarget.style.color = 'white';
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
             >
               {isCreating ? 'Creating...' : 'Create Department'}
@@ -886,17 +893,19 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
                 setEditDepartment({ name: '', code: '', description: '' });
               }}
-              className="border-card-border transition-all"
+              className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
             >
               Cancel
@@ -906,16 +915,21 @@ export default function SuperAdminDepartmentsPage() {
               disabled={isUpdating}
               className="text-white"
               style={{
-                backgroundColor: primaryColor,
-                color: 'white',
+                backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: '#ffffff',
+                borderColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-                e.currentTarget.style.color = 'white';
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
-                e.currentTarget.style.color = 'white';
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
             >
               {isUpdating ? 'Updating...' : 'Update Department'}
@@ -944,19 +958,22 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
               }}
               disabled={isDeleting}
-              className="border-card-border transition-all"
+              className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+                opacity: isDeleting ? 0.5 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
                   e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                  e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                  e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                 }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827');
               }}
             >
               Cancel
@@ -965,6 +982,23 @@ export default function SuperAdminDepartmentsPage() {
               variant="destructive"
               onClick={handleDeleteDepartment}
               disabled={isDeleting}
+              className="text-white"
+              style={{
+                backgroundColor: isDeleting ? '#9ca3af' : '#dc2626',
+                color: '#ffffff',
+                borderColor: isDeleting ? '#9ca3af' : '#dc2626',
+                opacity: isDeleting ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }
+              }}
             >
               {isDeleting ? 'Deleting...' : 'Delete Department'}
             </Button>
@@ -1028,17 +1062,19 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
                 setSelectedAdminId('');
               }}
-              className="border-card-border transition-all"
+              className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
               }}
             >
               Cancel
@@ -1048,16 +1084,26 @@ export default function SuperAdminDepartmentsPage() {
               disabled={isAssigning || !selectedAdminId || loadingAdmins}
               className="text-white"
               style={{
-                backgroundColor: primaryColor,
-                color: 'white',
+                backgroundColor: (isAssigning || !selectedAdminId || loadingAdmins) 
+                  ? (isDarkMode ? '#9a3412' : '#1e40af') 
+                  : primaryColor,
+                color: '#ffffff',
+                borderColor: (isAssigning || !selectedAdminId || loadingAdmins) 
+                  ? (isDarkMode ? '#9a3412' : '#1e40af') 
+                  : primaryColor,
+                opacity: (isAssigning || !selectedAdminId || loadingAdmins) ? 0.6 : 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-                e.currentTarget.style.color = 'white';
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
-                e.currentTarget.style.color = 'white';
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
               }}
             >
               {isAssigning ? 'Assigning...' : 'Assign Admin'}
