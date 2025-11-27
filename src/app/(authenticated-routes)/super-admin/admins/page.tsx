@@ -1069,11 +1069,10 @@ export default function SuperAdminAdminsPage() {
                   id="edit_designation"
                   placeholder="Department Admin"
                   value={editAdmin.designation}
-                  onChange={(e) =>
-                    setEditAdmin({ ...editAdmin, designation: e.target.value })
-                  }
-                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  disabled
+                  className="bg-card/50 border-card-border text-primary-text placeholder:text-secondary-text cursor-not-allowed opacity-70"
                 />
+                <p className="text-xs text-muted-text">Fixed: Department Admin</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
