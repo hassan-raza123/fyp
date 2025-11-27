@@ -32,6 +32,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Admin {
   id: number | null;
@@ -50,6 +52,12 @@ interface Admin {
     name: string;
     code: string;
   } | null;
+}
+
+interface Department {
+  id: number;
+  name: string;
+  code: string;
 }
 
 interface StatCardProps {
@@ -110,6 +118,18 @@ export default function SuperAdminAdminsPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  const [newAdmin, setNewAdmin] = useState({
+    email: '',
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    designation: 'Department Admin',
+    departmentId: '',
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -118,8 +138,25 @@ export default function SuperAdminAdminsPage() {
   useEffect(() => {
     if (mounted) {
       fetchAdmins();
+      fetchDepartments();
     }
   }, [mounted, search, statusFilter]);
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch('/api/departments', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setDepartments(data.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+    }
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -163,6 +200,54 @@ export default function SuperAdminAdminsPage() {
       toast.error('Failed to load admins');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!newAdmin.email || !newAdmin.first_name || !newAdmin.last_name) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/super-admin/create-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: newAdmin.email.trim(),
+          first_name: newAdmin.first_name.trim(),
+          last_name: newAdmin.last_name.trim(),
+          phone_number: newAdmin.phone_number.trim() || undefined,
+          designation: newAdmin.designation.trim() || 'Department Admin',
+          departmentId: newAdmin.departmentId ? parseInt(newAdmin.departmentId) : undefined,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Admin created successfully!');
+        setShowCreateModal(false);
+        setNewAdmin({
+          email: '',
+          first_name: '',
+          last_name: '',
+          phone_number: '',
+          designation: 'Department Admin',
+          departmentId: '',
+        });
+        fetchAdmins();
+      } else {
+        throw new Error(data.error || 'Failed to create admin');
+      }
+    } catch (error) {
+      console.error('Error creating admin:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create admin'
+      );
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -266,11 +351,7 @@ export default function SuperAdminAdminsPage() {
           </p>
         </div>
         <Button
-          onClick={() => {
-            toast.info(
-              'Admin creation is currently handled from the department admin side. Super admin can assign departments to existing admins.'
-            );
-          }}
+          onClick={() => setShowCreateModal(true)}
           className="text-xs h-8 px-3 text-white"
           style={{
             backgroundColor: primaryColor,
@@ -286,7 +367,7 @@ export default function SuperAdminAdminsPage() {
           }}
         >
           <Plus className="h-3 w-3 mr-1.5" />
-          Add Admin
+          Create Admin
         </Button>
       </div>
 
@@ -363,7 +444,6 @@ export default function SuperAdminAdminsPage() {
                   <TableHead className="text-secondary-text">Employee ID</TableHead>
                   <TableHead className="text-secondary-text">Name</TableHead>
                   <TableHead className="text-secondary-text">Email</TableHead>
-                  <TableHead className="text-secondary-text">Password</TableHead>
                   <TableHead className="text-secondary-text">Designation</TableHead>
                   <TableHead className="text-secondary-text">Department</TableHead>
                   <TableHead className="text-secondary-text">Status</TableHead>
@@ -373,7 +453,7 @@ export default function SuperAdminAdminsPage() {
               <TableBody>
                 {admins.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-secondary-text">
+                    <TableCell colSpan={7} className="text-center py-12 text-secondary-text">
                       <div className="flex flex-col items-center gap-2">
                         <Shield className="h-8 w-8 text-muted-text" />
                         <p>No admin users found</p>
@@ -393,21 +473,7 @@ export default function SuperAdminAdminsPage() {
                         {admin.user.first_name} {admin.user.last_name}
                       </TableCell>
                       <TableCell className="text-primary-text">{admin.user.email}</TableCell>
-                      <TableCell>
-                        <code 
-                          className="text-xs px-2 py-1 rounded"
-                          style={{
-                            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                            color: isDarkMode ? '#ffffff' : '#111827',
-                          }}
-                        >
-                          11223344
-                        </code>
-                        <span className="text-xs text-muted-text ml-2">
-                          (default)
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-primary-text">{admin.designation || 'Admin'}</TableCell>
+                      <TableCell className="text-primary-text">{admin.designation || 'Department Admin'}</TableCell>
                       <TableCell className="text-primary-text">
                         {admin.department
                           ? `${admin.department.name} (${admin.department.code})`
@@ -501,6 +567,168 @@ export default function SuperAdminAdminsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Admin Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-primary-text">Create New Admin</DialogTitle>
+            <DialogDescription className="text-secondary-text">
+              Create a new admin user and optionally assign them to a department
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first_name" className="text-primary-text">First Name *</Label>
+                <Input
+                  id="first_name"
+                  placeholder="John"
+                  value={newAdmin.first_name}
+                  onChange={(e) =>
+                    setNewAdmin({ ...newAdmin, first_name: e.target.value })
+                  }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name" className="text-primary-text">Last Name *</Label>
+                <Input
+                  id="last_name"
+                  placeholder="Doe"
+                  value={newAdmin.last_name}
+                  onChange={(e) =>
+                    setNewAdmin({ ...newAdmin, last_name: e.target.value })
+                  }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-primary-text">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john.doe@example.com"
+                value={newAdmin.email}
+                onChange={(e) =>
+                  setNewAdmin({ ...newAdmin, email: e.target.value })
+                }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone_number" className="text-primary-text">Phone Number</Label>
+              <Input
+                id="phone_number"
+                placeholder="+1234567890"
+                value={newAdmin.phone_number}
+                onChange={(e) =>
+                  setNewAdmin({ ...newAdmin, phone_number: e.target.value })
+                }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="designation" className="text-primary-text">Designation</Label>
+              <Input
+                id="designation"
+                placeholder="Department Admin"
+                value={newAdmin.designation}
+                disabled
+                className="bg-card/50 border-card-border text-primary-text placeholder:text-secondary-text cursor-not-allowed opacity-70"
+              />
+              <p className="text-xs text-muted-text">Fixed: Department Admin</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="departmentId" className="text-primary-text">Department (Optional)</Label>
+              <Select
+                value={newAdmin.departmentId || 'none'}
+                onValueChange={(value) =>
+                  setNewAdmin({ ...newAdmin, departmentId: value === 'none' ? '' : value })
+                }
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select a department (optional)" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="none" className="text-primary-text hover:bg-card/50">
+                    No Department (Assign Later)
+                  </SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem
+                      key={dept.id}
+                      value={dept.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
+                    >
+                      {dept.name} ({dept.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-text">
+                You can assign a department now or later from the departments page
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCreateModal(false);
+                setNewAdmin({
+                  email: '',
+                  first_name: '',
+                  last_name: '',
+                  phone_number: '',
+                  designation: 'Department Admin',
+                  departmentId: '',
+                });
+              }}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateAdmin}
+              disabled={isCreating}
+              className="text-white"
+              style={{
+                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: '#ffffff',
+                borderColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+            >
+              {isCreating ? 'Creating...' : 'Create Admin'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Admin Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
