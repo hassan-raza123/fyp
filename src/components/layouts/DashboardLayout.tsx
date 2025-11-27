@@ -233,14 +233,13 @@ export default function DashboardLayout({
     await logout();
   };
 
-  // Get role-based settings path
-  const getSettingsPath = () => {
-    if (role === 'admin') return '/admin/settings';
-    if (role === 'faculty') return '/faculty/settings';
-    if (role === 'student') return '/student/settings';
-    // Super admin doesn't have a settings page, redirect to admin settings as fallback
-    if (role === 'super_admin') return '/admin/settings';
-    return '/admin/settings';
+  // Get role-based profile path
+  const getProfilePath = () => {
+    if (role === 'admin') return '/admin/profile';
+    if (role === 'faculty') return '/faculty/profile';
+    if (role === 'student') return '/student/profile';
+    if (role === 'super_admin') return '/super-admin/profile';
+    return '/admin/profile';
   };
 
   // Update active tab based on URL
@@ -592,7 +591,7 @@ export default function DashboardLayout({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        router.push(getSettingsPath());
+                        router.push(getProfilePath());
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
                     >
@@ -601,24 +600,35 @@ export default function DashboardLayout({
                       <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
                     </button>
 
-                    {/* Divider */}
-                    <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
+                    {/* Settings - Hide for super_admin */}
+                    {role !== 'super_admin' && (
+                      <>
+                        {/* Divider */}
+                        <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
 
-                    {/* Settings */}
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        router.push(getSettingsPath());
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
-                    >
-                      <Settings className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-orange-400' : 'group-hover:text-blue-600'}`} />
-                      <span className="flex-1 text-left font-medium">Settings</span>
-                      <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
-                    </button>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false);
+                            if (role === 'admin') router.push('/admin/settings');
+                            if (role === 'faculty') router.push('/faculty/settings');
+                            if (role === 'student') router.push('/student/settings');
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
+                        >
+                          <Settings className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-orange-400' : 'group-hover:text-blue-600'}`} />
+                          <span className="flex-1 text-left font-medium">Settings</span>
+                          <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
+                        </button>
 
-                    {/* Divider */}
-                    <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
+                        {/* Divider */}
+                        <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
+                      </>
+                    )}
+
+                    {/* Divider for super_admin (only if Settings is hidden) */}
+                    {role === 'super_admin' && (
+                      <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
+                    )}
 
                     {/* Log out */}
                     <button

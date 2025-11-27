@@ -128,7 +128,8 @@ export async function verifyToken(request: NextRequest): Promise<{
   error?: string;
 }> {
   try {
-    const token = request.cookies.get('auth-token')?.value;
+    // Use the correct cookie name from constants
+    const token = request.cookies.get('token')?.value;
 
     if (!token) {
       return {
@@ -207,7 +208,8 @@ export async function requireAuth(request: NextRequest): Promise<{
   error?: string;
 }> {
   try {
-    const token = request.cookies.get('auth-token')?.value;
+    // Use the correct cookie name from constants
+    const token = request.cookies.get('token')?.value;
 
     if (!token) {
       return {
