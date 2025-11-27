@@ -641,12 +641,13 @@ export default function SuperAdminDepartmentsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditDepartment(dept)}
-                            className="border-card-border text-primary-text transition-all hover:scale-105"
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8"
                             style={{
                               color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
+                              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--gray-200)',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
                               e.currentTarget.style.borderColor = primaryColor;
                               e.currentTarget.style.color = primaryColor;
                             }}
@@ -656,8 +657,8 @@ export default function SuperAdminDepartmentsPage() {
                               e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
                             }}
                           >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
+                            <Edit className="h-3.5 w-3.5 mr-1.5" />
+                            <span>Edit</span>
                           </Button>
                           <Button
                             variant="outline"
@@ -670,14 +671,14 @@ export default function SuperAdminDepartmentsPage() {
                               setSelectedDepartment(dept);
                               setShowAssignModal(true);
                             }}
-                            className="transition-all hover:scale-105"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8"
                             style={{
                               borderColor: primaryColor + '50',
                               color: isDarkMode ? 'var(--white)' : 'var(--gray-900)',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.borderColor = primaryColor;
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
                               e.currentTarget.style.color = primaryColor;
                             }}
                             onMouseLeave={(e) => {
@@ -686,8 +687,8 @@ export default function SuperAdminDepartmentsPage() {
                               e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--gray-900)';
                             }}
                           >
-                            <Shield className="h-3 w-3 mr-1" />
-                            Assign
+                            <Shield className="h-3.5 w-3.5 mr-1.5" />
+                            <span>Assign</span>
                           </Button>
                           <Button
                             variant="destructive"
@@ -700,10 +701,10 @@ export default function SuperAdminDepartmentsPage() {
                               setSelectedDepartment(dept);
                               setShowDeleteModal(true);
                             }}
-                            className="transition-all hover:scale-105"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 text-white"
                           >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Delete
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                            <span>Delete</span>
                           </Button>
                         </div>
                       </TableCell>
