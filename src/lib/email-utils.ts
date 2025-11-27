@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 
+// Application name - update this if project name changes
+const APPLICATION_NAME = 'EduTrack - OBE Management System';
+
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -29,15 +32,15 @@ export async function sendAdminAssignmentEmail(
 
   const mailOptions = {
     from: {
-      name: 'Smart Campus for MNSUET',
+      name: APPLICATION_NAME,
       address: process.env.GMAIL_USER!,
     },
     to: email,
-    subject: `Department Admin Account - ${departmentName} - Smart Campus for MNSUET`,
+    subject: `Department Admin Account - ${departmentName} - ${APPLICATION_NAME}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Department Admin Account Assignment</p>
         </div>
 
@@ -45,7 +48,7 @@ export async function sendAdminAssignmentEmail(
           <p style="color: #111827; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">Dear ${firstName} ${lastName},</p>
           
           <p style="color: #4B5563; line-height: 1.6; margin: 0 0 15px 0;">
-            Congratulations! You have been assigned as the Department Admin for <strong>${departmentName} (${departmentCode})</strong> on the Smart Campus for MNSUET platform.
+            Congratulations! You have been assigned as the Department Admin for <strong>${departmentName} (${departmentCode})</strong> on the ${APPLICATION_NAME} platform.
           </p>
 
           <p style="color: #4B5563; line-height: 1.6; margin: 0 0 20px 0;">
@@ -100,7 +103,7 @@ export async function sendAdminAssignmentEmail(
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 12px;">
           <p style="margin: 5px 0;">This is an automated email. Please do not reply to this message.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">Smart Campus for MNSUET</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">${APPLICATION_NAME}</p>
           <p style="margin: 5px 0;">© ${new Date().getFullYear()} All rights reserved</p>
         </div>
       </div>
