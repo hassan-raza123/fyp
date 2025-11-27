@@ -123,44 +123,6 @@
   --brand-secondary-dark: var(--orange-dark);
   --brand-secondary-light: var(--orange-light);
   
-  /* Gradient Colors - Blue to Orange */
-  --gradient-from: var(--blue);
-  --gradient-via: var(--blue-light);
-  --gradient-to: var(--orange);
-  
-  /* Hero/Header Colors */
-  --hero-bg-from: var(--blue-dark);
-  --hero-bg-via: var(--blue);
-  --hero-bg-to: var(--blue-light);
-  --hero-text: var(--white);
-  --hero-text-highlight: var(--white);
-  --hero-badge-bg: rgba(255, 255, 255, 0.1);
-  --hero-badge-border: rgba(255, 255, 255, 0.2);
-  
-  --section-bg-light: var(--gray-50);
-  --section-bg-white: var(--white);
-  --section-bg-gradient-from: var(--white);
-  --section-bg-gradient-via: var(--gray-50);
-  --section-bg-gradient-to: var(--white);
-  
-  --card-bg-white: var(--white);
-  --card-bg-gradient-from: var(--white);
-  --card-bg-gradient-to: var(--gray-50);
-  --card-border-color: var(--gray-200);
-  --card-border-hover: var(--blue);
-  --card-shadow: rgba(0, 0, 0, 0.1);
-  
-  --icon-bg-from: var(--blue);
-  --icon-bg-to: var(--blue-light);
-  --icon-text: var(--white);
-  
-  --text-heading: var(--black);
-  --text-body: var(--gray-600);
-  --text-muted-light: var(--gray-500);
-  
-  --badge-bg: rgba(252, 153, 40, 0.1); /* Orange with opacity */
-  --badge-text: var(--orange-dark);
-  
   /* Opacity variants for form elements */
   --brand-primary-opacity-10: rgba(38, 40, 149, 0.1);
   --brand-primary-opacity-20: rgba(38, 40, 149, 0.2);
@@ -170,9 +132,8 @@
   --brand-secondary-opacity-20: rgba(252, 153, 40, 0.2);
   --brand-secondary-opacity-30: rgba(252, 153, 40, 0.3);
   --brand-secondary-opacity-40: rgba(252, 153, 40, 0.4);
-  --brand-secondary-opacity-50: rgba(252, 153, 40, 0.5);
+  /* Opacity variants - Only actually used ones */
   --black-opacity-05: rgba(0, 0, 0, 0.05);
-  --black-opacity-10: rgba(0, 0, 0, 0.1);
   --black-opacity-50: rgba(0, 0, 0, 0.5);
   --black-opacity-80: rgba(0, 0, 0, 0.8);
   --white-opacity-08: rgba(255, 255, 255, 0.08);
@@ -180,36 +141,44 @@
   --white-opacity-15: rgba(255, 255, 255, 0.15);
   --white-opacity-20: rgba(255, 255, 255, 0.2);
   --white-opacity-50: rgba(255, 255, 255, 0.5);
-  --white-opacity-60: rgba(255, 255, 255, 0.6);
   --white-opacity-70: rgba(255, 255, 255, 0.7);
   --white-opacity-80: rgba(255, 255, 255, 0.8);
   --white-opacity-90: rgba(255, 255, 255, 0.9);
-  --white-opacity-92: rgba(255, 255, 255, 0.92);
-  --white-opacity-94: rgba(255, 255, 255, 0.94);
-  --white-opacity-98: rgba(255, 255, 255, 0.98);
-  /* Dark overlay gradients */
+  
+  /* Overlay colors - Only actually used ones */
   --overlay-dark-75: rgba(0, 0, 0, 0.75);
   --overlay-dark-80: rgba(0, 0, 0, 0.80);
-  --overlay-dark-85: rgba(0, 0, 0, 0.85);
   --overlay-dark-92: rgba(0, 0, 0, 0.92);
-  --overlay-dark-94: rgba(0, 0, 0, 0.94);
   --overlay-slate-85: rgba(15, 23, 42, 0.85);
   
-  --feature-icon-bg-from: var(--blue);
-  --feature-icon-bg-to: var(--blue-light);
+  /* Text colors for landing pages */
+  --text-heading: var(--black);
+  --text-body: var(--gray-600);
+  --text-muted-light: var(--gray-500);
   
+  /* Landing page gradient variables (used in CSS classes) */
+  --section-bg-gradient-from: var(--white);
+  --section-bg-gradient-via: var(--gray-50);
+  --section-bg-gradient-to: var(--white);
+  
+  /* Variables for CSS classes (may be used in landing pages) */
+  --card-bg-white: var(--white);
+  --card-border-color: var(--gray-200);
+  --card-border-hover: var(--blue);
+  --card-bg-gradient-from: var(--white);
+  --card-bg-gradient-to: var(--gray-50);
+  --gradient-from: var(--blue);
+  --gradient-via: var(--blue-light);
+  --gradient-to: var(--orange);
   --stat-value-from: var(--blue-dark);
   --stat-value-to: var(--blue);
-  
   --cta-btn-bg: var(--orange);
   --cta-btn-text: var(--white);
   --cta-btn-hover: var(--orange-dark);
-  
-  --decorative-blur-1: rgba(38, 40, 149, 0.2); /* Blue with opacity */
-  --decorative-blur-2: rgba(252, 153, 40, 0.2); /* Orange with opacity */
-  
-  --success-bg: rgba(252, 153, 40, 0.1);
-  --success-text: var(--orange-dark);
+  --badge-bg: rgba(252, 153, 40, 0.1);
+  --badge-text: var(--orange-dark);
+  --decorative-blur-1: rgba(38, 40, 149, 0.2);
+  --decorative-blur-2: rgba(252, 153, 40, 0.2);
   --success-icon: var(--orange);
   
   /* Border radius */
