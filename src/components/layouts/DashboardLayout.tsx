@@ -353,10 +353,16 @@ export default function DashboardLayout({
         className={`
         fixed top-0 left-0 h-full
         transition-all duration-300 ease-in-out
-        backdrop-blur-sm
-        bg-white/95 dark:bg-gray-900/95
-        border-r border-gray-200/80 dark:border-gray-800/80
-        shadow-[2px_0_8px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.2)]
+        backdrop-blur-md
+        ${isDarkMode 
+          ? 'bg-gradient-to-b from-gray-900 via-gray-900/98 to-gray-900/95' 
+          : 'bg-gradient-to-b from-white via-white/98 to-gray-50/95'
+        }
+        border-r ${isDarkMode ? 'border-gray-800/60' : 'border-gray-200/60'}
+        ${isDarkMode 
+          ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_rgba(252,153,40,0.1)]' 
+          : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_rgba(38,40,149,0.05)]'
+        }
         ${isSidebarOpen ? 'w-64' : 'w-16'}
         ${!isSidebarOpen && 'lg:w-16'}
         ${
@@ -366,7 +372,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className="h-16 flex-shrink-0 flex items-center px-4 border-b border-gray-200/80 dark:border-gray-800/80 bg-gradient-to-b from-white/98 to-white/95 dark:from-gray-900/98 dark:to-gray-900/95">
+        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${isDarkMode ? 'border-gray-800/60' : 'border-gray-200/60'} ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800/50' : 'bg-gradient-to-br from-white via-white to-gray-50/50'}`}>
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -414,7 +420,7 @@ export default function DashboardLayout({
 
             {/* App Name */}
             {isSidebarOpen && (
-              <h1 className="font-bold text-lg tracking-tight transition-colors duration-300 group-hover:opacity-80 text-gray-900 dark:text-white">
+              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_rgba(252,153,40,0.2)]' : ''}`}>
                 EduTrack
               </h1>
             )}
@@ -432,7 +438,7 @@ export default function DashboardLayout({
           {navigationSections.map((section, idx) => (
             <div key={idx} className="mb-4">
               {isSidebarOpen && (
-                <h2 className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <h2 className={`px-2 mb-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {section.title}
                 </h2>
               )}
@@ -463,11 +469,11 @@ export default function DashboardLayout({
       `}
       >
         {/* Compact Header - Enhanced Design with Theme Classes */}
-        <header className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-b border-gray-200/80 dark:border-gray-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
+        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-gray-900/98 via-gray-900/95 to-gray-900/98 border-b border-gray-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-gray-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
-              className="p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
+              className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
               onClick={() => setSidebarOpen(!isSidebarOpen)}
             >
               <Menu size={18} />
@@ -494,7 +500,7 @@ export default function DashboardLayout({
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 rounded-lg text-sm focus:outline-none transition-all duration-200 bg-gray-100/80 dark:bg-gray-800/60 text-gray-900 dark:text-white border border-gray-200/80 dark:border-gray-700/50 backdrop-blur-sm focus:border-primary dark:focus:border-secondary focus:ring-2 focus:ring-primary/15 dark:focus:ring-secondary/15 focus:bg-white/95 dark:focus:bg-gray-800/80"
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none transition-all duration-200 ${isDarkMode ? 'bg-gray-800/70 text-white border-gray-700/50 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 focus:bg-gray-800/90' : 'bg-gray-100/80 text-gray-900 border-gray-200/60 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:bg-white/95'} backdrop-blur-sm shadow-sm focus:shadow-md`}
                 />
               </div>
             </div>
@@ -504,7 +510,7 @@ export default function DashboardLayout({
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-              className="md:hidden p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
+              className={`md:hidden p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
             >
               <Search size={18} />
             </button>
@@ -521,7 +527,7 @@ export default function DashboardLayout({
                     setTheme(theme === 'dark' ? 'light' : 'dark');
                   }
                 }}
-                className="p-1.5 rounded-md transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
+                className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -532,11 +538,11 @@ export default function DashboardLayout({
             <div ref={notificationRef} className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-1.5 rounded-md transition-all duration-200 relative text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-secondary/10"
+                className={`p-2 rounded-lg transition-all duration-200 relative ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
               >
                 <Bell size={18} />
                 {/* Notification Badge */}
-                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
               </button>
             </div>
 
@@ -554,11 +560,14 @@ export default function DashboardLayout({
                 }}
               >
                 <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"
+                  className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shadow-lg transition-transform duration-200 hover:scale-110"
                   style={{
                     background: isDarkMode
                       ? `linear-gradient(135deg, var(--orange), var(--orange-dark))`
-                      : `linear-gradient(135deg, var(--blue), var(--blue-dark))`
+                      : `linear-gradient(135deg, var(--blue), var(--blue-dark))`,
+                    boxShadow: isDarkMode 
+                      ? '0 4px 12px rgba(252, 153, 40, 0.3)' 
+                      : '0 4px 12px rgba(38, 40, 149, 0.2)'
                   }}
                 >
                   <User className="w-4 h-4 text-white" />
@@ -567,13 +576,13 @@ export default function DashboardLayout({
 
               {/* Profile Menu Dropdown - Image Style with Theme Classes */}
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-64 rounded-xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.3),0_4px_6px_-2px_rgba(0,0,0,0.2)]">
+                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-gray-900/95 border border-gray-800/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(252,153,40,0.1)]' : 'bg-white/95 border border-gray-200/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(38,40,149,0.05)]'}`}>
                   {/* User Info Section */}
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                  <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-gray-800/60 bg-gradient-to-r from-gray-900/50 to-transparent' : 'border-gray-200/60 bg-gradient-to-r from-gray-50/50 to-transparent'}`}>
+                    <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       {user?.userData.firstName} {user?.userData.lastName}
                     </p>
-                    <p className="text-xs mt-0.5 truncate text-gray-500 dark:text-gray-400">
+                    <p className={`text-xs mt-0.5 truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       {user?.email}
                     </p>
                   </div>
@@ -586,15 +595,15 @@ export default function DashboardLayout({
                         setShowProfileMenu(false);
                         router.push(getSettingsPath());
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
                     >
-                      <User className="w-4 h-4" />
-                      <span className="flex-1 text-left">Profile</span>
-                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
+                      <User className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-orange-400' : 'group-hover:text-blue-600'}`} />
+                      <span className="flex-1 text-left font-medium">Profile</span>
+                      <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
                     </button>
 
                     {/* Divider */}
-                    <div className="h-px my-1 bg-gray-200 dark:bg-gray-800" />
+                    <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
 
                     {/* Settings */}
                     <button
@@ -602,24 +611,24 @@ export default function DashboardLayout({
                         setShowProfileMenu(false);
                         router.push(getSettingsPath());
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
                     >
-                      <Settings className="w-4 h-4" />
-                      <span className="flex-1 text-left">Settings</span>
-                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
+                      <Settings className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-orange-400' : 'group-hover:text-blue-600'}`} />
+                      <span className="flex-1 text-left font-medium">Settings</span>
+                      <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
                     </button>
 
                     {/* Divider */}
-                    <div className="h-px my-1 bg-gray-200 dark:bg-gray-800" />
+                    <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
 
                     {/* Log out */}
                     <button
                       onClick={() => setShowLogoutDialog(true)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-red-500/10 hover:text-red-400' : 'text-gray-900 hover:bg-red-50 hover:text-red-600'} rounded-lg mx-1`}
                     >
                       <LogOut className="w-4 h-4" />
-                      <span className="flex-1 text-left">Log out</span>
-                      <div className="blue-indicator absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-primary dark:bg-secondary opacity-0 group-hover:opacity-100"></div>
+                      <span className="flex-1 text-left font-medium">Log out</span>
+                      <div className="absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 bg-red-500 opacity-0 group-hover:opacity-100"></div>
                     </button>
                   </div>
                 </div>
@@ -629,13 +638,13 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className="p-6 min-h-[calc(100vh-112px)] bg-gray-50 dark:bg-gray-900 transition-colors duration-200 bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.02),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.02),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]">
+        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800/30' : 'bg-gradient-to-br from-gray-50 via-white to-gray-50/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.05),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.05),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]'}`}>
           {children}
         </main>
 
         {/* Full Page Footer - Fixed at Bottom */}
-        <footer className="h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 border-t border-gray-200/80 dark:border-gray-800/80 shadow-[0_-1px_3px_rgba(0,0,0,0.05),0_-1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_-1px_3px_rgba(0,0,0,0.3),0_-1px_2px_rgba(0,0,0,0.2)] transition-colors duration-200">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-gray-900/98 via-gray-900/95 to-gray-900/98 border-t border-gray-800/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-gray-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
+          <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             © {new Date().getFullYear()} EduTrack. All rights reserved.
           </p>
         </footer>
