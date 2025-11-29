@@ -164,8 +164,8 @@ export default function SuperAdminDepartmentsPage() {
 
   useEffect(() => {
     if (mounted) {
-      fetchDepartments();
-      fetchAdminUsers();
+    fetchDepartments();
+    fetchAdminUsers();
     }
   }, [mounted]);
 
@@ -446,7 +446,7 @@ export default function SuperAdminDepartmentsPage() {
             style={{ borderColor: primaryColor }}
           />
           <p className="text-sm text-secondary-text">
-            Loading departments...
+          Loading departments...
           </p>
         </div>
       </div>
@@ -533,19 +533,19 @@ export default function SuperAdminDepartmentsPage() {
             <div>
               <CardTitle className="text-primary-text">Departments</CardTitle>
               <CardDescription className="text-secondary-text">
-                View all departments and their assigned admins
-              </CardDescription>
+            View all departments and their assigned admins
+          </CardDescription>
             </div>
             <div className="relative w-64">
               <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-text`} />
-              <Input
-                placeholder="Search departments..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                <Input
+                  placeholder="Search departments..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-              />
+                />
+              </div>
             </div>
-          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border border-card-border overflow-hidden">
@@ -600,7 +600,7 @@ export default function SuperAdminDepartmentsPage() {
                             </div>
                             <Badge
                               className={`mt-1 text-[10px] ${
-                                dept.admin.status === 'active' 
+                                dept.admin.status === 'active'
                                   ? 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30'
                                   : 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'
                               }`}

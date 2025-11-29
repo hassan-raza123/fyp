@@ -187,21 +187,7 @@ function OTPVerificationFormContent() {
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className='w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all focus:outline-none'
-                style={{
-                  borderColor: 'var(--gray-300)',
-                  color: 'var(--brand-primary)'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--brand-secondary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-                  e.target.style.transform = 'scale(1.05)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--gray-300)';
-                  e.target.style.boxShadow = 'none';
-                  e.target.style.transform = 'scale(1)';
-                }}
+                className='w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all focus:outline-none bg-white text-blue-800 border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 focus:scale-105'
               />
             ))}
           </div>

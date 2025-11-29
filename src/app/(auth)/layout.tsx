@@ -15,7 +15,8 @@ export default function AuthLayout({
 }) {
   return (
     <div 
-      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden'
+      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden light'
+      style={{ colorScheme: 'light' }}
     >
       {/* Preload Background Image */}
       <img

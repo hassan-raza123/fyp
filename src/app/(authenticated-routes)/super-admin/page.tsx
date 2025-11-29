@@ -132,7 +132,7 @@ export default function SuperAdminDashboard() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
-
+  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -177,7 +177,7 @@ export default function SuperAdminDashboard() {
       toast.error('Failed to load analytics data');
     } finally {
       setAnalyticsLoading(false);
-    }
+      }
   };
 
   if (!mounted || dashboardLoading || analyticsLoading) {
@@ -190,7 +190,7 @@ export default function SuperAdminDashboard() {
           </p>
         </div>
       </div>
-    );
+      );
   }
 
   if (!dashboardData || !analyticsData) {
@@ -213,7 +213,7 @@ export default function SuperAdminDashboard() {
   const assignmentRate = dashboardData.stats.totalDepartments > 0
     ? Math.round((dashboardData.stats.assignedDepartments / dashboardData.stats.totalDepartments) * 100)
     : 0;
-
+  
   return (
     <div className="space-y-5">
       {/* Header - Modern & Compact */}
@@ -225,7 +225,7 @@ export default function SuperAdminDashboard() {
               style={{
                 background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,
               }}
-            >
+          >
               <Shield className="h-5 w-5 text-white" />
             </div>
             System Overview
@@ -234,56 +234,56 @@ export default function SuperAdminDashboard() {
             Complete system analytics and management insights
           </p>
         </div>
-        <Button
+          <Button
           onClick={() => window.location.href = '/super-admin/departments'}
           className="text-xs h-8 px-3"
-          style={{
-            backgroundColor: primaryColor,
-            color: 'white',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = primaryColorDark;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = primaryColor;
-          }}
-        >
+            style={{
+              backgroundColor: primaryColor,
+              color: 'white',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColorDark;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColor;
+            }}
+          >
           Manage Departments
-        </Button>
+          </Button>
       </div>
 
       {/* Key Stats - Essential Only */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard
+          <StatCard
           title="Departments"
           value={analyticsData.stats.totalDepartments}
           subtitle={`${dashboardData.stats.assignedDepartments} assigned`}
-          icon={<Building2 className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
-        />
-        <StatCard
+            icon={<Building2 className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
           title="Admins"
           value={analyticsData.stats.totalAdmins}
           subtitle={`${assignmentRate}% assigned`}
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
-        />
-        <StatCard
+            icon={<Shield className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
           title="Students"
           value={analyticsData.stats.totalStudents.toLocaleString()}
           subtitle="Total enrolled"
           icon={<Users className="w-5 h-5" />}
           trend={8}
-          isDarkMode={isDarkMode}
-        />
-        <StatCard
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
           title="Faculty"
           value={analyticsData.stats.totalFaculty}
           subtitle="Active members"
           icon={<UserCheck className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
-        />
-      </div>
+            isDarkMode={isDarkMode}
+          />
+        </div>
 
       {/* Critical Alerts */}
       {dashboardData.stats.unassignedDepartments > 0 && (
@@ -293,7 +293,7 @@ export default function SuperAdminDashboard() {
             backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(252, 153, 40, 0.05)',
             borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.3)' : 'rgba(252, 153, 40, 0.2)',
           }}
-        >
+          >
           <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--orange)' }} />
           <div className="flex-1">
             <p className="text-sm font-semibold text-primary-text">
@@ -302,7 +302,7 @@ export default function SuperAdminDashboard() {
             <p className="text-xs text-secondary-text mt-0.5">
               Assign admins to departments for proper management
             </p>
-          </div>
+            </div>
           <Button
             onClick={() => window.location.href = '/super-admin/departments'}
             className="text-xs h-7 px-3"
@@ -319,7 +319,7 @@ export default function SuperAdminDashboard() {
           >
             Assign Now
           </Button>
-        </div>
+                </div>
       )}
 
       {/* Essential Charts - Only Important Ones */}
@@ -375,7 +375,7 @@ export default function SuperAdminDashboard() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+          </div>
 
         {/* Department Distribution - Important for Super Admin */}
         <div className="rounded-xl shadow-sm border bg-card border-card-border p-5 hover:shadow-md transition-all duration-200">
@@ -422,15 +422,15 @@ export default function SuperAdminDashboard() {
                 <div 
                   className="w-2.5 h-2.5 rounded-full"
                   style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                />
+                    />
                 <span className="text-[10px] text-secondary-text truncate max-w-[80px]">
                   {dept.name}
-                </span>
-              </div>
+                    </span>
+                  </div>
             ))}
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
 
       {/* System Status & Recent Activity - Compact */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -451,21 +451,21 @@ export default function SuperAdminDashboard() {
               <span className="text-xs text-secondary-text">Unassigned</span>
               <span 
                 className="text-sm font-bold"
-                style={{ 
+              style={{
                   color: dashboardData.stats.unassignedDepartments > 0 
                     ? 'var(--orange)' 
                     : 'var(--primary-text)' 
                 }}
               >
                 {dashboardData.stats.unassignedDepartments}
-              </span>
-            </div>
+                  </span>
+                </div>
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-hover-bg">
               <span className="text-xs text-secondary-text">Current Semester</span>
               <span className="text-xs font-semibold text-primary-text">
                 {dashboardData.currentSemester?.name || 'None'}
-              </span>
-            </div>
+                  </span>
+                </div>
             <div className="pt-2 border-t border-card-border">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-secondary-text">Assignment Rate</span>
@@ -478,7 +478,7 @@ export default function SuperAdminDashboard() {
                         backgroundColor: primaryColor,
                       }}
                     />
-                  </div>
+                </div>
                   <span className="text-xs font-bold text-primary-text w-8 text-right">
                     {assignmentRate}%
                   </span>
@@ -517,16 +517,16 @@ export default function SuperAdminDashboard() {
                   <div 
                     className="p-1.5 rounded-md flex-shrink-0 mt-0.5"
                     style={{
-                      backgroundColor: isDarkMode 
+                                  backgroundColor: isDarkMode 
                         ? 'rgba(252, 153, 40, 0.1)' 
-                        : 'rgba(38, 40, 149, 0.1)',
+                                    : 'rgba(38, 40, 149, 0.1)',
                     }}
-                  >
+                        >
                     <Activity 
                       className="w-3 h-3" 
-                      style={{ color: primaryColor }} 
-                    />
-                  </div>
+                style={{ color: primaryColor }}
+              />
+            </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-primary-text line-clamp-2">
                       {activity.summary}
@@ -544,13 +544,13 @@ export default function SuperAdminDashboard() {
                           minute: '2-digit',
                         })}
                       </span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+            </div>
+            </div>
           </div>
-        </div>
+              ))
+              )}
+            </div>
+          </div>
       </div>
     </div>
   );

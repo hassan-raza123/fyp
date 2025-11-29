@@ -232,36 +232,24 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit} className='space-y-5'>
         {/* Email Field */}
         <div>
-          <label
-            htmlFor='email'
-            className='block text-sm font-medium mb-2'
-            style={{ color: 'var(--gray-700)' }}
-          >
-            Email
-          </label>
+            <label
+              htmlFor='email'
+              className='block text-sm font-medium mb-2 text-gray-700'
+            >
+              Email
+            </label>
           <input
             id='email'
             name='email'
             type='email'
             value={formData.email}
             onChange={handleInputChange}
-            className='w-full px-4 py-3 rounded-lg border transition-all focus:outline-none'
-            style={{
-              borderColor: errors.email ? 'var(--error)' : 'var(--gray-300)'
-            }}
-            onFocus={(e) => {
-              if (!errors.email) {
-                e.target.style.borderColor = 'var(--brand-secondary)';
-                e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-              }
-            }}
-            onBlur={(e) => {
-              validateEmail(formData.email);
-              if (!errors.email) {
-                e.target.style.borderColor = 'var(--gray-300)';
-                e.target.style.boxShadow = 'none';
-              }
-            }}
+            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              errors.email 
+                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+            }`}
+            onBlur={() => validateEmail(formData.email)}
             placeholder={getEmailPlaceholder(formData.userType)}
           />
           {errors.email && (
@@ -274,15 +262,13 @@ export default function LoginForm() {
           <div className='flex justify-between items-center mb-2'>
             <label
               htmlFor='password'
-              className='block text-sm font-medium'
-              style={{ color: 'var(--gray-700)' }}
+              className='block text-sm font-medium text-gray-700'
             >
               Password
             </label>
             <Link
               href='/forgot-password'
-              className='text-sm font-medium hover:underline'
-              style={{ color: 'var(--brand-primary)' }}
+              className='text-sm font-medium hover:underline text-blue-600'
             >
               Forgot password
             </Link>
@@ -294,36 +280,18 @@ export default function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleInputChange}
-              className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
-              style={{
-                borderColor: errors.password ? 'var(--error)' : 'var(--gray-300)'
-              }}
-              onFocus={(e) => {
-                if (!errors.password) {
-                  e.target.style.borderColor = 'var(--brand-secondary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-                }
-              }}
-              onBlur={(e) => {
-                validatePassword(formData.password);
-                if (!errors.password) {
-                  e.target.style.borderColor = 'var(--gray-300)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+                errors.password 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              }`}
+              onBlur={() => validatePassword(formData.password)}
               placeholder='Enter your password'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors'
-              style={{ color: 'var(--gray-400)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--gray-600)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--gray-400)';
-              }}
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

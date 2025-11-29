@@ -486,7 +486,7 @@ export default function DashboardLayout({
             `}
             >
               <div className="relative">
-                <Search 
+                <Search
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10" 
                   size={14}
                   style={{
@@ -603,24 +603,24 @@ export default function DashboardLayout({
                     {/* Settings - Hide for super_admin */}
                     {role !== 'super_admin' && (
                       <>
-                        {/* Divider */}
+                    {/* Divider */}
                         <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
 
-                        <button
-                          onClick={() => {
-                            setShowProfileMenu(false);
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
                             if (role === 'admin') router.push('/admin/settings');
                             if (role === 'faculty') router.push('/faculty/settings');
                             if (role === 'student') router.push('/student/settings');
-                          }}
+                      }}
                           className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'} rounded-lg mx-1`}
                         >
                           <Settings className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-orange-400' : 'group-hover:text-blue-600'}`} />
                           <span className="flex-1 text-left font-medium">Settings</span>
                           <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} opacity-0 group-hover:opacity-100`}></div>
-                        </button>
+                    </button>
 
-                        {/* Divider */}
+                    {/* Divider */}
                         <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-gray-800/60' : 'bg-gray-200/60'}`} />
                       </>
                     )}

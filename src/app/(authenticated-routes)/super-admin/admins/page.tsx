@@ -152,7 +152,7 @@ export default function SuperAdminAdminsPage() {
 
   useEffect(() => {
     if (mounted) {
-      fetchAdmins();
+    fetchAdmins();
       fetchDepartments();
     }
   }, [mounted, search, statusFilter]);
@@ -564,17 +564,17 @@ export default function SuperAdminAdminsPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px] bg-card border-card-border text-primary-text">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
                   <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
                   <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
                   <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              </SelectContent>
+            </Select>
             </div>
           </div>
         </CardHeader>
@@ -1172,9 +1172,9 @@ export default function SuperAdminAdminsPage() {
             <DialogDescription className="text-secondary-text">
               Are you sure you want to delete{' '}
               <span className="font-semibold text-primary-text">
-                {selectedAdmin
-                  ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
-                  : 'this admin'}
+              {selectedAdmin
+                ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
+                : 'this admin'}
               </span>
               ? This action cannot be undone and will remove their admin
               privileges.
