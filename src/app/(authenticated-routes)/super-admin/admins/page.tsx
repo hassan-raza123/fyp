@@ -193,9 +193,7 @@ export default function SuperAdminAdminsPage() {
               `${a.user.first_name} ${a.user.last_name}`
                 .toLowerCase()
                 .includes(searchLower) ||
-              a.user.email.toLowerCase().includes(searchLower) ||
-              (a.employeeId &&
-                a.employeeId.toLowerCase().includes(searchLower))
+              a.user.email.toLowerCase().includes(searchLower)
           );
         }
 
@@ -583,7 +581,6 @@ export default function SuperAdminAdminsPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-card hover:bg-card border-card-border">
-                  <TableHead className="text-secondary-text">Employee ID</TableHead>
                   <TableHead className="text-secondary-text">Name</TableHead>
                   <TableHead className="text-secondary-text">Email</TableHead>
                   <TableHead className="text-secondary-text">Designation</TableHead>
@@ -595,7 +592,7 @@ export default function SuperAdminAdminsPage() {
               <TableBody>
                 {admins.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-secondary-text">
+                    <TableCell colSpan={6} className="text-center py-12 text-secondary-text">
                       <div className="flex flex-col items-center gap-2">
                         <Shield className="h-8 w-8 text-muted-text" />
                         <p>No admin users found</p>
@@ -608,9 +605,6 @@ export default function SuperAdminAdminsPage() {
                       key={admin.userId}
                       className="border-card-border hover:bg-card/50"
                     >
-                      <TableCell className="text-primary-text">
-                        {admin.id ? `EMP-${String(admin.id).padStart(4, '0')}` : <span className="text-muted-text italic">N/A</span>}
-                      </TableCell>
                       <TableCell className="text-primary-text">
                         {admin.user.first_name} {admin.user.last_name}
                       </TableCell>
