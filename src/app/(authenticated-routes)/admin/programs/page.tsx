@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -49,6 +50,10 @@ interface Department {
 }
 
 export default function ProgramsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +61,10 @@ export default function ProgramsPage() {
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchPrograms();
@@ -125,12 +134,16 @@ export default function ProgramsPage() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>Programs</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-3xl font-bold text-primary-text'>Programs</h1>
+          <p className='text-secondary-text'>
             Manage academic programs and their details
           </p>
         </div>
@@ -144,7 +157,7 @@ export default function ProgramsPage() {
         <div className='flex flex-col md:flex-row gap-4'>
           <div className='flex-1'>
             <div className='relative'>
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-text' />
               <Input
                 placeholder='Search programs...'
                 value={search}
@@ -170,7 +183,7 @@ export default function ProgramsPage() {
         </div>
       </Card>
 
-      <Card>
+      <Card className="border-card-border">
         <Table>
           <TableHeader>
             <TableRow>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -51,6 +52,10 @@ interface Faculty {
 }
 
 export default function FacultyPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +64,10 @@ export default function FacultyPage() {
   const [selectedFaculty, setSelectedFaculty] = useState<Faculty | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchFaculties();
@@ -141,10 +150,10 @@ export default function FacultyPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-secondary-text">Loading...</div>
       </div>
     );
   }
@@ -153,8 +162,8 @@ export default function FacultyPage() {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Department Faculty</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-primary-text">Department Faculty</h1>
+          <p className="text-secondary-text">
             Manage faculty members in your department
           </p>
         </div>
@@ -172,7 +181,7 @@ export default function FacultyPage() {
           <div className="flex gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
                 <Input
                   placeholder="Search faculty..."
                   value={search}
@@ -193,7 +202,7 @@ export default function FacultyPage() {
             </Select>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border border-card-border">
             <Table>
               <TableHeader>
                 <TableRow>
