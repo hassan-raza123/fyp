@@ -350,6 +350,7 @@ export default function DashboardLayout({
       <aside
         className={`
         fixed top-0 left-0 h-full
+        flex flex-col
         transition-all duration-300 ease-in-out
         backdrop-blur-md
         ${isDarkMode 
@@ -427,10 +428,11 @@ export default function DashboardLayout({
 
         {/* Navigation - Compact */}
         <nav 
-          className="px-3 py-3 overflow-y-auto flex-1"
+          className="px-3 py-3 overflow-y-auto flex-1 min-h-0"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: `${isDarkMode ? 'var(--gray-700)' : 'var(--gray-300)'} transparent`,
+            maxHeight: 'calc(100vh - 4rem)',
           } as React.CSSProperties}
         >
           {navigationSections.map((section, idx) => (
