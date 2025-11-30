@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { assessment_status, assessment_type } from '@prisma/client';
 import { NextRequest } from 'next/server';
 
@@ -21,7 +21,7 @@ const validAssessmentTypes = [
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     // If user is faculty, only show their assessments
     if (user?.role === 'faculty') {
-      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {
         where.conductedBy = facultyId;
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       console.log('Auth failed:', error);
       return NextResponse.json({ error }, { status: 401 });

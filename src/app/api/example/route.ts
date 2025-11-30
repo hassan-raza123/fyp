@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole, getUserFromRequest } from '@/lib/api-utils';
+import { requireRole, getUserFromRequest } from '@/lib/auth';
 
 // Example API route that requires authentication
 export async function GET(request: NextRequest) {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 // Example API route that requires any authenticated user
 export async function PUT(request: NextRequest) {
   // Check if user is authenticated
-  const { success, user, error } = requireAuth(request);
+  const { success, user, error } = await requireAuth(request);
 
   if (!success) {
     return NextResponse.json({ error }, { status: 401 });

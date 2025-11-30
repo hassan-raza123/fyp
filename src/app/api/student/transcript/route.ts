@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getStudentFromRequest } from '@/lib/student-utils';
+import { getStudentFromRequest } from '@/lib/auth';
 
 // Helper function to convert grade to GPA points
 function getGradePoints(grade: string | null): number {

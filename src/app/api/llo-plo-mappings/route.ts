@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { requireAuth } from '@/lib/auth';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/llo-plo-mappings
 export async function GET(request: NextRequest) {
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 // POST /api/llo-plo-mappings
 export async function POST(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

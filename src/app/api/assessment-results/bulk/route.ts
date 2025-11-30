@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { assessmentitems } from '@prisma/client';
-import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {

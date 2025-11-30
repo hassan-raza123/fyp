@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // POST /api/sections/[id]/students - Add a student to a section
 export async function POST(
@@ -10,7 +10,7 @@ export async function POST(
   try {
     console.log('--- POST /api/sections/[id]/students called ---');
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     console.log('Auth result:', { success, user, error });
     if (!success) {
       console.log('Auth failed');
@@ -217,7 +217,7 @@ export async function DELETE(
   try {
     console.log('--- DELETE /api/sections/[id]/students called ---');
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     console.log('Auth result:', { success, user, error });
     if (!success) {
       console.log('Auth failed');

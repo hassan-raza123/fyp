@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
 // PATCH - Update a grade (manual adjustment)
 export async function PATCH(

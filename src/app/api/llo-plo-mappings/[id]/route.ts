@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // DELETE /api/llo-plo-mappings/[id]
 export async function DELETE(
@@ -8,7 +8,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

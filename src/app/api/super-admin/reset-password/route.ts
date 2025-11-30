@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
@@ -8,7 +8,7 @@ import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 // POST /api/super-admin/reset-password - Reset password for any user (admin or super admin)
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

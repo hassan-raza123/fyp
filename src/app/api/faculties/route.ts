@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
     
     // Get current department ID from settings
     const currentDepartmentId = await getCurrentDepartmentId();

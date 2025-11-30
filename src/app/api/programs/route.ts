@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Prisma, programs_status } from '@prisma/client';
-import { requireRole, requireAuth } from '@/lib/api-utils';
+import { requireRole, requireAuth } from '@/lib/auth';
 
 type ProgramWithCounts = Prisma.programsGetPayload<{
   include: {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
     
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     console.log('1. Starting program creation process');
 
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     console.log('2. Auth check result:', { success, user: user?.email, error });
 
     if (!success) {

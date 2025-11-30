@@ -1,14 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { getDefaultPassword } from '@/lib/password-utils';
 
 // GET /api/users - Get all users
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }

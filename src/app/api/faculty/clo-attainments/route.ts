@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
 // GET - Get all courses with CLO attainments for faculty
 export async function GET(req: NextRequest) {

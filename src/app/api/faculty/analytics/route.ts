@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
 // GET - Get comprehensive analytics for faculty
 export async function GET(req: NextRequest) {

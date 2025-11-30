@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyFromRequest } from '@/lib/faculty-utils';
+import { getFacultyFromRequest } from '@/lib/auth';
 import { hash, compare } from 'bcryptjs';
 import { z } from 'zod';
 

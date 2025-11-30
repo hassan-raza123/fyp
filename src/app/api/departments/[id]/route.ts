@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // GET /api/departments/[id] - Get a single department
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -102,7 +102,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -202,7 +202,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

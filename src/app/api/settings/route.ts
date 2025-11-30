@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
-import { syncDepartmentFromSettings } from '@/lib/department-utils';
+import { requireAuth } from '@/lib/auth';
+import { syncDepartmentFromSettings } from '@/lib/auth';
 
 // GET /api/settings
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = requireAuth(request);
+    const { success, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings
 export async function PUT(request: NextRequest) {
   try {
-    const { success, error } = requireAuth(request);
+    const { success, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

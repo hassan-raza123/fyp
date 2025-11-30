@@ -169,17 +169,51 @@ export function checkUserRole(
   return allowedRoles.includes(user.role);
 }
 
-export function getUserIdFromToken(request: NextRequest): number | null {
+// Helper functions for getting user data from headers (for backward compatibility)
+export function getUserFromRequest(request: NextRequest): TokenPayload | null {
+  try {
+    const userData = request.headers.get('x-user-data');
+    if (!userData) return null;
+    return JSON.parse(userData) as TokenPayload;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getUserIdFromRequest(request: NextRequest): number | null {
   const userId = request.headers.get('x-user-id');
   return userId ? parseInt(userId, 10) : null;
 }
 
-export function getUserRoleFromToken(request: NextRequest): string | null {
+export function getUserRoleFromRequest(request: NextRequest): string | null {
   return request.headers.get('x-user-role');
 }
 
-export function getUserEmailFromToken(request: NextRequest): string | null {
+export function getUserEmailFromRequest(request: NextRequest): string | null {
   return request.headers.get('x-user-email');
+}
+
+// Legacy functions (kept for backward compatibility)
+export function getUserIdFromToken(request: NextRequest): number | null {
+  return getUserIdFromRequest(request);
+}
+
+export function getUserRoleFromToken(request: NextRequest): string | null {
+  return getUserRoleFromRequest(request);
+}
+
+export function getUserEmailFromToken(request: NextRequest): string | null {
+  return getUserEmailFromRequest(request);
+}
+
+// Check user role from request (for backward compatibility)
+export function checkUserRoleFromRequest(
+  request: NextRequest,
+  allowedRoles: string[]
+): boolean {
+  const user = getUserFromRequest(request);
+  if (!user) return false;
+  return allowedRoles.includes(user.role);
 }
 
 export async function generatePasswordResetToken(userId: number) {
@@ -230,5 +264,352 @@ export async function requireAuth(request: NextRequest): Promise<{
       success: false,
       error: 'Invalid token',
     };
+  }
+}
+
+export async function requireRole(
+  request: NextRequest,
+  allowedRoles: string[]
+): Promise<{
+  success: boolean;
+  user?: TokenPayload;
+  error?: string;
+}> {
+  const authResult = await requireAuth(request);
+
+  if (!authResult.success) {
+    return authResult;
+  }
+
+  if (!authResult.user || !checkUserRole(authResult.user, allowedRoles)) {
+    return {
+      success: false,
+      error: 'Insufficient permissions',
+    };
+  }
+
+  return {
+    success: true,
+    user: authResult.user,
+  };
+}
+
+// ============================================================================
+// Faculty Utilities
+// ============================================================================
+
+/**
+ * Get the faculty ID for the logged-in user
+ * @param request - NextRequest object
+ * @returns Faculty ID or null if not found or not a faculty member
+ */
+export async function getFacultyIdFromRequest(
+  request: NextRequest
+): Promise<number | null> {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return null;
+    }
+
+    // Check if user is a faculty member
+    if (user.role !== 'faculty') {
+      return null;
+    }
+
+    // Get faculty record
+    const faculty = await prisma.faculties.findFirst({
+      where: {
+        userId: user.userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return faculty?.id || null;
+  } catch (error) {
+    console.error('Error getting faculty ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Get the full faculty record for the logged-in user
+ * @param request - NextRequest object
+ * @returns Faculty record or null
+ */
+export async function getFacultyFromRequest(request: NextRequest) {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return null;
+    }
+
+    // Check if user is a faculty member
+    if (user.role !== 'faculty') {
+      return null;
+    }
+
+    // Get faculty record with relations
+    const faculty = await prisma.faculties.findFirst({
+      where: {
+        userId: user.userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            status: true,
+          },
+        },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+      },
+    });
+
+    return faculty;
+  } catch (error) {
+    console.error('Error getting faculty:', error);
+    return null;
+  }
+}
+
+// ============================================================================
+// Student Utilities
+// ============================================================================
+
+/**
+ * Get the student ID for the logged-in user
+ * @param request - NextRequest object
+ * @returns Student ID or null if not found or not a student
+ */
+export async function getStudentIdFromRequest(
+  request: NextRequest
+): Promise<number | null> {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return null;
+    }
+
+    // Check if user is a student
+    if (user.role !== 'student') {
+      return null;
+    }
+
+    // Get student record
+    const student = await prisma.students.findFirst({
+      where: {
+        userId: user.userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return student?.id || null;
+  } catch (error) {
+    console.error('Error getting student ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Get the full student record for the logged-in user
+ * @param request - NextRequest object
+ * @returns Student record or null
+ */
+export async function getStudentFromRequest(request: NextRequest) {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return null;
+    }
+
+    // Check if user is a student
+    if (user.role !== 'student') {
+      return null;
+    }
+
+    // Get student record with relations
+    const student = await prisma.students.findFirst({
+      where: {
+        userId: user.userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            status: true,
+          },
+        },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        program: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        batch: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return student;
+  } catch (error) {
+    console.error('Error getting student:', error);
+    return null;
+  }
+}
+
+// ============================================================================
+// Department Utilities
+// ============================================================================
+
+/**
+ * Get current department ID from settings
+ * Returns the department ID based on department code in settings
+ */
+export async function getCurrentDepartmentId(): Promise<number | null> {
+  try {
+    // Get settings
+    const settings = await prisma.settings.findFirst();
+    if (!settings) {
+      return null;
+    }
+
+    // Parse system settings
+    const systemSettings =
+      typeof settings.system === 'string'
+        ? JSON.parse(settings.system)
+        : settings.system;
+
+    const departmentCode = systemSettings?.departmentCode;
+    if (!departmentCode) {
+      return null;
+    }
+
+    // Find department by code
+    const department = await prisma.departments.findUnique({
+      where: { code: departmentCode },
+      select: { id: true },
+    });
+
+    return department?.id || null;
+  } catch (error) {
+    console.error('Error getting current department ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Get current department info from settings
+ */
+export async function getCurrentDepartment() {
+  try {
+    const settings = await prisma.settings.findFirst();
+    if (!settings) {
+      return null;
+    }
+
+    const systemSettings =
+      typeof settings.system === 'string'
+        ? JSON.parse(settings.system)
+        : settings.system;
+
+    const departmentCode = systemSettings?.departmentCode;
+    const departmentName = systemSettings?.departmentName;
+
+    if (!departmentCode) {
+      return null;
+    }
+
+    const department = await prisma.departments.findUnique({
+      where: { code: departmentCode },
+      include: {
+        _count: {
+          select: {
+            programs: true,
+            faculties: true,
+            students: true,
+            courses: true,
+          },
+        },
+      },
+    });
+
+    return department;
+  } catch (error) {
+    console.error('Error getting current department:', error);
+    return null;
+  }
+}
+
+/**
+ * Create or update department based on settings
+ * This is called when settings are saved
+ */
+export async function syncDepartmentFromSettings() {
+  try {
+    const settings = await prisma.settings.findFirst();
+    if (!settings) {
+      return null;
+    }
+
+    const systemSettings =
+      typeof settings.system === 'string'
+        ? JSON.parse(settings.system)
+        : settings.system;
+
+    const departmentCode = systemSettings?.departmentCode;
+    const departmentName = systemSettings?.departmentName;
+
+    if (!departmentCode || !departmentName) {
+      return null;
+    }
+
+    // Create or update department
+    const department = await prisma.departments.upsert({
+      where: { code: departmentCode },
+      update: {
+        name: departmentName,
+        code: departmentCode,
+        status: 'active',
+        updatedAt: new Date(),
+      },
+      create: {
+        name: departmentName,
+        code: departmentCode,
+        status: 'active',
+      },
+    });
+
+    return department;
+  } catch (error) {
+    console.error('Error syncing department from settings:', error);
+    return null;
   }
 }

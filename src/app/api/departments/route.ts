@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // GET /api/departments - Get all departments (for admin selection or super admin view)
 export async function GET(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
 // POST /api/departments - Create a new department
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

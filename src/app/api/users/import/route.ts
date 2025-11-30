@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { parse } from 'csv-parse/sync';
 import { hash } from 'bcryptjs';
 import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
@@ -8,7 +8,7 @@ import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }

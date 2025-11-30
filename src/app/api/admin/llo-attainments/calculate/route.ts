@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { requireAuth } from '@/lib/auth';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 // POST - Calculate LLO attainments for a course offering or specific LLO
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 function getActivitySummary(activity: any) {
   // Try to parse details JSON
@@ -37,7 +37,7 @@ function getActivitySummary(activity: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success || user?.role !== 'super_admin') {
       return NextResponse.json(
         { error: error || 'Unauthorized' },

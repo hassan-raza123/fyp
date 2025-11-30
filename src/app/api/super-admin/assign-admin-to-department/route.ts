@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, getUserIdFromRequest } from '@/lib/api-utils';
+import { requireAuth, getUserIdFromRequest } from '@/lib/auth';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 
 // POST /api/super-admin/assign-admin-to-department - Assign admin user to a department
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
