@@ -203,9 +203,17 @@ export async function POST(
           case 'faculty':
           case 'admin':
             if (facultyDetails) {
+              // Get department ID from authenticated user (logged-in admin's department)
+              const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+              const departmentId = await getDepartmentIdFromRequest(request);
+              
+              if (!departmentId) {
+                throw new Error('Department not assigned. Please contact super admin.');
+              }
+
               const faculty = await tx.faculties.create({
                 data: {
-                  departmentId: parseInt(facultyDetails.departmentId),
+                  departmentId: departmentId,
                   designation: facultyDetails.designation,
                   status: 'active' as const,
                   updatedAt: new Date(),
@@ -217,14 +225,14 @@ export async function POST(
               // This allows multiple admins to exist, but keeps the first one as department admin
               if (role === 'admin') {
                 const department = await tx.departments.findUnique({
-                  where: { id: parseInt(facultyDetails.departmentId) },
+                  where: { id: departmentId },
                   select: { adminId: true },
                 });
                 
                 // Only update adminId if department doesn't have an admin yet
                 if (!department?.adminId) {
                   await tx.departments.update({
-                    where: { id: parseInt(facultyDetails.departmentId) },
+                    where: { id: departmentId },
                     data: {
                       adminId: userId,
                       updatedAt: new Date(),

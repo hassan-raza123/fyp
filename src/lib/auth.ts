@@ -459,8 +459,9 @@ export async function getStudentFromRequest(request: NextRequest) {
 // ============================================================================
 
 /**
- * Get department ID from token (fast, no database query)
- * This is the preferred method - uses token data directly
+ * Get department ID from authenticated user (preferred method)
+ * Fetches from database using user ID from token/cookies
+ * This ensures we always get the latest department assignment
  */
 export async function getDepartmentIdFromRequest(request: NextRequest): Promise<number | null> {
   try {
@@ -469,7 +470,30 @@ export async function getDepartmentIdFromRequest(request: NextRequest): Promise<
       return null;
     }
 
-    // Get departmentId from token (fastest method)
+    // For admin role, get department from faculties table
+    if (user.role === 'admin') {
+      // Get userId from multiple possible sources
+      let userId: number | null = null;
+      
+      if (user.userId) {
+        userId = typeof user.userId === 'number' ? user.userId : parseInt(String(user.userId), 10);
+      } else if (user.userData?.id) {
+        userId = typeof user.userData.id === 'number' ? user.userData.id : parseInt(String(user.userData.id), 10);
+      }
+
+      if (userId && !isNaN(userId)) {
+        const faculty = await prisma.faculties.findFirst({
+          where: { userId },
+          select: { departmentId: true },
+        });
+        
+        if (faculty?.departmentId) {
+          return faculty.departmentId;
+        }
+      }
+    }
+
+    // For other roles or fallback, try token first (fast)
     if (user.departmentId) {
       return user.departmentId;
     }
@@ -487,48 +511,16 @@ export async function getDepartmentIdFromRequest(request: NextRequest): Promise<
 }
 
 /**
- * Get current department ID from settings (deprecated - use getDepartmentIdFromRequest instead)
- * Kept for backward compatibility only
- * Now tries token first, then falls back to settings
+ * Get current department ID - uses getDepartmentIdFromRequest for authenticated users
+ * If no request provided, returns null (department must come from authenticated user)
  */
 export async function getCurrentDepartmentId(request?: NextRequest): Promise<number | null> {
-  try {
-    // If request is provided, try to get from token first (fastest)
-    if (request) {
-      const deptId = await getDepartmentIdFromRequest(request);
-      if (deptId) {
-        return deptId;
-      }
-    }
-    
-    // Fallback: Try to get from settings (for backward compatibility)
-    const settings = await prisma.settings.findFirst();
-    if (!settings) {
-      return null;
-    }
-
-    // Parse system settings
-    const systemSettings =
-      typeof settings.system === 'string'
-        ? JSON.parse(settings.system)
-        : settings.system;
-
-    const departmentCode = systemSettings?.departmentCode;
-    if (!departmentCode) {
-      return null;
-    }
-
-    // Find department by code
-    const department = await prisma.departments.findUnique({
-      where: { code: departmentCode },
-      select: { id: true },
-    });
-
-    return department?.id || null;
-  } catch (error) {
-    console.error('Error getting current department ID:', error);
+  if (!request) {
     return null;
   }
+  
+  // Always get from authenticated user (via request)
+  return await getDepartmentIdFromRequest(request);
 }
 
 /**

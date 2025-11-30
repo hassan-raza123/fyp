@@ -49,8 +49,6 @@ export default function CreateCoursePage() {
   
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentDepartmentId, setCurrentDepartmentId] = useState<number | null>(null);
-  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -70,32 +68,6 @@ export default function CreateCoursePage() {
     },
   });
 
-  useEffect(() => {
-    fetchCurrentDepartment();
-  }, []);
-
-  const fetchCurrentDepartment = async () => {
-    try {
-      const checkResponse = await fetch('/api/admin/check-department', {
-        credentials: 'include',
-      });
-      
-      if (!checkResponse.ok) {
-        throw new Error('Failed to fetch department');
-      }
-      
-      const checkData = await checkResponse.json();
-      if (checkData.success && checkData.hasDepartment && checkData.department) {
-        const deptId = checkData.department.id;
-        setCurrentDepartmentId(deptId);
-        form.setValue('departmentId', deptId.toString());
-      }
-    } catch (error) {
-      console.error('Error fetching current department:', error);
-      toast.error('Failed to load department. Please try again.');
-    }
-  };
-
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
@@ -106,7 +78,10 @@ export default function CreateCoursePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+        ...values,
+        departmentId: undefined, // Backend will automatically get department ID from authenticated user
+      }),
       });
 
       console.log('Response status:', response.status);
@@ -288,22 +263,7 @@ export default function CreateCoursePage() {
                 )}
               />
 
-              {/* Department is automatically set from Settings */}
-              {currentDepartmentId && (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <FormControl>
-                    <Input
-                      value="Current Department (Assigned by Super Admin)"
-                      disabled
-                      className="bg-gray-50"
-                    />
-                  </FormControl>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Department is assigned by super admin
-                  </p>
-                </FormItem>
-              )}
+              {/* Department is automatically set by backend from authenticated user */}
 
               <FormField
                 control={form.control}

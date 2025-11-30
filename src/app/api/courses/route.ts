@@ -81,14 +81,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const programId = searchParams.get('programId');
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Department not configured. Please set department in Settings.',
+          error: 'Department not assigned. Please contact super admin.',
         },
         { status: 400 }
       );
@@ -268,14 +267,13 @@ export async function POST(request: NextRequest) {
     // Import getCurrentDepartmentId
     const { getCurrentDepartmentId } = await import('@/lib/auth');
 
-    // Get current department ID from settings (override any departmentId from form)
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from authenticated user (override any departmentId from form)
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Department not configured. Please set department in Settings.',
+          error: 'Department not assigned. Please contact super admin.',
         },
         { status: 400 }
       );

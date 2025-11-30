@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { useDepartmentId } from '@/hooks/useDepartmentId';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -72,8 +71,6 @@ export default function AdminsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
   const [viewingAdmin, setViewingAdmin] = useState<any>(null);
-  const { departmentId: departmentIdFromToken } = useDepartmentId();
-  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [newAdmin, setNewAdmin] = useState({
     firstName: '',
     lastName: '',
@@ -97,15 +94,6 @@ export default function AdminsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    // Set department ID from token (no API call needed)
-    if (departmentIdFromToken) {
-      setCurrentDepartmentId(departmentIdFromToken);
-    } else {
-      setCurrentDepartmentId('');
-    }
-  }, [departmentIdFromToken, mounted]);
 
   useEffect(() => {
     fetchAdmins();
@@ -246,7 +234,6 @@ export default function AdminsPage() {
         body: JSON.stringify({
           roles: ['admin'],
           facultyDetails: {
-            departmentId: currentDepartmentId,
             designation: newAdmin.designation,
             employeeId: newAdmin.employeeId || null,
           },

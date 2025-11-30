@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { useDepartmentId } from '@/hooks/useDepartmentId';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -71,7 +70,6 @@ export default function FacultyPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoadingFaculty, setIsLoadingFaculty] = useState(false);
   const [viewingFaculty, setViewingFaculty] = useState<Faculty | null>(null);
-  const { departmentId: departmentIdFromToken } = useDepartmentId();
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [newFaculty, setNewFaculty] = useState({
     firstName: '',
@@ -90,20 +88,33 @@ export default function FacultyPage() {
   
   useEffect(() => {
     setMounted(true);
+    fetchCurrentDepartment();
   }, []);
-
-  useEffect(() => {
-    // Set department ID from token (no API call needed)
-    if (departmentIdFromToken) {
-      setCurrentDepartmentId(departmentIdFromToken);
-    } else {
-      setCurrentDepartmentId('');
-    }
-  }, [departmentIdFromToken, mounted]);
 
   useEffect(() => {
     fetchFaculties();
   }, [search, statusFilter]);
+
+  const fetchCurrentDepartment = async () => {
+    try {
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
+      }
+      
+      const checkData = await checkResponse.json();
+      if (checkData.success && checkData.hasDepartment && checkData.department) {
+        const deptId = checkData.department.id.toString();
+        setCurrentDepartmentId(deptId);
+      }
+    } catch (error) {
+      console.error('Error fetching current department:', error);
+      // Silently handle - admin always has department
+    }
+  };
 
   const fetchFaculties = async () => {
     try {
