@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 // POST /api/super-admin/create-super-admin - Create super admin user
 export async function POST(request: NextRequest) {
@@ -46,8 +47,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password (use default password)
-    const defaultPassword = '11223344';
+    // Hash password (use role-based default password)
+    const defaultPassword = getDefaultPassword('super_admin');
     const hashedPassword = await hash(defaultPassword, 12);
 
     // Generate username from email
@@ -104,6 +105,8 @@ export async function POST(request: NextRequest) {
         lastName: result.last_name,
         departmentName: 'System',
         departmentCode: 'SYS',
+        password: defaultPassword,
+        role: 'super_admin',
       });
     } catch (emailError) {
       console.error('Error sending super admin creation email:', emailError);

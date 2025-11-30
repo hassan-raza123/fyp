@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Key } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -357,7 +358,8 @@ export default function SuperAdminsPage() {
         throw new Error(data.error || 'Failed to reset password');
       }
 
-      toast.success(`Password reset successfully! Default password: 11223344`);
+      const resetPassword = data.data?.defaultPassword || getDefaultPassword('super_admin');
+      toast.success(`Password reset successfully! Default password: ${resetPassword}`);
       setShowResetPasswordDialog(false);
       setSelectedSuperAdmin(null);
     } catch (error) {
@@ -719,7 +721,7 @@ export default function SuperAdminsPage() {
             </div>
             <div className="rounded-lg p-4 bg-blue-500/10 border border-blue-500/20">
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                <strong>Note:</strong> The default password will be <code className="bg-blue-500/20 px-1 rounded">11223344</code>. 
+                <strong>Note:</strong> The default password will be <code className="bg-blue-500/20 px-1 rounded">{getDefaultPassword('super_admin')}</code>. 
                 The user will receive an email with login credentials.
               </p>
             </div>
@@ -1002,7 +1004,7 @@ export default function SuperAdminsPage() {
                   ? `${selectedSuperAdmin.user.first_name} ${selectedSuperAdmin.user.last_name}`
                   : 'this super admin'}
               </span>
-              ? The password will be reset to the default password <code className="bg-card/50 px-1 rounded">11223344</code> and an email will be sent to the user.
+              ? The password will be reset to the role-based default password (<code className="bg-card/50 px-1 rounded">{getDefaultPassword('super_admin')}</code> for super admins) and an email will be sent to the user.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

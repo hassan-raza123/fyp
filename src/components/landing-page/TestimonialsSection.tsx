@@ -16,7 +16,7 @@ const testimonials = [
   {
     name: 'Sara Khan',
     role: 'Software Engineering',
-    batch: '2024',
+    batch: '2025',
     image: '/team/hassan.jpg',
     rating: 5,
     content: 'The real-time analytics and transparent grading system helped me identify my strengths and areas for improvement.'
@@ -32,7 +32,7 @@ const testimonials = [
   {
     name: 'Fatima Malik',
     role: 'Data Science',
-    batch: '2024',
+    batch: '2025',
     image: '/team/talha.jpg',
     rating: 5,
     content: 'EduTrack\'s automated tracking is a game-changer. It gives me clear insights into my learning outcomes.'

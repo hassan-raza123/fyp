@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { parse } from 'csv-parse/sync';
+import { hash } from 'bcryptjs';
+import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,6 +53,10 @@ export async function POST(request: NextRequest) {
           throw new Error('User already exists');
         }
 
+        // Get role-based default password if not provided
+        const passwordToUse = record.password || getDefaultPasswordByRoleName(record.role);
+        const hashedPassword = await hash(passwordToUse, 12);
+
         // Create user
         await prisma.users.create({
           data: {
@@ -58,7 +64,7 @@ export async function POST(request: NextRequest) {
             last_name: record.lastName,
             email: record.email,
             username: record.email.split('@')[0], // Generate username from email
-            password_hash: record.password || 'defaultPassword', // In production, generate a secure password
+            password_hash: hashedPassword,
             status: 'active',
             email_verified: false,
             updatedAt: new Date(),

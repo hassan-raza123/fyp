@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getDefaultPassword } from './password-utils';
 
 // Application name - update this if project name changes
 const APPLICATION_NAME = 'EduTrack - OBE Management System';
@@ -19,14 +20,23 @@ interface AdminAssignmentEmailData {
   departmentName: string;
   departmentCode: string;
   loginUrl?: string;
+  password?: string; // Optional password, will use role-based default if not provided
+  role?: 'super_admin' | 'admin' | 'faculty' | 'student'; // Role for password generation
 }
 
 export async function sendAdminAssignmentEmail(
   data: AdminAssignmentEmailData
 ): Promise<void> {
-  const { email, firstName, lastName, departmentName, departmentCode, loginUrl } = data;
+  const { email, firstName, lastName, departmentName, departmentCode, loginUrl, password, role } = data;
   
-  const defaultPassword = '11223344';
+  // Use provided password or generate role-based password
+  let defaultPassword = password;
+  if (!defaultPassword && role) {
+    defaultPassword = getDefaultPassword(role);
+  } else if (!defaultPassword) {
+    // Fallback for admin (most common case)
+    defaultPassword = getDefaultPassword('admin');
+  }
   const username = email.split('@')[0];
   const loginLink = loginUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`;
 

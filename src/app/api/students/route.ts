@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 const createStudentSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -330,7 +331,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultPassword = '11223344';
+    const defaultPassword = getDefaultPassword('student');
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     // Create user with student role

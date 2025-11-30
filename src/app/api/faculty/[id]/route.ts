@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { faculty_status } from '@prisma/client';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
+import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 
 interface UserRole {
   role: {
@@ -218,12 +219,16 @@ export async function PUT(
     // Send email if admin's department was changed
     if (departmentChanged && updatedFaculty.department) {
       try {
+        const userRole = existingFaculty.user.userrole?.role?.name || 'admin';
+        const rolePassword = getDefaultPasswordByRoleName(userRole);
         await sendAdminAssignmentEmail({
           email: updatedFaculty.user.email,
           firstName: updatedFaculty.user.first_name,
           lastName: updatedFaculty.user.last_name,
           departmentName: updatedFaculty.department.name,
           departmentCode: updatedFaculty.department.code,
+          password: rolePassword,
+          role: userRole as 'super_admin' | 'admin',
         });
       } catch (emailError) {
         console.error('Error sending admin assignment email:', emailError);

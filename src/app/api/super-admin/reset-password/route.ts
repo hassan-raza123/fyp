@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
+import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 
 // POST /api/super-admin/reset-password - Reset password for any user (admin or super admin)
 export async function POST(request: NextRequest) {
@@ -34,9 +35,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use default password if not provided
-    const passwordToSet = newPassword || '11223344';
-
     // Check if user exists
     const targetUser = await prisma.users.findUnique({
       where: { id: parseInt(userId) },
@@ -65,6 +63,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use role-based default password if not provided
+    const passwordToSet = newPassword || (userRole ? getDefaultPasswordByRoleName(userRole) : 'User@2025');
+
     // Hash password
     const hashedPassword = await hash(passwordToSet, 12);
 
@@ -85,6 +86,8 @@ export async function POST(request: NextRequest) {
         lastName: targetUser.last_name,
         departmentName: 'System',
         departmentCode: 'SYS',
+        password: passwordToSet,
+        role: userRole as 'super_admin' | 'admin',
       });
     } catch (emailError) {
       console.error('Error sending password reset email:', emailError);

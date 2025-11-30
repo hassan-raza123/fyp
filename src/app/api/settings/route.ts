@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         data: {
           system: {
             applicationName: 'Smart Campus for MNSUET',
-            academicYear: '2024',
+            academicYear: '2025',
             currentSemester: 'Spring',
             defaultLanguage: 'en',
             timeZone: 'UTC',

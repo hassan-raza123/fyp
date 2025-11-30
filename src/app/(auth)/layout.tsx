@@ -121,7 +121,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <div className='absolute bottom-6 left-8 text-white/60 text-sm z-20'>
-        © 2024 EduTrack - MNS UET. All rights reserved.
+        © 2025 EduTrack - MNS UET. All rights reserved.
       </div>
     </div>
   );

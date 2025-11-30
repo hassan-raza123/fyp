@@ -22,6 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -237,7 +238,7 @@ export default function AdminsPage() {
                       <TableCell>{admin.user.email}</TableCell>
                       <TableCell>
                         <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                          11223344
+                          {getDefaultPassword('admin')}
                         </code>
                         <span className="text-xs text-muted-foreground ml-2">
                           (default)

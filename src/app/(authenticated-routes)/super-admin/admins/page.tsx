@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck, Key } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -441,7 +442,8 @@ export default function SuperAdminAdminsPage() {
         throw new Error(data.error || 'Failed to reset password');
       }
 
-      toast.success(`Password reset successfully! Default password: 11223344`);
+      const resetPassword = data.data?.defaultPassword || getDefaultPassword('admin');
+      toast.success(`Password reset successfully! Default password: ${resetPassword}`);
       setShowResetPasswordDialog(false);
       setSelectedAdmin(null);
     } catch (error) {
@@ -1231,7 +1233,7 @@ export default function SuperAdminAdminsPage() {
                   ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
                   : 'this admin'}
               </span>
-              ? The password will be reset to the default password <code className="bg-card/50 px-1 rounded">11223344</code> and an email will be sent to the user.
+              ? The password will be reset to the role-based default password (<code className="bg-card/50 px-1 rounded">{getDefaultPassword('admin')}</code> for admins) and an email will be sent to the user.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

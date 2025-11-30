@@ -125,7 +125,7 @@ export default function EditSemesterPage({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="e.g., Fall 2024"
+                placeholder="e.g., Fall 2025"
               />
             </div>
 
