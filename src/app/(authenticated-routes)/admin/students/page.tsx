@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, Loader2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -54,6 +55,7 @@ export default function StudentsPage() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -67,9 +69,45 @@ export default function StudentsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoadingStudent, setIsLoadingStudent] = useState(false);
+  const [viewingStudent, setViewingStudent] = useState<any>(null);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
+  const [programs, setPrograms] = useState<{ id: number; name: string; code: string }[]>([]);
+  const [newStudent, setNewStudent] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    rollNumber: '',
+    departmentId: '',
+    programId: '',
+    batchId: '',
+    sectionId: '',
+    status: 'active' as 'active' | 'inactive',
+  });
+  const [editStudent, setEditStudent] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    rollNumber: '',
+    departmentId: '',
+    programId: '',
+    batchId: '',
+    status: 'active' as 'active' | 'inactive',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fetchingPrograms, setFetchingPrograms] = useState(false);
+  const [fetchingBatches, setFetchingBatches] = useState(false);
+  const [sections, setSections] = useState<{ id: number; name: string }[]>([]);
+  const [fetchingSections, setFetchingSections] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    fetchCurrentDepartment();
   }, []);
 
   useEffect(() => {
@@ -79,6 +117,104 @@ export default function StudentsPage() {
   useEffect(() => {
     fetchStudents();
   }, [page, statusFilter, batchFilter]);
+
+  useEffect(() => {
+    if (currentDepartmentId) {
+      fetchPrograms(currentDepartmentId);
+    }
+  }, [currentDepartmentId]);
+
+  useEffect(() => {
+    if (newStudent.programId) {
+      fetchBatchesForProgram(newStudent.programId);
+    }
+  }, [newStudent.programId]);
+
+  useEffect(() => {
+    if (newStudent.batchId) {
+      fetchSectionsForBatch(newStudent.batchId);
+    }
+  }, [newStudent.batchId]);
+
+  const fetchCurrentDepartment = async () => {
+    try {
+      const settingsResponse = await fetch('/api/settings');
+      if (!settingsResponse.ok) {
+        throw new Error('Failed to fetch settings');
+      }
+      const settingsData = await settingsResponse.json();
+      if (settingsData.success && settingsData.data) {
+        const systemSettings =
+          typeof settingsData.data.system === 'string'
+            ? JSON.parse(settingsData.data.system)
+            : settingsData.data.system;
+        const departmentCode = systemSettings?.departmentCode;
+        if (departmentCode) {
+          const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
+          if (deptResponse.ok) {
+            const deptData = await deptResponse.json();
+            const deptId = deptData.id.toString();
+            setCurrentDepartmentId(deptId);
+            setNewStudent((prev) => ({ ...prev, departmentId: deptId }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current department:', error);
+    }
+  };
+
+  const fetchPrograms = async (departmentId: string) => {
+    try {
+      setFetchingPrograms(true);
+      const response = await fetch(`/api/programs?departmentId=${departmentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch programs');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setPrograms(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching programs:', error);
+    } finally {
+      setFetchingPrograms(false);
+    }
+  };
+
+  const fetchBatchesForProgram = async (programId: string) => {
+    try {
+      setFetchingBatches(true);
+      const response = await fetch(`/api/programs/${programId}/batches`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch batches');
+      }
+      const data = await response.json();
+      if (data.success) {
+        setBatches(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+    } finally {
+      setFetchingBatches(false);
+    }
+  };
+
+  const fetchSectionsForBatch = async (batchId: string) => {
+    try {
+      setFetchingSections(true);
+      const response = await fetch(`/api/batches/${batchId}`);
+      if (!response.ok) throw new Error('Failed to fetch batch sections');
+      const data = await response.json();
+      if (data.success) {
+        setSections(data.data.sections || []);
+      }
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+    } finally {
+      setFetchingSections(false);
+    }
+  };
 
   const fetchBatches = async () => {
     try {
@@ -136,8 +272,145 @@ export default function StudentsPage() {
     fetchStudents();
   };
 
-  const handleEdit = (student: Student) => {
-    router.push(`/admin/students/${student.id}`);
+  const handleViewStudent = async (student: Student) => {
+    setSelectedStudent(student);
+    setIsLoadingStudent(true);
+    setShowViewModal(true);
+    try {
+      const response = await fetch(`/api/students/${student.id}`);
+      if (!response.ok) throw new Error('Failed to fetch student');
+      const data = await response.json();
+      if (data.success && data.data) {
+        setViewingStudent(data.data);
+      } else {
+        throw new Error(data.error || 'Failed to fetch student');
+      }
+    } catch (error) {
+      console.error('Error fetching student:', error);
+      toast.error('Failed to load student details');
+      setShowViewModal(false);
+    } finally {
+      setIsLoadingStudent(false);
+    }
+  };
+
+  const handleEditStudent = async (student: Student) => {
+    setSelectedStudent(student);
+    setIsLoadingStudent(true);
+    setShowEditModal(true);
+    try {
+      const response = await fetch(`/api/students/${student.id}`);
+      if (!response.ok) throw new Error('Failed to fetch student');
+      const data = await response.json();
+      if (data.success && data.data) {
+        setEditStudent({
+          firstName: data.data.user.firstName,
+          lastName: data.data.user.lastName,
+          email: data.data.user.email,
+          rollNumber: data.data.rollNumber,
+          departmentId: data.data.department?.id.toString() || currentDepartmentId,
+          programId: data.data.program?.id.toString() || '',
+          batchId: data.data.batch?.id || '',
+          status: data.data.status,
+        });
+        if (data.data.program?.id) {
+          await fetchBatchesForProgram(data.data.program.id.toString());
+        }
+      } else {
+        throw new Error(data.error || 'Failed to fetch student');
+      }
+    } catch (error) {
+      console.error('Error fetching student:', error);
+      toast.error('Failed to load student details');
+      setShowEditModal(false);
+    } finally {
+      setIsLoadingStudent(false);
+    }
+  };
+
+  const handleCreateStudent = async () => {
+    if (!newStudent.firstName || !newStudent.lastName || !newStudent.email || !newStudent.rollNumber || !newStudent.programId || !newStudent.batchId) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsCreating(true);
+    setErrors({});
+    try {
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newStudent,
+          departmentId: parseInt(newStudent.departmentId),
+          programId: parseInt(newStudent.programId),
+          sectionId: newStudent.sectionId ? parseInt(newStudent.sectionId) : undefined,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create student');
+      }
+
+      toast.success('Student created successfully');
+      setShowCreateModal(false);
+      setNewStudent({
+        firstName: '',
+        lastName: '',
+        email: '',
+        rollNumber: '',
+        departmentId: currentDepartmentId,
+        programId: '',
+        batchId: '',
+        sectionId: '',
+        status: 'active',
+      });
+      fetchStudents();
+    } catch (error) {
+      console.error('Error creating student:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create student');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleUpdateStudent = async () => {
+    if (!selectedStudent) return;
+
+    if (!editStudent.firstName || !editStudent.lastName || !editStudent.email || !editStudent.rollNumber) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsUpdating(true);
+    setErrors({});
+    try {
+      const response = await fetch(`/api/students/${selectedStudent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editStudent,
+          departmentId: editStudent.departmentId ? parseInt(editStudent.departmentId) : null,
+          programId: editStudent.programId ? parseInt(editStudent.programId) : null,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update student');
+      }
+
+      toast.success('Student updated successfully');
+      setShowEditModal(false);
+      setSelectedStudent(null);
+      fetchStudents();
+    } catch (error) {
+      console.error('Error updating student:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update student');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -238,7 +511,7 @@ export default function StudentsPage() {
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = primaryColor;
             }}
-            onClick={() => router.push('/admin/students/create')}
+            onClick={() => setShowCreateModal(true)}
           >
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             Add Student
@@ -372,7 +645,7 @@ export default function StudentsPage() {
                           e.currentTarget.style.backgroundColor = 'transparent';
                           e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                         }}
-                        onClick={() => handleEdit(student)}
+                        onClick={() => handleViewStudent(student)}
                       >
                         <Eye className='h-3.5 w-3.5' />
                       </Button>
@@ -470,6 +743,581 @@ export default function StudentsPage() {
         </div>
       )}
 
+      {/* Create Student Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create New Student</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Create a new student account
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create_firstName" className="text-xs text-primary-text">First Name *</Label>
+                <Input
+                  id="create_firstName"
+                  value={newStudent.firstName}
+                  onChange={(e) => setNewStudent({ ...newStudent, firstName: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create_lastName" className="text-xs text-primary-text">Last Name *</Label>
+                <Input
+                  id="create_lastName"
+                  value={newStudent.lastName}
+                  onChange={(e) => setNewStudent({ ...newStudent, lastName: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_email" className="text-xs text-primary-text">Email *</Label>
+              <Input
+                id="create_email"
+                type="email"
+                value={newStudent.email}
+                onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_rollNumber" className="text-xs text-primary-text">Roll Number *</Label>
+              <Input
+                id="create_rollNumber"
+                value={newStudent.rollNumber}
+                onChange={(e) => setNewStudent({ ...newStudent, rollNumber: e.target.value })}
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            {currentDepartmentId && (
+              <div className="space-y-2">
+                <Label htmlFor="create_departmentId" className="text-xs text-primary-text">Department</Label>
+                <Input
+                  id="create_departmentId"
+                  value="Current Department (from Settings)"
+                  disabled
+                  className="bg-card border-card-border text-primary-text"
+                  style={{ backgroundColor: 'var(--hover-bg)' }}
+                />
+                <p className="text-xs text-secondary-text">Department is configured in System Settings</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="create_programId" className="text-xs text-primary-text">Program *</Label>
+              <Select
+                value={newStudent.programId}
+                onValueChange={(value) => {
+                  setNewStudent({ ...newStudent, programId: value, batchId: '', sectionId: '' });
+                }}
+                disabled={fetchingPrograms || !currentDepartmentId}
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select program" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  {programs.map((program) => (
+                    <SelectItem
+                      key={program.id}
+                      value={program.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
+                    >
+                      {program.name} ({program.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_batchId" className="text-xs text-primary-text">Batch *</Label>
+              <Select
+                value={newStudent.batchId}
+                onValueChange={(value) => {
+                  setNewStudent({ ...newStudent, batchId: value, sectionId: '' });
+                }}
+                disabled={fetchingBatches || !newStudent.programId}
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select batch" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  {batches.map((batch) => (
+                    <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
+                      {batch.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_sectionId" className="text-xs text-primary-text">Section (Optional)</Label>
+              <Select
+                value={newStudent.sectionId || ''}
+                onValueChange={(value) => setNewStudent({ ...newStudent, sectionId: value })}
+                disabled={fetchingSections || !newStudent.batchId || sections.length === 0}
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select section (optional)" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  {sections.map((section) => (
+                    <SelectItem
+                      key={section.id}
+                      value={section.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
+                    >
+                      {section.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_status" className="text-xs text-primary-text">Status *</Label>
+              <Select
+                value={newStudent.status}
+                onValueChange={(value: 'active' | 'inactive') => setNewStudent({ ...newStudent, status: value })}
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowCreateModal(false);
+                setNewStudent({
+                  firstName: '',
+                  lastName: '',
+                  email: '',
+                  rollNumber: '',
+                  departmentId: currentDepartmentId,
+                  programId: '',
+                  batchId: '',
+                  sectionId: '',
+                  status: 'active',
+                });
+              }}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs text-white"
+              style={{
+                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+              onClick={handleCreateStudent}
+              disabled={isCreating}
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Student'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Student Modal */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Student Details</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              View complete information about this student
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingStudent ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : viewingStudent ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xs font-semibold text-secondary-text mb-3">Student Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Name</p>
+                    <p className="text-xs text-primary-text">
+                      {viewingStudent.user.firstName} {viewingStudent.user.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Email</p>
+                    <p className="text-xs text-primary-text">{viewingStudent.user.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Roll Number</p>
+                    <p className="text-xs text-primary-text">{viewingStudent.rollNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Department</p>
+                    <p className="text-xs text-primary-text">
+                      {viewingStudent.department?.name || 'Not assigned'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Program</p>
+                    <p className="text-xs text-primary-text">
+                      {viewingStudent.program?.name || 'Not assigned'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Batch</p>
+                    <p className="text-xs text-primary-text">
+                      {viewingStudent.batch?.name || 'Not assigned'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Status</p>
+                    <Badge
+                      className={`text-[10px] px-1.5 py-0.5 ${getStatusColor(viewingStudent.status)}`}
+                      variant="secondary"
+                    >
+                      {viewingStudent.status}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              {viewingStudent.studentsections && viewingStudent.studentsections.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-secondary-text mb-3">Enrolled Sections</h3>
+                  <div className="rounded-lg border border-card-border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Section</TableHead>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Course</TableHead>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Semester</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {viewingStudent.studentsections.map((enrollment: any) => (
+                          <TableRow key={enrollment.id} className="hover:bg-hover-bg transition-colors">
+                            <TableCell className="text-xs text-primary-text py-1.5">{enrollment.section.name}</TableCell>
+                            <TableCell className="text-xs text-secondary-text py-1.5">
+                              {enrollment.section.courseOffering.course.code} - {enrollment.section.courseOffering.course.name}
+                            </TableCell>
+                            <TableCell className="text-xs text-secondary-text py-1.5">
+                              {enrollment.section.courseOffering.semester.name}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-xs text-secondary-text">
+              <p>No data available</p>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingStudent(null);
+              }}
+            >
+              Close
+            </Button>
+            {viewingStudent && (
+              <Button
+                size="sm"
+                className="h-8 text-xs text-white"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }}
+                onClick={() => {
+                  if (selectedStudent) {
+                    setShowViewModal(false);
+                    handleEditStudent(selectedStudent);
+                  }
+                }}
+              >
+                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                Edit Student
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Student Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit Student</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Update student information
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingStudent ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_firstName" className="text-xs text-primary-text">First Name *</Label>
+                  <Input
+                    id="edit_firstName"
+                    value={editStudent.firstName}
+                    onChange={(e) => setEditStudent({ ...editStudent, firstName: e.target.value })}
+                    required
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_lastName" className="text-xs text-primary-text">Last Name *</Label>
+                  <Input
+                    id="edit_lastName"
+                    value={editStudent.lastName}
+                    onChange={(e) => setEditStudent({ ...editStudent, lastName: e.target.value })}
+                    required
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_email" className="text-xs text-primary-text">Email *</Label>
+                <Input
+                  id="edit_email"
+                  type="email"
+                  value={editStudent.email}
+                  onChange={(e) => setEditStudent({ ...editStudent, email: e.target.value })}
+                  required
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_rollNumber" className="text-xs text-primary-text">Roll Number *</Label>
+                <Input
+                  id="edit_rollNumber"
+                  value={editStudent.rollNumber}
+                  onChange={(e) => setEditStudent({ ...editStudent, rollNumber: e.target.value })}
+                  required
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              {currentDepartmentId && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit_departmentId" className="text-xs text-primary-text">Department</Label>
+                  <Input
+                    id="edit_departmentId"
+                    value="Current Department (from Settings)"
+                    disabled
+                    className="bg-card border-card-border text-primary-text"
+                    style={{ backgroundColor: 'var(--hover-bg)' }}
+                  />
+                  <p className="text-xs text-secondary-text">Department is configured in System Settings</p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="edit_programId" className="text-xs text-primary-text">Program</Label>
+                <Select
+                  value={editStudent.programId}
+                  onValueChange={(value) => {
+                    setEditStudent({ ...editStudent, programId: value, batchId: '' });
+                    if (value) {
+                      fetchBatchesForProgram(value);
+                    }
+                  }}
+                  disabled={!currentDepartmentId}
+                >
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectValue placeholder="Select program" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-card-border">
+                    {programs.map((program) => (
+                      <SelectItem
+                        key={program.id}
+                        value={program.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
+                      >
+                        {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_batchId" className="text-xs text-primary-text">Batch</Label>
+                <Select
+                  value={editStudent.batchId}
+                  onValueChange={(value) => setEditStudent({ ...editStudent, batchId: value })}
+                >
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectValue placeholder="Select batch" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-card-border">
+                    {batches.map((batch) => (
+                      <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
+                        {batch.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_status" className="text-xs text-primary-text">Status</Label>
+                <Select
+                  value={editStudent.status}
+                  onValueChange={(value: 'active' | 'inactive') => setEditStudent({ ...editStudent, status: value })}
+                >
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedStudent(null);
+              }}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs text-white"
+              style={{
+                backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+              onClick={handleUpdateStudent}
+              disabled={isUpdating}
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Student Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
