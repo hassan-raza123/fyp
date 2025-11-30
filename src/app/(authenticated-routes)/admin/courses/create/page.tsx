@@ -89,8 +89,6 @@ export default function CreateCoursePage() {
         const deptId = checkData.department.id;
         setCurrentDepartmentId(deptId);
         form.setValue('departmentId', deptId.toString());
-      } else {
-        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       }
     } catch (error) {
       console.error('Error fetching current department:', error);

@@ -152,8 +152,6 @@ export default function StudentsPage() {
         const deptId = checkData.department.id.toString();
         setCurrentDepartmentId(deptId);
         setNewStudent((prev) => ({ ...prev, departmentId: deptId }));
-      } else {
-        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       }
     } catch (error) {
       console.error('Error fetching current department:', error);
@@ -332,7 +330,7 @@ export default function StudentsPage() {
     }
 
     if (!currentDepartmentId) {
-      toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
+      toast.error('Department information is not available. Please refresh the page.');
       return;
     }
 
@@ -805,12 +803,6 @@ export default function StudentsPage() {
                   style={{ backgroundColor: 'var(--hover-bg)' }}
                 />
                 <p className="text-xs text-secondary-text">Department is assigned by super admin</p>
-              </div>
-            ) : (
-              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)' }}>
-                <p className="text-xs" style={{ color: 'var(--error)' }}>
-                  <strong>Warning:</strong> Department not assigned. Please contact super admin to assign a department to your account before creating students.
-                </p>
               </div>
             )}
             <div className="space-y-2">

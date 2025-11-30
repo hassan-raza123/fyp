@@ -207,46 +207,9 @@ export default function AdminOverview() {
     checkUserRole();
   }, []);
 
-  // Check if admin has a department assigned
+  // Fetch dashboard data - admin always has a department assigned
   useEffect(() => {
-    const checkDepartment = async () => {
-      try {
-        // First check if admin has a department assigned
-        const checkResponse = await fetch('/api/admin/check-department', {
-          credentials: 'include',
-        });
-
-        if (!checkResponse.ok) {
-          throw new Error('Failed to check department');
-        }
-
-        const checkData = await checkResponse.json();
-
-        if (!checkData.success) {
-          throw new Error(checkData.error || 'Failed to check department');
-        }
-
-        // If admin doesn't have a department, show error message
-        // Super admin will assign department
-        if (!checkData.hasDepartment) {
-          setError(
-            'No department assigned. Please contact super admin to assign a department to your account.'
-          );
-          setLoading(false);
-        } else {
-          // Admin has department, fetch dashboard data
-          fetchDashboardData();
-        }
-      } catch (err) {
-        console.error('Error checking department:', err);
-        setError(
-          err instanceof Error ? err.message : 'Failed to check department'
-        );
-        setLoading(false);
-      }
-    };
-
-    checkDepartment();
+    fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {

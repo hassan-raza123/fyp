@@ -98,10 +98,6 @@ export default function FacultyPage() {
       setCurrentDepartmentId(departmentIdFromToken);
     } else {
       setCurrentDepartmentId('');
-      // Only show error if user is loaded and no department
-      if (mounted) {
-        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
-      }
     }
   }, [departmentIdFromToken, mounted]);
 
@@ -201,7 +197,7 @@ export default function FacultyPage() {
     }
 
     if (!currentDepartmentId) {
-      toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
+      toast.error('Department information is not available. Please refresh the page.');
       return;
     }
 
@@ -616,13 +612,6 @@ export default function FacultyPage() {
                 </SelectContent>
               </Select>
             </div>
-            {!currentDepartmentId && (
-              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)' }}>
-                <p className="text-xs" style={{ color: 'var(--error)' }}>
-                  <strong>Warning:</strong> Department not assigned. Please contact super admin to assign a department to your account before creating faculty members.
-                </p>
-              </div>
-            )}
             <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
               <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
                 <strong>Note:</strong> A user account will be created automatically with default password: <strong>{getDefaultPassword('faculty')}</strong>.

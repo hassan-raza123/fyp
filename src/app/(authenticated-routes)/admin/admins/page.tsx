@@ -104,10 +104,6 @@ export default function AdminsPage() {
       setCurrentDepartmentId(departmentIdFromToken);
     } else {
       setCurrentDepartmentId('');
-      // Only show error if user is loaded and no department
-      if (mounted) {
-        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
-      }
     }
   }, [departmentIdFromToken, mounted]);
 
