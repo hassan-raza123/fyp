@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 const bcrypt = require('bcryptjs');
 import { sendOTPEmail } from '@/lib/email-utils';
-import { createToken } from '@/lib/jwt';
+import { createToken } from '@/lib/auth';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
   AdminRole,

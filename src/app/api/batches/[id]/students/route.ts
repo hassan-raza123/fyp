@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { requireRole } from '@/lib/role';
+import { requireRole } from '@/lib/auth';
 
 // GET /api/batches/[id]/students - Get students in a batch
 export async function GET(

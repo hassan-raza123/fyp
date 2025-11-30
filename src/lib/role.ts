@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { verifyToken } from './jwt';
+import { requireAuth } from './auth';
 
 export interface RoleResult {
   success: boolean;

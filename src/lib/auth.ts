@@ -1,10 +1,9 @@
-import jwt from 'jsonwebtoken';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from './prisma';
 import { compare } from 'bcryptjs';
 import { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
 import { TokenPayload } from '@/types/auth';
 import { randomBytes } from 'crypto';
 
@@ -22,18 +21,32 @@ declare module 'next-auth' {
   }
 }
 
-export async function verifyAuth(token: string) {
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET!);
-    return verified;
-  } catch {
-    throw new Error('Invalid token');
-  }
-}
+// ============================================================================
+// JWT Token Functions
+// ============================================================================
 
-export function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return String(error);
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-strong-secret-key-for-development-12345'
+);
+
+/**
+ * Create JWT token from payload
+ */
+export async function createToken(payload: TokenPayload): Promise<string> {
+  try {
+    return await new SignJWT({
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
+      userData: payload.userData,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('24h')
+      .sign(JWT_SECRET);
+  } catch (error) {
+    console.error('Token creation error:', error);
+    throw new Error('Failed to create token');
+  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -122,37 +135,6 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export async function verifyToken(request: NextRequest): Promise<{
-  success: boolean;
-  user?: TokenPayload;
-  error?: string;
-}> {
-  try {
-    // Use the correct cookie name from constants
-    const token = request.cookies.get('token')?.value;
-
-    if (!token) {
-      return {
-        success: false,
-        error: 'No token provided',
-      };
-    }
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-
-    return {
-      success: true,
-      user: parseJwtPayload(payload),
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: 'Invalid token',
-    };
-  }
-}
-
 function parseJwtPayload(payload: any): TokenPayload {
   return {
     userId: payload.userId,
@@ -169,13 +151,19 @@ export function checkUserRole(
   return allowedRoles.includes(user.role);
 }
 
-// Helper functions for getting user data from headers (for backward compatibility)
+// ============================================================================
+// Legacy Header Functions (Deprecated - use requireAuth instead)
+// ============================================================================
+// These functions read from headers (x-user-data, x-user-id, etc.)
+// Only kept for backward compatibility with old code
+// New code should use requireAuth() which reads from cookies
+
 export function getUserFromRequest(request: NextRequest): TokenPayload | null {
   try {
     const userData = request.headers.get('x-user-data');
     if (!userData) return null;
     return JSON.parse(userData) as TokenPayload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -191,29 +179,6 @@ export function getUserRoleFromRequest(request: NextRequest): string | null {
 
 export function getUserEmailFromRequest(request: NextRequest): string | null {
   return request.headers.get('x-user-email');
-}
-
-// Legacy functions (kept for backward compatibility)
-export function getUserIdFromToken(request: NextRequest): number | null {
-  return getUserIdFromRequest(request);
-}
-
-export function getUserRoleFromToken(request: NextRequest): string | null {
-  return getUserRoleFromRequest(request);
-}
-
-export function getUserEmailFromToken(request: NextRequest): string | null {
-  return getUserEmailFromRequest(request);
-}
-
-// Check user role from request (for backward compatibility)
-export function checkUserRoleFromRequest(
-  request: NextRequest,
-  allowedRoles: string[]
-): boolean {
-  const user = getUserFromRequest(request);
-  if (!user) return false;
-  return allowedRoles.includes(user.role);
 }
 
 export async function generatePasswordResetToken(userId: number) {
@@ -236,13 +201,16 @@ export async function generatePasswordResetToken(userId: number) {
   return resetToken;
 }
 
+/**
+ * Verify JWT token from request cookies
+ * Main authentication function - use this for all protected routes
+ */
 export async function requireAuth(request: NextRequest): Promise<{
   success: boolean;
   user?: TokenPayload;
   error?: string;
 }> {
   try {
-    // Use the correct cookie name from constants
     const token = request.cookies.get('token')?.value;
 
     if (!token) {
@@ -252,8 +220,7 @@ export async function requireAuth(request: NextRequest): Promise<{
       };
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, JWT_SECRET);
 
     return {
       success: true,
