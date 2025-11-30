@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -42,9 +43,17 @@ const createCourseSchema = z.object({
 type FormValues = z.infer<typeof createCourseSchema>;
 
 export default function CreateCoursePage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentDepartmentId, setCurrentDepartmentId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createCourseSchema),
@@ -168,7 +177,7 @@ export default function CreateCoursePage() {
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-bold'>Create Course</h1>
+        <h1 className='text-3xl font-bold text-primary-text'>Create Course</h1>
         <Button variant='outline' onClick={() => router.push('/admin/courses')}>
           Cancel
         </Button>

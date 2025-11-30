@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +31,10 @@ const createAdminSchema = z.object({
 });
 
 export default function CreateAdminPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
@@ -44,6 +49,10 @@ export default function CreateAdminPage() {
     departmentId: '',
     status: 'active' as 'active' | 'inactive',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCurrentDepartment();
@@ -182,11 +191,11 @@ export default function CreateAdminPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
+          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+            <Shield className="h-8 w-8" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }} />
             Add Admin User
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-secondary-text">
             Create a new admin user account
           </p>
         </div>
@@ -210,7 +219,7 @@ export default function CreateAdminPage() {
                   className={errors.firstName ? 'border-red-500' : ''}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-500">{errors.firstName}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
                 )}
               </div>
 
@@ -225,7 +234,7 @@ export default function CreateAdminPage() {
                   className={errors.lastName ? 'border-red-500' : ''}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-500">{errors.lastName}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
                 )}
               </div>
 
@@ -241,7 +250,7 @@ export default function CreateAdminPage() {
                   className={errors.email ? 'border-red-500' : ''}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.email}</p>
                 )}
               </div>
 
@@ -280,7 +289,7 @@ export default function CreateAdminPage() {
                   className={errors.designation ? 'border-red-500' : ''}
                 />
                 {errors.designation && (
-                  <p className="text-sm text-red-500">{errors.designation}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.designation}</p>
                 )}
               </div>
 
@@ -292,9 +301,9 @@ export default function CreateAdminPage() {
                     id="departmentId"
                     value="Current Department (from Settings)"
                     disabled
-                    className="bg-gray-50"
+                    style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-secondary-text">
                     Department is configured in System Settings
                   </p>
                 </div>

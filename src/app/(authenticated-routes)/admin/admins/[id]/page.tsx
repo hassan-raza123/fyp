@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,12 +28,20 @@ interface Admin {
 }
 
 export default function AdminDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const adminId = params?.id;
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (adminId) {
@@ -76,10 +85,10 @@ export default function AdminDetailsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-secondary-text">Loading...</div>
       </div>
     );
   }
@@ -88,7 +97,7 @@ export default function AdminDetailsPage() {
     return (
       <div className="container mx-auto py-10">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Admin not found'}</p>
+          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'Admin not found'}</p>
           <Button variant="outline" onClick={() => router.push('/admin/admins')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Admins
@@ -121,11 +130,11 @@ export default function AdminDetailsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Shield className="h-8 w-8" />
+            <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+              <Shield className="h-8 w-8" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }} />
               Admin Details
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-secondary-text">
               View admin user information
             </p>
           </div>
@@ -146,31 +155,31 @@ export default function AdminDetailsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   First Name
                 </p>
-                <p className="text-lg">{admin.user.first_name}</p>
+                <p className="text-lg text-primary-text">{admin.user.first_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Last Name
                 </p>
-                <p className="text-lg">{admin.user.last_name}</p>
+                <p className="text-lg text-primary-text">{admin.user.last_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Email
                 </p>
-                <p className="text-lg">{admin.user.email}</p>
+                <p className="text-lg text-primary-text">{admin.user.email}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Phone Number
                 </p>
-                <p className="text-lg">{admin.user.phone_number || 'N/A'}</p>
+                <p className="text-lg text-primary-text">{admin.user.phone_number || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Status
                 </p>
                 <div className="mt-1">{getStatusBadge(admin.user.status)}</div>
@@ -186,29 +195,29 @@ export default function AdminDetailsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Employee ID
                 </p>
-                <p className="text-lg">{admin.employeeId || 'N/A'}</p>
+                <p className="text-lg text-primary-text">{admin.employeeId || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Designation
                 </p>
-                <p className="text-lg">{admin.designation}</p>
+                <p className="text-lg text-primary-text">{admin.designation}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Department
                 </p>
-                <p className="text-lg">
+                <p className="text-lg text-primary-text">
                   {admin.department
                     ? `${admin.department.name} (${admin.department.code})`
                     : 'N/A'}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Role
                 </p>
                 <Badge variant="default" className="mt-1">

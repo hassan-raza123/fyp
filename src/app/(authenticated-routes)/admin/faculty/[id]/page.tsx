@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,12 +29,20 @@ interface Faculty {
 }
 
 export default function FacultyDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const facultyId = params?.id;
   const [faculty, setFaculty] = useState<Faculty | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (facultyId) {
@@ -63,10 +72,10 @@ export default function FacultyDetailsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-secondary-text">Loading...</div>
       </div>
     );
   }
@@ -75,7 +84,7 @@ export default function FacultyDetailsPage() {
     return (
       <div className="container mx-auto py-10">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Faculty not found'}</p>
+          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'Faculty not found'}</p>
           <Button variant="outline" onClick={() => router.push('/admin/faculty')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Faculty
@@ -108,10 +117,10 @@ export default function FacultyDetailsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold text-primary-text">
               {faculty.user.first_name} {faculty.user.last_name}
             </h1>
-            <p className="text-muted-foreground">Faculty Details</p>
+            <p className="text-secondary-text">Faculty Details</p>
           </div>
         </div>
         <Button onClick={() => router.push(`/admin/faculty/${facultyId}/edit`)}>
@@ -127,22 +136,22 @@ export default function FacultyDetailsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Employee ID</p>
-              <p className="font-medium">{faculty.employeeId || 'N/A'}</p>
+              <p className="text-sm text-secondary-text">Employee ID</p>
+              <p className="font-medium text-primary-text">{faculty.employeeId || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="font-medium">
+              <p className="text-sm text-secondary-text">Name</p>
+              <p className="font-medium text-primary-text">
                 {faculty.user.first_name} {faculty.user.last_name}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{faculty.user.email}</p>
+              <p className="text-sm text-secondary-text">Email</p>
+              <p className="font-medium text-primary-text">{faculty.user.email}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Designation</p>
-              <p className="font-medium">{faculty.designation || 'N/A'}</p>
+              <p className="text-sm text-secondary-text">Designation</p>
+              <p className="font-medium text-primary-text">{faculty.designation || 'N/A'}</p>
             </div>
           </CardContent>
         </Card>
@@ -153,13 +162,13 @@ export default function FacultyDetailsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Department</p>
-              <p className="font-medium">
+              <p className="text-sm text-secondary-text">Department</p>
+              <p className="font-medium text-primary-text">
                 {faculty.department.name} ({faculty.department.code})
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-secondary-text">Status</p>
               <div className="mt-1">{getStatusBadge(faculty.user.status)}</div>
             </div>
           </CardContent>

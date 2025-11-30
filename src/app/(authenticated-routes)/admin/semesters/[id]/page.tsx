@@ -23,10 +23,18 @@ interface Semester {
 }
 
 export default function SemesterViewPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const [semester, setSemester] = useState<Semester | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (params.id) {
@@ -72,11 +80,15 @@ export default function SemesterViewPage() {
     );
   }
 
+  if (!mounted) {
+    return null;
+  }
+
   if (!semester) {
     return (
       <div className="container mx-auto py-10">
         <div className="text-center">
-          <p className="text-muted-foreground">Semester not found</p>
+          <p className="text-secondary-text">Semester not found</p>
           <Button
             onClick={() => router.push('/admin/semesters')}
             className="mt-4"
@@ -116,8 +128,8 @@ export default function SemesterViewPage() {
           <div className="flex items-center gap-3">
             <Calendar className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">{semester.name}</h1>
-              <p className="text-muted-foreground">Semester Details</p>
+              <h1 className="text-3xl font-bold text-primary-text">{semester.name}</h1>
+              <p className="text-secondary-text">Semester Details</p>
             </div>
           </div>
           <Button
@@ -137,41 +149,41 @@ export default function SemesterViewPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="text-sm font-medium text-secondary-text">
                 Semester Name
               </label>
-              <p className="text-lg">{semester.name}</p>
+              <p className="text-lg text-primary-text">{semester.name}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-secondary-text">
                   Start Date
                 </label>
-                <p className="text-lg">
+                <p className="text-lg text-primary-text">
                   {format(new Date(semester.startDate), 'MMMM d, yyyy')}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-secondary-text">
                   End Date
                 </label>
-                <p className="text-lg">
+                <p className="text-lg text-primary-text">
                   {format(new Date(semester.endDate), 'MMMM d, yyyy')}
                 </p>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="text-sm font-medium text-secondary-text">
                 Status
               </label>
               <div className="mt-1">{getStatusBadge(semester.status)}</div>
             </div>
             {semester.description && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-secondary-text">
                   Description
                 </label>
-                <p className="text-lg">{semester.description}</p>
+                <p className="text-lg text-primary-text">{semester.description}</p>
               </div>
             )}
           </CardContent>
@@ -183,13 +195,13 @@ export default function SemesterViewPage() {
             <CardTitle className="text-sm font-medium">
               Course Offerings
             </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <BookOpen className="h-4 w-4 text-secondary-text" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-primary-text">
               {semester._count.courseOfferings}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-secondary-text">
               Total course offerings in this semester
             </p>
           </CardContent>

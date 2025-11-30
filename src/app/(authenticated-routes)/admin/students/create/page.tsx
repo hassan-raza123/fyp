@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,10 @@ interface Section {
 }
 
 export default function CreateStudentPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
@@ -74,6 +79,10 @@ export default function CreateStudentPage() {
     status: 'active',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCurrentDepartment();
@@ -290,8 +299,8 @@ export default function CreateStudentPage() {
           <ArrowLeft className='h-4 w-4' />
         </Button>
         <div>
-          <h1 className='text-3xl font-bold'>Add Student</h1>
-          <p className='text-muted-foreground'>Create a new student account</p>
+          <h1 className='text-3xl font-bold text-primary-text'>Add Student</h1>
+          <p className='text-secondary-text'>Create a new student account</p>
         </div>
       </div>
 

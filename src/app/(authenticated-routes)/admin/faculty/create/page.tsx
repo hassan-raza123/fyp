@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +31,10 @@ const createFacultySchema = z.object({
 });
 
 export default function CreateFacultyPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
@@ -44,6 +49,10 @@ export default function CreateFacultyPage() {
     departmentId: '',
     status: 'active' as 'active' | 'inactive',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCurrentDepartment();
@@ -187,8 +196,8 @@ export default function CreateFacultyPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Add Faculty Member</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-primary-text">Add Faculty Member</h1>
+          <p className="text-secondary-text">
             Create a new faculty member account
           </p>
         </div>
@@ -212,7 +221,7 @@ export default function CreateFacultyPage() {
                   className={errors.firstName ? 'border-red-500' : ''}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-500">{errors.firstName}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
                 )}
               </div>
 
@@ -227,7 +236,7 @@ export default function CreateFacultyPage() {
                   className={errors.lastName ? 'border-red-500' : ''}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-500">{errors.lastName}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
                 )}
               </div>
 
@@ -243,7 +252,7 @@ export default function CreateFacultyPage() {
                   className={errors.email ? 'border-red-500' : ''}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.email}</p>
                 )}
               </div>
 
@@ -282,7 +291,7 @@ export default function CreateFacultyPage() {
                   className={errors.designation ? 'border-red-500' : ''}
                 />
                 {errors.designation && (
-                  <p className="text-sm text-red-500">{errors.designation}</p>
+                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.designation}</p>
                 )}
               </div>
 
@@ -294,9 +303,9 @@ export default function CreateFacultyPage() {
                     id="departmentId"
                     value="Current Department (from Settings)"
                     disabled
-                    className="bg-gray-50"
+                    style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-secondary-text">
                     Department is configured in System Settings
                   </p>
                 </div>
@@ -321,8 +330,8 @@ export default function CreateFacultyPage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
+              <p className="text-sm" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
                 <strong>Note:</strong> A user account will be created
                 automatically with default password: <strong>{getDefaultPassword('faculty')}</strong>.
                 Faculty member can login and change their password.

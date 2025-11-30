@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,10 @@ interface Course {
 }
 
 export default function CourseDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const courseId = params?.id;
@@ -78,6 +83,10 @@ export default function CourseDetailsPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!courseId) {
@@ -176,26 +185,24 @@ export default function CourseDetailsPage() {
     }
   };
 
-  // Loading state
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="container mx-auto py-10">
         <div className="flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading course details...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-4" style={{ borderTopColor: 'var(--blue)', borderBottomColor: 'var(--blue)' }}></div>
+            <p className="text-secondary-text">Loading course details...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="container mx-auto py-10">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="mb-4" style={{ color: 'var(--error)' }}>{error}</p>
           <Button
             variant="outline"
             onClick={() => router.push('/admin/courses')}
@@ -208,12 +215,11 @@ export default function CourseDetailsPage() {
     );
   }
 
-  // Not found state
   if (!course) {
     return (
       <div className="container mx-auto py-10">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Course not found</p>
+          <p className="text-secondary-text mb-4">Course not found</p>
           <Button
             variant="outline"
             onClick={() => router.push('/admin/courses')}
@@ -239,10 +245,10 @@ export default function CourseDetailsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold text-primary-text">
               {course?.name || 'Untitled Course'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-secondary-text">
               Course Code: {course?.code || 'N/A'}
             </p>
           </div>
@@ -270,31 +276,31 @@ export default function CourseDetailsPage() {
           <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Department</p>
-              <p className="font-medium">
+              <p className="text-sm text-secondary-text">Department</p>
+              <p className="font-medium text-primary-text">
                 {course.department
                   ? `${course.department.name} (${course.department.code})`
                   : 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Credit Hours</p>
-              <p className="font-medium">{course.creditHours || 0}</p>
+              <p className="text-sm text-secondary-text">Credit Hours</p>
+              <p className="font-medium text-primary-text">{course.creditHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Theory Hours</p>
-              <p className="font-medium">{course.theoryHours || 0}</p>
+              <p className="text-sm text-secondary-text">Theory Hours</p>
+              <p className="font-medium text-primary-text">{course.theoryHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Lab Hours</p>
-              <p className="font-medium">{course.labHours || 0}</p>
+              <p className="text-sm text-secondary-text">Lab Hours</p>
+              <p className="font-medium text-primary-text">{course.labHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Type</p>
+              <p className="text-sm text-secondary-text">Type</p>
               <div className="mt-1">{getTypeBadge(course.type)}</div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-secondary-text">Status</p>
               <div className="mt-1">{getStatusBadge(course.status)}</div>
             </div>
           </div>
@@ -305,14 +311,14 @@ export default function CourseDetailsPage() {
           <div className="space-y-4">
             {course.description && (
               <div>
-                <p className="text-sm text-muted-foreground">Description</p>
-                <p className="mt-1">{course.description}</p>
+                <p className="text-sm text-secondary-text">Description</p>
+                <p className="mt-1 text-primary-text">{course.description}</p>
               </div>
             )}
             {course.prerequisites && course.prerequisites.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Prerequisites</p>
-                <ul className="mt-1 list-disc list-inside">
+                <p className="text-sm text-secondary-text">Prerequisites</p>
+                <ul className="mt-1 list-disc list-inside text-primary-text">
                   {course.prerequisites.map((prereq) => (
                     <li key={prereq.prerequisite?.id}>
                       {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
@@ -323,8 +329,8 @@ export default function CourseDetailsPage() {
             )}
             {course.corequisites && course.corequisites.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Co-requisites</p>
-                <ul className="mt-1 list-disc list-inside">
+                <p className="text-sm text-secondary-text">Co-requisites</p>
+                <ul className="mt-1 list-disc list-inside text-primary-text">
                   {course.corequisites.map((coreq) => (
                     <li key={coreq.corequisite?.id}>
                       {coreq.corequisite?.code} - {coreq.corequisite?.name}
@@ -344,12 +350,12 @@ export default function CourseDetailsPage() {
             {course.clos && course.clos.length > 0 ? (
               course.clos.map((clo) => (
                 <div key={clo.id}>
-                  <p className="font-medium">{clo.code}</p>
-                  <p className="text-muted-foreground">{clo.description}</p>
+                  <p className="font-medium text-primary-text">{clo.code}</p>
+                  <p className="text-secondary-text">{clo.description}</p>
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-secondary-text">
                 No learning outcomes defined
               </p>
             )}
@@ -362,14 +368,14 @@ export default function CourseDetailsPage() {
             {course.faculty && course.faculty.length > 0 ? (
               course.faculty.map((facultyMember, index) => (
                 <div key={facultyMember.faculty?.id || index}>
-                  <p className="font-medium">{facultyMember.faculty?.name}</p>
-                  <p className="text-muted-foreground">
+                  <p className="font-medium text-primary-text">{facultyMember.faculty?.name}</p>
+                  <p className="text-secondary-text">
                     {facultyMember.faculty?.email}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">No faculty assigned</p>
+              <p className="text-secondary-text">No faculty assigned</p>
             )}
           </div>
         </Card>
@@ -382,10 +388,10 @@ export default function CourseDetailsPage() {
             {course.programs && course.programs.length > 0 ? (
               course.programs.map((program) => (
                 <div key={program.program?.id}>
-                  <p className="font-medium">
+                  <p className="font-medium text-primary-text">
                     {program.program?.name} ({program.program?.code})
                   </p>
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     Semester {program.semester} •{' '}
                     {program.isCore ? 'Core' : 'Elective'} •{' '}
                     {program.creditHours} Credit Hours
@@ -393,7 +399,7 @@ export default function CourseDetailsPage() {
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-secondary-text">
                 No programs offering this course
               </p>
             )}

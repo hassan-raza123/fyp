@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,10 @@ export default function CourseOfferingDetailsPage({
 }: {
   params: { id: string };
 }) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [courseOffering, setCourseOffering] = useState<CourseOffering | null>(
     null
@@ -77,6 +82,10 @@ export default function CourseOfferingDetailsPage({
   const [loading, setLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchCourseOffering = async () => {
     try {
@@ -127,21 +136,21 @@ export default function CourseOfferingDetailsPage({
   const getStatusColor = (status: course_offering_status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-yellow-500';
+        return 'bg-[var(--orange)] text-white';
       case 'cancelled':
-        return 'bg-red-500';
+        return 'bg-[var(--error)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className='container mx-auto py-10'>
         <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Loading...</p>
+          <p className='text-secondary-text'>Loading...</p>
         </div>
       </div>
     );
@@ -151,7 +160,7 @@ export default function CourseOfferingDetailsPage({
     return (
       <div className='container mx-auto py-10'>
         <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Course offering not found</p>
+          <p className='text-secondary-text'>Course offering not found</p>
         </div>
       </div>
     );
@@ -168,10 +177,10 @@ export default function CourseOfferingDetailsPage({
           <ArrowLeft className='h-4 w-4' />
         </Button>
         <div>
-          <h1 className='text-3xl font-bold'>
+          <h1 className='text-3xl font-bold text-primary-text'>
             {courseOffering.course.code} - {courseOffering.course.name}
           </h1>
-          <p className='text-muted-foreground'>
+          <p className='text-secondary-text'>
             {courseOffering.semester.name} •{' '}
             {courseOffering.course.department.name}
           </p>
@@ -180,34 +189,34 @@ export default function CourseOfferingDetailsPage({
 
       <div className='grid gap-6'>
         <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Course Details</h2>
+          <h2 className='text-xl font-semibold mb-4 text-primary-text'>Course Details</h2>
           <div className='space-y-4'>
             <div>
-              <p className='text-sm text-muted-foreground'>Course Code</p>
-              <p className='font-medium'>{courseOffering.course.code}</p>
+              <p className='text-sm text-secondary-text'>Course Code</p>
+              <p className='font-medium text-primary-text'>{courseOffering.course.code}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Course Name</p>
-              <p className='font-medium'>{courseOffering.course.name}</p>
+              <p className='text-sm text-secondary-text'>Course Name</p>
+              <p className='font-medium text-primary-text'>{courseOffering.course.name}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Description</p>
-              <p className='font-medium'>
+              <p className='text-sm text-secondary-text'>Description</p>
+              <p className='font-medium text-primary-text'>
                 {courseOffering.course.description ||
                   'No description available'}
               </p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Credit Hours</p>
-              <p className='font-medium'>{courseOffering.course.creditHours}</p>
+              <p className='text-sm text-secondary-text'>Credit Hours</p>
+              <p className='font-medium text-primary-text'>{courseOffering.course.creditHours}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Course Type</p>
-              <p className='font-medium'>{courseOffering.course.type}</p>
+              <p className='text-sm text-secondary-text'>Course Type</p>
+              <p className='font-medium text-primary-text'>{courseOffering.course.type}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
-              <p className='font-medium'>
+              <p className='text-sm text-secondary-text'>Department</p>
+              <p className='font-medium text-primary-text'>
                 {courseOffering.course.department.name} (
                 {courseOffering.course.department.code})
               </p>
@@ -216,15 +225,15 @@ export default function CourseOfferingDetailsPage({
         </Card>
 
         <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Semester Details</h2>
+          <h2 className='text-xl font-semibold mb-4 text-primary-text'>Semester Details</h2>
           <div className='space-y-4'>
             <div>
-              <p className='text-sm text-muted-foreground'>Semester Name</p>
-              <p className='font-medium'>{courseOffering.semester.name}</p>
+              <p className='text-sm text-secondary-text'>Semester Name</p>
+              <p className='font-medium text-primary-text'>{courseOffering.semester.name}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Duration</p>
-              <p className='font-medium'>
+              <p className='text-sm text-secondary-text'>Duration</p>
+              <p className='font-medium text-primary-text'>
                 {format(
                   new Date(courseOffering.semester.startDate),
                   'MMM d, yyyy'
@@ -237,7 +246,7 @@ export default function CourseOfferingDetailsPage({
               </p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
+              <p className='text-sm text-secondary-text'>Status</p>
               <Badge className={getStatusColor(courseOffering.status)}>
                 {courseOffering.status}
               </Badge>
@@ -247,40 +256,40 @@ export default function CourseOfferingDetailsPage({
 
         <Card className='p-6'>
           <div className='flex justify-between items-center mb-6'>
-            <h2 className='text-xl font-semibold'>Sections</h2>
+            <h2 className='text-xl font-semibold text-primary-text'>Sections</h2>
             <CreateSectionDialog
               courseOfferingId={courseOffering.id}
               onSuccess={fetchCourseOffering}
             />
           </div>
 
-          <div className='rounded-md border'>
+          <div className='rounded-md border border-card-border'>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Section Name</TableHead>
-                  <TableHead>Faculty</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-primary-text">Section Name</TableHead>
+                  <TableHead className="text-primary-text">Faculty</TableHead>
+                  <TableHead className="text-primary-text">Students</TableHead>
+                  <TableHead className="text-primary-text">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {courseOffering.sections.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className='text-center'>
+                    <TableCell colSpan={4} className='text-center text-secondary-text'>
                       No sections found
                     </TableCell>
                   </TableRow>
                 ) : (
                   courseOffering.sections.map((section) => (
                     <TableRow key={section.id}>
-                      <TableCell>{section.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-primary-text">{section.name}</TableCell>
+                      <TableCell className="text-secondary-text">
                         {section.faculty
                           ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
                           : 'Not assigned'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-secondary-text">
                         {section.currentStudents} / {section.maxStudents}
                       </TableCell>
                       <TableCell>

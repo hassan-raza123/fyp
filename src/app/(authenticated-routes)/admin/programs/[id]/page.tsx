@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +39,10 @@ interface Program {
 }
 
 export default function ProgramDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const programId = params.id as string;
@@ -45,6 +50,10 @@ export default function ProgramDetailsPage() {
   const [program, setProgram] = useState<Program | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchProgram();
@@ -107,10 +116,10 @@ export default function ProgramDetailsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className='container mx-auto py-10'>
-        <div className='text-center'>Loading...</div>
+        <div className='text-center text-secondary-text'>Loading...</div>
       </div>
     );
   }
@@ -118,7 +127,7 @@ export default function ProgramDetailsPage() {
   if (!program) {
     return (
       <div className='container mx-auto py-10'>
-        <div className='text-center'>Program not found</div>
+        <div className='text-center text-secondary-text'>Program not found</div>
       </div>
     );
   }
@@ -127,8 +136,8 @@ export default function ProgramDetailsPage() {
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>{program.name}</h1>
-          <p className='text-muted-foreground'>Program Code: {program.code}</p>
+          <h1 className='text-3xl font-bold text-primary-text'>{program.name}</h1>
+          <p className='text-secondary-text'>Program Code: {program.code}</p>
         </div>
         <div className='flex gap-2'>
           <Button
@@ -194,23 +203,23 @@ export default function ProgramDetailsPage() {
           <h2 className='text-xl font-semibold mb-4'>Program Information</h2>
           <div className='space-y-4'>
             <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
-              <p className='font-medium'>
+              <p className='text-sm text-secondary-text'>Department</p>
+              <p className='font-medium text-primary-text'>
                 {program.department.name} ({program.department.code})
               </p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-sm text-secondary-text'>
                 Total Credit Hours
               </p>
-              <p className='font-medium'>{program.totalCreditHours}</p>
+              <p className='font-medium text-primary-text'>{program.totalCreditHours}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Duration</p>
-              <p className='font-medium'>{program.duration} years</p>
+              <p className='text-sm text-secondary-text'>Duration</p>
+              <p className='font-medium text-primary-text'>{program.duration} years</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
+              <p className='text-sm text-secondary-text'>Status</p>
               <div className='mt-1'>{getStatusBadge(program.status)}</div>
             </div>
           </div>
@@ -220,20 +229,20 @@ export default function ProgramDetailsPage() {
           <h2 className='text-xl font-semibold mb-4'>Program Statistics</h2>
           <div className='space-y-4'>
             <div>
-              <p className='text-sm text-muted-foreground'>Total Courses</p>
-              <p className='font-medium'>{program.stats.courses}</p>
+              <p className='text-sm text-secondary-text'>Total Courses</p>
+              <p className='font-medium text-primary-text'>{program.stats.courses}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Total Students</p>
-              <p className='font-medium'>{program.stats.students}</p>
+              <p className='text-sm text-secondary-text'>Total Students</p>
+              <p className='font-medium text-primary-text'>{program.stats.students}</p>
             </div>
           </div>
         </Card>
 
         {program.description && (
           <Card className='p-6 md:col-span-2'>
-            <h2 className='text-xl font-semibold mb-4'>Description</h2>
-            <p className='text-muted-foreground'>{program.description}</p>
+            <h2 className='text-xl font-semibold mb-4 text-primary-text'>Description</h2>
+            <p className='text-secondary-text'>{program.description}</p>
           </Card>
         )}
       </div>
