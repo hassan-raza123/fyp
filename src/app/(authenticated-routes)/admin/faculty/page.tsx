@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,7 +56,6 @@ export default function FacultyPage() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   
-  const router = useRouter();
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
