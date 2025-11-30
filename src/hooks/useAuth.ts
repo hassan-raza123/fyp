@@ -6,6 +6,7 @@ interface User {
   id: number;
   email: string;
   role: string;
+  departmentId?: number; // Direct department ID from token
   userData: {
     firstName: string;
     lastName: string;
@@ -56,5 +57,6 @@ export function useAuth() {
     loading,
     isAuthenticated: !!user,
     role: user?.role || null,
+    departmentId: user?.departmentId || user?.userData?.departmentId, // Get departmentId directly
   };
 }

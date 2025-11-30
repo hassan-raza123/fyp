@@ -82,15 +82,24 @@ function createUserData(user: any, userType: AllRoles): UserData {
     return {
       ...baseData,
       rollNumber: user.student.rollNumber,
-      departmentId: user.student.departmentId || 0, // Handle null case
-      programId: user.student.programId || 0, // Handle null case
+      departmentId: user.student.departmentId || undefined,
+      programId: user.student.programId || undefined,
     };
   }
 
   if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
-      departmentId: user.faculty.departmentId || 0, // Handle null case
+      departmentId: user.faculty.departmentId || undefined,
+      designation: user.faculty.designation,
+    };
+  }
+
+  // For admin users, get department from faculty record
+  if ((userType === 'admin' || userType === 'super_admin') && user.faculty) {
+    return {
+      ...baseData,
+      departmentId: user.faculty.departmentId || undefined,
       designation: user.faculty.designation,
     };
   }
@@ -261,6 +270,7 @@ export async function POST(
       email: user.email,
       role: actualRole,
       userData,
+      departmentId: userData.departmentId, // Include departmentId directly in token for quick access
     };
 
     const token = await createToken(tokenPayload);

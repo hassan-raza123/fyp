@@ -39,6 +39,7 @@ export async function createToken(payload: TokenPayload): Promise<string> {
       email: payload.email,
       role: payload.role,
       userData: payload.userData,
+      departmentId: payload.departmentId || payload.userData?.departmentId, // Include departmentId directly in token
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('24h')
@@ -141,6 +142,7 @@ function parseJwtPayload(payload: any): TokenPayload {
     email: payload.email,
     role: payload.role,
     userData: payload.userData,
+    departmentId: payload.departmentId || payload.userData?.departmentId, // Extract departmentId from token
   };
 }
 
@@ -457,22 +459,45 @@ export async function getStudentFromRequest(request: NextRequest) {
 // ============================================================================
 
 /**
- * Get current department ID from settings
- * Returns the department ID based on department code in settings
+ * Get department ID from token (fast, no database query)
+ * This is the preferred method - uses token data directly
+ */
+export async function getDepartmentIdFromRequest(request: NextRequest): Promise<number | null> {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return null;
+    }
+
+    // Get departmentId from token (fastest method)
+    if (user.departmentId) {
+      return user.departmentId;
+    }
+
+    // Fallback: Get from userData
+    if (user.userData?.departmentId) {
+      return user.userData.departmentId;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting department ID from request:', error);
+    return null;
+  }
+}
+
+/**
+ * Get current department ID from settings (deprecated - use getDepartmentIdFromRequest instead)
+ * Kept for backward compatibility only
+ * Now tries token first, then falls back to settings
  */
 export async function getCurrentDepartmentId(request?: NextRequest): Promise<number | null> {
   try {
-    // If request is provided, get department from admin's faculty record
+    // If request is provided, try to get from token first (fastest)
     if (request) {
-      const { success, user } = await requireAuth(request);
-      if (success && user && user.role === 'admin') {
-        const faculty = await prisma.faculties.findFirst({
-          where: { userId: user.userId },
-          select: { departmentId: true },
-        });
-        if (faculty && faculty.departmentId) {
-          return faculty.departmentId;
-        }
+      const deptId = await getDepartmentIdFromRequest(request);
+      if (deptId) {
+        return deptId;
       }
     }
     

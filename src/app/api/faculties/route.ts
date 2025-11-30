@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, getUserIdFromRequest } from '@/lib/auth';
+import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,52 +21,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get userId from multiple possible sources
-    let userId: number | null = null;
+    // Get department ID directly from token (fast, no database query)
+    const currentDepartmentId = await getDepartmentIdFromRequest(request);
     
-    if (user.userId) {
-      if (typeof user.userId === 'number') {
-        userId = user.userId;
-      } else {
-        const parsed = parseInt(String(user.userId), 10);
-        if (!isNaN(parsed)) userId = parsed;
-      }
-    }
-    
-    if (!userId && user.userData?.id) {
-      if (typeof user.userData.id === 'number') {
-        userId = user.userData.id;
-      } else {
-        const parsed = parseInt(String(user.userData.id), 10);
-        if (!isNaN(parsed)) userId = parsed;
-      }
-    }
-    
-    if (!userId) {
-      userId = getUserIdFromRequest(request);
-    }
-    
-    if (!userId || isNaN(userId)) {
-      return NextResponse.json(
-        { success: false, error: 'User ID not found or invalid' },
-        { status: 400 }
-      );
-    }
-
-    // Get admin's assigned department from faculty record
-    const faculty = await prisma.faculties.findFirst({
-      where: { userId },
-      select: { departmentId: true },
-    });
-
-    if (!faculty || !faculty.departmentId) {
+    if (!currentDepartmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
         { status: 400 }
       );
     }
-
-    const currentDepartmentId = faculty.departmentId;
 
     // Always filter by current department
     const whereClause: any = {

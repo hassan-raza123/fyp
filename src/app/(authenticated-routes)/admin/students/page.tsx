@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useDepartmentId } from '@/hooks/useDepartmentId';
 import { Button } from '@/components/ui/button';
 import {
   Table,
