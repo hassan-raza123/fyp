@@ -13,6 +13,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Export transporter for use in other files if needed
+export { transporter };
+
 interface AdminAssignmentEmailData {
   email: string;
   firstName: string;
@@ -125,6 +128,226 @@ export async function sendAdminAssignmentEmail(
     console.log(`Admin assignment email sent successfully to ${email}`);
   } catch (error) {
     console.error('Error sending admin assignment email:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// OTP Email Functions
+// ============================================================================
+
+/**
+ * Send OTP verification email
+ */
+export async function sendOTPEmail(email: string, otp: string): Promise<void> {
+  const mailOptions = {
+    from: {
+      name: APPLICATION_NAME,
+      address: process.env.GMAIL_USER!,
+    },
+    to: email,
+    subject: `Your Login Verification Code - ${APPLICATION_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <p style="color: #4B5563; margin: 5px 0;">Login Verification Code</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="color: #111827; margin: 0 0 15px 0;">Hello,</p>
+          <p style="color: #4B5563; line-height: 1.5;">Your verification code for ${APPLICATION_NAME} login is:</p>
+          
+          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">
+            ${otp}
+          </div>
+
+          <p style="color: #4B5563; line-height: 1.5;">This code will expire in 5 minutes.</p>
+          <p style="color: #4B5563; line-height: 1.5;">If you didn't request this code, please ignore this email.</p>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
+          <p>If you have any questions, please contact our support team.</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`OTP email sent successfully to ${email}`);
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// Password Reset Email Functions
+// ============================================================================
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(
+  email: string,
+  resetUrl: string
+): Promise<void> {
+  const mailOptions = {
+    from: {
+      name: APPLICATION_NAME,
+      address: process.env.GMAIL_USER!,
+    },
+    to: email,
+    subject: `Password Reset Request - ${APPLICATION_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <p style="color: #4B5563; margin: 5px 0;">Password Reset Request</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="color: #111827; margin: 0 0 15px 0;">Hello,</p>
+          <p style="color: #4B5563; line-height: 1.5;">We received a request to reset your password. If you didn't make this request, you can safely ignore this email.</p>
+          <p style="color: #4B5563; line-height: 1.5;">To reset your password, click the button below:</p>
+          
+          <div style="margin: 20px 0; text-align: center;">
+            <a href="${resetUrl}" style="display: inline-block; background: #6B46C1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+              Reset Password
+            </a>
+          </div>
+
+          <p style="color: #4B5563; line-height: 1.5;">Or copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; color: #6B7280; background: #F3F4F6; padding: 10px; border-radius: 4px; font-size: 14px;">${resetUrl}</p>
+          
+          <p style="color: #4B5563; line-height: 1.5; margin-top: 15px;">This link will expire in 30 minutes.</p>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
+          <p>If you have any questions, please contact our support team.</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Password reset email sent successfully to ${email}`);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// Contact Form Email Functions
+// ============================================================================
+
+interface ContactEmailData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+/**
+ * Send contact form emails (to support and user acknowledgment)
+ */
+export async function sendContactEmails(data: ContactEmailData): Promise<void> {
+  const { name, email, subject, message } = data;
+
+  // Email content for support team
+  const supportMailOptions = {
+    from: {
+      name: APPLICATION_NAME,
+      address: process.env.GMAIL_USER!,
+    },
+    to: process.env.GMAIL_USER!,
+    replyTo: {
+      name: name,
+      address: email,
+    },
+    subject: `📬 New Contact Request: ${subject}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <p style="color: #4B5563; margin: 5px 0;">New Contact Form Submission</p>
+        </div>
+        
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Contact Details</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #6B7280; width: 100px;">Name:</td>
+              <td style="padding: 8px 0; color: #111827; font-weight: 500;">${name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6B7280;">Email:</td>
+              <td style="padding: 8px 0; color: #111827;">
+                <a href="mailto:${email}" style="color: #6B46C1; text-decoration: none;">${email}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6B7280;">Subject:</td>
+              <td style="padding: 8px 0; color: #111827; font-weight: 500;">${subject}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Message</h2>
+          <div style="color: #111827; line-height: 1.5; white-space: pre-wrap;">${message}</div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="mailto:${email}" style="display: inline-block; background: #6B46C1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply to ${name}</a>
+        </div>
+      </div>
+    `,
+  };
+
+  // Email content for user acknowledgment
+  const userMailOptions = {
+    from: {
+      name: APPLICATION_NAME,
+      address: process.env.GMAIL_USER!,
+    },
+    to: email,
+    subject: `Thank you for contacting ${APPLICATION_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <p style="color: #4B5563; margin: 5px 0;">Thank you for reaching out!</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px;">
+          <p style="color: #111827; margin: 0 0 15px 0;">Dear ${name},</p>
+          <p style="color: #4B5563; line-height: 1.5;">Thank you for contacting ${APPLICATION_NAME}. We have received your message and our support team will review it shortly.</p>
+          <p style="color: #4B5563; line-height: 1.5;">We typically respond within 24-48 hours during business days.</p>
+          <p style="color: #4B5563; line-height: 1.5;">If you have any urgent queries, please feel free to call us at our support number.</p>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
+          <p>Best regards,</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await Promise.all([
+      transporter.sendMail(supportMailOptions),
+      transporter.sendMail(userMailOptions),
+    ]);
+    console.log(`Contact emails sent successfully for ${email}`);
+  } catch (error) {
+    console.error('Error sending contact emails:', error);
     throw error;
   }
 }
