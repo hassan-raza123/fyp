@@ -97,27 +97,23 @@ export default function FacultyPage() {
 
   const fetchCurrentDepartment = async () => {
     try {
-      const settingsResponse = await fetch('/api/settings');
-      if (!settingsResponse.ok) {
-        throw new Error('Failed to fetch settings');
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
       }
-      const settingsData = await settingsResponse.json();
-      if (settingsData.success && settingsData.data) {
-        const systemSettings =
-          typeof settingsData.data.system === 'string'
-            ? JSON.parse(settingsData.data.system)
-            : settingsData.data.system;
-        const departmentCode = systemSettings?.departmentCode;
-        if (departmentCode) {
-          const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
-          if (deptResponse.ok) {
-            const deptData = await deptResponse.json();
-            setCurrentDepartmentId(deptData.id.toString());
-          }
-        }
+      
+      const checkData = await checkResponse.json();
+      if (checkData.success && checkData.hasDepartment && checkData.department) {
+        setCurrentDepartmentId(checkData.department.id.toString());
+      } else {
+        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       }
     } catch (error) {
       console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please try again.');
     }
   };
 
@@ -212,6 +208,11 @@ export default function FacultyPage() {
       return;
     }
 
+    if (!currentDepartmentId) {
+      toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
+      return;
+    }
+
     setIsCreating(true);
     setErrors({});
     try {
@@ -243,10 +244,11 @@ export default function FacultyPage() {
       const roleResponse = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           roles: ['faculty'],
           facultyDetails: {
-            departmentId: currentDepartmentId,
+            departmentId: parseInt(currentDepartmentId),
             designation: newFaculty.designation,
             employeeId: newFaculty.employeeId || null,
           },
@@ -400,28 +402,28 @@ export default function FacultyPage() {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <div className="relative">
+            <div className="flex-1">
+              <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
-            <Input
-              placeholder="Search faculty..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+                <Input
+                  placeholder="Search faculty..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
               className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-            />
-          </div>
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
             <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
             <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
             <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+              </SelectContent>
+            </Select>
+          </div>
 
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
             <Table>
@@ -622,6 +624,13 @@ export default function FacultyPage() {
                 </SelectContent>
               </Select>
             </div>
+            {!currentDepartmentId && (
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)' }}>
+                <p className="text-xs" style={{ color: 'var(--error)' }}>
+                  <strong>Warning:</strong> Department not assigned. Please contact super admin to assign a department to your account before creating faculty members.
+                </p>
+              </div>
+            )}
             <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
               <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
                 <strong>Note:</strong> A user account will be created automatically with default password: <strong>{getDefaultPassword('faculty')}</strong>.
@@ -682,7 +691,7 @@ export default function FacultyPage() {
                 }
               }}
               onClick={handleCreateFaculty}
-              disabled={isCreating}
+              disabled={isCreating || !currentDepartmentId}
             >
               {isCreating ? (
                 <>

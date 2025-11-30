@@ -460,9 +460,23 @@ export async function getStudentFromRequest(request: NextRequest) {
  * Get current department ID from settings
  * Returns the department ID based on department code in settings
  */
-export async function getCurrentDepartmentId(): Promise<number | null> {
+export async function getCurrentDepartmentId(request?: NextRequest): Promise<number | null> {
   try {
-    // Get settings
+    // If request is provided, get department from admin's faculty record
+    if (request) {
+      const { success, user } = await requireAuth(request);
+      if (success && user && user.role === 'admin') {
+        const faculty = await prisma.faculties.findFirst({
+          where: { userId: user.userId },
+          select: { departmentId: true },
+        });
+        if (faculty && faculty.departmentId) {
+          return faculty.departmentId;
+        }
+      }
+    }
+    
+    // Fallback: Try to get from settings (for backward compatibility)
     const settings = await prisma.settings.findFirst();
     if (!settings) {
       return null;

@@ -138,29 +138,25 @@ export default function StudentsPage() {
 
   const fetchCurrentDepartment = async () => {
     try {
-      const settingsResponse = await fetch('/api/settings');
-      if (!settingsResponse.ok) {
-        throw new Error('Failed to fetch settings');
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
       }
-      const settingsData = await settingsResponse.json();
-      if (settingsData.success && settingsData.data) {
-        const systemSettings =
-          typeof settingsData.data.system === 'string'
-            ? JSON.parse(settingsData.data.system)
-            : settingsData.data.system;
-        const departmentCode = systemSettings?.departmentCode;
-        if (departmentCode) {
-          const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
-          if (deptResponse.ok) {
-            const deptData = await deptResponse.json();
-            const deptId = deptData.id.toString();
-            setCurrentDepartmentId(deptId);
-            setNewStudent((prev) => ({ ...prev, departmentId: deptId }));
-          }
-        }
+      
+      const checkData = await checkResponse.json();
+      if (checkData.success && checkData.hasDepartment && checkData.department) {
+        const deptId = checkData.department.id.toString();
+        setCurrentDepartmentId(deptId);
+        setNewStudent((prev) => ({ ...prev, departmentId: deptId }));
+      } else {
+        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       }
     } catch (error) {
       console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please try again.');
     }
   };
 
@@ -331,6 +327,11 @@ export default function StudentsPage() {
   const handleCreateStudent = async () => {
     if (!newStudent.firstName || !newStudent.lastName || !newStudent.email || !newStudent.rollNumber || !newStudent.programId || !newStudent.batchId) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (!currentDepartmentId) {
+      toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       return;
     }
 
@@ -792,17 +793,23 @@ export default function StudentsPage() {
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
-            {currentDepartmentId && (
+            {currentDepartmentId ? (
               <div className="space-y-2">
                 <Label htmlFor="create_departmentId" className="text-xs text-primary-text">Department</Label>
                 <Input
                   id="create_departmentId"
-                  value="Current Department (from Settings)"
+                  value="Current Department (Assigned by Super Admin)"
                   disabled
                   className="bg-card border-card-border text-primary-text"
                   style={{ backgroundColor: 'var(--hover-bg)' }}
                 />
-                <p className="text-xs text-secondary-text">Department is configured in System Settings</p>
+                <p className="text-xs text-secondary-text">Department is assigned by super admin</p>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)' }}>
+                <p className="text-xs" style={{ color: 'var(--error)' }}>
+                  <strong>Warning:</strong> Department not assigned. Please contact super admin to assign a department to your account before creating students.
+                </p>
               </div>
             )}
             <div className="space-y-2">
@@ -945,7 +952,7 @@ export default function StudentsPage() {
                 }
               }}
               onClick={handleCreateStudent}
-              disabled={isCreating}
+              disabled={isCreating || !currentDepartmentId}
             >
               {isCreating ? (
                 <>
@@ -1186,12 +1193,12 @@ export default function StudentsPage() {
                   <Label htmlFor="edit_departmentId" className="text-xs text-primary-text">Department</Label>
                   <Input
                     id="edit_departmentId"
-                    value="Current Department (from Settings)"
+                    value="Current Department (Assigned by Super Admin)"
                     disabled
                     className="bg-card border-card-border text-primary-text"
                     style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
-                  <p className="text-xs text-secondary-text">Department is configured in System Settings</p>
+                  <p className="text-xs text-secondary-text">Department is assigned by super admin</p>
                 </div>
               )}
               <div className="space-y-2">

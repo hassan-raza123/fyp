@@ -133,14 +133,7 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error('Failed to save settings');
       const data = await response.json();
       if (data.success) {
-        // Check if department was configured
-        if (settings.system.departmentCode && settings.system.departmentName) {
-          toast.success(
-            `Settings saved successfully! Department "${settings.system.departmentName}" (${settings.system.departmentCode}) has been configured. All system operations will now use this department.`
-          );
-        } else {
-          toast.success('Settings saved successfully');
-        }
+        toast.success('Settings saved successfully');
       } else {
         throw new Error(data.error || 'Failed to save settings');
       }
@@ -296,53 +289,6 @@ export default function SettingsPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Department Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Department Information</CardTitle>
-            <CardDescription>
-              Configure your department name and code. This will be used throughout the system.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='space-y-2'>
-                <Label>Department Name</Label>
-                <Input
-                  value={settings.system.departmentName}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      system: {
-                        ...settings.system,
-                        departmentName: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder='e.g., Computer Science'
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label>Department Code</Label>
-                <Input
-                  value={settings.system.departmentCode}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      system: {
-                        ...settings.system,
-                        departmentCode: e.target.value.toUpperCase(),
-                      },
-                    })
-                  }
-                  placeholder='e.g., CS'
-                  maxLength={10}
-                />
               </div>
             </div>
           </CardContent>

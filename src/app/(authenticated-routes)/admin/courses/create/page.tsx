@@ -76,40 +76,25 @@ export default function CreateCoursePage() {
 
   const fetchCurrentDepartment = async () => {
     try {
-      // Get settings to find department code
-      const settingsResponse = await fetch('/api/settings');
-      if (!settingsResponse.ok) {
-        throw new Error('Failed to fetch settings');
-      }
-      const settingsData = await settingsResponse.json();
-      if (!settingsData.success || !settingsData.data) {
-        throw new Error('Settings not found');
-      }
-
-      const systemSettings =
-        typeof settingsData.data.system === 'string'
-          ? JSON.parse(settingsData.data.system)
-          : settingsData.data.system;
-
-      const departmentCode = systemSettings?.departmentCode;
-      if (!departmentCode) {
-        toast.error('Please configure department in Settings first');
-        return;
-      }
-
-      // Get department ID by code
-      const deptResponse = await fetch(`/api/departments/by-code?code=${departmentCode}`);
-      if (!deptResponse.ok) {
-        throw new Error('Department not found');
-      }
-      const deptData = await deptResponse.json();
-      const deptId = deptData.id;
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
       
-      setCurrentDepartmentId(deptId);
-      form.setValue('departmentId', deptId.toString());
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
+      }
+      
+      const checkData = await checkResponse.json();
+      if (checkData.success && checkData.hasDepartment && checkData.department) {
+        const deptId = checkData.department.id;
+        setCurrentDepartmentId(deptId);
+        form.setValue('departmentId', deptId.toString());
+      } else {
+        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
+      }
     } catch (error) {
       console.error('Error fetching current department:', error);
-      toast.error('Failed to load department. Please configure in Settings.');
+      toast.error('Failed to load department. Please try again.');
     }
   };
 
@@ -311,13 +296,13 @@ export default function CreateCoursePage() {
                   <FormLabel>Department</FormLabel>
                   <FormControl>
                     <Input
-                      value="Current Department (from Settings)"
+                      value="Current Department (Assigned by Super Admin)"
                       disabled
                       className="bg-gray-50"
                     />
                   </FormControl>
                   <p className="text-xs text-gray-500 mt-1">
-                    Department is configured in System Settings
+                    Department is assigned by super admin
                   </p>
                 </FormItem>
               )}

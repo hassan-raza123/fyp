@@ -114,9 +114,12 @@ export default function AdminsPage() {
       const checkData = await checkResponse.json();
       if (checkData.success && checkData.hasDepartment && checkData.department) {
         setCurrentDepartmentId(checkData.department.id.toString());
+      } else {
+        toast.error('Department not assigned. Please contact super admin to assign a department to your account.');
       }
     } catch (error) {
       console.error('Error fetching current department:', error);
+      toast.error('Failed to load department. Please try again.');
     }
   };
 

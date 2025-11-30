@@ -1,29 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getUserIdFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/auth');
-    
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
-    if (!currentDepartmentId) {
+    // Only admins can access this endpoint
+    if (user.role !== 'admin') {
       return NextResponse.json(
-        { success: false, error: 'Department not configured. Please set department in Settings.' },
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Get userId from multiple possible sources
+    let userId: number | null = null;
+    
+    if (user.userId) {
+      if (typeof user.userId === 'number') {
+        userId = user.userId;
+      } else {
+        const parsed = parseInt(String(user.userId), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    if (!userId && user.userData?.id) {
+      if (typeof user.userData.id === 'number') {
+        userId = user.userData.id;
+      } else {
+        const parsed = parseInt(String(user.userData.id), 10);
+        if (!isNaN(parsed)) userId = parsed;
+      }
+    }
+    
+    if (!userId) {
+      userId = getUserIdFromRequest(request);
+    }
+    
+    if (!userId || isNaN(userId)) {
+      return NextResponse.json(
+        { success: false, error: 'User ID not found or invalid' },
         { status: 400 }
       );
     }
+
+    // Get admin's assigned department from faculty record
+    const faculty = await prisma.faculties.findFirst({
+      where: { userId },
+      select: { departmentId: true },
+    });
+
+    if (!faculty || !faculty.departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
+        { status: 400 }
+      );
+    }
+
+    const currentDepartmentId = faculty.departmentId;
 
     // Always filter by current department
     const whereClause: any = {
