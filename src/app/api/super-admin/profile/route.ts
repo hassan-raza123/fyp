@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { z } from 'zod';
 
 const updateProfileSchema = z.object({
@@ -13,23 +13,15 @@ const updateProfileSchema = z.object({
 // GET - Get super admin profile
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request);
+    const authResult = await requireRole(request, ['super_admin']);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         { success: false, error: authResult.error || 'Unauthorized' },
-        { status: 401 }
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 
     const user = authResult.user;
-
-    // Only super admin can access
-    if (user.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden' },
-        { status: 403 }
-      );
-    }
 
     const superAdmin = await prisma.users.findUnique({
       where: { id: user.userId },
@@ -79,23 +71,15 @@ export async function GET(request: NextRequest) {
 // PUT - Update super admin profile
 export async function PUT(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request);
+    const authResult = await requireRole(request, ['super_admin']);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         { success: false, error: authResult.error || 'Unauthorized' },
-        { status: 401 }
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 
     const user = authResult.user;
-
-    // Only super admin can update
-    if (user.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden' },
-        { status: 403 }
-      );
-    }
 
     const body = await request.json();
     const validatedData = updateProfileSchema.safeParse(body);

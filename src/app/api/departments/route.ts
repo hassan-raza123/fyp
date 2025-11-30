@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 
 // GET /api/departments - Get all departments (for admin selection or super admin view)
 export async function GET(request: NextRequest) {
@@ -104,19 +104,11 @@ export async function GET(request: NextRequest) {
 // POST /api/departments - Create a new department
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    const authResult = await requireRole(request, ['super_admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Only super admin can create departments
-    if (user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Only super admin can create departments' },
-        { status: 403 }
+        { success: false, error: authResult.error || 'Unauthorized' },
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 

@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'super_admin') {
+    const authResult = await requireRole(request, ['super_admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { error: error || 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error || 'Unauthorized' },
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 

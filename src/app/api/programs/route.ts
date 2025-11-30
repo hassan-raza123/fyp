@@ -23,7 +23,7 @@ type ProgramWithCounts = Prisma.programsGetPayload<{
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
-    const { success, user, error } = requireRole(request, [
+    const { success, user, error } = await requireRole(request, [
       'admin',
       'faculty',
       'student',
@@ -121,38 +121,19 @@ export async function POST(request: NextRequest) {
   try {
     console.log('1. Starting program creation process');
 
-    // Check authentication and get user data
-    const { success, user, error } = await requireAuth(request);
-    console.log('2. Auth check result:', { success, user: user?.email, error });
-
-    if (!success) {
+    // Check authentication and role
+    const authResult = await requireRole(request, ['admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         {
           success: false,
-          error,
+          error: authResult.error || 'Unauthorized',
         },
-        { status: 401 }
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 
-    // Check if user has required role
-    const userRoles = user?.role.split(',') || [];
-    const allowedRoles = ['admin'];
-    const hasRequiredRole = userRoles.some((role: string) =>
-      allowedRoles.includes(role)
-    );
-    console.log('3. Role check result:', { userRoles, hasRequiredRole });
-
-    if (!hasRequiredRole) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-        },
-        { status: 403 }
-      );
-    }
-
+    const user = authResult.user;
     let body;
     try {
       body = await request.json();

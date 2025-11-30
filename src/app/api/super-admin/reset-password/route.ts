@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
@@ -8,19 +8,11 @@ import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
 // POST /api/super-admin/reset-password - Reset password for any user (admin or super admin)
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success || !user) {
+    const authResult = await requireRole(request, ['super_admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Only super admin can reset passwords
-    if (user.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Only super admin can reset passwords' },
-        { status: 403 }
+        { success: false, error: authResult.error || 'Unauthorized' },
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 

@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, getUserIdFromRequest } from '@/lib/auth';
+import { requireRole, getUserIdFromRequest } from '@/lib/auth';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
 
 // POST /api/super-admin/assign-admin-to-department - Assign admin user to a department
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success || !user) {
+    const authResult = await requireRole(request, ['super_admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Only super admin can assign admins to departments
-    if (user.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Only super admin can assign admins to departments' },
-        { status: 403 }
+        { success: false, error: authResult.error || 'Unauthorized' },
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 

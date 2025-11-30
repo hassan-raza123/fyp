@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 
 // GET /api/super-admin/super-admins - Get all super admin users
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    const authResult = await requireRole(request, ['super_admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Only super admin can view other super admins
-    if (user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
+        { success: false, error: authResult.error || 'Unauthorized' },
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 
