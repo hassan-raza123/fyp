@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -117,7 +117,9 @@ export default function SuperAdminAdminsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -420,6 +422,38 @@ export default function SuperAdminAdminsPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!selectedAdmin) return;
+
+    setIsResettingPassword(true);
+    try {
+      const response = await fetch('/api/super-admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: selectedAdmin.userId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to reset password');
+      }
+
+      toast.success(`Password reset successfully! Default password: 11223344`);
+      setShowResetPasswordDialog(false);
+      setSelectedAdmin(null);
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to reset password'
+      );
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     if (statusLower === 'active') {
@@ -667,6 +701,33 @@ export default function SuperAdminAdminsPage() {
                           >
                             <Edit className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
                             <span style={{ color: 'inherit' }}>Edit</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedAdmin(admin);
+                              setShowResetPasswordDialog(true);
+                            }}
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                              backgroundColor: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
+                          >
+                            <Key className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Reset Password</span>
                           </Button>
                           <Button
                             variant="destructive"
@@ -1153,6 +1214,65 @@ export default function SuperAdminAdminsPage() {
               }}
             >
               {isUpdating ? 'Updating...' : 'Update Admin'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
+        <DialogContent className="bg-card border-card-border">
+          <DialogHeader>
+            <DialogTitle className="text-primary-text">Reset Password</DialogTitle>
+            <DialogDescription className="text-secondary-text">
+              Are you sure you want to reset the password for{' '}
+              <span className="font-semibold text-primary-text">
+                {selectedAdmin
+                  ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
+                  : 'this admin'}
+              </span>
+              ? The password will be reset to the default password <code className="bg-card/50 px-1 rounded">11223344</code> and an email will be sent to the user.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowResetPasswordDialog(false);
+                setSelectedAdmin(null);
+              }}
+              disabled={isResettingPassword}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isResettingPassword ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+                opacity: isResettingPassword ? 0.5 : 1,
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleResetPassword}
+              disabled={isResettingPassword}
+              className="text-white"
+              style={{
+                backgroundColor: isResettingPassword ? '#9ca3af' : primaryColor,
+                color: '#ffffff',
+                opacity: isResettingPassword ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isResettingPassword) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isResettingPassword) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
+              {isResettingPassword ? 'Resetting...' : 'Reset Password'}
             </Button>
           </DialogFooter>
         </DialogContent>
