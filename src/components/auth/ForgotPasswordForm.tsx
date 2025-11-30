@@ -92,8 +92,7 @@ export default function ForgotPasswordForm() {
           <div>
             <label
               htmlFor='email'
-              className='block text-sm font-medium mb-2'
-              style={{ color: 'var(--gray-700)' }}
+              className='block text-sm font-medium mb-2 text-gray-700'
             >
               Email Address
             </label>
@@ -102,23 +101,12 @@ export default function ForgotPasswordForm() {
               type='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className='w-full px-4 py-3 rounded-lg border transition-all focus:outline-none'
-              style={{
-                borderColor: errors.email ? 'var(--error)' : 'var(--gray-300)'
-              }}
-              onFocus={(e) => {
-                if (!errors.email) {
-                  e.target.style.borderColor = 'var(--brand-secondary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-                }
-              }}
-              onBlur={(e) => {
-                validateEmail(email);
-                if (!errors.email) {
-                  e.target.style.borderColor = 'var(--gray-300)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
+              className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+                errors.email 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              }`}
+              onBlur={() => validateEmail(email)}
               placeholder='Enter your registered email'
             />
             {errors.email && (

@@ -103,7 +103,7 @@ export function CreateSemesterDialog() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder='e.g., Fall 2024' {...field} />
+                    <Input placeholder='e.g., Fall 2025' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/faculty-utils';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
 // POST - Bulk submit or lock grades
 export async function POST(req: NextRequest) {

@@ -1,8 +1,7 @@
 'use client';
 
-// Reuse the existing super admin departments management UI logic
-// from the previous admin/super-admin implementation
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Building2,
   Users,
@@ -12,6 +11,9 @@ import {
   Search,
   Shield,
   AlertCircle,
+  GraduationCap,
+  BookOpen,
+  UserCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,7 +80,56 @@ interface AdminUser {
   status: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  subtitle?: string;
+  isDarkMode?: boolean;
+}
+
+const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCardProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-secondary-text mb-1.5">
+            {title}
+          </p>
+          <h3 className="text-2xl font-bold text-primary-text mb-1">
+            {value}
+          </h3>
+          {subtitle && (
+            <p className="text-[10px] text-muted-text">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <div 
+          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <div style={{ color: iconColor }}>
+            {icon}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function SuperAdminDepartmentsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -108,9 +159,15 @@ export default function SuperAdminDepartmentsPage() {
   const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
     fetchDepartments();
     fetchAdminUsers();
-  }, []);
+    }
+  }, [mounted]);
 
   const fetchDepartments = async () => {
     try {
@@ -205,6 +262,10 @@ export default function SuperAdminDepartmentsPage() {
   };
 
   const handleEditDepartment = (dept: Department) => {
+    if (!dept || !dept.id) {
+      toast.error('Invalid department selected');
+      return;
+    }
     setSelectedDepartment(dept);
     setEditDepartment({
       name: dept.name,
@@ -217,6 +278,7 @@ export default function SuperAdminDepartmentsPage() {
   const handleUpdateDepartment = async () => {
     if (
       !selectedDepartment ||
+      !selectedDepartment.id ||
       !editDepartment.name.trim() ||
       !editDepartment.code.trim()
     ) {
@@ -226,8 +288,14 @@ export default function SuperAdminDepartmentsPage() {
 
     setIsUpdating(true);
     try {
+      // Ensure department ID is a valid number
+      const departmentId = Number(selectedDepartment.id);
+      if (isNaN(departmentId) || departmentId <= 0) {
+        throw new Error('Invalid department ID');
+      }
+
       const response = await fetch(
-        `/api/departments/${selectedDepartment.id}`,
+        `/api/departments/${departmentId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -261,12 +329,17 @@ export default function SuperAdminDepartmentsPage() {
   };
 
   const handleDeleteDepartment = async () => {
-    if (!selectedDepartment) return;
+    if (!selectedDepartment || !selectedDepartment.id) return;
 
     setIsDeleting(true);
     try {
+      const departmentId = Number(selectedDepartment.id);
+      if (isNaN(departmentId) || departmentId <= 0) {
+        throw new Error('Invalid department ID');
+      }
+
       const response = await fetch(
-        `/api/departments/${selectedDepartment.id}`,
+        `/api/departments/${departmentId}`,
         {
           method: 'DELETE',
           credentials: 'include',
@@ -293,13 +366,18 @@ export default function SuperAdminDepartmentsPage() {
   };
 
   const handleAssignAdmin = async () => {
-    if (!selectedDepartment || !selectedAdminId) {
+    if (!selectedDepartment || !selectedDepartment.id || !selectedAdminId) {
       toast.error('Please select a department and admin');
       return;
     }
 
     setIsAssigning(true);
     try {
+      const departmentId = Number(selectedDepartment.id);
+      if (isNaN(departmentId) || departmentId <= 0) {
+        throw new Error('Invalid department ID');
+      }
+
       const response = await fetch(
         '/api/super-admin/assign-admin-to-department',
         {
@@ -308,7 +386,7 @@ export default function SuperAdminDepartmentsPage() {
           credentials: 'include',
           body: JSON.stringify({
             userId: parseInt(selectedAdminId),
-            departmentId: selectedDepartment.id,
+            departmentId: departmentId,
           }),
         }
       );
@@ -343,114 +421,218 @@ export default function SuperAdminDepartmentsPage() {
     [departments, search]
   );
 
-  if (loading) {
+  // Calculate stats
+  const stats = useMemo(() => {
+    const total = departments.length;
+    const assigned = departments.filter(d => d.admin !== null).length;
+    const unassigned = total - assigned;
+    const totalFaculties = departments.reduce((sum, d) => sum + d.counts.faculties, 0);
+    const totalStudents = departments.reduce((sum, d) => sum + d.counts.students, 0);
+    const totalPrograms = departments.reduce((sum, d) => sum + d.counts.programs, 0);
+    const totalCourses = departments.reduce((sum, d) => sum + d.counts.courses, 0);
+    
+    return { total, assigned, unassigned, totalFaculties, totalStudents, totalPrograms, totalCourses };
+  }, [departments]);
+
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center text-sm text-muted-foreground">
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor }}
+          />
+          <p className="text-sm text-secondary-text">
           Loading departments...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-5">
+      {/* Header - Modern & Compact */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Building2 className="h-8 w-8" />
+          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-primary-text">
+            <div 
+              className="p-2 rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,
+              }}
+            >
+              <Building2 className="h-5 w-5 text-white" />
+            </div>
             Departments
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xs mt-1.5 text-secondary-text">
             Manage departments and assign admins
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          className="text-xs h-8 px-3 text-white"
+          style={{
+            backgroundColor: primaryColor,
+            color: 'white',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColorDark;
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+            e.currentTarget.style.color = 'white';
+          }}
+        >
+          <Plus className="h-3 w-3 mr-1.5" />
           Create Department
         </Button>
       </div>
 
-      <Card>
+      {/* Key Stats - Essential Only */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
+          title="Total Departments"
+          value={stats.total}
+          subtitle={`${stats.assigned} assigned`}
+          icon={<Building2 className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="Assigned"
+          value={stats.assigned}
+          subtitle={`${stats.unassigned} unassigned`}
+          icon={<Shield className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="Total Faculty"
+          value={stats.totalFaculties}
+          subtitle="Active members"
+          icon={<UserCheck className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+        <StatCard
+          title="Total Students"
+          value={stats.totalStudents.toLocaleString()}
+          subtitle="Enrolled"
+          icon={<GraduationCap className="w-5 h-5" />}
+          isDarkMode={isDarkMode}
+        />
+      </div>
+
+      {/* Departments Table */}
+      <Card className="rounded-xl shadow-sm border bg-card border-card-border">
         <CardHeader>
-          <CardTitle>Departments</CardTitle>
-          <CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-primary-text">Departments</CardTitle>
+              <CardDescription className="text-secondary-text">
             View all departments and their assigned admins
           </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="relative w-64">
+              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-text`} />
                 <Input
                   placeholder="Search departments..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                className="pl-10 bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
             </div>
-          </div>
-
-          <div className="rounded-md border">
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-card-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Admin</TableHead>
-                  <TableHead>Stats</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="bg-card hover:bg-card border-card-border">
+                  <TableHead className="text-secondary-text">Code</TableHead>
+                  <TableHead className="text-secondary-text">Name</TableHead>
+                  <TableHead className="text-secondary-text">Description</TableHead>
+                  <TableHead className="text-secondary-text">Admin</TableHead>
+                  <TableHead className="text-secondary-text">Stats</TableHead>
+                  <TableHead className="text-secondary-text">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDepartments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      No departments found
+                    <TableCell colSpan={6} className="text-center py-12 text-secondary-text">
+                      <div className="flex flex-col items-center gap-2">
+                        <Building2 className="h-8 w-8 text-muted-text" />
+                        <p>No departments found</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredDepartments.map((dept) => (
-                    <TableRow key={dept.id}>
-                      <TableCell className="font-medium">{dept.code}</TableCell>
-                      <TableCell>{dept.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {dept.description || '-'}
+                    <TableRow 
+                      key={dept.id}
+                      className="border-card-border hover:bg-card/50"
+                    >
+                      <TableCell className="font-semibold text-primary-text">
+                        <span 
+                          className="px-2 py-1 rounded-md text-xs font-mono"
+                          style={{
+                            backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)',
+                            color: primaryColor,
+                          }}
+                        >
+                          {dept.code}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-primary-text">{dept.name}</TableCell>
+                      <TableCell className="text-secondary-text">
+                        {dept.description || <span className="italic text-muted-text">-</span>}
                       </TableCell>
                       <TableCell>
                         {dept.admin ? (
                           <div>
-                            <div className="font-medium">{dept.admin.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="font-medium text-primary-text">{dept.admin.name}</div>
+                            <div className="text-xs text-secondary-text">
                               {dept.admin.email}
                             </div>
                             <Badge
-                              variant={
+                              className={`mt-1 text-[10px] ${
                                 dept.admin.status === 'active'
-                                  ? 'default'
-                                  : 'secondary'
-                              }
-                              className="mt-1"
+                                  ? 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30'
+                                  : 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'
+                              }`}
                             >
                               {dept.admin.status}
                             </Badge>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-muted-foreground">
+                          <div className="flex items-center gap-2" style={{ color: primaryColor }}>
                             <AlertCircle className="h-4 w-4" />
-                            <span>No admin assigned</span>
+                            <span className="text-sm font-medium">No admin assigned</span>
                           </div>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm space-y-1">
-                          <div>Faculties: {dept.counts.faculties}</div>
-                          <div>Students: {dept.counts.students}</div>
-                          <div>Programs: {dept.counts.programs}</div>
-                          <div>Courses: {dept.counts.courses}</div>
+                        <div className="text-xs space-y-1.5 text-secondary-text">
+                          <div className="flex items-center gap-1.5">
+                            <UserCheck className="h-3 w-3" />
+                            <span>{dept.counts.faculties} Faculties</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <GraduationCap className="h-3 w-3" />
+                            <span>{dept.counts.students} Students</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BookOpen className="h-3 w-3" />
+                            <span>{dept.counts.programs} Programs</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BookOpen className="h-3 w-3" />
+                            <span>{dept.counts.courses} Courses</span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -459,31 +641,83 @@ export default function SuperAdminDepartmentsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditDepartment(dept)}
+                            className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                              backgroundColor: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            <Edit className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Edit</span>
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => {
+                              if (!dept || !dept.id) {
+                                toast.error('Invalid department');
+                                return;
+                              }
                               setSelectedDepartment(dept);
                               setShowAssignModal(true);
                             }}
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
+                            style={{
+                              borderColor: primaryColor + '80',
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              backgroundColor: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = primaryColor + '80';
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                           >
-                            <Shield className="h-4 w-4 mr-1" />
-                            Assign
+                            <Shield className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
+                            <span style={{ color: 'inherit' }}>Assign</span>
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => {
+                              if (!dept || !dept.id) {
+                                toast.error('Invalid department');
+                                return;
+                              }
                               setSelectedDepartment(dept);
                               setShowDeleteModal(true);
                             }}
+                            className="transition-all hover:scale-105 text-xs px-3 h-8"
+                            style={{
+                              backgroundColor: '#dc2626',
+                              color: '#ffffff',
+                              borderColor: '#dc2626',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#b91c1c';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#dc2626';
+                            }}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" style={{ color: '#ffffff' }} />
+                            <span style={{ color: '#ffffff' }}>Delete</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -498,16 +732,16 @@ export default function SuperAdminDepartmentsPage() {
 
       {/* Create Department Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Create New Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Create New Department</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Add a new department to the system
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Department Name *</Label>
+              <Label htmlFor="name" className="text-primary-text">Department Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g., Computer Science"
@@ -515,10 +749,11 @@ export default function SuperAdminDepartmentsPage() {
                 onChange={(e) =>
                   setNewDepartment({ ...newDepartment, name: e.target.value })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">Department Code *</Label>
+              <Label htmlFor="code" className="text-primary-text">Department Code *</Label>
               <Input
                 id="code"
                 placeholder="e.g., CS"
@@ -529,10 +764,11 @@ export default function SuperAdminDepartmentsPage() {
                     code: e.target.value.toUpperCase(),
                   })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-primary-text">Description</Label>
               <Textarea
                 id="description"
                 placeholder="Department description (optional)"
@@ -543,6 +779,7 @@ export default function SuperAdminDepartmentsPage() {
                     description: e.target.value,
                   })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
           </div>
@@ -550,10 +787,45 @@ export default function SuperAdminDepartmentsPage() {
             <Button
               variant="outline"
               onClick={() => setShowCreateModal(false)}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
             >
               Cancel
             </Button>
-            <Button onClick={handleCreateDepartment} disabled={isCreating}>
+            <Button 
+              onClick={handleCreateDepartment} 
+              disabled={isCreating}
+              className="text-white"
+              style={{
+                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: '#ffffff',
+                borderColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+            >
               {isCreating ? 'Creating...' : 'Create Department'}
             </Button>
           </DialogFooter>
@@ -562,16 +834,16 @@ export default function SuperAdminDepartmentsPage() {
 
       {/* Edit Department Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Edit Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Edit Department</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Update department information
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Department Name *</Label>
+              <Label htmlFor="edit-name" className="text-primary-text">Department Name *</Label>
               <Input
                 id="edit-name"
                 placeholder="e.g., Computer Science"
@@ -579,10 +851,11 @@ export default function SuperAdminDepartmentsPage() {
                 onChange={(e) =>
                   setEditDepartment({ ...editDepartment, name: e.target.value })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-code">Department Code *</Label>
+              <Label htmlFor="edit-code" className="text-primary-text">Department Code *</Label>
               <Input
                 id="edit-code"
                 placeholder="e.g., CS"
@@ -593,10 +866,11 @@ export default function SuperAdminDepartmentsPage() {
                     code: e.target.value.toUpperCase(),
                   })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description" className="text-primary-text">Description</Label>
               <Textarea
                 id="edit-description"
                 placeholder="Department description (optional)"
@@ -607,6 +881,7 @@ export default function SuperAdminDepartmentsPage() {
                     description: e.target.value,
                   })
                 }
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
           </div>
@@ -618,10 +893,45 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
                 setEditDepartment({ name: '', code: '', description: '' });
               }}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
             >
               Cancel
             </Button>
-            <Button onClick={handleUpdateDepartment} disabled={isUpdating}>
+            <Button 
+              onClick={handleUpdateDepartment} 
+              disabled={isUpdating}
+              className="text-white"
+              style={{
+                backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: '#ffffff',
+                borderColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+            >
               {isUpdating ? 'Updating...' : 'Update Department'}
             </Button>
           </DialogFooter>
@@ -630,12 +940,12 @@ export default function SuperAdminDepartmentsPage() {
 
       {/* Delete Department Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Delete Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Delete Department</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Are you sure you want to delete{' '}
-              {selectedDepartment?.name || 'this department'}? This action
+              <span className="font-semibold text-red-500">{selectedDepartment?.name || 'this department'}</span>? This action
               cannot be undone. The department can only be deleted if it has no
               faculties, students, programs, or courses.
             </DialogDescription>
@@ -648,6 +958,23 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
               }}
               disabled={isDeleting}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+                opacity: isDeleting ? 0.5 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827');
+              }}
             >
               Cancel
             </Button>
@@ -655,6 +982,23 @@ export default function SuperAdminDepartmentsPage() {
               variant="destructive"
               onClick={handleDeleteDepartment}
               disabled={isDeleting}
+              className="text-white"
+              style={{
+                backgroundColor: isDeleting ? '#9ca3af' : '#dc2626',
+                color: '#ffffff',
+                borderColor: isDeleting ? '#9ca3af' : '#dc2626',
+                opacity: isDeleting ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }
+              }}
             >
               {isDeleting ? 'Deleting...' : 'Delete Department'}
             </Button>
@@ -664,28 +1008,28 @@ export default function SuperAdminDepartmentsPage() {
 
       {/* Assign Admin Modal */}
       <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border">
           <DialogHeader>
-            <DialogTitle>Assign Admin to Department</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Assign Admin to Department</DialogTitle>
+            <DialogDescription className="text-secondary-text">
               Select an admin user to assign to{' '}
-              {selectedDepartment?.name || 'this department'}
+              <span className="font-semibold text-primary-text">{selectedDepartment?.name || 'this department'}</span>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="admin">Select Admin *</Label>
+              <Label htmlFor="admin" className="text-primary-text">Select Admin *</Label>
               <Select
                 value={selectedAdminId}
                 onValueChange={setSelectedAdminId}
                 disabled={loadingAdmins}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select an admin user" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {adminUsers.length === 0 ? (
-                    <SelectItem value="none" disabled>
+                    <SelectItem value="none" disabled className="text-secondary-text">
                       No admin users available
                     </SelectItem>
                   ) : (
@@ -695,6 +1039,7 @@ export default function SuperAdminDepartmentsPage() {
                         <SelectItem
                           key={admin.id}
                           value={admin.id.toString()}
+                          className="text-primary-text hover:bg-card/50"
                         >
                           {admin.name} ({admin.email})
                         </SelectItem>
@@ -703,7 +1048,7 @@ export default function SuperAdminDepartmentsPage() {
                 </SelectContent>
               </Select>
               {adminUsers.length === 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-secondary-text">
                   No admin users found. Please create admin users first.
                 </p>
               )}
@@ -717,12 +1062,49 @@ export default function SuperAdminDepartmentsPage() {
                 setSelectedDepartment(null);
                 setSelectedAdminId('');
               }}
+              className="border-card-border transition-all bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              }}
             >
               Cancel
             </Button>
             <Button
               onClick={handleAssignAdmin}
               disabled={isAssigning || !selectedAdminId || loadingAdmins}
+              className="text-white"
+              style={{
+                backgroundColor: (isAssigning || !selectedAdminId || loadingAdmins) 
+                  ? (isDarkMode ? '#9a3412' : '#1e40af') 
+                  : primaryColor,
+                color: '#ffffff',
+                borderColor: (isAssigning || !selectedAdminId || loadingAdmins) 
+                  ? (isDarkMode ? '#9a3412' : '#1e40af') 
+                  : primaryColor,
+                opacity: (isAssigning || !selectedAdminId || loadingAdmins) ? 0.6 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isAssigning && selectedAdminId && !loadingAdmins) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
             >
               {isAssigning ? 'Assigning...' : 'Assign Admin'}
             </Button>
@@ -732,4 +1114,3 @@ export default function SuperAdminDepartmentsPage() {
     </div>
   );
 }
-

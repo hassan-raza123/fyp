@@ -335,9 +335,15 @@ const superAdminNavigation = [
     items: [
       {
         id: 'admins',
-        label: 'Admins',
+        label: 'Department Admins',
         icon: Shield,
         href: '/super-admin/admins',
+      },
+      {
+        id: 'super-admins',
+        label: 'Super Admins',
+        icon: Shield,
+        href: '/super-admin/super-admins',
       },
     ],
   },

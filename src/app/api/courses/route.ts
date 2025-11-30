@@ -61,8 +61,8 @@ interface CourseResponse {
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { requireAuth } = await import('@/lib/api-utils');
-    const { success, user } = requireAuth(request);
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -71,8 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Import getCurrentDepartmentId and getFacultyIdFromRequest
-    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
-    const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+    const { getCurrentDepartmentId, getFacultyIdFromRequest } = await import('@/lib/auth');
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -267,7 +266,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
 
     // Get current department ID from settings (override any departmentId from form)
     const currentDepartmentId = await getCurrentDepartmentId();

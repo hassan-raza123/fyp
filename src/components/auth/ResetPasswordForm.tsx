@@ -227,8 +227,7 @@ function ResetPasswordFormContent() {
         <div>
           <label
             htmlFor='password'
-            className='block text-sm font-medium mb-2'
-            style={{ color: 'var(--gray-700)' }}
+            className='block text-sm font-medium mb-2 text-gray-700'
           >
             New Password
           </label>
@@ -238,36 +237,18 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
-              style={{
-                borderColor: errors.password ? 'var(--error)' : 'var(--gray-300)'
-              }}
-              onFocus={(e) => {
-                if (!errors.password) {
-                  e.target.style.borderColor = 'var(--brand-secondary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-                }
-              }}
-              onBlur={(e) => {
-                validatePassword(password);
-                if (!errors.password) {
-                  e.target.style.borderColor = 'var(--gray-300)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+                errors.password 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              }`}
+              onBlur={() => validatePassword(password)}
               placeholder='Enter your new password'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors'
-              style={{ color: 'var(--gray-400)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--gray-600)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--gray-400)';
-              }}
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -284,8 +265,7 @@ function ResetPasswordFormContent() {
         <div>
           <label
             htmlFor='confirmPassword'
-            className='block text-sm font-medium mb-2'
-            style={{ color: 'var(--gray-700)' }}
+            className='block text-sm font-medium mb-2 text-gray-700'
           >
             Confirm New Password
           </label>
@@ -295,36 +275,18 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className='w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none'
-              style={{
-                borderColor: errors.confirmPassword ? 'var(--error)' : 'var(--gray-300)'
-              }}
-              onFocus={(e) => {
-                if (!errors.confirmPassword) {
-                  e.target.style.borderColor = 'var(--brand-secondary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--brand-secondary-opacity-10)';
-                }
-              }}
-              onBlur={(e) => {
-                validateConfirmPassword(confirmPassword);
-                if (!errors.confirmPassword) {
-                  e.target.style.borderColor = 'var(--gray-300)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+                errors.confirmPassword 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              }`}
+              onBlur={() => validateConfirmPassword(confirmPassword)}
               placeholder='Confirm your new password'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors'
-              style={{ color: 'var(--gray-400)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--gray-600)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--gray-400)';
-              }}
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

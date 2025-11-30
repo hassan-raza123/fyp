@@ -1,723 +1,557 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Building2,
   Users,
-  Plus,
-  Edit,
-  Trash2,
-  Search,
   Shield,
   CheckCircle,
-  XCircle,
   AlertCircle,
+  TrendingUp,
+  UserCheck,
+  Activity,
+  ArrowUpRight,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
-interface Department {
-  id: number;
-  name: string;
-  code: string;
-  description: string | null;
-  status: string;
-  admin: {
-    id: number;
+interface DashboardData {
+  stats: {
+    totalDepartments: number;
+    totalAdmins: number;
+    assignedDepartments: number;
+    unassignedDepartments: number;
+  };
+  recentActivities: Array<{
+    id: string;
+    summary: string;
+    createdAt: string;
+    user: string;
+    userRole: string;
+    userEmail: string;
+  }>;
+  currentSemester: {
     name: string;
-    email: string;
-    status: string;
+    startDate: string;
+    endDate: string;
   } | null;
-  counts: {
-    faculties: number;
-    students: number;
-    programs: number;
-    courses: number;
+}
+
+interface AnalyticsData {
+  enrollmentTrend: { month: string; students: number }[];
+  departmentDistribution: { name: string; value: number }[];
+  activityTrend: { date: string; activities: number }[];
+  stats: {
+    totalStudents: number;
+    totalFaculty: number;
+    totalPrograms: number;
+    totalCourses: number;
+    totalDepartments: number;
+    totalAdmins: number;
   };
 }
 
-interface AdminUser {
-  id: number;
-  userId: number;
-  name: string;
-  email: string;
-  status: string;
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  subtitle?: string;
+  trend?: number;
+  isDarkMode?: boolean;
 }
 
-// This is now the only (overview) component for /super-admin
+const StatCard = ({ title, value, icon, subtitle, trend, isDarkMode = false }: StatCardProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-secondary-text mb-1.5">
+            {title}
+          </p>
+          <h3 className="text-2xl font-bold text-primary-text mb-1">
+            {value}
+          </h3>
+          {subtitle && (
+            <p className="text-[10px] text-muted-text">
+              {subtitle}
+            </p>
+          )}
+          {trend !== undefined && (
+            <div className="flex items-center mt-2">
+              <ArrowUpRight className={`w-3 h-3 mr-1 ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+              <span className={`text-xs font-semibold ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {trend >= 0 ? '+' : ''}{trend}%
+              </span>
+              <span className="text-xs text-muted-text ml-1.5">vs last month</span>
+            </div>
+          )}
+        </div>
+        <div 
+          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <div style={{ color: iconColor }}>
+            {icon}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CHART_COLORS = ['#262895', '#fc9928', '#433ea7', '#e6891f', '#1c1e74', '#ffb347'];
+
 export default function SuperAdminDashboard() {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [loadingAdmins, setLoadingAdmins] = useState(false);
-
-  const [newDepartment, setNewDepartment] = useState({
-    name: '',
-    code: '',
-    description: '',
-  });
-  const [editDepartment, setEditDepartment] = useState({
-    name: '',
-    code: '',
-    description: '',
-  });
-  const [isCreating, setIsCreating] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedAdminId, setSelectedAdminId] = useState<string>('');
-  const [isAssigning, setIsAssigning] = useState(false);
-
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  
   useEffect(() => {
-    fetchDepartments();
-    fetchAdminUsers();
+    setMounted(true);
   }, []);
 
-  const fetchDepartments = async () => {
+  useEffect(() => {
+    fetchDashboardData();
+    fetchAnalyticsData();
+  }, []);
+
+  const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/departments', {
+      setDashboardLoading(true);
+      const response = await fetch('/api/super-admin/overview', {
         credentials: 'include',
       });
-
       if (!response.ok) {
-        throw new Error('Failed to fetch departments');
+        throw new Error('Failed to fetch dashboard data');
       }
-
       const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
-      } else {
-        throw new Error(data.error || 'Failed to fetch departments');
-      }
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast.error('Failed to load departments');
+      setDashboardData(data);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      toast.error('Failed to load dashboard data');
     } finally {
-      setLoading(false);
+      setDashboardLoading(false);
     }
   };
 
-  const fetchAdminUsers = async () => {
+  const fetchAnalyticsData = async () => {
     try {
-      setLoadingAdmins(true);
-      const response = await fetch('/api/admins', {
+      setAnalyticsLoading(true);
+      const response = await fetch('/api/super-admin/analytics', {
         credentials: 'include',
       });
-
       if (!response.ok) {
-        throw new Error('Failed to fetch admin users');
+        throw new Error('Failed to fetch analytics data');
       }
-
       const data = await response.json();
-      if (data.success) {
-        // Format admin users for selection
-        const formatted = data.data.map((admin: any) => ({
-          id: admin.userId,
-          userId: admin.userId,
-          name: `${admin.user.first_name} ${admin.user.last_name}`,
-          email: admin.user.email,
-          status: admin.user.status,
-        }));
-        setAdminUsers(formatted);
-      }
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      toast.error('Failed to load admin users');
+      setAnalyticsData(data);
+    } catch (err) {
+      console.error('Error fetching analytics data:', err);
+      toast.error('Failed to load analytics data');
     } finally {
-      setLoadingAdmins(false);
-    }
-  };
-
-  const handleCreateDepartment = async () => {
-    if (!newDepartment.name.trim() || !newDepartment.code.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setIsCreating(true);
-    try {
-      const response = await fetch('/api/departments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: newDepartment.name.trim(),
-          code: newDepartment.code.trim(),
-          description: newDepartment.description.trim() || null,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success('Department created successfully!');
-        setShowCreateModal(false);
-        setNewDepartment({ name: '', code: '', description: '' });
-        fetchDepartments();
-      } else {
-        throw new Error(data.error || 'Failed to create department');
+      setAnalyticsLoading(false);
       }
-    } catch (error) {
-      console.error('Error creating department:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to create department'
-      );
-    } finally {
-      setIsCreating(false);
-    }
   };
 
-  const handleEditDepartment = (dept: Department) => {
-    setSelectedDepartment(dept);
-    setEditDepartment({
-      name: dept.name,
-      code: dept.code,
-      description: dept.description || '',
-    });
-    setShowEditModal(true);
-  };
-
-  const handleUpdateDepartment = async () => {
-    if (!selectedDepartment || !editDepartment.name.trim() || !editDepartment.code.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      const response = await fetch(`/api/departments/${selectedDepartment.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: editDepartment.name.trim(),
-          code: editDepartment.code.trim(),
-          description: editDepartment.description.trim() || null,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success('Department updated successfully!');
-        setShowEditModal(false);
-        setSelectedDepartment(null);
-        setEditDepartment({ name: '', code: '', description: '' });
-        fetchDepartments();
-      } else {
-        throw new Error(data.error || 'Failed to update department');
-      }
-    } catch (error) {
-      console.error('Error updating department:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to update department'
-      );
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleDeleteDepartment = async () => {
-    if (!selectedDepartment) return;
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/departments/${selectedDepartment.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success('Department deleted successfully!');
-        setShowDeleteModal(false);
-        setSelectedDepartment(null);
-        fetchDepartments();
-      } else {
-        throw new Error(data.error || 'Failed to delete department');
-      }
-    } catch (error) {
-      console.error('Error deleting department:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to delete department'
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleAssignAdmin = async () => {
-    if (!selectedDepartment || !selectedAdminId) {
-      toast.error('Please select a department and admin');
-      return;
-    }
-
-    setIsAssigning(true);
-    try {
-      const response = await fetch('/api/super-admin/assign-admin-to-department', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: parseInt(selectedAdminId),
-          departmentId: selectedDepartment.id,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success('Admin assigned to department successfully!');
-        setShowAssignModal(false);
-        setSelectedDepartment(null);
-        setSelectedAdminId('');
-        fetchDepartments();
-      } else {
-        throw new Error(data.error || 'Failed to assign admin');
-      }
-    } catch (error) {
-      console.error('Error assigning admin:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to assign admin'
-      );
-    } finally {
-      setIsAssigning(false);
-    }
-  };
-
-  const filteredDepartments = useMemo(
-    () =>
-      departments.filter(
-        (dept) =>
-          dept.name.toLowerCase().includes(search.toLowerCase()) ||
-          dept.code.toLowerCase().includes(search.toLowerCase())
-      ),
-    [departments, search]
-  );
-
-  return (
-    <div className="container mx-auto py-10 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
-            Super Admin Overview
-          </h1>
-          <p className="text-muted-foreground">
-            High-level snapshot of departments and admin users.
+  if (!mounted || dashboardLoading || analyticsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-2 border-primary dark:border-secondary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Loading dashboard...
           </p>
         </div>
       </div>
+      );
+  }
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Departments
-            </CardTitle>
-            <CardDescription>Total departments in the system</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{departments.length}</div>
-          </CardContent>
-        </Card>
+  if (!dashboardData || !analyticsData) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] bg-page">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Failed to load dashboard data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Admin Users
-            </CardTitle>
-            <CardDescription>Active admin accounts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {adminUsers.filter((a) => a.status === 'active').length}
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  
+  // Calculate assignment rate
+  const assignmentRate = dashboardData.stats.totalDepartments > 0
+    ? Math.round((dashboardData.stats.assignedDepartments / dashboardData.stats.totalDepartments) * 100)
+    : 0;
+  
+  return (
+    <div className="space-y-5">
+      {/* Header - Modern & Compact */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-primary-text">
+            <div 
+              className="p-2 rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,
+              }}
+          >
+              <Shield className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
-              Assigned Departments
-            </CardTitle>
-            <CardDescription>Departments with admin assigned</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {departments.filter((d) => d.admin).length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              Unassigned Departments
-            </CardTitle>
-            <CardDescription>No admin mapped yet</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {departments.filter((d) => !d.admin).length}
-            </div>
-          </CardContent>
-        </Card>
+            System Overview
+          </h1>
+          <p className="text-xs mt-1.5 text-secondary-text">
+            Complete system analytics and management insights
+          </p>
+        </div>
+          <Button
+          onClick={() => window.location.href = '/super-admin/departments'}
+          className="text-xs h-8 px-3"
+            style={{
+              backgroundColor: primaryColor,
+              color: 'white',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColorDark;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColor;
+            }}
+          >
+          Manage Departments
+          </Button>
       </div>
 
-      {/* Quick list of departments (read‑only preview) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Departments</CardTitle>
-          <CardDescription>
-            Quick preview of departments and their admins. Full management in
-            the Departments module.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search departments..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
-                />
+      {/* Key Stats - Essential Only */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatCard
+          title="Departments"
+          value={analyticsData.stats.totalDepartments}
+          subtitle={`${dashboardData.stats.assignedDepartments} assigned`}
+            icon={<Building2 className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
+          title="Admins"
+          value={analyticsData.stats.totalAdmins}
+          subtitle={`${assignmentRate}% assigned`}
+            icon={<Shield className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
+          title="Students"
+          value={analyticsData.stats.totalStudents.toLocaleString()}
+          subtitle="Total enrolled"
+          icon={<Users className="w-5 h-5" />}
+          trend={8}
+            isDarkMode={isDarkMode}
+          />
+          <StatCard
+          title="Faculty"
+          value={analyticsData.stats.totalFaculty}
+          subtitle="Active members"
+          icon={<UserCheck className="w-5 h-5" />}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+      {/* Critical Alerts */}
+      {dashboardData.stats.unassignedDepartments > 0 && (
+        <div 
+          className="rounded-xl p-4 border-2 flex items-center gap-3"
+          style={{
+            backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(252, 153, 40, 0.05)',
+            borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.3)' : 'rgba(252, 153, 40, 0.2)',
+          }}
+          >
+          <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--orange)' }} />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-primary-text">
+              {dashboardData.stats.unassignedDepartments} Department{dashboardData.stats.unassignedDepartments > 1 ? 's' : ''} Unassigned
+            </p>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Assign admins to departments for proper management
+            </p>
+            </div>
+          <Button
+            onClick={() => window.location.href = '/super-admin/departments'}
+            className="text-xs h-7 px-3"
+            style={{
+              backgroundColor: 'var(--orange)',
+              color: 'white',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--orange-dark)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--orange)';
+            }}
+          >
+            Assign Now
+          </Button>
+                </div>
+      )}
+
+      {/* Essential Charts - Only Important Ones */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Enrollment Trend - Most Important */}
+        <div className="rounded-xl shadow-sm border bg-card border-card-border p-5 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-primary-text flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" style={{ color: primaryColor }} />
+                Student Enrollment Trend
+              </h3>
+              <p className="text-[10px] text-secondary-text mt-0.5">Last 12 months</p>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={analyticsData.enrollmentTrend} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+              <XAxis 
+                dataKey="month" 
+                tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
+                stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                angle={-35}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis 
+                tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
+                stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                width={45}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                  border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  padding: '8px 12px',
+                }}
+                labelStyle={{ 
+                  color: isDarkMode ? '#ffffff' : '#000000', 
+                  marginBottom: '6px',
+                  fontWeight: 600,
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="students" 
+                stroke={primaryColor}
+                strokeWidth={3}
+                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: isDarkMode ? '#171717' : '#ffffff' }}
+                activeDot={{ r: 6, strokeWidth: 2 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          </div>
+
+        {/* Department Distribution - Important for Super Admin */}
+        <div className="rounded-xl shadow-sm border bg-card border-card-border p-5 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-primary-text flex items-center gap-2">
+                <Building2 className="w-4 h-4" style={{ color: primaryColor }} />
+                Department Distribution
+              </h3>
+              <p className="text-[10px] text-secondary-text mt-0.5">Students by department</p>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie
+                data={analyticsData.departmentDistribution}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
+                outerRadius={75}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {analyticsData.departmentDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                  border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  padding: '8px 12px',
+                }}
+                formatter={(value: any, name: string) => [`${value} students`, name]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="mt-3 flex flex-wrap gap-2 justify-center">
+            {analyticsData.departmentDistribution.slice(0, 4).map((dept, index) => (
+              <div key={index} className="flex items-center gap-1.5">
+                <div 
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                    />
+                <span className="text-[10px] text-secondary-text truncate max-w-[80px]">
+                  {dept.name}
+                    </span>
+                  </div>
+            ))}
+                </div>
+              </div>
+            </div>
+
+      {/* System Status & Recent Activity - Compact */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* System Status - Essential Info */}
+        <div className="rounded-xl shadow-sm border bg-card border-card-border p-4">
+          <h3 className="text-sm font-bold text-primary-text mb-3 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" style={{ color: primaryColor }} />
+            System Status
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-hover-bg">
+              <span className="text-xs text-secondary-text">Assigned</span>
+              <span className="text-sm font-bold text-primary-text">
+                {dashboardData.stats.assignedDepartments}/{dashboardData.stats.totalDepartments}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-hover-bg">
+              <span className="text-xs text-secondary-text">Unassigned</span>
+              <span 
+                className="text-sm font-bold"
+              style={{
+                  color: dashboardData.stats.unassignedDepartments > 0 
+                    ? 'var(--orange)' 
+                    : 'var(--primary-text)' 
+                }}
+              >
+                {dashboardData.stats.unassignedDepartments}
+                  </span>
+                </div>
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-hover-bg">
+              <span className="text-xs text-secondary-text">Current Semester</span>
+              <span className="text-xs font-semibold text-primary-text">
+                {dashboardData.currentSemester?.name || 'None'}
+                  </span>
+                </div>
+            <div className="pt-2 border-t border-card-border">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-secondary-text">Assignment Rate</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 h-1.5 rounded-full bg-hover-bg overflow-hidden">
+                    <div 
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${assignmentRate}%`,
+                        backgroundColor: primaryColor,
+                      }}
+                    />
+                </div>
+                  <span className="text-xs font-bold text-primary-text w-8 text-right">
+                    {assignmentRate}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Admin</TableHead>
-                  <TableHead>Stats</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDepartments.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
-                      No departments found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredDepartments.slice(0, 5).map((dept) => (
-                    <TableRow key={dept.id}>
-                      <TableCell className="font-medium">{dept.code}</TableCell>
-                      <TableCell>{dept.name}</TableCell>
-                      <TableCell>
-                        {dept.admin ? (
-                          <div>
-                            <div className="font-medium">{dept.admin.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {dept.admin.email}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <AlertCircle className="h-4 w-4" />
-                            No admin
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-xs space-y-1 text-muted-foreground">
-                          <div>Fac: {dept.counts.faculties}</div>
-                          <div>Std: {dept.counts.students}</div>
-                          <div>Prog: {dept.counts.programs}</div>
-                          <div>Cr: {dept.counts.courses}</div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+        {/* Recent Activity - Compact */}
+        <div className="lg:col-span-2 rounded-xl shadow-sm border bg-card border-card-border p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-primary-text flex items-center gap-2">
+              <Activity className="w-4 h-4" style={{ color: primaryColor }} />
+              Recent System Activity
+            </h3>
+            <Button
+              variant="ghost"
+              onClick={() => window.location.href = '/super-admin/departments'}
+              className="text-xs h-6 px-2 text-secondary-text hover:text-primary-text"
+            >
+              View All
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Create Department Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Department</DialogTitle>
-            <DialogDescription>
-              Add a new department to the system
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Department Name *</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Computer Science"
-                value={newDepartment.name}
-                onChange={(e) =>
-                  setNewDepartment({ ...newDepartment, name: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="code">Department Code *</Label>
-              <Input
-                id="code"
-                placeholder="e.g., CS"
-                value={newDepartment.code}
-                onChange={(e) =>
-                  setNewDepartment({
-                    ...newDepartment,
-                    code: e.target.value.toUpperCase(),
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Department description (optional)"
-                value={newDepartment.description}
-                onChange={(e) =>
-                  setNewDepartment({
-                    ...newDepartment,
-                    description: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowCreateModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleCreateDepartment} disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Department'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Department Modal */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Department</DialogTitle>
-            <DialogDescription>
-              Update department information
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Department Name *</Label>
-              <Input
-                id="edit-name"
-                placeholder="e.g., Computer Science"
-                value={editDepartment.name}
-                onChange={(e) =>
-                  setEditDepartment({ ...editDepartment, name: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-code">Department Code *</Label>
-              <Input
-                id="edit-code"
-                placeholder="e.g., CS"
-                value={editDepartment.code}
-                onChange={(e) =>
-                  setEditDepartment({
-                    ...editDepartment,
-                    code: e.target.value.toUpperCase(),
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                placeholder="Department description (optional)"
-                value={editDepartment.description}
-                onChange={(e) =>
-                  setEditDepartment({
-                    ...editDepartment,
-                    description: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowEditModal(false);
-                setSelectedDepartment(null);
-                setEditDepartment({ name: '', code: '', description: '' });
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateDepartment} disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update Department'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Department Modal */}
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Department</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete{' '}
-              {selectedDepartment?.name || 'this department'}? This action
-              cannot be undone. The department can only be deleted if it has no
-              faculties, students, programs, or courses.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowDeleteModal(false);
-                setSelectedDepartment(null);
-              }}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteDepartment}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Department'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Assign Admin Modal */}
-      <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Assign Admin to Department</DialogTitle>
-            <DialogDescription>
-              Select an admin user to assign to{' '}
-              {selectedDepartment?.name || 'this department'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="admin">Select Admin *</Label>
-              <Select
-                value={selectedAdminId}
-                onValueChange={setSelectedAdminId}
-                disabled={loadingAdmins}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an admin user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {adminUsers.length === 0 ? (
-                    <SelectItem value="none" disabled>
-                      No admin users available
-                    </SelectItem>
-                  ) : (
-                    adminUsers
-                      .filter((admin) => admin.status === 'active')
-                      .map((admin) => (
-                        <SelectItem
-                          key={admin.id}
-                          value={admin.id.toString()}
+          <div className="space-y-2 max-h-[240px] overflow-y-auto">
+            {dashboardData.recentActivities.length === 0 ? (
+              <div className="text-center text-xs text-muted-text py-6">
+                No recent activity
+              </div>
+            ) : (
+              dashboardData.recentActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-hover-bg transition-colors group"
+                >
+                  <div 
+                    className="p-1.5 rounded-md flex-shrink-0 mt-0.5"
+                    style={{
+                                  backgroundColor: isDarkMode 
+                        ? 'rgba(252, 153, 40, 0.1)' 
+                                    : 'rgba(38, 40, 149, 0.1)',
+                    }}
                         >
-                          {admin.name} ({admin.email})
-                        </SelectItem>
-                      ))
-                  )}
-                </SelectContent>
-              </Select>
-              {adminUsers.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No admin users found. Please create admin users first.
-                </p>
+                    <Activity 
+                      className="w-3 h-3" 
+                style={{ color: primaryColor }}
+              />
+            </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-primary-text line-clamp-2">
+                      {activity.summary}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[10px] text-secondary-text">
+                        {activity.user}
+                      </span>
+                      <span className="text-[10px] text-muted-text">•</span>
+                      <span className="text-[10px] text-muted-text">
+                        {new Date(activity.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+            </div>
+            </div>
+          </div>
+              ))
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAssignModal(false);
-                setSelectedDepartment(null);
-                setSelectedAdminId('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssignAdmin}
-              disabled={isAssigning || !selectedAdminId || loadingAdmins}
-            >
-              {isAssigning ? 'Assigning...' : 'Assign Admin'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </div>
     </div>
   );
 }
-

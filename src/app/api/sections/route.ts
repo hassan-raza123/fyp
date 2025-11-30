@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 
 const createSectionSchema = z.object({
@@ -14,7 +14,7 @@ const createSectionSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // If user is faculty, only show their assigned sections
     if (user?.role === 'faculty') {
-      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {
         where.facultyId = facultyId;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

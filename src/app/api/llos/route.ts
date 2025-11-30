@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 const createLLOSchema = z.object({
   code: z.string().min(1, 'LLO code is required'),
@@ -15,7 +15,7 @@ const createLLOSchema = z.object({
 // GET /api/llos
 export async function GET(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 // POST /api/llos
 export async function POST(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

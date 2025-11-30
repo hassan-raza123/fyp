@@ -65,7 +65,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({
     system: {
       applicationName: 'Smart Campus for MNSUET',
-      academicYear: '2024',
+      academicYear: '2025',
       currentSemester: 'Spring',
       defaultLanguage: 'en',
       timeZone: 'UTC',
@@ -154,7 +154,15 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+        <div 
+          className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2'
+          style={{
+            borderTopColor: 'var(--blue)',
+            borderBottomColor: 'var(--blue)',
+            borderRightColor: 'transparent',
+            borderLeftColor: 'transparent',
+          }}
+        ></div>
       </div>
     );
   }
@@ -163,10 +171,10 @@ export default function SettingsPage() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
+          <h1 className='text-2xl font-bold text-primary-text'>
             System Settings
           </h1>
-          <p className='text-gray-500 dark:text-gray-400'>
+          <p className='text-secondary-text'>
             Configure your application settings
           </p>
         </div>

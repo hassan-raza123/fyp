@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 
 // GET /api/users/[id] - Get a specific user
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
@@ -77,20 +78,21 @@ export async function GET(
 // PUT /api/users/[id] - Update a user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const { id } = await context.params;
     const body = await request.json();
     const { email, first_name, last_name, phone_number, status } = body;
 
@@ -104,7 +106,7 @@ export async function PUT(
 
     // Check if user exists
     const existingUser = await prisma.users.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     if (!existingUser) {
@@ -126,7 +128,7 @@ export async function PUT(
 
     // Update user data
     const updatedUser = await prisma.users.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         email,
         first_name,
@@ -168,11 +170,12 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete a user
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // First validate the user ID
-    const userId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }

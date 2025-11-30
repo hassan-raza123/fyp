@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/api-utils';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

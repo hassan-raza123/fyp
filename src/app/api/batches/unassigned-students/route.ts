@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/api-utils';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { requireAuth, requireRole } from '@/lib/auth';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/batches/unassigned-students - Get students not assigned to any batch
 export async function GET(request: NextRequest) {

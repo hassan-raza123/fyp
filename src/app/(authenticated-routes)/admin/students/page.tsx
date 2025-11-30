@@ -173,8 +173,8 @@ export default function StudentsPage() {
     <div className='container mx-auto py-10'>
       <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>Students</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-3xl font-bold text-primary-text'>Students</h1>
+          <p className='text-secondary-text'>
             Manage student accounts and information
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function StudentsPage() {
           className='flex-1 flex items-center gap-4'
         >
           <div className='relative flex-1'>
-            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-text' />
             <Input
               placeholder='Search students...'
               value={searchQuery}
@@ -245,7 +245,7 @@ export default function StudentsPage() {
         </form>
       </div>
 
-      <div className='rounded-md border'>
+      <div className='rounded-md border border-card-border'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -328,7 +328,7 @@ export default function StudentsPage() {
           >
             Previous
           </Button>
-          <span className='text-sm text-muted-foreground'>
+          <span className='text-sm text-muted-text'>
             Page {page} of {totalPages}
           </span>
           <Button

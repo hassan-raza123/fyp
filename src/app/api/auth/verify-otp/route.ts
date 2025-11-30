@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { createToken } from '@/lib/jwt';
+import { createToken } from '@/lib/auth';
 import { z } from 'zod';
 import {
   AdminRole,

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 const createStudentSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -18,7 +19,7 @@ const createStudentSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/department-utils');
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
 
     // Get current department ID from settings
     const currentDepartmentId = await getCurrentDepartmentId();
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
     // If user is faculty, only show students from their sections
     let studentIds: number[] | null = null;
     if (user?.role === 'faculty') {
-      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {
         // Get student IDs from faculty's sections
@@ -226,7 +227,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -330,7 +331,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultPassword = '11223344';
+    const defaultPassword = getDefaultPassword('student');
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     // Create user with student role

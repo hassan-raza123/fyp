@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/api-utils';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
 
 // GET /api/batches/[id] - Get a single batch by ID

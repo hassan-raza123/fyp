@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
-import { getUserFromRequest } from '@/lib/api-utils';
-import { getCurrentDepartmentId } from '@/lib/department-utils';
+import { requireAuth } from '@/lib/auth';
 
 function getActivitySummary(activity: any) {
   // Try to parse details JSON
@@ -38,23 +37,42 @@ function getActivitySummary(activity: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
     }
 
-    // Get current department ID from settings
-    const departmentId = await getCurrentDepartmentId();
-    if (!departmentId) {
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Get admin's user ID from token payload
+    const userId = user.userId;
+    
+    if (!userId || isNaN(Number(userId))) {
+      return NextResponse.json(
+        { error: 'User ID not found' },
+        { status: 400 }
+      );
+    }
+
+    // Get admin's assigned department from faculties table
+    const faculty = await prisma.faculties.findFirst({
+      where: { userId },
+      select: { departmentId: true },
+    });
+
+    if (!faculty || !faculty.departmentId) {
       return NextResponse.json(
         {
           error:
-            'Department not configured. Please set department in Settings.',
+            'No department assigned. Please contact super admin to assign a department to your account.',
         },
         { status: 400 }
       );
     }
+
+    const departmentId = faculty.departmentId;
 
     // Get total students count for current department
     const totalStudents = await prisma.students.count({

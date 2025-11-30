@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import { session_status } from '@prisma/client';
 import { isValid } from 'date-fns';
@@ -17,7 +17,7 @@ const createSessionSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user } = requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     
     // If user is faculty, filter by their sections
     if (user?.role === 'faculty') {
-      const { getFacultyIdFromRequest } = await import('@/lib/faculty-utils');
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
       const facultyId = await getFacultyIdFromRequest(request);
       if (facultyId) {
         where.section = {

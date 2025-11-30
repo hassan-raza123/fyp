@@ -15,7 +15,8 @@ export default function AuthLayout({
 }) {
   return (
     <div 
-      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden'
+      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden light'
+      style={{ colorScheme: 'light' }}
     >
       {/* Preload Background Image */}
       <img
@@ -120,7 +121,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <div className='absolute bottom-6 left-8 text-white/60 text-sm z-20'>
-        © 2024 EduTrack - MNS UET. All rights reserved.
+        © 2025 EduTrack - MNS UET. All rights reserved.
       </div>
     </div>
   );

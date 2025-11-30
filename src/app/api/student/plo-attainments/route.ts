@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/student-utils';
+import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
 
 export async function GET(request: NextRequest) {

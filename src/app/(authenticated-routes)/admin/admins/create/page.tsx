@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 const createAdminSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -113,7 +114,7 @@ export default function CreateAdminPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           phone_number: formData.phoneNumber || null,
-          password: '11223344', // Default password
+          password: getDefaultPassword('admin'), // Role-based default password for admin
         }),
       });
 
@@ -157,7 +158,7 @@ export default function CreateAdminPage() {
 
       toast.success('Admin user created successfully');
       toast.info(
-        `Login credentials - Email: ${formData.email}, Password: 11223344`
+        `Login credentials - Email: ${formData.email}, Password: ${getDefaultPassword('admin')}`
       );
       router.push('/admin/admins');
     } catch (error) {
@@ -321,7 +322,7 @@ export default function CreateAdminPage() {
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Note:</strong> A user account will be created
-                automatically with default password: <strong>11223344</strong>.
+                automatically with default password: <strong>{getDefaultPassword('admin')}</strong>.
                 Admin user can login and change their password. The admin will
                 have full access to manage the department.
               </p>
