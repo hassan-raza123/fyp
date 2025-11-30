@@ -85,21 +85,49 @@ export default function AdminDetailsPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
   if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center text-secondary-text">Loading...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor }}
+          />
+          <p className="text-xs text-secondary-text">Loading admin details...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !admin) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'Admin not found'}</p>
-          <Button variant="outline" onClick={() => router.push('/admin/admins')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+      <div className="space-y-4">
+        <div className="text-center py-12">
+          <p className="mb-4 text-sm" style={{ color: 'var(--error)' }}>{error || 'Admin not found'}</p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="h-8 text-xs border-card-border bg-transparent"
+            style={{
+              color: isDarkMode ? '#ffffff' : '#111827',
+              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+              e.currentTarget.style.borderColor = primaryColor;
+              e.currentTarget.style.color = primaryColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onClick={() => router.push('/admin/admins')}
+          >
+            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
             Back to Admins
           </Button>
         </div>
@@ -119,67 +147,92 @@ export default function AdminDetailsPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 border-card-border bg-transparent"
+            style={{
+              color: isDarkMode ? '#ffffff' : '#111827',
+              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+              e.currentTarget.style.color = primaryColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
             onClick={() => router.push('/admin/admins')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
-              <Shield className="h-8 w-8" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }} />
+            <h1 className="text-lg font-bold flex items-center gap-2 text-primary-text">
+              <Shield className="h-4 w-4" style={{ color: primaryColor }} />
               Admin Details
             </h1>
-            <p className="text-secondary-text">
+            <p className="text-xs text-secondary-text mt-0.5">
               View admin user information
             </p>
           </div>
         </div>
         <Button
+          size="sm"
+          className="h-8 text-xs text-white"
+          style={{
+            backgroundColor: primaryColor,
+            color: 'white',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColorDark;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+          }}
           onClick={() => router.push(`/admin/admins/${adminId}/edit`)}
         >
-          <Edit className="h-4 w-4 mr-2" />
+          <Edit className="h-3.5 w-3.5 mr-1.5" />
           Edit Admin
         </Button>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+      <div className="grid gap-4">
+        <Card className="bg-card border-card-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-primary-text">Personal Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   First Name
                 </p>
-                <p className="text-lg text-primary-text">{admin.user.first_name}</p>
+                <p className="text-sm text-primary-text">{admin.user.first_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Last Name
                 </p>
-                <p className="text-lg text-primary-text">{admin.user.last_name}</p>
+                <p className="text-sm text-primary-text">{admin.user.last_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Email
                 </p>
-                <p className="text-lg text-primary-text">{admin.user.email}</p>
+                <p className="text-sm text-primary-text">{admin.user.email}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Phone Number
                 </p>
-                <p className="text-lg text-primary-text">{admin.user.phone_number || 'N/A'}</p>
+                <p className="text-sm text-primary-text">{admin.user.phone_number || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Status
                 </p>
                 <div className="mt-1">{getStatusBadge(admin.user.status)}</div>
@@ -188,39 +241,39 @@ export default function AdminDetailsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin Information</CardTitle>
+        <Card className="bg-card border-card-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-primary-text">Admin Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Employee ID
                 </p>
-                <p className="text-lg text-primary-text">{admin.employeeId || 'N/A'}</p>
+                <p className="text-sm text-primary-text">{admin.employeeId || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Designation
                 </p>
-                <p className="text-lg text-primary-text">{admin.designation}</p>
+                <p className="text-sm text-primary-text">{admin.designation}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Department
                 </p>
-                <p className="text-lg text-primary-text">
+                <p className="text-sm text-primary-text">
                   {admin.department
                     ? `${admin.department.name} (${admin.department.code})`
                     : 'N/A'}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-text">
+                <p className="text-xs font-medium text-secondary-text mb-1">
                   Role
                 </p>
-                <Badge variant="default" className="mt-1">
+                <Badge variant="default" className="mt-1 text-[10px] px-1.5 py-0.5">
                   <Shield className="h-3 w-3 mr-1" />
                   Admin
                 </Badge>

@@ -72,21 +72,49 @@ export default function FacultyDetailsPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
   if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center text-secondary-text">Loading...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor }}
+          />
+          <p className="text-xs text-secondary-text">Loading faculty details...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !faculty) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'Faculty not found'}</p>
-          <Button variant="outline" onClick={() => router.push('/admin/faculty')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+      <div className="space-y-4">
+        <div className="text-center py-12">
+          <p className="mb-4 text-sm" style={{ color: 'var(--error)' }}>{error || 'Faculty not found'}</p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="h-8 text-xs border-card-border bg-transparent"
+            style={{
+              color: isDarkMode ? '#ffffff' : '#111827',
+              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+              e.currentTarget.style.borderColor = primaryColor;
+              e.currentTarget.style.color = primaryColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
+            onClick={() => router.push('/admin/faculty')}
+          >
+            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
             Back to Faculty
           </Button>
         </div>
@@ -106,69 +134,96 @@ export default function FacultyDetailsPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 border-card-border bg-transparent"
+            style={{
+              color: isDarkMode ? '#ffffff' : '#111827',
+              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+              e.currentTarget.style.color = primaryColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+            }}
             onClick={() => router.push('/admin/faculty')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-primary-text">
+            <h1 className="text-lg font-bold text-primary-text">
               {faculty.user.first_name} {faculty.user.last_name}
             </h1>
-            <p className="text-secondary-text">Faculty Details</p>
+            <p className="text-xs text-secondary-text mt-0.5">Faculty Details</p>
           </div>
         </div>
-        <Button onClick={() => router.push(`/admin/faculty/${facultyId}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" />
+        <Button 
+          size="sm"
+          className="h-8 text-xs text-white"
+          style={{
+            backgroundColor: primaryColor,
+            color: 'white',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColorDark;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+          }}
+          onClick={() => router.push(`/admin/faculty/${facultyId}/edit`)}
+        >
+          <Edit className="mr-1.5 h-3.5 w-3.5" />
           Edit Faculty
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bg-card border-card-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-primary-text">Basic Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 space-y-4">
             <div>
-              <p className="text-sm text-secondary-text">Employee ID</p>
-              <p className="font-medium text-primary-text">{faculty.employeeId || 'N/A'}</p>
+              <p className="text-xs font-medium text-secondary-text mb-1">Employee ID</p>
+              <p className="text-sm text-primary-text">{faculty.employeeId || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-secondary-text">Name</p>
-              <p className="font-medium text-primary-text">
+              <p className="text-xs font-medium text-secondary-text mb-1">Name</p>
+              <p className="text-sm text-primary-text">
                 {faculty.user.first_name} {faculty.user.last_name}
               </p>
             </div>
             <div>
-              <p className="text-sm text-secondary-text">Email</p>
-              <p className="font-medium text-primary-text">{faculty.user.email}</p>
+              <p className="text-xs font-medium text-secondary-text mb-1">Email</p>
+              <p className="text-sm text-primary-text">{faculty.user.email}</p>
             </div>
             <div>
-              <p className="text-sm text-secondary-text">Designation</p>
-              <p className="font-medium text-primary-text">{faculty.designation || 'N/A'}</p>
+              <p className="text-xs font-medium text-secondary-text mb-1">Designation</p>
+              <p className="text-sm text-primary-text">{faculty.designation || 'N/A'}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Department Information</CardTitle>
+        <Card className="bg-card border-card-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-primary-text">Department Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 space-y-4">
             <div>
-              <p className="text-sm text-secondary-text">Department</p>
-              <p className="font-medium text-primary-text">
+              <p className="text-xs font-medium text-secondary-text mb-1">Department</p>
+              <p className="text-sm text-primary-text">
                 {faculty.department.name} ({faculty.department.code})
               </p>
             </div>
             <div>
-              <p className="text-sm text-secondary-text">Status</p>
+              <p className="text-xs font-medium text-secondary-text mb-1">Status</p>
               <div className="mt-1">{getStatusBadge(faculty.user.status)}</div>
             </div>
           </CardContent>

@@ -180,32 +180,52 @@ export default function CreateAdminPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8 border-card-border bg-transparent"
+          style={{
+            color: isDarkMode ? '#ffffff' : '#111827',
+            borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+            e.currentTarget.style.color = primaryColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+          }}
           onClick={() => router.push('/admin/admins')}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
-            <Shield className="h-8 w-8" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }} />
+          <h1 className="text-lg font-bold flex items-center gap-2 text-primary-text">
+            <Shield className="h-4 w-4" style={{ color: primaryColor }} />
             Add Admin User
           </h1>
-          <p className="text-secondary-text">
+          <p className="text-xs text-secondary-text mt-0.5">
             Create a new admin user account
           </p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Information</CardTitle>
+      <Card className="bg-card border-card-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-primary-text">Admin Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -216,10 +236,10 @@ export default function CreateAdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  className={errors.firstName ? 'border-red-500' : ''}
+                  className={`${errors.firstName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.firstName && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
                 )}
               </div>
 
@@ -231,10 +251,10 @@ export default function CreateAdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  className={errors.lastName ? 'border-red-500' : ''}
+                  className={`${errors.lastName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.lastName && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
                 )}
               </div>
 
@@ -247,10 +267,10 @@ export default function CreateAdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={`${errors.email ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.email && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.email}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.email}</p>
                 )}
               </div>
 
@@ -263,6 +283,7 @@ export default function CreateAdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, phoneNumber: e.target.value })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
 
@@ -274,6 +295,7 @@ export default function CreateAdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, employeeId: e.target.value })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
 
@@ -286,10 +308,10 @@ export default function CreateAdminPage() {
                     setFormData({ ...formData, designation: e.target.value })
                   }
                   placeholder="e.g., Department Admin, System Admin"
-                  className={errors.designation ? 'border-red-500' : ''}
+                  className={`${errors.designation ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.designation && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.designation}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.designation}</p>
                 )}
               </div>
 
@@ -301,6 +323,7 @@ export default function CreateAdminPage() {
                     id="departmentId"
                     value="Current Department (from Settings)"
                     disabled
+                    className="bg-card border-card-border text-primary-text"
                     style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
                   <p className="text-xs text-secondary-text">
@@ -317,19 +340,19 @@ export default function CreateAdminPage() {
                     setFormData({ ...formData, status: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
+              <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
                 <strong>Note:</strong> A user account will be created
                 automatically with default password: <strong>{getDefaultPassword('admin')}</strong>.
                 Admin user can login and change their password. The admin will
@@ -337,19 +360,54 @@ export default function CreateAdminPage() {
               </p>
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
+                className="h-8 text-xs border-card-border bg-transparent"
+                style={{
+                  color: isDarkMode ? '#ffffff' : '#111827',
+                  borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 onClick={() => router.push('/admin/admins')}
                 disabled={loading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                size="sm"
+                className="h-8 text-xs text-white"
+                style={{
+                  backgroundColor: loading ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColorDark;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColor;
+                  }
+                }}
+                disabled={loading}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                     Creating...
                   </>
                 ) : (

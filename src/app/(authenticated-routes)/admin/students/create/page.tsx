@@ -288,61 +288,81 @@ export default function CreateStudentPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex items-center gap-4 mb-6'>
+    <div className='space-y-4'>
+      <div className='flex items-center gap-3'>
         <Button
           variant='ghost'
           size='icon'
+          className="h-8 w-8 border-card-border bg-transparent"
+          style={{
+            color: isDarkMode ? '#ffffff' : '#111827',
+            borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+            e.currentTarget.style.color = primaryColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+          }}
           onClick={() => router.push('/admin/students')}
         >
           <ArrowLeft className='h-4 w-4' />
         </Button>
         <div>
-          <h1 className='text-3xl font-bold text-primary-text'>Add Student</h1>
-          <p className='text-secondary-text'>Create a new student account</p>
+          <h1 className='text-lg font-bold text-primary-text'>Add Student</h1>
+          <p className='text-xs text-secondary-text mt-0.5'>Create a new student account</p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Student Information</CardTitle>
+      <Card className="bg-card border-card-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-primary-text">Student Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <form onSubmit={handleSubmit} className='space-y-6'>
             <div className='grid grid-cols-2 gap-6'>
               <div className='space-y-2'>
-                <Label htmlFor='firstName'>First Name</Label>
+                <Label htmlFor='firstName' className="text-xs text-primary-text">First Name</Label>
                 <Input
                   id='firstName'
                   value={formData.firstName}
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  className={errors.firstName ? 'border-red-500' : ''}
+                  className={`${errors.firstName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.firstName && (
-                  <p className='text-sm text-red-500'>{errors.firstName}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.firstName}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='lastName'>Last Name</Label>
+                <Label htmlFor='lastName' className="text-xs text-primary-text">Last Name</Label>
                 <Input
                   id='lastName'
                   value={formData.lastName}
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  className={errors.lastName ? 'border-red-500' : ''}
+                  className={`${errors.lastName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.lastName && (
-                  <p className='text-sm text-red-500'>{errors.lastName}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.lastName}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='email'>Email</Label>
+                <Label htmlFor='email' className="text-xs text-primary-text">Email</Label>
                 <Input
                   id='email'
                   type='email'
@@ -350,46 +370,47 @@ export default function CreateStudentPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={`${errors.email ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.email && (
-                  <p className='text-sm text-red-500'>{errors.email}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.email}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='rollNumber'>Roll Number</Label>
+                <Label htmlFor='rollNumber' className="text-xs text-primary-text">Roll Number</Label>
                 <Input
                   id='rollNumber'
                   value={formData.rollNumber}
                   onChange={(e) =>
                     setFormData({ ...formData, rollNumber: e.target.value })
                   }
-                  className={errors.rollNumber ? 'border-red-500' : ''}
+                  className={`${errors.rollNumber ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.rollNumber && (
-                  <p className='text-sm text-red-500'>{errors.rollNumber}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.rollNumber}</p>
                 )}
               </div>
 
               {/* Department is automatically set from Settings */}
               {currentDepartmentId && (
                 <div className='space-y-2'>
-                  <Label htmlFor='departmentId'>Department</Label>
+                  <Label htmlFor='departmentId' className="text-xs text-primary-text">Department</Label>
                   <Input
                     id='departmentId'
                     value='Current Department (from Settings)'
                     disabled
-                    className='bg-gray-50'
+                    className='bg-card border-card-border text-primary-text'
+                    style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
-                  <p className='text-xs text-gray-500'>
+                  <p className='text-xs text-secondary-text'>
                     Department is configured in System Settings
                   </p>
                 </div>
               )}
 
               <div className='space-y-2'>
-                <Label htmlFor='programId'>Program</Label>
+                <Label htmlFor='programId' className="text-xs text-primary-text">Program</Label>
                 <Select
                   value={formData.programId}
                   onValueChange={(value) =>
@@ -398,15 +419,16 @@ export default function CreateStudentPage() {
                   disabled={fetchingPrograms || !currentDepartmentId}
                 >
                   <SelectTrigger
-                    className={errors.programId ? 'border-red-500' : ''}
+                    className={`${errors.programId ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text`}
                   >
                     <SelectValue placeholder='Select program' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-card-border">
                     {programs.map((program) => (
                       <SelectItem
                         key={program.id}
                         value={program.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {program.name} ({program.code})
                       </SelectItem>
@@ -414,12 +436,12 @@ export default function CreateStudentPage() {
                   </SelectContent>
                 </Select>
                 {errors.programId && (
-                  <p className='text-sm text-red-500'>{errors.programId}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.programId}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='batchId'>Batch</Label>
+                <Label htmlFor='batchId' className="text-xs text-primary-text">Batch</Label>
                 <Select
                   value={formData.batchId}
                   onValueChange={(value) =>
@@ -428,25 +450,25 @@ export default function CreateStudentPage() {
                   disabled={fetchingBatches || !formData.programId}
                 >
                   <SelectTrigger
-                    className={errors.batchId ? 'border-red-500' : ''}
+                    className={`${errors.batchId ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text`}
                   >
                     <SelectValue placeholder='Select batch' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-card-border">
                     {batches.map((batch) => (
-                      <SelectItem key={batch.id} value={batch.id}>
+                      <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
                         {batch.name} ({batch.code})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {errors.batchId && (
-                  <p className='text-sm text-red-500'>{errors.batchId}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.batchId}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='sectionId'>Section</Label>
+                <Label htmlFor='sectionId' className="text-xs text-primary-text">Section</Label>
                 <Select
                   value={formData.sectionId || ''}
                   onValueChange={(value) =>
@@ -459,15 +481,16 @@ export default function CreateStudentPage() {
                   }
                 >
                   <SelectTrigger
-                    className={errors.sectionId ? 'border-red-500' : ''}
+                    className={`${errors.sectionId ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text`}
                   >
                     <SelectValue placeholder='Select section (optional)' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-card-border">
                     {sections.map((section) => (
                       <SelectItem
                         key={section.id}
                         value={section.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {section.name}
                       </SelectItem>
@@ -475,12 +498,12 @@ export default function CreateStudentPage() {
                   </SelectContent>
                 </Select>
                 {errors.sectionId && (
-                  <p className='text-sm text-red-500'>{errors.sectionId}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.sectionId}</p>
                 )}
               </div>
 
               <div className='space-y-2'>
-                <Label htmlFor='status'>Status</Label>
+                <Label htmlFor='status' className="text-xs text-primary-text">Status</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) =>
@@ -488,33 +511,69 @@ export default function CreateStudentPage() {
                   }
                 >
                   <SelectTrigger
-                    className={errors.status ? 'border-red-500' : ''}
+                    className={`${errors.status ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text`}
                   >
                     <SelectValue placeholder='Select status' />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='active'>Active</SelectItem>
-                    <SelectItem value='inactive'>Inactive</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value='active' className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                    <SelectItem value='inactive' className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.status && (
-                  <p className='text-sm text-red-500'>{errors.status}</p>
+                  <p className='text-xs' style={{ color: 'var(--error)' }}>{errors.status}</p>
                 )}
               </div>
             </div>
 
-            <div className='flex justify-end gap-4'>
+            <div className='flex justify-end gap-3'>
               <Button
                 type='button'
                 variant='outline'
+                size="sm"
+                className="h-8 text-xs border-card-border bg-transparent"
+                style={{
+                  color: isDarkMode ? '#ffffff' : '#111827',
+                  borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 onClick={() => router.push('/admin/students')}
+                disabled={loading}
               >
                 Cancel
               </Button>
-              <Button type='submit' disabled={loading}>
+              <Button 
+                type='submit' 
+                size="sm"
+                className="h-8 text-xs text-white"
+                style={{
+                  backgroundColor: loading ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColorDark;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColor;
+                  }
+                }}
+                disabled={loading}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    <Loader2 className='mr-1.5 h-3.5 w-3.5 animate-spin' />
                     Creating...
                   </>
                 ) : (

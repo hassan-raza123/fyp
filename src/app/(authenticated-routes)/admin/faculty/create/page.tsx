@@ -185,63 +185,83 @@ export default function CreateFacultyPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8 border-card-border bg-transparent"
+          style={{
+            color: isDarkMode ? '#ffffff' : '#111827',
+            borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+            e.currentTarget.style.color = primaryColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+          }}
           onClick={() => router.push('/admin/faculty')}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-primary-text">Add Faculty Member</h1>
-          <p className="text-secondary-text">
+          <h1 className="text-lg font-bold text-primary-text">Add Faculty Member</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Create a new faculty member account
           </p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Faculty Information</CardTitle>
+      <Card className="bg-card border-card-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-primary-text">Faculty Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name *</Label>
+                <Label htmlFor="firstName" className="text-xs text-primary-text">First Name *</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  className={errors.firstName ? 'border-red-500' : ''}
+                  className={`${errors.firstName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.firstName && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.firstName}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name *</Label>
+                <Label htmlFor="lastName" className="text-xs text-primary-text">Last Name *</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  className={errors.lastName ? 'border-red-500' : ''}
+                  className={`${errors.lastName ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.lastName && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.lastName}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email" className="text-xs text-primary-text">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -249,15 +269,15 @@ export default function CreateFacultyPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={`${errors.email ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.email && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.email}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.email}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Label htmlFor="phoneNumber" className="text-xs text-primary-text">Phone Number</Label>
                 <Input
                   id="phoneNumber"
                   type="tel"
@@ -265,22 +285,24 @@ export default function CreateFacultyPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, phoneNumber: e.target.value })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employeeId">Employee ID</Label>
+                <Label htmlFor="employeeId" className="text-xs text-primary-text">Employee ID</Label>
                 <Input
                   id="employeeId"
                   value={formData.employeeId}
                   onChange={(e) =>
                     setFormData({ ...formData, employeeId: e.target.value })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="designation">Designation *</Label>
+                <Label htmlFor="designation" className="text-xs text-primary-text">Designation *</Label>
                 <Input
                   id="designation"
                   value={formData.designation}
@@ -288,21 +310,22 @@ export default function CreateFacultyPage() {
                     setFormData({ ...formData, designation: e.target.value })
                   }
                   placeholder="e.g., Assistant Professor"
-                  className={errors.designation ? 'border-red-500' : ''}
+                  className={`${errors.designation ? 'border-[var(--error)]' : ''} bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary`}
                 />
                 {errors.designation && (
-                  <p className="text-sm" style={{ color: 'var(--error)' }}>{errors.designation}</p>
+                  <p className="text-xs" style={{ color: 'var(--error)' }}>{errors.designation}</p>
                 )}
               </div>
 
               {/* Department is automatically set from Settings */}
               {currentDepartmentId && (
                 <div className="space-y-2">
-                  <Label htmlFor="departmentId">Department</Label>
+                  <Label htmlFor="departmentId" className="text-xs text-primary-text">Department</Label>
                   <Input
                     id="departmentId"
                     value="Current Department (from Settings)"
                     disabled
+                    className="bg-card border-card-border text-primary-text"
                     style={{ backgroundColor: 'var(--hover-bg)' }}
                   />
                   <p className="text-xs text-secondary-text">
@@ -312,45 +335,80 @@ export default function CreateFacultyPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status *</Label>
+                <Label htmlFor="status" className="text-xs text-primary-text">Status *</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value: 'active' | 'inactive') =>
                     setFormData({ ...formData, status: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
-              <p className="text-sm" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
+              <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
                 <strong>Note:</strong> A user account will be created
                 automatically with default password: <strong>{getDefaultPassword('faculty')}</strong>.
                 Faculty member can login and change their password.
               </p>
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
+                className="h-8 text-xs border-card-border bg-transparent"
+                style={{
+                  color: isDarkMode ? '#ffffff' : '#111827',
+                  borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 onClick={() => router.push('/admin/faculty')}
                 disabled={loading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                size="sm"
+                className="h-8 text-xs text-white"
+                style={{
+                  backgroundColor: loading ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColorDark;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = primaryColor;
+                  }
+                }}
+                disabled={loading}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                     Creating...
                   </>
                 ) : (
