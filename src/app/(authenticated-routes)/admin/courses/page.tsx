@@ -169,7 +169,7 @@ export default function CoursesPage() {
   if (loading) {
     return (
       <div className='container mx-auto py-10'>
-        <div className='text-center'>Loading...</div>
+        <div className='text-center text-secondary-text'>Loading...</div>
       </div>
     );
   }
@@ -177,7 +177,7 @@ export default function CoursesPage() {
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-bold'>Courses</h1>
+        <h1 className='text-3xl font-bold text-primary-text'>Courses</h1>
         <Button onClick={() => router.push('/admin/courses/create')}>
           <Plus className='mr-2 h-4 w-4' />
           Create Course
@@ -187,7 +187,7 @@ export default function CoursesPage() {
       <div className='flex gap-4 mb-6'>
         <div className='flex-1'>
           <div className='relative'>
-            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-text' />
             <Input
               placeholder='Search courses...'
               value={search}
@@ -222,7 +222,7 @@ export default function CoursesPage() {
         </Select>
       </div>
 
-      <div className='rounded-md border'>
+      <div className='rounded-md border border-card-border'>
         <Table>
           <TableHeader>
             <TableRow>

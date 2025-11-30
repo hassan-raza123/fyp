@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Users,
   GraduationCap,
@@ -43,66 +44,111 @@ interface StatCardProps {
   icon: React.ReactNode;
   change?: number;
   trend?: 'up' | 'down';
+  isDarkMode?: boolean;
 }
 
-const StatCard = ({ title, value, icon, change, trend }: StatCardProps) => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          {title}
-        </p>
-        <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">
-          {value}
-        </h3>
-        {change !== undefined && (
-          <div className="flex items-center mt-2">
-            <span
-              className={`text-sm font-medium ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {trend === 'up' ? (
-                <ArrowUpRight className="inline w-4 h-4" />
-              ) : (
-                <ArrowDownRight className="inline w-4 h-4" />
-              )}
-              {change}%
-            </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-              vs last month
-            </span>
+const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: StatCardProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div className="bg-card border-card-border rounded-xl p-6 shadow-sm border transition-all duration-200 hover:shadow-md">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-secondary-text">
+            {title}
+          </p>
+          <h3 className="text-2xl font-bold mt-1 text-primary-text">
+            {value}
+          </h3>
+          {change !== undefined && (
+            <div className="flex items-center mt-2">
+              <span
+                className={`text-sm font-medium ${
+                  trend === 'up' ? 'text-[var(--success-green)]' : 'text-[var(--error)]'
+                }`}
+              >
+                {trend === 'up' ? (
+                  <ArrowUpRight className="inline w-4 h-4" />
+                ) : (
+                  <ArrowDownRight className="inline w-4 h-4" />
+                )}
+                {change}%
+              </span>
+              <span className="text-sm text-muted-text ml-2">
+                vs last month
+              </span>
+            </div>
+          )}
+        </div>
+        <div 
+          className="p-3 rounded-lg transition-transform duration-200 hover:scale-110"
+          style={{
+            backgroundColor: iconBgColor,
+          }}
+        >
+          <div style={{ color: iconColor }}>
+            {icon}
           </div>
-        )}
-      </div>
-      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-        {icon}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ActivityItemProps {
   summary: string;
   user: string;
   time: string;
   icon: React.ReactNode;
+  isDarkMode?: boolean;
 }
 
-const ActivityItem = ({ summary, user, time, icon }: ActivityItemProps) => (
-  <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
-    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-      {icon}
+const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: ActivityItemProps) => {
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.1)' 
+    : 'rgba(38, 40, 149, 0.1)';
+  const iconColor = isDarkMode 
+    ? 'var(--orange)' 
+    : 'var(--blue)';
+  
+  return (
+    <div 
+      className="flex items-start space-x-4 p-4 rounded-lg transition-colors"
+      style={{
+        backgroundColor: 'transparent',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+      }}
+    >
+      <div 
+        className="p-2 rounded-lg"
+        style={{
+          backgroundColor: iconBgColor,
+        }}
+      >
+        <div style={{ color: iconColor }}>
+          {icon}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-primary-text">
+          {summary}
+        </p>
+        <p className="text-xs text-secondary-text">By {user}</p>
+        <p className="text-xs text-muted-text mt-1">{time}</p>
+      </div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium text-gray-900 dark:text-white">
-        {summary}
-      </p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">By {user}</p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{time}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 interface DashboardData {
   stats: {
@@ -125,9 +171,17 @@ interface DashboardData {
 }
 
 export default function AdminOverview() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check if user is super admin and redirect
   useEffect(() => {
@@ -213,10 +267,23 @@ export default function AdminOverview() {
   };
 
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+              borderBottomColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          ></div>
+          <p className="text-sm text-secondary-text">
+            Loading dashboard...
+          </p>
+        </div>
       </div>
     );
   }
@@ -225,9 +292,17 @@ export default function AdminOverview() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <div className="text-red-500 text-lg font-semibold mb-2">Error</div>
-          <div className="text-gray-600 dark:text-gray-400">{error}</div>
+          <AlertCircle 
+            className="w-16 h-16 mx-auto mb-4" 
+            style={{ color: 'var(--error)' }}
+          />
+          <div 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--error)' }}
+          >
+            Error
+          </div>
+          <div className="text-secondary-text">{error}</div>
         </div>
       </div>
     );
@@ -237,6 +312,9 @@ export default function AdminOverview() {
     return null;
   }
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
   return (
     <>
       {data && (
@@ -244,15 +322,27 @@ export default function AdminOverview() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-primary-text">
                 Department Dashboard
               </h1>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-secondary-text">
                 Welcome back! Here's what's happening in your department.
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 text-primary rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+              <button 
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
+                  color: primaryColor,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+                }}
+              >
                 <FileText className="w-4 h-4 inline mr-2" />
                 Generate Report
               </button>
@@ -264,51 +354,47 @@ export default function AdminOverview() {
             <StatCard
               title="Total Students"
               value={data.stats.totalStudents.toLocaleString()}
-              icon={
-                <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              }
+              icon={<Users className="w-6 h-6" />}
               change={12}
               trend="up"
+              isDarkMode={isDarkMode}
             />
             <StatCard
               title="Active Programs"
               value={data.stats.totalPrograms}
-              icon={
-                <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              }
+              icon={<GraduationCap className="w-6 h-6" />}
               change={8}
               trend="up"
+              isDarkMode={isDarkMode}
             />
             <StatCard
               title="Total Courses"
               value={data.stats.totalCourses}
-              icon={
-                <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              }
+              icon={<BookOpen className="w-6 h-6" />}
               change={-3}
               trend="down"
+              isDarkMode={isDarkMode}
             />
             <StatCard
               title="Total Faculty"
               value={data.stats.totalFaculty}
-              icon={
-                <UserCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              }
+              icon={<UserCheck className="w-6 h-6" />}
+              isDarkMode={isDarkMode}
             />
           </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Recent Activity */}
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="lg:col-span-2 bg-card border-card-border rounded-xl shadow-sm border">
+              <div className="p-6 border-b border-card-border">
+                <h2 className="text-lg font-semibold text-primary-text">
                   Recent Activity
                 </h2>
               </div>
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
                 {data.recentActivities.length === 0 ? (
-                  <div className="p-6 text-center text-gray-400 dark:text-gray-500">
+                  <div className="p-6 text-center text-muted-text">
                     No recent activity.
                   </div>
                 ) : (
@@ -318,9 +404,8 @@ export default function AdminOverview() {
                       summary={activity.summary}
                       user={activity.user}
                       time={new Date(activity.createdAt).toLocaleString()}
-                      icon={
-                        <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      }
+                      icon={<Users className="w-5 h-5" />}
+                      isDarkMode={isDarkMode}
                     />
                   ))
                 )}
@@ -329,19 +414,19 @@ export default function AdminOverview() {
 
             {/* Quick Stats */}
             <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <div className="bg-card border-card-border rounded-xl shadow-sm border p-6">
+                <h2 className="text-lg font-semibold text-primary-text mb-4">
                   Quick Stats
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <Calendar className="w-5 h-5" style={{ color: primaryColor }} />
+                      <span className="text-sm text-secondary-text">
                         Current Semester
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm font-medium text-primary-text">
                       {data.currentSemester
                         ? data.currentSemester.name
                         : 'No active semester'}
@@ -349,23 +434,23 @@ export default function AdminOverview() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <BarChart2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <BarChart2 className="w-5 h-5" style={{ color: primaryColor }} />
+                      <span className="text-sm text-secondary-text">
                         Average GPA
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm font-medium text-primary-text">
                       3.45
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <TrendingUp className="w-5 h-5" style={{ color: primaryColor }} />
+                      <span className="text-sm text-secondary-text">
                         Enrollment Rate
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm font-medium text-primary-text">
                       +15%
                     </span>
                   </div>
@@ -375,14 +460,25 @@ export default function AdminOverview() {
               <div 
                 className="rounded-xl shadow-sm p-6 text-white"
                 style={{
-                  background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
+                  background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColorDark})`
                 }}
               >
                 <h2 className="text-lg font-semibold mb-2">Need Help?</h2>
-                <p className="text-sm text-purple-100 mb-4">
+                <p className="text-sm mb-4" style={{ color: 'var(--white-opacity-80)' }}>
                   Get support from our team or check the documentation
                 </p>
-                <button className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium">
+                <button 
+                  className="w-full px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                  style={{
+                    backgroundColor: 'var(--white-opacity-10)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--white-opacity-20)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--white-opacity-10)';
+                  }}
+                >
                   Contact Support
                 </button>
               </div>
