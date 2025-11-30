@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDefaultPassword } from '@/lib/password-utils';
 import {
@@ -65,14 +66,61 @@ export default function AdminsPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
+  const [viewingAdmin, setViewingAdmin] = useState<any>(null);
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
+  const [newAdmin, setNewAdmin] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    employeeId: '',
+    designation: 'Admin',
+    status: 'active' as 'active' | 'inactive',
+  });
+  const [editAdmin, setEditAdmin] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    employeeId: '',
+    designation: 'Admin',
+    status: 'active' as 'active' | 'inactive',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   useEffect(() => {
     setMounted(true);
+    fetchCurrentDepartment();
   }, []);
 
   useEffect(() => {
     fetchAdmins();
   }, [search, statusFilter]);
+
+  const fetchCurrentDepartment = async () => {
+    try {
+      const checkResponse = await fetch('/api/admin/check-department', {
+        credentials: 'include',
+      });
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to fetch department');
+      }
+      
+      const checkData = await checkResponse.json();
+      if (checkData.success && checkData.hasDepartment && checkData.department) {
+        setCurrentDepartmentId(checkData.department.id.toString());
+      }
+    } catch (error) {
+      console.error('Error fetching current department:', error);
+    }
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -119,12 +167,205 @@ export default function AdminsPage() {
     }
   };
 
+  const handleViewAdmin = async (admin: Admin) => {
+    setSelectedAdmin(admin);
+    setIsLoadingAdmin(true);
+    setShowViewModal(true);
+    try {
+      const response = await fetch(`/api/users/${admin.userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin');
+      const data = await response.json();
+      setViewingAdmin(data);
+    } catch (error) {
+      console.error('Error fetching admin:', error);
+      toast.error('Failed to load admin details');
+      setShowViewModal(false);
+    } finally {
+      setIsLoadingAdmin(false);
+    }
+  };
+
+  const handleEditAdmin = async (admin: Admin) => {
+    setSelectedAdmin(admin);
+    setIsLoadingAdmin(true);
+    setShowEditModal(true);
+    try {
+      const response = await fetch(`/api/users/${admin.userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin');
+      const data = await response.json();
+      setEditAdmin({
+        firstName: data.first_name || '',
+        lastName: data.last_name || '',
+        email: data.email || '',
+        phoneNumber: data.phone_number || '',
+        employeeId: data.faculty?.employeeId || '',
+        designation: data.faculty?.designation || 'Admin',
+        status: (data.status || 'active') as 'active' | 'inactive',
+      });
+    } catch (error) {
+      console.error('Error fetching admin:', error);
+      toast.error('Failed to load admin details');
+      setShowEditModal(false);
+    } finally {
+      setIsLoadingAdmin(false);
+    }
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!newAdmin.firstName || !newAdmin.lastName || !newAdmin.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsCreating(true);
+    setErrors({});
+    try {
+      // Create user first
+      const userResponse = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: newAdmin.email,
+          first_name: newAdmin.firstName,
+          last_name: newAdmin.lastName,
+          phone_number: newAdmin.phoneNumber || null,
+          password: getDefaultPassword('admin'),
+        }),
+      });
+
+      const userData = await userResponse.json();
+      if (!userResponse.ok) {
+        throw new Error(userData.error || 'Failed to create user');
+      }
+
+      if (!userData.success || !userData.data) {
+        throw new Error('Failed to create user account');
+      }
+
+      const userId = userData.data.id;
+
+      // Assign admin role
+      const roleResponse = await fetch(`/api/users/${userId}/roles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          roles: ['admin'],
+          facultyDetails: {
+            departmentId: currentDepartmentId,
+            designation: newAdmin.designation,
+            employeeId: newAdmin.employeeId || null,
+          },
+        }),
+      });
+
+      const roleData = await roleResponse.json();
+      if (!roleResponse.ok) {
+        await fetch(`/api/users/${userId}`, { method: 'DELETE', credentials: 'include' });
+        throw new Error(roleData.error || 'Failed to assign admin role');
+      }
+
+      toast.success('Admin user created successfully');
+      toast.info(`Login credentials - Email: ${newAdmin.email}, Password: ${getDefaultPassword('admin')}`);
+      setShowCreateModal(false);
+      setNewAdmin({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        employeeId: '',
+        designation: 'Admin',
+        status: 'active',
+      });
+      fetchAdmins();
+    } catch (error) {
+      console.error('Error creating admin:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create admin');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleUpdateAdmin = async () => {
+    if (!selectedAdmin) return;
+
+    if (!editAdmin.firstName || !editAdmin.lastName || !editAdmin.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsUpdating(true);
+    setErrors({});
+    try {
+      // Get user with faculty info
+      const userGetResponse = await fetch(`/api/users/${selectedAdmin.userId}`, {
+        credentials: 'include',
+      });
+      const userGetData = await userGetResponse.json();
+      
+      if (!userGetResponse.ok || userGetData.error) {
+        throw new Error(userGetData.error || 'Failed to fetch user');
+      }
+
+      // Update user
+      const userResponse = await fetch(`/api/users/${selectedAdmin.userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          first_name: editAdmin.firstName,
+          last_name: editAdmin.lastName,
+          email: editAdmin.email,
+          phone_number: editAdmin.phoneNumber || null,
+          status: editAdmin.status,
+        }),
+      });
+
+      const userData = await userResponse.json();
+      if (!userResponse.ok) {
+        throw new Error(userData.error || 'Failed to update user');
+      }
+
+      // Update faculty/admin details if faculty record exists
+      if (userGetData.faculty?.id) {
+        const facultyResponse = await fetch(`/api/faculty/${userGetData.faculty.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            employeeId: editAdmin.employeeId || null,
+            designation: editAdmin.designation,
+            status: editAdmin.status,
+          }),
+        });
+
+        if (!facultyResponse.ok) {
+          console.warn('Failed to update faculty details');
+        }
+      }
+
+      toast.success('Admin updated successfully');
+      setShowEditModal(false);
+      setSelectedAdmin(null);
+      fetchAdmins();
+    } catch (error) {
+      console.error('Error updating admin:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update admin');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!selectedAdmin) return;
 
     setIsDeleting(true);
     try {
-      // Delete admin by removing their role and faculty record
       const response = await fetch(`/api/users/${selectedAdmin.userId}`, {
         method: 'DELETE',
         credentials: 'include',
@@ -161,6 +402,7 @@ export default function AdminsPage() {
   };
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
 
   if (!mounted || loading) {
     return (
@@ -201,7 +443,7 @@ export default function AdminsPage() {
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = primaryColor;
           }}
-          onClick={() => router.push('/admin/admins/create')}
+          onClick={() => setShowCreateModal(true)}
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
           Add Admin
@@ -298,9 +540,7 @@ export default function AdminsPage() {
                               e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
                               e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                             }}
-                            onClick={() =>
-                              router.push(`/admin/admins/${admin.userId}`)
-                            }
+                            onClick={() => handleViewAdmin(admin)}
                           >
                             <Eye className="h-3.5 w-3.5 mr-1" />
                             View
@@ -323,9 +563,7 @@ export default function AdminsPage() {
                               e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
                               e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
                             }}
-                            onClick={() =>
-                              router.push(`/admin/admins/${admin.userId}/edit`)
-                            }
+                            onClick={() => handleEditAdmin(admin)}
                           >
                             <Edit className="h-3.5 w-3.5 mr-1" />
                             Edit
@@ -362,6 +600,454 @@ export default function AdminsPage() {
             </Table>
           </div>
 
+      {/* Create Admin Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create New Admin</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Create a new admin user account
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="create_firstName" className="text-xs text-primary-text">First Name *</Label>
+                <Input
+                  id="create_firstName"
+                  value={newAdmin.firstName}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, firstName: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create_lastName" className="text-xs text-primary-text">Last Name *</Label>
+                <Input
+                  id="create_lastName"
+                  value={newAdmin.lastName}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, lastName: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_email" className="text-xs text-primary-text">Email *</Label>
+              <Input
+                id="create_email"
+                type="email"
+                value={newAdmin.email}
+                onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_phoneNumber" className="text-xs text-primary-text">Phone Number</Label>
+              <Input
+                id="create_phoneNumber"
+                type="tel"
+                value={newAdmin.phoneNumber}
+                onChange={(e) => setNewAdmin({ ...newAdmin, phoneNumber: e.target.value })}
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_employeeId" className="text-xs text-primary-text">Employee ID</Label>
+              <Input
+                id="create_employeeId"
+                value={newAdmin.employeeId}
+                onChange={(e) => setNewAdmin({ ...newAdmin, employeeId: e.target.value })}
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_designation" className="text-xs text-primary-text">Designation *</Label>
+              <Input
+                id="create_designation"
+                value={newAdmin.designation}
+                onChange={(e) => setNewAdmin({ ...newAdmin, designation: e.target.value })}
+                placeholder="e.g., Department Admin"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create_status" className="text-xs text-primary-text">Status *</Label>
+              <Select
+                value={newAdmin.status}
+                onValueChange={(value: 'active' | 'inactive') => setNewAdmin({ ...newAdmin, status: value })}
+              >
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
+              <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
+                <strong>Note:</strong> A user account will be created automatically with default password: <strong>{getDefaultPassword('admin')}</strong>.
+                Admin user can login and change their password.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowCreateModal(false);
+                setNewAdmin({
+                  firstName: '',
+                  lastName: '',
+                  email: '',
+                  phoneNumber: '',
+                  employeeId: '',
+                  designation: 'Admin',
+                  status: 'active',
+                });
+              }}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs text-white"
+              style={{
+                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+              onClick={handleCreateAdmin}
+              disabled={isCreating}
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Admin'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Admin Modal */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Admin Details</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              View complete information about this admin user
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingAdmin ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : viewingAdmin ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xs font-semibold text-secondary-text mb-3">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">First Name</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.first_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Last Name</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.last_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Email</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Phone Number</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.phone_number || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-text mb-1">Status</p>
+                    <div className="mt-1">{getStatusBadge(viewingAdmin.status)}</div>
+                  </div>
+                </div>
+              </div>
+              {viewingAdmin.faculty && (
+                <div>
+                  <h3 className="text-xs font-semibold text-secondary-text mb-3">Admin Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] text-muted-text mb-1">Employee ID</p>
+                      <p className="text-xs text-primary-text">{viewingAdmin.faculty.employeeId || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-text mb-1">Designation</p>
+                      <p className="text-xs text-primary-text">{viewingAdmin.faculty.designation || 'Department Admin'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-text mb-1">Department</p>
+                      <p className="text-xs text-primary-text">
+                        {viewingAdmin.faculty.department
+                          ? `${viewingAdmin.faculty.department.name} (${viewingAdmin.faculty.department.code})`
+                          : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-xs text-secondary-text">
+              <p>No data available</p>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingAdmin(null);
+              }}
+            >
+              Close
+            </Button>
+            {viewingAdmin && (
+              <Button
+                size="sm"
+                className="h-8 text-xs text-white"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: 'white',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }}
+                onClick={() => {
+                  const admin = admins.find(a => a.userId === viewingAdmin.id);
+                  if (admin) {
+                    setShowViewModal(false);
+                    handleEditAdmin(admin);
+                  }
+                }}
+              >
+                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                Edit Admin
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Admin Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit Admin</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Update admin user information
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingAdmin ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_firstName" className="text-xs text-primary-text">First Name *</Label>
+                  <Input
+                    id="edit_firstName"
+                    value={editAdmin.firstName}
+                    onChange={(e) => setEditAdmin({ ...editAdmin, firstName: e.target.value })}
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_lastName" className="text-xs text-primary-text">Last Name *</Label>
+                  <Input
+                    id="edit_lastName"
+                    value={editAdmin.lastName}
+                    onChange={(e) => setEditAdmin({ ...editAdmin, lastName: e.target.value })}
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_email" className="text-xs text-primary-text">Email *</Label>
+                <Input
+                  id="edit_email"
+                  type="email"
+                  value={editAdmin.email}
+                  onChange={(e) => setEditAdmin({ ...editAdmin, email: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_phoneNumber" className="text-xs text-primary-text">Phone Number</Label>
+                <Input
+                  id="edit_phoneNumber"
+                  type="tel"
+                  value={editAdmin.phoneNumber}
+                  onChange={(e) => setEditAdmin({ ...editAdmin, phoneNumber: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_employeeId" className="text-xs text-primary-text">Employee ID</Label>
+                <Input
+                  id="edit_employeeId"
+                  value={editAdmin.employeeId}
+                  onChange={(e) => setEditAdmin({ ...editAdmin, employeeId: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_designation" className="text-xs text-primary-text">Designation *</Label>
+                <Input
+                  id="edit_designation"
+                  value={editAdmin.designation}
+                  onChange={(e) => setEditAdmin({ ...editAdmin, designation: e.target.value })}
+                  placeholder="e.g., Department Admin"
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_status" className="text-xs text-primary-text">Status *</Label>
+                <Select
+                  value={editAdmin.status}
+                  onValueChange={(value: 'active' | 'inactive') => setEditAdmin({ ...editAdmin, status: value })}
+                >
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedAdmin(null);
+              }}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs text-white"
+              style={{
+                backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+              onClick={handleUpdateAdmin}
+              disabled={isUpdating}
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Admin'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Admin Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
