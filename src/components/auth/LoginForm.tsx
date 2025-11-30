@@ -8,7 +8,7 @@ import {
   LoginResponse,
   ValidationErrors,
   AdminRole,
-} from '@/app/types/login';
+} from '@/types/login';
 import Link from 'next/link';
 
 interface FormData {
