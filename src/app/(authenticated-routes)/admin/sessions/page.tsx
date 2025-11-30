@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,6 +75,10 @@ interface Section {
 }
 
 export default function SessionsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -94,6 +99,10 @@ export default function SessionsPage() {
     remarks: '',
     status: 'scheduled' as session_status,
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchSections();
@@ -317,15 +326,21 @@ export default function SessionsPage() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Calendar className="h-8 w-8" />
+          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+            <Calendar className="h-8 w-8" style={{ color: primaryColor }} />
             Class Sessions
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-secondary-text">
             Manage class sessions for all sections
           </p>
         </div>
@@ -339,7 +354,7 @@ export default function SessionsPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
               <Input
                 placeholder="Search sessions..."
                 value={search}
@@ -589,9 +604,10 @@ export default function SessionsPage() {
                     : ''
                 }
                 disabled
-                className="bg-gray-50"
+                style={{ backgroundColor: 'var(--hover-bg)' }}
+                disabled
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-text">
                 Section cannot be changed
               </p>
             </div>

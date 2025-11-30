@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -53,6 +54,10 @@ interface Admin {
 }
 
 export default function AdminsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +66,10 @@ export default function AdminsPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchAdmins();
@@ -152,10 +161,10 @@ export default function AdminsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-secondary-text">Loading...</div>
       </div>
     );
   }
@@ -164,11 +173,11 @@ export default function AdminsPage() {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
+          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+            <Shield className="h-8 w-8" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }} />
             Department Admins
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-secondary-text">
             Manage admin users in your department
           </p>
         </div>
@@ -186,7 +195,7 @@ export default function AdminsPage() {
           <div className="flex gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
                 <Input
                   placeholder="Search admins..."
                   value={search}
@@ -207,7 +216,7 @@ export default function AdminsPage() {
             </Select>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border border-card-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -237,10 +246,10 @@ export default function AdminsPage() {
                       </TableCell>
                       <TableCell>{admin.user.email}</TableCell>
                       <TableCell>
-                        <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                        <code className="text-sm px-2 py-1 rounded" style={{ backgroundColor: 'var(--hover-bg)' }}>
                           {getDefaultPassword('admin')}
                         </code>
-                        <span className="text-xs text-muted-foreground ml-2">
+                        <span className="text-xs text-muted-text ml-2">
                           (default)
                         </span>
                       </TableCell>

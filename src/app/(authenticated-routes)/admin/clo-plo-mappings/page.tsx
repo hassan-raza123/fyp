@@ -9,8 +9,8 @@ export default function CLOPLOMappingsPage() {
     <div className='container mx-auto py-6'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-2xl font-bold'>CLO-PLO Mappings</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-2xl font-bold text-primary-text'>CLO-PLO Mappings</h1>
+          <p className='text-secondary-text'>
             Manage mappings between Course Learning Outcomes (CLO) and Program
             Learning Outcomes (PLO)
           </p>

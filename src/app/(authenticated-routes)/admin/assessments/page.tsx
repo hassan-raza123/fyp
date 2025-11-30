@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { AssessmentList } from '@/components/assessments/AssessmentList';
 import { CreateAssessmentForm } from '@/components/assessments/CreateAssessmentForm';
 import { Button } from '@/components/ui/button';
@@ -35,12 +36,20 @@ interface CourseOffering {
 }
 
 export default function AssessmentsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [selectedCourseOffering, setSelectedCourseOffering] =
     useState<string>('');
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCourseOfferings();
@@ -98,12 +107,16 @@ export default function AssessmentsPage() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Assessments</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-primary-text">Assessments</h1>
+          <p className="text-secondary-text">
             Create and manage assessment tools to measure learning outcomes
           </p>
         </div>

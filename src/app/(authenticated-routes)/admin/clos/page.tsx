@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -42,6 +43,10 @@ interface Course {
 }
 
 export default function AdminCLOsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -58,6 +63,10 @@ export default function AdminCLOsPage() {
     bloomLevel: '',
     status: 'active' as 'active' | 'inactive' | 'archived',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const bloomLevels = [
     'Remember',
@@ -232,16 +241,16 @@ export default function AdminCLOsPage() {
       ? clos
       : clos.filter((clo) => clo.courseId.toString() === selectedCourse);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (!mounted || isLoading) {
+    return <div className="text-secondary-text">Loading...</div>;
   }
 
   return (
     <div className='container mx-auto py-6'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-2xl font-bold'>Course Learning Outcomes</h1>
-          <p className='text-gray-500'>Manage all course learning outcomes</p>
+          <h1 className='text-2xl font-bold text-primary-text'>Course Learning Outcomes</h1>
+          <p className='text-secondary-text'>Manage all course learning outcomes</p>
         </div>
         <div className='flex gap-4'>
           <Button onClick={() => setIsCreateDialogOpen(true)}>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -130,6 +131,10 @@ const formSchema = z.object({
 });
 
 export default function StudentDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
@@ -140,6 +145,10 @@ export default function StudentDetailsPage() {
   const [saving, setSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [batches, setBatches] = useState<Batch[]>([]);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [student, setStudent] = useState<Student | null>(null);
@@ -420,15 +429,19 @@ export default function StudentDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
       case 'suspended':
-        return 'bg-yellow-500';
+        return 'bg-[var(--orange)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -442,10 +455,10 @@ export default function StudentDetailsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold text-primary-text">
               {student.user.firstName} {student.user.lastName}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-secondary-text">
               Roll Number: {student.rollNumber}
             </p>
           </div>

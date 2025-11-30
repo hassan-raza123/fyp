@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -55,6 +56,10 @@ interface Course {
 }
 
 export default function AdminLLOsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [llos, setLLOs] = useState<LLO[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -71,6 +76,10 @@ export default function AdminLLOsPage() {
     bloomLevel: '',
     status: 'active' as 'active' | 'inactive' | 'archived',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const bloomLevels = [
     'Remember',
@@ -251,10 +260,10 @@ export default function AdminLLOsPage() {
       ? llos
       : llos.filter((llo) => llo.courseId.toString() === selectedCourse);
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="container mx-auto py-6">
-        <div className="text-center py-12">Loading LLOs...</div>
+        <div className="text-center py-12 text-secondary-text">Loading LLOs...</div>
       </div>
     );
   }
@@ -263,8 +272,8 @@ export default function AdminLLOsPage() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Lab Learning Outcomes (LLOs)</h1>
-          <p className="text-gray-500">Manage all lab learning outcomes</p>
+          <h1 className="text-2xl font-bold text-primary-text">Lab Learning Outcomes (LLOs)</h1>
+          <p className="text-secondary-text">Manage all lab learning outcomes</p>
         </div>
         <div className="flex gap-4">
           <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -312,7 +321,7 @@ export default function AdminLLOsPage() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{llo.course.name}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-secondary-text">
                         {llo.course.code}
                       </div>
                     </div>

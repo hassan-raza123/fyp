@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -39,6 +40,10 @@ interface Semester {
 }
 
 export default function SemestersPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +51,10 @@ export default function SemestersPage() {
   const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchSemesters();
@@ -114,12 +123,16 @@ export default function SemestersPage() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Semesters</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-primary-text">Semesters</h1>
+          <p className="text-secondary-text">
             Manage academic semesters and their details
           </p>
         </div>
@@ -133,7 +146,7 @@ export default function SemestersPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
               <Input
                 placeholder="Search semesters..."
                 value={search}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -56,6 +57,10 @@ interface Program {
 }
 
 function PLOsPageContent() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const searchParams = useSearchParams();
   const [plos, setPLOs] = useState<PLO[]>([]);
@@ -73,6 +78,10 @@ function PLOsPageContent() {
     status: 'active' as 'active' | 'inactive' | 'archived',
     programId: '',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const bloomLevels = [
     'Remember',
@@ -241,16 +250,16 @@ function PLOsPageContent() {
       ? plos
       : plos.filter((plo) => plo.program.id.toString() === selectedProgram);
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!mounted || loading) {
+    return <div className="text-secondary-text">Loading...</div>;
   }
 
   return (
     <div className='container mx-auto py-6'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-2xl font-bold'>Program Learning Outcomes</h1>
-          <p className='text-gray-500'>Manage all program learning outcomes</p>
+          <h1 className='text-2xl font-bold text-primary-text'>Program Learning Outcomes</h1>
+          <p className='text-secondary-text'>Manage all program learning outcomes</p>
         </div>
         <div className='flex gap-4'>
           <Button onClick={() => setIsCreateDialogOpen(true)}>

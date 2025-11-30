@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -52,11 +53,19 @@ interface Section {
 }
 
 export default function SectionsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchSections();
@@ -108,23 +117,23 @@ export default function SectionsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
       case 'suspended':
-        return 'bg-yellow-500';
+        return 'bg-[var(--orange)] text-white';
       case 'deleted':
-        return 'bg-red-500';
+        return 'bg-[var(--error)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className='container mx-auto py-10'>
         <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Loading...</p>
+          <p className='text-secondary-text'>Loading...</p>
         </div>
       </div>
     );
@@ -133,7 +142,7 @@ export default function SectionsPage() {
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-bold'>Sections</h1>
+        <h1 className='text-3xl font-bold text-primary-text'>Sections</h1>
         <Button onClick={() => router.push('/admin/sections/create')}>
           <Plus className='mr-2 h-4 w-4' />
           Create Section
@@ -147,7 +156,7 @@ export default function SectionsPage() {
         <CardContent>
           <div className='flex gap-4 mb-6'>
             <div className='relative flex-1'>
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-text' />
               <Input
                 placeholder='Search sections...'
                 value={searchTerm}
@@ -168,7 +177,7 @@ export default function SectionsPage() {
             </Select>
           </div>
 
-          <div className='rounded-md border'>
+          <div className='rounded-md border border-card-border'>
             <Table>
               <TableHeader>
                 <TableRow>

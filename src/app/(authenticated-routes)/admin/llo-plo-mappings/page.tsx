@@ -9,8 +9,8 @@ export default function LLOPLOMappingsPage() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">LLO-PLO Mappings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-primary-text">LLO-PLO Mappings</h1>
+          <p className="text-secondary-text">
             Manage mappings between Lab Learning Outcomes (LLO) and Program
             Learning Outcomes (PLO)
           </p>
@@ -50,33 +50,33 @@ export default function LLOPLOMappingsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">-</div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-secondary-text">
                         All LLO-PLO mappings
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">
+                      <CardTitle className="text-sm font-medium text-primary-text">
                         High Strength
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">-</div>
-                      <p className="text-xs text-muted-foreground">
+                      <div className="text-2xl font-bold text-primary-text">-</div>
+                      <p className="text-xs text-secondary-text">
                         Weight ≥ 0.8
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">
+                      <CardTitle className="text-sm font-medium text-primary-text">
                         Mapped LLOs
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">-</div>
-                      <p className="text-xs text-muted-foreground">
+                      <div className="text-2xl font-bold text-primary-text">-</div>
+                      <p className="text-xs text-secondary-text">
                         LLOs with PLO mappings
                       </p>
                     </CardContent>

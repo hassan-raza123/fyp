@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -46,6 +47,10 @@ interface CourseOffering {
 }
 
 export default function CourseOfferingsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +58,10 @@ export default function CourseOfferingsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchCourseOfferings = async () => {
     try {
@@ -97,22 +106,26 @@ export default function CourseOfferingsPage() {
   const getStatusColor = (status: course_offering_status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-yellow-500';
+        return 'bg-[var(--orange)] text-white';
       case 'cancelled':
-        return 'bg-red-500';
+        return 'bg-[var(--error)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h1 className='text-3xl font-bold'>Course Offerings</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-3xl font-bold text-primary-text'>Course Offerings</h1>
+          <p className='text-secondary-text'>
             Manage course offerings for each semester
           </p>
         </div>
@@ -126,7 +139,7 @@ export default function CourseOfferingsPage() {
         <div className='flex gap-4 mb-6'>
           <div className='flex-1'>
             <div className='relative'>
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-text' />
               <Input
                 placeholder='Search by course code or name...'
                 className='pl-8'
@@ -148,7 +161,7 @@ export default function CourseOfferingsPage() {
           </Select>
         </div>
 
-        <div className='rounded-md border'>
+        <div className='rounded-md border border-card-border'>
           <Table>
             <TableHeader>
               <TableRow>
@@ -181,17 +194,17 @@ export default function CourseOfferingsPage() {
                         <div className='font-medium'>
                           {offering.course.code}
                         </div>
-                        <div className='text-sm text-muted-foreground'>
+                        <div className='text-sm text-secondary-text'>
                           {offering.course.name}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className='font-medium'>
+                        <div className='font-medium text-primary-text'>
                           {offering.semester.name}
                         </div>
-                        <div className='text-sm text-muted-foreground'>
+                        <div className='text-sm text-secondary-text'>
                           {format(
                             new Date(offering.semester.startDate),
                             'MMM d, yyyy'

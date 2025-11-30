@@ -67,6 +67,10 @@ interface User {
 }
 
 export default function NotificationsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,6 +87,10 @@ export default function NotificationsPage() {
     message: '',
     type: '' as notification_type | '',
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -262,12 +270,18 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  if (!mounted) {
+    return null;
+  }
+
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Bell className="h-8 w-8" />
+          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+            <Bell className="h-8 w-8" style={{ color: primaryColor }} />
             Notifications
             {unreadCount > 0 && (
               <Badge variant="destructive" className="ml-2">
@@ -275,7 +289,7 @@ export default function NotificationsPage() {
               </Badge>
             )}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-secondary-text">
             Manage system notifications and announcements
           </p>
         </div>
@@ -289,7 +303,7 @@ export default function NotificationsPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
               <Input
                 placeholder="Search notifications..."
                 value={search}
@@ -356,7 +370,11 @@ export default function NotificationsPage() {
               notifications.map((notification) => (
                 <TableRow
                   key={notification.id}
-                  className={!notification.isRead ? 'bg-blue-50' : ''}
+                  style={{
+                    backgroundColor: !notification.isRead 
+                      ? isDarkMode ? 'rgba(38, 40, 149, 0.1)' : 'rgba(38, 40, 149, 0.05)'
+                      : 'transparent',
+                  }}
                 >
                   <TableCell className="font-medium">
                     {notification.title}
@@ -368,7 +386,7 @@ export default function NotificationsPage() {
                   <TableCell>
                     {notification.user.first_name} {notification.user.last_name}
                     <br />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-text">
                       {notification.user.email} ({notification.user.role})
                     </span>
                   </TableCell>

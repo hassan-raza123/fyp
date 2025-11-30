@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -111,11 +112,19 @@ interface Section {
 }
 
 export default function SectionDetailsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const params = useParams();
   const queryClient = useQueryClient();
   const [section, setSection] = useState<Section | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -235,22 +244,26 @@ export default function SectionDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
       case 'suspended':
-        return 'bg-yellow-500';
+        return 'bg-[var(--orange)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className='container mx-auto py-8'>
       <div className='flex justify-between items-center mb-8'>
         <div>
-          <h1 className='text-3xl font-bold mb-2'>{section.name}</h1>
-          <p className='text-gray-500'>
+          <h1 className='text-3xl font-bold mb-2 text-primary-text'>{section.name}</h1>
+          <p className='text-secondary-text'>
             {section.courseOffering.course.name} -{' '}
             {section.courseOffering.semester.name}
           </p>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -102,6 +103,10 @@ interface Semester {
 }
 
 export default function TranscriptsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  
   const router = useRouter();
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -119,6 +124,10 @@ export default function TranscriptsPage() {
     transcriptType: '' as transcript_type | '',
     isOfficial: false,
   });
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchTranscripts();
@@ -293,15 +302,21 @@ export default function TranscriptsPage() {
       .join(' ');
   };
 
+  if (!mounted) {
+    return null;
+  }
+
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <FileText className="h-8 w-8" />
+          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
+            <FileText className="h-8 w-8" style={{ color: primaryColor }} />
             Transcripts
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-secondary-text">
             Generate and manage student academic transcripts
           </p>
         </div>
@@ -315,7 +330,7 @@ export default function TranscriptsPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
               <Input
                 placeholder="Search transcripts..."
                 value={search}
