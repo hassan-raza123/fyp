@@ -31,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Faculty {
   id: number;
@@ -150,124 +149,183 @@ export default function FacultyPage() {
     }
   };
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center text-secondary-text">Loading...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center space-y-3">
+          <div 
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor }}
+          />
+          <p className="text-xs text-secondary-text">Loading faculty...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-primary-text">Department Faculty</h1>
-          <p className="text-secondary-text">
+          <h1 className="text-lg font-bold text-primary-text">Department Faculty</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Manage faculty members in your department
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/faculty/create')}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button 
+          size="sm" 
+          className="h-8 text-xs text-white"
+          style={{
+            backgroundColor: primaryColor,
+            color: 'white',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+          }}
+          onClick={() => router.push('/admin/faculty/create')}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
           Add Faculty
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Faculty Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
-                <Input
-                  placeholder="Search faculty..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search faculty..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            />
           </div>
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+            <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div className="rounded-md border border-card-border">
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Employee ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Designation</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Employee ID</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Name</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Email</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Designation</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Department</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Status</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-primary-text h-9 py-2">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {faculties.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={7} className="text-center text-xs text-secondary-text py-6">
                       No faculty members found
                     </TableCell>
                   </TableRow>
                 ) : (
                   faculties.map((faculty) => (
-                    <TableRow key={faculty.id}>
-                      <TableCell>{faculty.employeeId || 'N/A'}</TableCell>
-                      <TableCell>
+                    <TableRow key={faculty.id} className="hover:bg-hover-bg transition-colors">
+                      <TableCell className="text-xs text-primary-text py-2">{faculty.employeeId || 'N/A'}</TableCell>
+                      <TableCell className="text-xs text-primary-text py-2">
                         {faculty.user.first_name} {faculty.user.last_name}
                       </TableCell>
-                      <TableCell>{faculty.user.email}</TableCell>
-                      <TableCell>{faculty.designation || 'N/A'}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-secondary-text py-2">{faculty.user.email}</TableCell>
+                      <TableCell className="text-xs text-secondary-text py-2">{faculty.designation || 'N/A'}</TableCell>
+                      <TableCell className="text-xs text-secondary-text py-2">
                         {faculty.department.name} ({faculty.department.code})
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         {getStatusBadge(faculty.user.status)}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                      <TableCell className="text-right py-2">
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="outline"
                             size="sm"
+                            className="h-7 text-xs px-2 border-card-border bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                             onClick={() =>
                               router.push(`/admin/faculty/${faculty.id}`)
                             }
                           >
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="h-3.5 w-3.5 mr-1" />
                             View
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
+                            className="h-7 text-xs px-2 border-card-border bg-transparent"
+                            style={{
+                              color: isDarkMode ? '#ffffff' : '#111827',
+                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.borderColor = primaryColor;
+                              e.currentTarget.style.color = primaryColor;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
+                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                            }}
                             onClick={() =>
                               router.push(`/admin/faculty/${faculty.id}/edit`)
                             }
                           >
-                            <Edit className="h-4 w-4 mr-1" />
+                            <Edit className="h-3.5 w-3.5 mr-1" />
                             Edit
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
+                            className="h-7 text-xs px-2 text-white"
+                            style={{
+                              backgroundColor: '#dc2626',
+                              color: '#ffffff',
+                              borderColor: '#dc2626',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#b91c1c';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#dc2626';
+                            }}
                             onClick={() => {
                               setSelectedFaculty(faculty);
                               setShowDeleteDialog(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
                             Delete
                           </Button>
                         </div>
@@ -278,14 +336,12 @@ export default function FacultyPage() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Delete Faculty</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete Faculty</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Are you sure you want to delete{' '}
               {selectedFaculty
                 ? `${selectedFaculty.user.first_name} ${selectedFaculty.user.last_name}`
@@ -293,9 +349,25 @@ export default function FacultyPage() {
               ? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button
               variant="outline"
+              size="sm"
+              className="h-8 text-xs border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
               onClick={() => {
                 setShowDeleteDialog(false);
                 setSelectedFaculty(null);
@@ -306,6 +378,23 @@ export default function FacultyPage() {
             </Button>
             <Button
               variant="destructive"
+              size="sm"
+              className="h-8 text-xs text-white"
+              style={{
+                backgroundColor: '#dc2626',
+                color: '#ffffff',
+                borderColor: '#dc2626',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }
+              }}
               onClick={handleDelete}
               disabled={isDeleting}
             >
