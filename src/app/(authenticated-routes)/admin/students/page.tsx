@@ -76,7 +76,6 @@ export default function StudentsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoadingStudent, setIsLoadingStudent] = useState(false);
   const [viewingStudent, setViewingStudent] = useState<any>(null);
-  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>('');
   const [programs, setPrograms] = useState<{ id: number; name: string; code: string }[]>([]);
   const [newStudent, setNewStudent] = useState({
     firstName: '',
@@ -107,7 +106,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     setMounted(true);
-    fetchCurrentDepartment();
+    fetchPrograms(); // Fetch programs without department ID - backend will handle it
   }, []);
 
   useEffect(() => {
@@ -117,12 +116,6 @@ export default function StudentsPage() {
   useEffect(() => {
     fetchStudents();
   }, [page, statusFilter, batchFilter]);
-
-  useEffect(() => {
-    if (currentDepartmentId) {
-      fetchPrograms(currentDepartmentId);
-    }
-  }, [currentDepartmentId]);
 
   useEffect(() => {
     if (newStudent.programId) {
@@ -136,32 +129,13 @@ export default function StudentsPage() {
     }
   }, [newStudent.batchId]);
 
-  const fetchCurrentDepartment = async () => {
-    try {
-      const checkResponse = await fetch('/api/admin/check-department', {
-        credentials: 'include',
-      });
-      
-      if (!checkResponse.ok) {
-        throw new Error('Failed to fetch department');
-      }
-      
-      const checkData = await checkResponse.json();
-      if (checkData.success && checkData.hasDepartment && checkData.department) {
-        const deptId = checkData.department.id.toString();
-        setCurrentDepartmentId(deptId);
-        setNewStudent((prev) => ({ ...prev, departmentId: deptId }));
-      }
-    } catch (error) {
-      console.error('Error fetching current department:', error);
-      toast.error('Failed to load department. Please try again.');
-    }
-  };
-
-  const fetchPrograms = async (departmentId: string) => {
+  const fetchPrograms = async () => {
     try {
       setFetchingPrograms(true);
-      const response = await fetch(`/api/programs?departmentId=${departmentId}`);
+      // Backend will automatically filter by authenticated user's department
+      const response = await fetch('/api/programs', {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch programs');
       }
@@ -302,7 +276,7 @@ export default function StudentsPage() {
           lastName: data.data.user.lastName,
           email: data.data.user.email,
           rollNumber: data.data.rollNumber,
-          departmentId: data.data.department?.id.toString() || currentDepartmentId,
+          departmentId: data.data.department?.id.toString() || '',
           programId: data.data.program?.id.toString() || '',
           batchId: data.data.batch?.id || '',
           status: data.data.status,
@@ -328,10 +302,7 @@ export default function StudentsPage() {
       return;
     }
 
-    if (!currentDepartmentId) {
-      toast.error('Department information is not available. Please refresh the page.');
-      return;
-    }
+    // Department ID will be automatically set by backend from authenticated user
 
     setIsCreating(true);
     setErrors({});
@@ -359,7 +330,7 @@ export default function StudentsPage() {
         lastName: '',
         email: '',
         rollNumber: '',
-        departmentId: currentDepartmentId,
+        departmentId: '',
         programId: '',
         batchId: '',
         sectionId: '',
@@ -791,19 +762,7 @@ export default function StudentsPage() {
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
-            {currentDepartmentId ? (
-              <div className="space-y-2">
-                <Label htmlFor="create_departmentId" className="text-xs text-primary-text">Department</Label>
-                <Input
-                  id="create_departmentId"
-                  value="Current Department (Assigned by Super Admin)"
-                  disabled
-                  className="bg-card border-card-border text-primary-text"
-                  style={{ backgroundColor: 'var(--hover-bg)' }}
-                />
-                <p className="text-xs text-secondary-text">Department is assigned by super admin</p>
-              </div>
-            )}
+            {/* Department is automatically set by backend from authenticated user */}
             <div className="space-y-2">
               <Label htmlFor="create_programId" className="text-xs text-primary-text">Program *</Label>
               <Select
@@ -811,7 +770,7 @@ export default function StudentsPage() {
                 onValueChange={(value) => {
                   setNewStudent({ ...newStudent, programId: value, batchId: '', sectionId: '' });
                 }}
-                disabled={fetchingPrograms || !currentDepartmentId}
+                disabled={fetchingPrograms}
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select program" />
@@ -915,7 +874,7 @@ export default function StudentsPage() {
                   lastName: '',
                   email: '',
                   rollNumber: '',
-                  departmentId: currentDepartmentId,
+                  departmentId: '',
                   programId: '',
                   batchId: '',
                   sectionId: '',
@@ -944,7 +903,7 @@ export default function StudentsPage() {
                 }
               }}
               onClick={handleCreateStudent}
-              disabled={isCreating || !currentDepartmentId}
+              disabled={isCreating}
             >
               {isCreating ? (
                 <>
@@ -1180,19 +1139,7 @@ export default function StudentsPage() {
                   className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
-              {currentDepartmentId && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit_departmentId" className="text-xs text-primary-text">Department</Label>
-                  <Input
-                    id="edit_departmentId"
-                    value="Current Department (Assigned by Super Admin)"
-                    disabled
-                    className="bg-card border-card-border text-primary-text"
-                    style={{ backgroundColor: 'var(--hover-bg)' }}
-                  />
-                  <p className="text-xs text-secondary-text">Department is assigned by super admin</p>
-                </div>
-              )}
+              {/* Department is automatically set by backend from authenticated user */}
               <div className="space-y-2">
                 <Label htmlFor="edit_programId" className="text-xs text-primary-text">Program</Label>
                 <Select
@@ -1203,7 +1150,6 @@ export default function StudentsPage() {
                       fetchBatchesForProgram(value);
                     }
                   }}
-                  disabled={!currentDepartmentId}
                 >
                   <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select program" />
