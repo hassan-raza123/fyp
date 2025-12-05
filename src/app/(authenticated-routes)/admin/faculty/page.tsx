@@ -76,12 +76,13 @@ export default function FacultyPage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    employeeId: '',
-    designation: '',
     status: 'active' as 'active' | 'inactive',
   });
   const [editFaculty, setEditFaculty] = useState({
-    designation: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
     status: 'active' as 'active' | 'inactive',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -131,8 +132,7 @@ export default function FacultyPage() {
           const searchLower = search.toLowerCase();
           facultiesData = facultiesData.filter((f: Faculty) =>
             `${f.user.first_name} ${f.user.last_name}`.toLowerCase().includes(searchLower) ||
-            f.user.email.toLowerCase().includes(searchLower) ||
-            (f.employeeId && f.employeeId.toLowerCase().includes(searchLower))
+            f.user.email.toLowerCase().includes(searchLower)
           );
         }
         
@@ -181,14 +181,24 @@ export default function FacultyPage() {
     setIsLoadingFaculty(true);
     setShowEditModal(true);
     try {
-      const response = await fetch(`/api/faculty/${faculty.id}`);
+      const response = await fetch(`/api/faculty/${faculty.id}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch faculty');
       const data = await response.json();
       if (data.success && data.data) {
+        // Update selectedFaculty with fresh data
+        setSelectedFaculty(data.data);
+        // Set all fields from API response
+        const facultyStatus = data.data.status || 'active';
         setEditFaculty({
-          designation: data.data.designation || '',
-          status: (data.data.status || 'active') as 'active' | 'inactive',
+          firstName: data.data.user?.first_name || '',
+          lastName: data.data.user?.last_name || '',
+          email: data.data.user?.email || '',
+          phoneNumber: data.data.user?.phone_number || '',
+          status: (facultyStatus === 'active' || facultyStatus === 'inactive' ? facultyStatus : 'active') as 'active' | 'inactive',
         });
+        console.log('Edit faculty data loaded:', data.data);
       } else {
         throw new Error(data.error || 'Failed to fetch faculty');
       }
@@ -196,13 +206,14 @@ export default function FacultyPage() {
       console.error('Error fetching faculty:', error);
       toast.error('Failed to load faculty details');
       setShowEditModal(false);
+      setSelectedFaculty(null);
     } finally {
       setIsLoadingFaculty(false);
     }
   };
 
   const handleCreateFaculty = async () => {
-    if (!newFaculty.firstName || !newFaculty.lastName || !newFaculty.email || !newFaculty.designation) {
+    if (!newFaculty.firstName || !newFaculty.lastName || !newFaculty.email) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -239,18 +250,14 @@ export default function FacultyPage() {
 
       const userId = userData.data.id;
 
-      // Assign faculty role
+      // Assign faculty role - department and designation will be set automatically by API
       const roleResponse = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           roles: ['faculty'],
-          facultyDetails: {
-            departmentId: parseInt(currentDepartmentId),
-            designation: newFaculty.designation,
-            employeeId: newFaculty.employeeId || null,
-          },
+          facultyDetails: {}, // Empty - API will automatically set department and designation
         }),
       });
 
@@ -268,8 +275,6 @@ export default function FacultyPage() {
         lastName: '',
         email: '',
         phoneNumber: '',
-        employeeId: '',
-        designation: '',
         status: 'active',
       });
       fetchFaculties();
@@ -284,7 +289,8 @@ export default function FacultyPage() {
   const handleUpdateFaculty = async () => {
     if (!selectedFaculty) return;
 
-    if (!editFaculty.designation) {
+    // Validate required fields
+    if (!editFaculty.firstName || !editFaculty.lastName || !editFaculty.email) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -292,10 +298,34 @@ export default function FacultyPage() {
     setIsUpdating(true);
     setErrors({});
     try {
+      // First update user information
+      const userResponse = await fetch(`/api/users/${selectedFaculty.user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          first_name: editFaculty.firstName,
+          last_name: editFaculty.lastName,
+          email: editFaculty.email,
+          phone_number: editFaculty.phoneNumber || null,
+          status: selectedFaculty.user.status, // Keep existing user status
+        }),
+      });
+
+      if (!userResponse.ok) {
+        const userError = await userResponse.json();
+        throw new Error(userError.error || 'Failed to update user information');
+      }
+
+      // Then update faculty information
       const response = await fetch(`/api/faculty/${selectedFaculty.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFaculty),
+        credentials: 'include',
+        body: JSON.stringify({
+          designation: 'Faculty', // Fixed designation for faculty
+          status: editFaculty.status,
+        }),
       });
 
       const data = await response.json();
@@ -428,10 +458,8 @@ export default function FacultyPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Employee ID</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Name</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Email</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Designation</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Department</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Status</TableHead>
                   <TableHead className="text-right text-xs font-semibold text-primary-text h-9 py-2">Actions</TableHead>
@@ -440,19 +468,17 @@ export default function FacultyPage() {
               <TableBody>
                 {faculties.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-xs text-secondary-text py-6">
+                    <TableCell colSpan={5} className="text-center text-xs text-secondary-text py-6">
                       No faculty members found
                     </TableCell>
                   </TableRow>
                 ) : (
                   faculties.map((faculty) => (
                     <TableRow key={faculty.id} className="hover:bg-hover-bg transition-colors">
-                      <TableCell className="text-xs text-primary-text py-2">{faculty.employeeId || 'N/A'}</TableCell>
                       <TableCell className="text-xs text-primary-text py-2">
                         {faculty.user.first_name} {faculty.user.last_name}
                       </TableCell>
                       <TableCell className="text-xs text-secondary-text py-2">{faculty.user.email}</TableCell>
-                      <TableCell className="text-xs text-secondary-text py-2">{faculty.designation || 'N/A'}</TableCell>
                       <TableCell className="text-xs text-secondary-text py-2">
                         {faculty.department.name} ({faculty.department.code})
                       </TableCell>
@@ -590,25 +616,6 @@ export default function FacultyPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create_employeeId" className="text-xs text-primary-text">Employee ID</Label>
-              <Input
-                id="create_employeeId"
-                value={newFaculty.employeeId}
-                onChange={(e) => setNewFaculty({ ...newFaculty, employeeId: e.target.value })}
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create_designation" className="text-xs text-primary-text">Designation *</Label>
-              <Input
-                id="create_designation"
-                value={newFaculty.designation}
-                onChange={(e) => setNewFaculty({ ...newFaculty, designation: e.target.value })}
-                placeholder="e.g., Assistant Professor"
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="create_status" className="text-xs text-primary-text">Status *</Label>
               <Select
                 value={newFaculty.status}
@@ -656,8 +663,6 @@ export default function FacultyPage() {
                   lastName: '',
                   email: '',
                   phoneNumber: '',
-                  employeeId: '',
-                  designation: '',
                   status: 'active',
                 });
               }}
@@ -723,10 +728,6 @@ export default function FacultyPage() {
                 <h3 className="text-xs font-semibold text-secondary-text mb-3">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[10px] text-muted-text mb-1">Employee ID</p>
-                    <p className="text-xs text-primary-text">{viewingFaculty.employeeId || 'N/A'}</p>
-                  </div>
-                  <div>
                     <p className="text-[10px] text-muted-text mb-1">Name</p>
                     <p className="text-xs text-primary-text">
                       {viewingFaculty.user.first_name} {viewingFaculty.user.last_name}
@@ -738,7 +739,7 @@ export default function FacultyPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">Designation</p>
-                    <p className="text-xs text-primary-text">{viewingFaculty.designation || 'N/A'}</p>
+                    <p className="text-xs text-primary-text">Faculty</p>
                   </div>
                 </div>
               </div>
@@ -837,58 +838,66 @@ export default function FacultyPage() {
                 <p className="text-xs text-secondary-text">Loading...</p>
               </div>
             </div>
-          ) : selectedFaculty ? (
+          ) : selectedFaculty && selectedFaculty.user && selectedFaculty.department ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs text-primary-text">Name</Label>
+                  <Label htmlFor="edit_firstName" className="text-xs text-primary-text">First Name *</Label>
                   <Input
-                    value={`${selectedFaculty.user.first_name} ${selectedFaculty.user.last_name}`}
-                    disabled
-                    className="bg-card border-card-border text-primary-text"
-                    style={{ backgroundColor: 'var(--hover-bg)' }}
+                    id="edit_firstName"
+                    value={editFaculty.firstName}
+                    onChange={(e) => setEditFaculty({ ...editFaculty, firstName: e.target.value })}
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                    disabled={isUpdating}
                   />
-                  <p className="text-xs text-secondary-text">Name cannot be changed</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-primary-text">Email</Label>
+                  <Label htmlFor="edit_lastName" className="text-xs text-primary-text">Last Name *</Label>
                   <Input
-                    value={selectedFaculty.user.email}
-                    disabled
-                    className="bg-card border-card-border text-primary-text"
-                    style={{ backgroundColor: 'var(--hover-bg)' }}
+                    id="edit_lastName"
+                    value={editFaculty.lastName}
+                    onChange={(e) => setEditFaculty({ ...editFaculty, lastName: e.target.value })}
+                    className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                    disabled={isUpdating}
                   />
-                  <p className="text-xs text-secondary-text">Email cannot be changed</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit_designation" className="text-xs text-primary-text">Designation *</Label>
+                <Label htmlFor="edit_email" className="text-xs text-primary-text">Email *</Label>
                 <Input
-                  id="edit_designation"
-                  value={editFaculty.designation}
-                  onChange={(e) => setEditFaculty({ ...editFaculty, designation: e.target.value })}
-                  placeholder="e.g., Assistant Professor"
-                  required
+                  id="edit_email"
+                  type="email"
+                  value={editFaculty.email}
+                  onChange={(e) => setEditFaculty({ ...editFaculty, email: e.target.value })}
                   className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  disabled={isUpdating}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-primary-text">Department</Label>
+                <Label htmlFor="edit_phoneNumber" className="text-xs text-primary-text">Phone Number</Label>
                 <Input
-                  value={`${selectedFaculty.department.name} (${selectedFaculty.department.code})`}
-                  disabled
-                  className="bg-card border-card-border text-primary-text"
-                  style={{ backgroundColor: 'var(--hover-bg)' }}
+                  id="edit_phoneNumber"
+                  type="tel"
+                  value={editFaculty.phoneNumber}
+                  onChange={(e) => setEditFaculty({ ...editFaculty, phoneNumber: e.target.value })}
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+                  disabled={isUpdating}
                 />
-                <p className="text-xs text-secondary-text">Department cannot be changed</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit_status" className="text-xs text-primary-text">Status *</Label>
                 <Select
-                  value={editFaculty.status}
-                  onValueChange={(value: 'active' | 'inactive') => setEditFaculty({ ...editFaculty, status: value })}
+                  value={editFaculty.status || 'active'}
+                  onValueChange={(value: 'active' | 'inactive') => {
+                    console.log('Status changed to:', value);
+                    setEditFaculty({ ...editFaculty, status: value });
+                  }}
+                  disabled={isUpdating}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger 
+                    className="bg-card border-card-border text-primary-text"
+                    id="edit_status"
+                  >
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -898,7 +907,11 @@ export default function FacultyPage() {
                 </Select>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center py-12 text-xs text-secondary-text">
+              <p>No faculty data available</p>
+            </div>
+          )}
           <DialogFooter className="mt-4">
             <Button
               variant="outline"

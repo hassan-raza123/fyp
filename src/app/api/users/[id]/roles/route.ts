@@ -146,25 +146,27 @@ export async function POST(
           designation: 'Admin',
         };
       } else if (roles.includes('faculty')) {
-        // Faculty role - require departmentId and designation
-        if (!facultyDetails) {
+        // Faculty role - automatically get department from logged-in admin
+        // Designation will be set to "Faculty" automatically
+        // Get department ID from authenticated user (logged-in admin's department)
+        const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+        const departmentId = await getDepartmentIdFromRequest(request);
+        
+        if (!departmentId) {
           return NextResponse.json(
             {
-              error:
-                'Faculty details are required for faculty role',
+              error: 'Department not assigned. Please contact super admin to assign a department to your account.',
             },
             { status: 400 }
           );
         }
-        if (!facultyDetails.departmentId || !facultyDetails.designation) {
-          return NextResponse.json(
-            {
-              error: 'Faculty details must include departmentId and designation',
-            },
-            { status: 400 }
-          );
-        }
-        processedFacultyDetails = facultyDetails;
+        
+        // Set departmentId and designation for faculty
+        processedFacultyDetails = {
+          ...(facultyDetails || {}),
+          departmentId: departmentId,
+          designation: 'Faculty', // Fixed designation for faculty
+        };
       }
     }
 

@@ -63,10 +63,24 @@ export async function GET(
       );
     }
 
-    // Check department access if admin (skip for super_admin)
+    // Check department access if admin (super_admin can access all)
     if (user?.role === 'admin') {
-      // For regular admins, we'd check department access here
-      // Super admin can access all
+      const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+      const adminDepartmentId = await getDepartmentIdFromRequest(request);
+      
+      if (!adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
+          { status: 400 }
+        );
+      }
+      
+      if (faculty.departmentId !== adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'You can only view faculty members from your own department' },
+          { status: 403 }
+        );
+      }
     }
 
     return NextResponse.json({
@@ -106,6 +120,19 @@ export async function PUT(
         { success: false, error: 'Forbidden' },
         { status: 403 }
       );
+    }
+
+    // For admin, get their department ID to ensure they can only update their own department's faculty
+    let adminDepartmentId: number | null = null;
+    if (user?.role === 'admin') {
+      const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+      adminDepartmentId = await getDepartmentIdFromRequest(request);
+      if (!adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
+          { status: 400 }
+        );
+      }
     }
 
     const { id } = await context.params;
@@ -176,18 +203,34 @@ export async function PUT(
       );
     }
 
-    // Check if this is an admin - if so, designation should be "Admin"
-    const isAdmin = existingFaculty.user.userrole?.role?.name === 'admin';
+    // Check department access for admin (super_admin can access all)
+    if (user?.role === 'admin' && adminDepartmentId !== null) {
+      if (existingFaculty.departmentId !== adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'You can only update faculty members from your own department' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Check if this is an admin or faculty
+    const userRole = existingFaculty.user.userrole?.role?.name;
+    const isAdmin = userRole === 'admin';
+    const isFaculty = userRole === 'faculty';
     
     // For admin, designation is always "Admin"
-    // For faculty, designation is required or use existing
-    const finalDesignation = isAdmin ? 'Admin' : (designation || existingFaculty.designation || 'Faculty');
+    // For faculty, designation is always "Faculty" (fixed)
+    const finalDesignation = isAdmin ? 'Admin' : (isFaculty ? 'Faculty' : (designation || existingFaculty.designation || 'Faculty'));
     
-    if (!isAdmin && !designation && !existingFaculty.designation) {
-      return NextResponse.json(
-        { success: false, error: 'Designation is required for faculty members' },
-        { status: 400 }
-      );
+    // Prevent department change for admin users (only super_admin can change)
+    if (isAdmin && user?.role === 'admin' && departmentId !== undefined && departmentId !== null) {
+      const newDeptId = parseInt(departmentId);
+      if (newDeptId !== existingFaculty.departmentId) {
+        return NextResponse.json(
+          { success: false, error: 'You cannot change the department of admin users' },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if department is being changed
@@ -291,6 +334,19 @@ export async function DELETE(
       );
     }
 
+    // For admin, get their department ID to ensure they can only delete their own department's faculty
+    let adminDepartmentId: number | null = null;
+    if (user?.role === 'admin') {
+      const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+      adminDepartmentId = await getDepartmentIdFromRequest(request);
+      if (!adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Parse the faculty ID
     const { id } = await context.params;
     const facultyId = parseInt(id);
@@ -317,6 +373,16 @@ export async function DELETE(
         { success: false, error: 'Faculty not found' },
         { status: 404 }
       );
+    }
+
+    // Check department access for admin (super_admin can access all)
+    if (user?.role === 'admin' && adminDepartmentId !== null) {
+      if (existingFaculty.departmentId !== adminDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'You can only delete faculty members from your own department' },
+          { status: 403 }
+        );
+      }
     }
 
     console.log(
