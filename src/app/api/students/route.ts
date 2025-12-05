@@ -18,12 +18,20 @@ const createStudentSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins, faculty, students, and super_admins can access students
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
       );
     }
 
@@ -226,12 +234,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create students
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 

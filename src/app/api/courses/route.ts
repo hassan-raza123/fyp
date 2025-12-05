@@ -60,13 +60,21 @@ interface CourseResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { requireAuth } = await import('@/lib/auth');
     const { success, user } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins, faculty, students, and super_admins can access courses
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
       );
     }
 
@@ -224,6 +232,24 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('Course POST request received');
+
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create courses
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
 
     // Parse and validate request body
     const body = await request.json();

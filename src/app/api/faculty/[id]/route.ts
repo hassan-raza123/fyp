@@ -122,9 +122,9 @@ export async function PUT(
     const { designation, status, departmentId } = body;
 
     // Validate required fields
-    if (!designation || !status) {
+    if (!status) {
       return NextResponse.json(
-        { success: false, error: 'Designation and status are required' },
+        { success: false, error: 'Status is required' },
         { status: 400 }
       );
     }
@@ -152,7 +152,7 @@ export async function PUT(
       }
     }
 
-    // Check if faculty exists
+    // Check if faculty exists and get role information
     const existingFaculty = await prisma.faculties.findUnique({
       where: { id: facultyId },
       include: {
@@ -176,15 +176,28 @@ export async function PUT(
       );
     }
 
-    // Check if this is an admin and department is being changed
+    // Check if this is an admin - if so, designation should be "Admin"
     const isAdmin = existingFaculty.user.userrole?.role?.name === 'admin';
+    
+    // For admin, designation is always "Admin"
+    // For faculty, designation is required or use existing
+    const finalDesignation = isAdmin ? 'Admin' : (designation || existingFaculty.designation || 'Faculty');
+    
+    if (!isAdmin && !designation && !existingFaculty.designation) {
+      return NextResponse.json(
+        { success: false, error: 'Designation is required for faculty members' },
+        { status: 400 }
+      );
+    }
+
+    // Check if department is being changed
     const oldDepartmentId = existingFaculty.departmentId;
     const newDepartmentId = departmentId !== undefined && departmentId !== null ? parseInt(departmentId) : oldDepartmentId;
     const departmentChanged = isAdmin && newDepartmentId !== oldDepartmentId && newDepartmentId !== null;
 
     // Prepare update data
     const updateData: any = {
-      designation,
+      designation: finalDesignation,
       status,
     };
     

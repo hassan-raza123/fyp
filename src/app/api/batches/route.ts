@@ -7,12 +7,20 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins, faculty, and students can access batches
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
       );
     }
 
@@ -113,9 +121,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check role
-    const { success: roleSuccess, error: roleError } = requireRole(request, [
+    // Check role - only admins can create batches
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
       'admin',
+      'super_admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(

@@ -301,6 +301,7 @@ export default function AdminsPage() {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
+            designation: 'Admin', // Admin designation is always "Admin"
             status: editAdmin.status,
           }),
         });

@@ -73,12 +73,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create sections
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 
