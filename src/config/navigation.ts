@@ -138,29 +138,6 @@ const adminNavigation = [
     ],
   },
   {
-    title: 'USER MANAGEMENT',
-    items: [
-      {
-        id: 'admins',
-        label: 'Admins',
-        icon: Shield,
-        href: '/admin/admins',
-      },
-      {
-        id: 'faculty',
-        label: 'Faculty',
-        icon: FacultyIcon,
-        href: '/admin/faculty',
-      },
-      {
-        id: 'students',
-        label: 'Students',
-        icon: GraduationCap,
-        href: '/admin/students',
-      },
-    ],
-  },
-  {
     title: 'ACADEMIC STRUCTURE',
     items: [
       {
@@ -168,18 +145,6 @@ const adminNavigation = [
         label: 'Programs',
         icon: School,
         href: '/admin/programs',
-      },
-      {
-        id: 'courses',
-        label: 'Courses',
-        icon: BookOpen,
-        href: '/admin/courses',
-      },
-      {
-        id: 'course-offerings',
-        label: 'Course Offerings',
-        icon: BookCheck,
-        href: '/admin/course-offerings',
       },
       {
         id: 'sessions',
@@ -200,10 +165,45 @@ const adminNavigation = [
         href: '/admin/batches',
       },
       {
+        id: 'courses',
+        label: 'Courses',
+        icon: BookOpen,
+        href: '/admin/courses',
+      },
+      {
+        id: 'course-offerings',
+        label: 'Course Offerings',
+        icon: BookCheck,
+        href: '/admin/course-offerings',
+      },
+      {
         id: 'sections',
         label: 'Sections',
         icon: UserCheck,
         href: '/admin/sections',
+      },
+    ],
+  },
+  {
+    title: 'USER MANAGEMENT',
+    items: [
+      {
+        id: 'admins',
+        label: 'Admins',
+        icon: Shield,
+        href: '/admin/admins',
+      },
+      {
+        id: 'faculty',
+        label: 'Faculty',
+        icon: FacultyIcon,
+        href: '/admin/faculty',
+      },
+      {
+        id: 'students',
+        label: 'Students',
+        icon: GraduationCap,
+        href: '/admin/students',
       },
     ],
   },
