@@ -76,8 +76,6 @@ export default function AdminsPage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    employeeId: '',
-    designation: 'Admin',
     status: 'active' as 'active' | 'inactive',
   });
   const [editAdmin, setEditAdmin] = useState({
@@ -85,8 +83,6 @@ export default function AdminsPage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    employeeId: '',
-    designation: 'Admin',
     status: 'active' as 'active' | 'inactive',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,9 +115,7 @@ export default function AdminsPage() {
               `${a.user.first_name} ${a.user.last_name}`
                 .toLowerCase()
                 .includes(searchLower) ||
-              a.user.email.toLowerCase().includes(searchLower) ||
-              (a.employeeId &&
-                a.employeeId.toLowerCase().includes(searchLower))
+              a.user.email.toLowerCase().includes(searchLower)
           );
         }
 
@@ -179,8 +173,6 @@ export default function AdminsPage() {
         lastName: data.last_name || '',
         email: data.email || '',
         phoneNumber: data.phone_number || '',
-        employeeId: data.faculty?.employeeId || '',
-        designation: data.faculty?.designation || 'Admin',
         status: (data.status || 'active') as 'active' | 'inactive',
       });
     } catch (error) {
@@ -233,10 +225,7 @@ export default function AdminsPage() {
         credentials: 'include',
         body: JSON.stringify({
           roles: ['admin'],
-          facultyDetails: {
-            designation: newAdmin.designation,
-            employeeId: newAdmin.employeeId || null,
-          },
+          facultyDetails: {},
         }),
       });
 
@@ -254,8 +243,6 @@ export default function AdminsPage() {
         lastName: '',
         email: '',
         phoneNumber: '',
-        employeeId: '',
-        designation: 'Admin',
         status: 'active',
       });
       fetchAdmins();
@@ -314,8 +301,6 @@ export default function AdminsPage() {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            employeeId: editAdmin.employeeId || null,
-            designation: editAdmin.designation,
             status: editAdmin.status,
           }),
         });
@@ -454,11 +439,9 @@ export default function AdminsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Employee ID</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Name</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Email</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Password</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Designation</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Department</TableHead>
                   <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Status</TableHead>
                   <TableHead className="text-right text-xs font-semibold text-primary-text h-9 py-2">Actions</TableHead>
@@ -467,14 +450,13 @@ export default function AdminsPage() {
               <TableBody>
                 {admins.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-xs text-secondary-text py-6">
+                    <TableCell colSpan={6} className="text-center text-xs text-secondary-text py-6">
                       No admin users found
                     </TableCell>
                   </TableRow>
                 ) : (
                   admins.map((admin) => (
                     <TableRow key={admin.userId} className="hover:bg-hover-bg transition-colors">
-                      <TableCell className="text-xs text-primary-text py-2">{admin.employeeId || 'N/A'}</TableCell>
                       <TableCell className="text-xs text-primary-text py-2">
                         {admin.user.first_name} {admin.user.last_name}
                       </TableCell>
@@ -487,7 +469,6 @@ export default function AdminsPage() {
                           (default)
                         </span>
                       </TableCell>
-                      <TableCell className="text-xs text-secondary-text py-2">{admin.designation || 'Admin'}</TableCell>
                       <TableCell className="text-xs text-secondary-text py-2">
                         {admin.department
                           ? `${admin.department.name} (${admin.department.code})`
@@ -627,25 +608,6 @@ export default function AdminsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create_employeeId" className="text-xs text-primary-text">Employee ID</Label>
-              <Input
-                id="create_employeeId"
-                value={newAdmin.employeeId}
-                onChange={(e) => setNewAdmin({ ...newAdmin, employeeId: e.target.value })}
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create_designation" className="text-xs text-primary-text">Designation *</Label>
-              <Input
-                id="create_designation"
-                value={newAdmin.designation}
-                onChange={(e) => setNewAdmin({ ...newAdmin, designation: e.target.value })}
-                placeholder="e.g., Department Admin"
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="create_status" className="text-xs text-primary-text">Status *</Label>
               <Select
                 value={newAdmin.status}
@@ -693,8 +655,6 @@ export default function AdminsPage() {
                   lastName: '',
                   email: '',
                   phoneNumber: '',
-                  employeeId: '',
-                  designation: 'Admin',
                   status: 'active',
                 });
               }}
@@ -785,14 +745,6 @@ export default function AdminsPage() {
                 <div>
                   <h3 className="text-xs font-semibold text-secondary-text mb-3">Admin Information</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[10px] text-muted-text mb-1">Employee ID</p>
-                      <p className="text-xs text-primary-text">{viewingAdmin.faculty.employeeId || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-text mb-1">Designation</p>
-                      <p className="text-xs text-primary-text">{viewingAdmin.faculty.designation || 'Department Admin'}</p>
-                    </div>
                     <div>
                       <p className="text-[10px] text-muted-text mb-1">Department</p>
                       <p className="text-xs text-primary-text">
@@ -924,25 +876,6 @@ export default function AdminsPage() {
                   type="tel"
                   value={editAdmin.phoneNumber}
                   onChange={(e) => setEditAdmin({ ...editAdmin, phoneNumber: e.target.value })}
-                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_employeeId" className="text-xs text-primary-text">Employee ID</Label>
-                <Input
-                  id="edit_employeeId"
-                  value={editAdmin.employeeId}
-                  onChange={(e) => setEditAdmin({ ...editAdmin, employeeId: e.target.value })}
-                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_designation" className="text-xs text-primary-text">Designation *</Label>
-                <Input
-                  id="edit_designation"
-                  value={editAdmin.designation}
-                  onChange={(e) => setEditAdmin({ ...editAdmin, designation: e.target.value })}
-                  placeholder="e.g., Department Admin"
                   className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>

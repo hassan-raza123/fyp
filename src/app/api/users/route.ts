@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user: authUser, error } = requireAuth(request);
+    const { success, user: authUser, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
