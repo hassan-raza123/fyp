@@ -14,9 +14,9 @@ const updateSessionSchema = z.object({
   status: z.nativeEnum(session_status).optional(),
 });
 
-export async function PATCH(
+export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const { success, user } = await requireAuth(request);
@@ -27,11 +27,100 @@ export async function PATCH(
       );
     }
 
-    const { id } = await context.params;
-    const sessionId = Number(id);
-    if (!sessionId) {
+    // Handle both sync and async params
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const sessionId = Number(resolvedParams.id);
+    
+    if (!sessionId || isNaN(sessionId)) {
       return NextResponse.json(
-        { success: false, error: 'Session ID is required' },
+        { success: false, error: 'Invalid session ID' },
+        { status: 400 }
+      );
+    }
+
+    const session = await prisma.sessions.findUnique({
+      where: { id: sessionId },
+      include: {
+        section: {
+          include: {
+            courseOffering: {
+              include: {
+                course: {
+                  select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                  },
+                },
+                semester: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            faculty: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            batch: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: session });
+  } catch (error) {
+    console.error('Error fetching session:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch session' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> | { id: string } }
+) {
+  try {
+    const { success, user } = await requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const sessionId = Number(resolvedParams.id);
+    
+    if (!sessionId || isNaN(sessionId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid session ID' },
         { status: 400 }
       );
     }
@@ -123,7 +212,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const { success, user } = await requireAuth(request);
@@ -134,11 +223,13 @@ export async function DELETE(
       );
     }
 
-    const { id } = await context.params;
-    const sessionId = Number(id);
-    if (!sessionId) {
+    // Handle both sync and async params
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const sessionId = Number(resolvedParams.id);
+    
+    if (!sessionId || isNaN(sessionId)) {
       return NextResponse.json(
-        { success: false, error: 'Session ID is required' },
+        { success: false, error: 'Invalid session ID' },
         { status: 400 }
       );
     }

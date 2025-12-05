@@ -147,12 +147,6 @@ const adminNavigation = [
         href: '/admin/programs',
       },
       {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
-      },
-      {
         id: 'semesters',
         label: 'Semesters',
         icon: Calendar,
@@ -181,6 +175,12 @@ const adminNavigation = [
         label: 'Sections',
         icon: UserCheck,
         href: '/admin/sections',
+      },
+      {
+        id: 'sessions',
+        label: 'Sessions',
+        icon: Clock,
+        href: '/admin/sessions',
       },
     ],
   },
