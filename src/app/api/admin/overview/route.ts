@@ -130,25 +130,81 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get GPA distribution from semester GPA
+    // Calculate enrollment trend (last 12 months) for current department
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      return { year: d.getFullYear(), month: d.getMonth() + 1 };
+    }).reverse();
+
+    const enrollmentTrend = await Promise.all(
+      months.map(async ({ year, month }) => {
+        const start = new Date(year, month - 1, 1);
+        const end = new Date(year, month, 1);
+        const count = await prisma.students.count({
+          where: {
+            departmentId,
+            createdAt: {
+              gte: start,
+              lt: end,
+            },
+          },
+        });
+        return {
+          month: `${start.toLocaleString('default', {
+            month: 'short',
+          })} ${year}`,
+          students: count,
+        };
+      })
+    );
+
+    // Get students in this department for GPA calculations
+    const departmentStudentIds = await prisma.students.findMany({
+      where: { departmentId },
+      select: { id: true },
+    });
+    const studentIds = departmentStudentIds.map((s) => s.id);
+
+    // Calculate average GPA for department students
+    const avgGPAResult = await prisma.semestergpa.aggregate({
+      where: {
+        studentId: { in: studentIds },
+      },
+      _avg: { semesterGPA: true },
+    });
+
+    // Calculate retention rate (students who completed at least 2 semesters)
+    const studentsWithMultipleSemesters = await prisma.semestergpa.groupBy({
+      by: ['studentId'],
+      where: {
+        studentId: { in: studentIds },
+      },
+      _count: {
+        studentId: true,
+      },
+    });
+    const retainedStudents = studentsWithMultipleSemesters.filter(
+      (s) => s._count.studentId >= 2
+    ).length;
+    const retentionRate =
+      totalStudents > 0 ? retainedStudents / totalStudents : 0;
+
+    // Get GPA distribution for department students
     const gpaDistribution = await prisma.semestergpa.groupBy({
       by: ['semesterGPA'],
+      where: {
+        studentId: { in: studentIds },
+      },
       _count: true,
     });
 
-    // Calculate enrollment trend (last 6 months) for current department
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const enrollmentTrend = await prisma.students.groupBy({
-      by: ['createdAt'],
+    // Get program completion count for department
+    const programCompletion = await prisma.students.count({
       where: {
         departmentId,
-        createdAt: {
-          gte: sixMonthsAgo,
-        },
+        status: 'graduated',
       },
-      _count: true,
     });
 
     return NextResponse.json({
@@ -159,6 +215,9 @@ export async function GET(request: NextRequest) {
         totalFaculty: await prisma.faculties.count({
           where: { departmentId },
         }),
+        averageGPA: avgGPAResult._avg.semesterGPA || 0,
+        retentionRate,
+        programCompletion,
       },
       recentActivities: recentActivities.map((activity) => ({
         id: activity.id,
@@ -172,17 +231,10 @@ export async function GET(request: NextRequest) {
         value: program._count.students,
       })),
       gpaDistribution: gpaDistribution.map((gpa) => ({
-        range: `${gpa.semesterGPA.toFixed(1)}-${(gpa.semesterGPA + 0.5).toFixed(
-          1
-        )}`,
+        gpa: gpa.semesterGPA,
         students: gpa._count,
       })),
-      enrollmentTrend: enrollmentTrend.map((trend) => ({
-        month: new Date(trend.createdAt).toLocaleString('default', {
-          month: 'short',
-        }),
-        students: trend._count,
-      })),
+      enrollmentTrend,
     });
   } catch (error) {
     console.error('Error fetching admin overview data:', error);

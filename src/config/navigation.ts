@@ -135,12 +135,6 @@ const adminNavigation = [
     title: 'DASHBOARD',
     items: [
       { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
-      {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: BarChart2,
-        href: '/admin/analytics',
-      },
     ],
   },
   {
