@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   GraduationCap,
@@ -50,7 +51,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from 'recharts';
+import ContactForm from '@/components/forms/ContactForm';
 
 interface StatCardProps {
   title: string;
@@ -201,12 +204,14 @@ interface DashboardData {
 
 export default function AdminOverview() {
   const { resolvedTheme } = useTheme();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   
   useEffect(() => {
     setMounted(true);
@@ -323,6 +328,7 @@ export default function AdminOverview() {
             </div>
             <div className="flex items-center space-x-4">
               <button 
+                onClick={() => router.push('/admin/reports')}
                 className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
                 style={{
                   backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
@@ -492,6 +498,53 @@ export default function AdminOverview() {
             </div>
           )}
 
+          {/* GPA Distribution Chart */}
+          {data.gpaDistribution && data.gpaDistribution.length > 0 && (
+            <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+              <h2 className="text-sm font-semibold text-primary-text mb-3">
+                GPA Distribution
+              </h2>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.gpaDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                    <XAxis 
+                      dataKey="gpa" 
+                      tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
+                      stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                      label={{ value: 'GPA Range', position: 'insideBottom', offset: -5, style: { fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' } }}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
+                      stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                      width={40}
+                      label={{ value: 'Students', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' } }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                        border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        padding: '8px 12px',
+                      }}
+                      labelStyle={{ 
+                        color: isDarkMode ? '#ffffff' : '#000000', 
+                        marginBottom: '6px',
+                        fontWeight: 600,
+                      }}
+                    />
+                    <Bar
+                      dataKey="students"
+                      fill={primaryColor}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Recent Activity */}
@@ -590,6 +643,7 @@ export default function AdminOverview() {
                   Get support from our team or check the documentation
                 </p>
                 <button 
+                  onClick={() => setIsContactDialogOpen(true)}
                   className="w-full px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
                   style={{
                     backgroundColor: 'var(--white-opacity-10)',
@@ -608,6 +662,23 @@ export default function AdminOverview() {
           </div>
         </div>
       )}
+
+      {/* Contact Support Dialog */}
+      <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold" style={{ color: primaryColor }}>
+              Contact Support
+            </DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
+              Need help? Fill out the form below and we'll get back to you as soon as possible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <ContactForm />
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
