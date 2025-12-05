@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
       departmentId: currentDepartmentId,
     };
 
-    const faculties = await prisma.faculties.findMany({
+    // Fetch all faculties for the department
+    const allFaculties = await prisma.faculties.findMany({
       where: whereClause,
       include: {
         user: {
@@ -47,6 +48,15 @@ export async function GET(request: NextRequest) {
             last_name: true,
             email: true,
             status: true,
+            userrole: {
+              select: {
+                role: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
         department: {
@@ -58,6 +68,29 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    // Filter out admin users - only keep faculty role users
+    const faculties = allFaculties
+      .filter((faculty) => {
+        const userRole = faculty.user.userrole?.role?.name;
+        return userRole === 'faculty'; // Only include faculty role, exclude admin
+      })
+      .map((faculty) => ({
+        id: faculty.id,
+        userId: faculty.userId,
+        designation: faculty.designation,
+        status: faculty.status,
+        createdAt: faculty.createdAt,
+        updatedAt: faculty.updatedAt,
+        user: {
+          id: faculty.user.id,
+          first_name: faculty.user.first_name,
+          last_name: faculty.user.last_name,
+          email: faculty.user.email,
+          status: faculty.user.status,
+        },
+        department: faculty.department,
+      }));
 
     console.log('Found faculties:', faculties.length);
 
