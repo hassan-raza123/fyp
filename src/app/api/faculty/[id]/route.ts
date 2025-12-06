@@ -146,7 +146,15 @@ export async function PUT(
 
     // Get request body
     const body = await request.json();
-    const { designation, status, departmentId } = body;
+    const { 
+      designation, 
+      status, 
+      departmentId,
+      first_name,
+      last_name,
+      email,
+      phone_number,
+    } = body;
 
     // Validate required fields
     if (!status) {
@@ -238,6 +246,34 @@ export async function PUT(
     const newDepartmentId = departmentId !== undefined && departmentId !== null ? parseInt(departmentId) : oldDepartmentId;
     const departmentChanged = isAdmin && newDepartmentId !== oldDepartmentId && newDepartmentId !== null;
 
+    // Check if email is being changed and if it's already taken
+    if (email && email !== existingFaculty.user.email) {
+      const emailExists = await prisma.users.findUnique({
+        where: { email },
+      });
+      if (emailExists) {
+        return NextResponse.json(
+          { success: false, error: 'Email already taken' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update user data if provided
+    if (first_name || last_name || email || phone_number !== undefined || status) {
+      await prisma.users.update({
+        where: { id: existingFaculty.userId },
+        data: {
+          ...(first_name && { first_name }),
+          ...(last_name && { last_name }),
+          ...(email && { email }),
+          ...(phone_number !== undefined && { phone_number: phone_number || null }),
+          ...(status && { status }),
+          updatedAt: new Date(),
+        },
+      });
+    }
+
     // Prepare update data
     const updateData: any = {
       designation: finalDesignation,
@@ -260,6 +296,8 @@ export async function PUT(
             first_name: true,
             last_name: true,
             email: true,
+            phone_number: true,
+            status: true,
           },
         },
         department: {
