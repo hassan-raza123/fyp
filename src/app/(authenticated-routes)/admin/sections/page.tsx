@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -22,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Search, UserCheck, AlertCircle, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Search, UserCheck, AlertCircle, Eye, Edit, Trash2, Loader2, Users, UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -113,12 +112,24 @@ export default function SectionsPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [showBulkEnrollModal, setShowBulkEnrollModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
   const [viewingSection, setViewingSection] = useState<any>(null);
   const [isLoadingSection, setIsLoadingSection] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [isBulkEnrolling, setIsBulkEnrolling] = useState(false);
+  
+  // Student enrollment states
+  const [availableStudents, setAvailableStudents] = useState<any[]>([]);
+  const [enrolledStudents, setEnrolledStudents] = useState<any[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const [studentSearch, setStudentSearch] = useState('');
   
   // Form states
   const [newSection, setNewSection] = useState({
@@ -235,6 +246,15 @@ export default function SectionsPage() {
       if (!response.ok) throw new Error('Failed to fetch section');
       const data = await response.json();
       setViewingSection(data.data);
+      
+      // Fetch enrolled students
+      const studentsResponse = await fetch(`/api/sections/${section.id}/students`, {
+        credentials: 'include',
+      });
+      if (studentsResponse.ok) {
+        const studentsData = await studentsResponse.json();
+        setEnrolledStudents(Array.isArray(studentsData) ? studentsData : []);
+      }
     } catch (error) {
       console.error('Error fetching section:', error);
       toast.error('Failed to load section details');
@@ -391,6 +411,158 @@ export default function SectionsPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to delete section');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const fetchAvailableStudents = async (section: Section) => {
+    if (!section.batchId) {
+      toast.error('Section batch not found');
+      return;
+    }
+
+    setLoadingStudents(true);
+    try {
+      // Fetch all students from the batch
+      const response = await fetch(`/api/students?batchId=${section.batchId}&status=active&limit=1000`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch students');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        // Get enrolled students in this section
+        const enrolledResponse = await fetch(`/api/sections/${section.id}/students`, {
+          credentials: 'include',
+        });
+        let enrolledStudentIds: number[] = [];
+        if (enrolledResponse.ok) {
+          const enrolledData = await enrolledResponse.json();
+          enrolledStudentIds = Array.isArray(enrolledData) 
+            ? enrolledData.map((s: any) => s.id)
+            : [];
+        }
+
+        // Filter out already enrolled students
+        // Note: API will prevent same course enrollment, so we only filter this section
+        const available = data.data.filter((student: any) => 
+          !enrolledStudentIds.includes(student.id)
+        );
+        setAvailableStudents(available);
+      }
+    } catch (error) {
+      console.error('Error fetching available students:', error);
+      toast.error('Failed to load available students');
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const handleOpenAddStudent = async (section: Section) => {
+    setSelectedSection(section);
+    setSelectedStudentId('');
+    setStudentSearch('');
+    setShowAddStudentModal(true);
+    await fetchAvailableStudents(section);
+  };
+
+  const handleOpenBulkEnroll = async (section: Section) => {
+    setSelectedSection(section);
+    setSelectedStudentIds([]);
+    setStudentSearch('');
+    setShowBulkEnrollModal(true);
+    await fetchAvailableStudents(section);
+  };
+
+  const handleAddStudent = async () => {
+    if (!selectedSection || !selectedStudentId) {
+      toast.error('Please select a student');
+      return;
+    }
+
+    setIsAddingStudent(true);
+    try {
+      const response = await fetch(`/api/sections/${selectedSection.id}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ studentId: parseInt(selectedStudentId) }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to add student');
+      }
+
+      toast.success('Student added to section successfully');
+      setShowAddStudentModal(false);
+      setSelectedStudentId('');
+      setStudentSearch('');
+      await handleViewSection(selectedSection);
+      fetchSections();
+    } catch (error) {
+      console.error('Error adding student:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add student');
+    } finally {
+      setIsAddingStudent(false);
+    }
+  };
+
+  const handleBulkEnroll = async () => {
+    if (!selectedSection || selectedStudentIds.length === 0) {
+      toast.error('Please select at least one student');
+      return;
+    }
+
+    setIsBulkEnrolling(true);
+    try {
+      const response = await fetch(`/api/sections/${selectedSection.id}/students/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ studentIds: selectedStudentIds }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to enroll students');
+      }
+
+      toast.success(`Successfully enrolled ${data.data.enrolled} student(s)`);
+      setShowBulkEnrollModal(false);
+      setSelectedStudentIds([]);
+      setStudentSearch('');
+      await handleViewSection(selectedSection);
+      fetchSections();
+    } catch (error) {
+      console.error('Error bulk enrolling students:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to enroll students');
+    } finally {
+      setIsBulkEnrolling(false);
+    }
+  };
+
+  const handleRemoveStudent = async (studentId: number) => {
+    if (!selectedSection) return;
+
+    try {
+      const response = await fetch(`/api/sections/${selectedSection.id}/students`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ studentId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to remove student');
+      }
+
+      toast.success('Student removed from section successfully');
+      await handleViewSection(selectedSection);
+      fetchSections();
+    } catch (error) {
+      console.error('Error removing student:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to remove student');
     }
   };
 
@@ -778,24 +950,7 @@ export default function SectionsPage() {
             </div>
           </div>
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!isCreating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowCreateModal(false);
                 setNewSection({
@@ -807,37 +962,51 @@ export default function SectionsPage() {
                 });
               }}
               disabled={isCreating}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: primaryColor,
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
               onMouseEnter={(e) => {
-                if (!isCreating && !e.currentTarget.disabled) {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateSection}
+              disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              style={{
+                backgroundColor: isCreating ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
                   e.currentTarget.style.backgroundColor = primaryColorDark;
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!isCreating) {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }
               }}
-              onClick={handleCreateSection}
-              disabled={isCreating}
             >
               {isCreating ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Creating...
                 </>
               ) : (
                 'Create Section'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -911,48 +1080,132 @@ export default function SectionsPage() {
                   {viewingSection._count?.studentsections || 0} / {viewingSection.maxStudents || 0}
                 </div>
               </div>
+              
+              {/* Enrolled Students List */}
+              {enrolledStudents.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <Label className="text-xs font-semibold text-primary-text">Enrolled Students</Label>
+                  <div className="rounded-lg border border-card-border max-h-60 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Roll Number</TableHead>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Name</TableHead>
+                          <TableHead className="text-[10px] font-semibold text-primary-text h-8 py-1.5">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {enrolledStudents.map((student: any) => (
+                          <TableRow key={student.id}>
+                            <TableCell className="text-xs text-primary-text py-1.5">{student.rollNumber}</TableCell>
+                            <TableCell className="text-xs text-primary-text py-1.5">{student.user?.name || 'N/A'}</TableCell>
+                            <TableCell className="py-1.5">
+                              <button
+                                onClick={() => handleRemoveStudent(student.id)}
+                                className="px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
+                                style={{
+                                  backgroundColor: 'var(--error-opacity-10)',
+                                  color: 'var(--error)',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
             </div>
           ) : null}
-          <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+          <DialogFooter className="mt-4 flex gap-2">
+            <button
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingSection(null);
+                setEnrolledStudents([]);
+              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
-              onClick={() => {
-                setShowViewModal(false);
-                setViewingSection(null);
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
-            </Button>
+            </button>
             {selectedSection && (
-              <Button
-                size="sm"
-                className="h-8 text-xs text-white"
-                style={{
-                  backgroundColor: primaryColor,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }}
-                onClick={() => {
-                  setShowViewModal(false);
-                  fetchCourseOfferings();
-                  fetchBatches();
-                  fetchFaculty();
-                  handleEditSection(selectedSection);
-                }}
-              >
-                <Edit className="h-3.5 w-3.5 mr-1.5" />
-                Edit Section
-              </Button>
+              <>
+                <button
+                  onClick={() => handleOpenAddStudent(selectedSection)}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: iconBgColor,
+                    color: primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = iconBgColor;
+                  }}
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  Add Student
+                </button>
+                <button
+                  onClick={() => handleOpenBulkEnroll(selectedSection)}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: iconBgColor,
+                    color: primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = iconBgColor;
+                  }}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  Bulk Enroll
+                </button>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    fetchCourseOfferings();
+                    fetchBatches();
+                    fetchFaculty();
+                    handleEditSection(selectedSection);
+                  }}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 text-white"
+                  style={{
+                    backgroundColor: primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = primaryColorDark;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = primaryColor;
+                  }}
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  Edit
+                </button>
+              </>
             )}
           </DialogFooter>
         </DialogContent>
@@ -1148,60 +1401,359 @@ export default function SectionsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!isDeleting && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowDeleteDialog(false);
                 setSelectedSection(null);
               }}
               disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : 'var(--error)',
+                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
               onMouseEnter={(e) => {
-                if (!isDeleting && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--error-dark)';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : 'var(--error)';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }
               }}
+            >
+              Cancel
+            </button>
+            <button
               onClick={handleDelete}
               disabled={isDeleting}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              style={{
+                backgroundColor: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : '#dc2626',
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }
+              }}
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Deleting...
                 </>
               ) : (
                 'Delete Section'
               )}
-            </Button>
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Student Dialog */}
+      <Dialog open={showAddStudentModal} onOpenChange={setShowAddStudentModal}>
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Add Student to Section</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Select a student from the batch to enroll in this section
+            </DialogDescription>
+          </DialogHeader>
+          {loadingStudents ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading students...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-xs text-primary-text">Search Students</Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+                  <Input
+                    placeholder="Search by roll number or name..."
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-primary-text">Select Student *</Label>
+                <div className="rounded-lg border border-card-border max-h-60 overflow-y-auto">
+                  {availableStudents.filter((student: any) => {
+                    const search = studentSearch.toLowerCase();
+                    return !search || 
+                      student.rollNumber.toLowerCase().includes(search) ||
+                      `${student.user?.firstName || ''} ${student.user?.lastName || ''}`.toLowerCase().includes(search);
+                  }).length === 0 ? (
+                    <div className="text-center py-8 text-xs text-secondary-text">
+                      No available students found
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-card-border">
+                      {availableStudents
+                        .filter((student: any) => {
+                          const search = studentSearch.toLowerCase();
+                          const name = `${student.user?.firstName || student.user?.first_name || ''} ${student.user?.lastName || student.user?.last_name || ''}`.toLowerCase();
+                          return !search || 
+                            student.rollNumber.toLowerCase().includes(search) ||
+                            name.includes(search);
+                        })
+                        .map((student: any) => (
+                          <div
+                            key={student.id}
+                            onClick={() => setSelectedStudentId(student.id.toString())}
+                            className={`p-3 cursor-pointer transition-colors ${
+                              selectedStudentId === student.id.toString()
+                                ? 'bg-hover-bg'
+                                : 'hover:bg-hover-bg'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-xs font-medium text-primary-text">{student.rollNumber}</div>
+                                <div className="text-xs text-secondary-text">
+                                  {student.user?.firstName || student.user?.first_name} {student.user?.lastName || student.user?.last_name}
+                                </div>
+                              </div>
+                              {selectedStudentId === student.id.toString() && (
+                                <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                                  style={{
+                                    borderColor: primaryColor,
+                                    backgroundColor: iconBgColor,
+                                  }}
+                                >
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <button
+              onClick={() => {
+                setShowAddStudentModal(false);
+                setSelectedStudentId('');
+                setStudentSearch('');
+              }}
+              disabled={isAddingStudent}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAddStudent}
+              disabled={isAddingStudent || !selectedStudentId}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              style={{
+                backgroundColor: isAddingStudent ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isAddingStudent && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isAddingStudent && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
+              {isAddingStudent ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  Add Student
+                </>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Enroll Dialog */}
+      <Dialog open={showBulkEnrollModal} onOpenChange={setShowBulkEnrollModal}>
+        <DialogContent className="bg-card border-card-border max-w-3xl max-h-[90vh] overflow-y-auto p-5">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-primary-text">Bulk Enroll Students</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Select multiple students to enroll in this section at once
+            </DialogDescription>
+          </DialogHeader>
+          {loadingStudents ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div 
+                  className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: primaryColor }}
+                />
+                <p className="text-xs text-secondary-text">Loading students...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-primary-text">
+                  Available Students ({availableStudents.length})
+                </Label>
+                <div className="text-xs text-secondary-text">
+                  Selected: {selectedStudentIds.length}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+                  <Input
+                    placeholder="Search by roll number or name..."
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                  />
+                </div>
+              </div>
+              <div className="rounded-lg border border-card-border max-h-96 overflow-y-auto">
+                {availableStudents.filter((student: any) => {
+                  const search = studentSearch.toLowerCase();
+                  return !search || 
+                    student.rollNumber.toLowerCase().includes(search) ||
+                    `${student.user?.firstName || ''} ${student.user?.lastName || ''}`.toLowerCase().includes(search);
+                }).length === 0 ? (
+                  <div className="text-center py-8 text-xs text-secondary-text">
+                    No available students found
+                  </div>
+                ) : (
+                  <div className="divide-y divide-card-border">
+                      {availableStudents
+                        .filter((student: any) => {
+                          const search = studentSearch.toLowerCase();
+                          const name = `${student.user?.firstName || student.user?.first_name || ''} ${student.user?.lastName || student.user?.last_name || ''}`.toLowerCase();
+                          return !search || 
+                            student.rollNumber.toLowerCase().includes(search) ||
+                            name.includes(search);
+                        })
+                        .map((student: any) => {
+                          const isSelected = selectedStudentIds.includes(student.id);
+                          return (
+                            <div
+                              key={student.id}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedStudentIds(selectedStudentIds.filter(id => id !== student.id));
+                                } else {
+                                  setSelectedStudentIds([...selectedStudentIds, student.id]);
+                                }
+                              }}
+                              className={`p-3 cursor-pointer transition-colors ${
+                                isSelected
+                                  ? 'bg-hover-bg'
+                                  : 'hover:bg-hover-bg'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-xs font-medium text-primary-text">{student.rollNumber}</div>
+                                  <div className="text-xs text-secondary-text">
+                                    {student.user?.firstName || student.user?.first_name} {student.user?.lastName || student.user?.last_name}
+                                  </div>
+                                </div>
+                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                  isSelected ? 'border-primary' : 'border-card-border'
+                                }`}
+                                  style={isSelected ? {
+                                    borderColor: primaryColor,
+                                    backgroundColor: iconBgColor,
+                                  } : {}}
+                                >
+                                  {isSelected && (
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                  </div>
+                )}
+              </div>
+              {selectedStudentIds.length > 0 && (
+                <div className="text-xs text-secondary-text">
+                  {selectedStudentIds.length} student(s) selected
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <button
+              onClick={() => {
+                setShowBulkEnrollModal(false);
+                setSelectedStudentIds([]);
+                setStudentSearch('');
+              }}
+              disabled={isBulkEnrolling}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBulkEnroll}
+              disabled={isBulkEnrolling || selectedStudentIds.length === 0}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              style={{
+                backgroundColor: isBulkEnrolling ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+              }}
+              onMouseEnter={(e) => {
+                if (!isBulkEnrolling && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = primaryColorDark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isBulkEnrolling && !e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = primaryColor;
+                }
+              }}
+            >
+              {isBulkEnrolling ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Enrolling...
+                </>
+              ) : (
+                <>
+                  <Users className="w-3.5 h-3.5" />
+                  Enroll {selectedStudentIds.length > 0 ? `${selectedStudentIds.length} ` : ''}Student(s)
+                </>
+              )}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

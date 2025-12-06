@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 // POST /api/sections/[id]/students - Add a student to a section
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     console.log('--- POST /api/sections/[id]/students called ---');
@@ -259,7 +259,7 @@ export async function POST(
 // DELETE /api/sections/[id]/students - Remove a student from a section
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     console.log('--- DELETE /api/sections/[id]/students called ---');
@@ -274,8 +274,8 @@ export async function DELETE(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const studentId = searchParams.get('studentId');
+    const body = await request.json();
+    const { studentId } = body;
     console.log('Received studentId:', studentId);
 
     if (!studentId || isNaN(Number(studentId)) || Number(studentId) <= 0) {
@@ -290,9 +290,9 @@ export async function DELETE(
       );
     }
 
-    // Await params for Next.js 14+
-    const { id } = await context.params;
-    const sectionId = parseInt(id);
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const sectionId = parseInt(resolvedParams.id);
     console.log('Section ID:', sectionId);
     if (isNaN(sectionId) || sectionId <= 0) {
       console.log('Invalid sectionId:', id);
@@ -386,10 +386,12 @@ export async function DELETE(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const sectionId = parseInt(params.id);
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
     if (isNaN(sectionId)) {
       return NextResponse.json(
         { error: 'Invalid section ID' },
