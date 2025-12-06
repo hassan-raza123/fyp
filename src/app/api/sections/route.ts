@@ -42,26 +42,110 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const sections = await prisma.sections.findMany({
-      where,
-      include: {
-        courseOffering: {
-          include: {
-            course: true,
-            semester: true,
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const statusFilter = searchParams.get('status');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+
+    // Add search filter
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        {
+          courseOffering: {
+            course: {
+              OR: [
+                { code: { contains: search, mode: 'insensitive' } },
+                { name: { contains: search, mode: 'insensitive' } },
+              ],
+            },
           },
         },
-      },
-      orderBy: {
-        courseOffering: {
-          semester: {
-            startDate: 'desc',
+      ];
+    }
+
+    // Add status filter
+    if (statusFilter && statusFilter !== 'all') {
+      where.status = statusFilter;
+    }
+
+    const [sections, total] = await Promise.all([
+      prisma.sections.findMany({
+        where,
+        include: {
+          courseOffering: {
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                },
+              },
+              semester: {
+                select: {
+                  id: true,
+                  name: true,
+                  startDate: true,
+                  endDate: true,
+                },
+              },
+            },
+          },
+          faculty: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          batch: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              studentsections: true,
+            },
           },
         },
+        orderBy: {
+          courseOffering: {
+            semester: {
+              startDate: 'desc',
+            },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.sections.count({ where }),
+    ]);
+
+    // Transform sections to include currentStudents
+    const transformedSections = sections.map((section) => ({
+      ...section,
+      currentStudents: section._count.studentsections,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: transformedSections,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        page,
+        limit,
       },
     });
-
-    return NextResponse.json(sections);
   } catch (error) {
     console.error('Error fetching sections:', error);
     return NextResponse.json(
