@@ -176,12 +176,6 @@ const adminNavigation = [
         icon: UserCheck,
         href: '/admin/sections',
       },
-      {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
-      },
     ],
   },
   {
@@ -417,12 +411,6 @@ export const roleBasedNavigation: RoleBasedNavigation = {
     {
       title: 'SYSTEM',
       items: [
-        {
-          id: 'sessions',
-          label: 'Class Sessions',
-          icon: Calendar,
-          href: '/faculty/sessions',
-        },
         {
           id: 'notifications',
           label: 'Notifications',
