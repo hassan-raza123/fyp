@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/auth';
+import { requireAuth, requireRole, getDepartmentIdFromRequest } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
-import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
@@ -24,11 +23,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get current department ID from authenticated user
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
+    // Get department ID from authenticated user
+    const currentDepartmentId = await getDepartmentIdFromRequest(request);
+    
+    // For super_admin, allow access without department restriction
+    if (!currentDepartmentId && user.role !== 'super_admin') {
       return NextResponse.json(
-        { success: false, error: 'Department not assigned. Please contact super admin.' },
+        { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
         { status: 400 }
       );
     }
@@ -40,14 +41,20 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     // Build query conditions - automatically filter by current department through program
-    const where: any = {
-      program: {
+    const where: any = {};
+    
+    // Only filter by department if we have a department ID (not for super_admin without department)
+    if (currentDepartmentId) {
+      where.program = {
         departmentId: currentDepartmentId,
-      },
-    };
+      };
+    }
 
     if (programId) {
-      where.programId = parseInt(programId);
+      const parsedProgramId = parseInt(programId);
+      if (!isNaN(parsedProgramId)) {
+        where.programId = parsedProgramId;
+      }
     }
 
     if (status) {

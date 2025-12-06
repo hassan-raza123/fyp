@@ -153,18 +153,29 @@ export default function StudentsPage() {
   };
 
   const fetchBatchesForProgram = async (programId: string) => {
+    if (!programId) {
+      setBatches([]);
+      return;
+    }
     try {
       setFetchingBatches(true);
-      const response = await fetch(`/api/programs/${programId}/batches`);
+      const response = await fetch(`/api/programs/${programId}/batches`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
-        throw new Error('Failed to fetch batches');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch batches');
       }
       const data = await response.json();
       if (data.success) {
         setBatches(data.data || []);
+      } else {
+        throw new Error(data.error || 'Failed to fetch batches');
       }
     } catch (error) {
       console.error('Error fetching batches:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to fetch batches');
+      setBatches([]);
     } finally {
       setFetchingBatches(false);
     }
