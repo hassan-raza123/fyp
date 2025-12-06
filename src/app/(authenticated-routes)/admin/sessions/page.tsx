@@ -87,6 +87,8 @@ export default function SessionsPage() {
   const [search, setSearch] = useState('');
   const [sectionFilter, setSectionFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -124,13 +126,15 @@ export default function SessionsPage() {
   }, []);
 
   useEffect(() => {
-    fetchSections();
-    fetchSessions();
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    fetchSessions();
-  }, [sectionFilter, statusFilter]);
+    if (mounted) {
+      fetchSections();
+      fetchSessions();
+    }
+  }, [mounted, page, search, sectionFilter, statusFilter]);
 
   const fetchSections = async () => {
     try {
@@ -150,54 +154,30 @@ export default function SessionsPage() {
     try {
       setLoading(true);
       setError(null);
-      let url = '/api/sessions';
-      const params = new URLSearchParams();
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: '10',
+        ...(search && { search }),
+        ...(statusFilter !== 'all' && { statusFilter }),
+        ...(sectionFilter !== 'all' && { sectionId: sectionFilter }),
+      });
 
-      if (sectionFilter !== 'all') {
-        params.append('sectionId', sectionFilter);
-      }
-
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const response = await fetch(url, {
+      const response = await fetch(`/api/sessions?${queryParams}`, {
         credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to fetch sessions');
       const data = await response.json();
+
       if (data.success) {
-        let sessionsData = data.data;
-
-        // Filter by status if needed
-        if (statusFilter !== 'all') {
-          sessionsData = sessionsData.filter(
-            (s: Session) => s.status === statusFilter
-          );
-        }
-
-        // Filter by search
-        if (search) {
-          const searchLower = search.toLowerCase();
-          sessionsData = sessionsData.filter(
-            (s: Session) =>
-              s.topic.toLowerCase().includes(searchLower) ||
-              s.section.name.toLowerCase().includes(searchLower) ||
-              s.section.courseOffering.course.code
-                .toLowerCase()
-                .includes(searchLower) ||
-              s.section.courseOffering.course.name
-                .toLowerCase()
-                .includes(searchLower)
-          );
-        }
-
-        setSessions(sessionsData);
+        setSessions(data.data);
+        setTotalPages(data.pagination?.pages || 1);
+      } else {
+        setError(data.error || 'Failed to fetch sessions');
+        toast.error(data.error || 'Failed to fetch sessions');
       }
     } catch (error) {
       console.error('Error fetching sessions:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch sessions');
-      toast.error('Failed to load sessions');
+      setError('Failed to fetch sessions');
+      toast.error('Failed to fetch sessions');
     } finally {
       setLoading(false);
     }
@@ -374,7 +354,7 @@ export default function SessionsPage() {
       case 'scheduled':
         return <Badge variant="default">Scheduled</Badge>;
       case 'in_progress':
-        return <Badge variant="default">In Progress</Badge>;
+        return <Badge variant="secondary">In Progress</Badge>;
       case 'completed':
         return <Badge variant="success">Completed</Badge>;
       case 'cancelled':
@@ -411,7 +391,7 @@ export default function SessionsPage() {
     );
   }
 
-  if (error) {
+  if (error && sessions.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="text-center">
@@ -486,12 +466,18 @@ export default function SessionsPage() {
             <Input
               placeholder="Search sessions..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
             />
           </div>
         </div>
-        <Select value={sectionFilter} onValueChange={setSectionFilter}>
+        <Select value={sectionFilter} onValueChange={(value) => {
+          setSectionFilter(value);
+          setPage(1);
+        }}>
           <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by section" />
           </SelectTrigger>
@@ -504,7 +490,10 @@ export default function SessionsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(value) => {
+          setStatusFilter(value);
+          setPage(1);
+        }}>
           <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -623,6 +612,39 @@ export default function SessionsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: page === 1 ? 'transparent' : iconBgColor,
+              color: page === 1 ? 'var(--muted-text)' : primaryColor,
+              border: page === 1 ? '1px solid var(--card-border)' : 'none',
+            }}
+          >
+            Previous
+          </button>
+          <span className="text-xs text-secondary-text">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: page === totalPages ? 'transparent' : iconBgColor,
+              color: page === totalPages ? 'var(--muted-text)' : primaryColor,
+              border: page === totalPages ? '1px solid var(--card-border)' : 'none',
+            }}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Create Session Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>

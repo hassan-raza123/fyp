@@ -98,6 +98,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('sectionId');
+    const search = searchParams.get('search');
+    const statusFilter = searchParams.get('statusFilter');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
 
     const where: any = {};
     
@@ -116,35 +120,65 @@ export async function GET(request: NextRequest) {
       where.sectionId = Number(sectionId);
     }
 
-    const sessions = await prisma.sessions.findMany({
-      where,
-      include: {
-        section: {
-          include: {
-            courseOffering: {
-              include: {
-                course: {
-                  select: {
-                    code: true,
-                    name: true,
+    if (statusFilter && statusFilter !== 'all') {
+      where.status = statusFilter;
+    }
+
+    if (search) {
+      where.OR = [
+        { topic: { contains: search, mode: 'insensitive' } },
+        { section: { name: { contains: search, mode: 'insensitive' } } },
+        { section: { courseOffering: { course: { code: { contains: search, mode: 'insensitive' } } } } },
+        { section: { courseOffering: { course: { name: { contains: search, mode: 'insensitive' } } } } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const [sessions, total] = await Promise.all([
+      prisma.sessions.findMany({
+        where,
+        include: {
+          section: {
+            include: {
+              courseOffering: {
+                include: {
+                  course: {
+                    select: {
+                      code: true,
+                      name: true,
+                    },
                   },
-                },
-                semester: {
-                  select: {
-                    name: true,
+                  semester: {
+                    select: {
+                      name: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-      orderBy: {
-        date: 'desc',
+        orderBy: {
+          date: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.sessions.count({ where }),
+    ]);
+
+    const pages = Math.ceil(total / limit);
+
+    return NextResponse.json({
+      success: true,
+      data: sessions,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages,
       },
     });
-
-    return NextResponse.json({ success: true, data: sessions });
   } catch (error) {
     console.error('Error fetching sessions:', error);
     return NextResponse.json(
