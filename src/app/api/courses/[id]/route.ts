@@ -11,7 +11,6 @@ const updateCourseSchema = z.object({
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
   type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
-  departmentId: z.coerce.number(),
   status: z.enum(['active', 'inactive', 'archived'] as const),
   prerequisites: z.array(z.number()).optional(),
   programIds: z.array(z.number()).optional(),
@@ -19,10 +18,30 @@ const updateCourseSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const id = await Promise.resolve(parseInt(params.id));
+    // Check authentication
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user, error } = await requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const id = parseInt(resolvedParams.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -137,7 +156,24 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: transformedCourse,
+      data: {
+        id: transformedCourse.id,
+        code: transformedCourse.code,
+        name: transformedCourse.name,
+        description: transformedCourse.description,
+        creditHours: transformedCourse.creditHours,
+        theoryHours: transformedCourse.theoryHours,
+        labHours: transformedCourse.labHours,
+        type: transformedCourse.type,
+        status: transformedCourse.status,
+        department: transformedCourse.department,
+        prerequisites: transformedCourse.courses_A || [],
+        programs: transformedCourse.programs || [],
+        stats: {
+          clos: transformedCourse.clos?.length || 0,
+          offerings: transformedCourse.courseOfferings?.length || 0,
+        },
+      },
     });
   } catch (error) {
     console.error('Error fetching course:', error);
@@ -150,12 +186,44 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    // Check authentication
+    const { requireAuth, requireRole } = await import('@/lib/auth');
+    const { success, user, error } = await requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check role - only admins and super_admins can update courses
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
+      'admin',
+      'super_admin',
+    ]);
+    if (!roleSuccess) {
+      return NextResponse.json(
+        { success: false, error: roleError || 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateCourseSchema.parse(body);
-    const id = await Promise.resolve(parseInt(params.id));
+    const id = parseInt(resolvedParams.id);
 
     // Check if course exists
     const existingCourse = await prisma.courses.findUnique({
@@ -278,10 +346,42 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const id = await Promise.resolve(parseInt(params.id));
+    // Check authentication
+    const { requireAuth, requireRole } = await import('@/lib/auth');
+    const { success, user, error } = await requireAuth(request);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check role - only admins and super_admins can delete courses
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
+      'admin',
+      'super_admin',
+    ]);
+    if (!roleSuccess) {
+      return NextResponse.json(
+        { success: false, error: roleError || 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const id = parseInt(resolvedParams.id);
 
     if (isNaN(id)) {
       return NextResponse.json(

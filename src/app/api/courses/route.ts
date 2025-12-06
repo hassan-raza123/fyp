@@ -11,7 +11,6 @@ const createCourseSchema = z.object({
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
   type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
-  departmentId: z.coerce.number().min(1, 'Department is required'),
   status: z.enum(['active', 'inactive', 'archived'] as const).default('active'),
   prerequisites: z.array(z.number()).optional(),
   programIds: z.array(z.number()).optional(),
@@ -306,7 +305,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract prerequisites and programIds from validated data
-    const { prerequisites, programIds, departmentId, ...courseData } =
+    const { prerequisites, programIds, ...courseData } =
       validatedData;
     console.log('Course data to create:', JSON.stringify(courseData, null, 2));
     console.log('Prerequisites:', prerequisites);
