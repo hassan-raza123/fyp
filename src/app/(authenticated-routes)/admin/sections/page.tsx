@@ -203,7 +203,7 @@ export default function SectionsPage() {
 
   const fetchFaculty = async () => {
     try {
-      const response = await fetch('/api/faculty?limit=1000', {
+      const response = await fetch('/api/faculties', {
         credentials: 'include',
       });
       const data = await response.json();
@@ -259,7 +259,7 @@ export default function SectionsPage() {
         name: sec.name || '',
         courseOfferingId: sec.courseOffering?.id?.toString() || '',
         batchId: sec.batch?.id?.toString() || '',
-        facultyId: sec.faculty?.id?.toString() || '',
+        facultyId: sec.faculty?.id?.toString() || 'none',
         maxStudents: sec.maxStudents?.toString() || '',
         status: (sec.status || 'active') as 'active' | 'inactive' | 'suspended' | 'deleted',
       });
@@ -294,7 +294,7 @@ export default function SectionsPage() {
           name: newSection.name,
           courseOfferingId: Number(newSection.courseOfferingId),
           batchId: newSection.batchId,
-          facultyId: newSection.facultyId ? Number(newSection.facultyId) : null,
+          facultyId: newSection.facultyId && newSection.facultyId !== 'none' ? Number(newSection.facultyId) : null,
           maxStudents: maxStudentsNum,
         }),
       });
@@ -344,7 +344,7 @@ export default function SectionsPage() {
           name: editSection.name,
           courseOfferingId: Number(editSection.courseOfferingId),
           batchId: editSection.batchId,
-          facultyId: editSection.facultyId ? Number(editSection.facultyId) : null,
+          facultyId: editSection.facultyId && editSection.facultyId !== 'none' ? Number(editSection.facultyId) : null,
           maxStudents: maxStudentsNum,
           status: editSection.status,
         }),
@@ -754,7 +754,7 @@ export default function SectionsPage() {
                     <SelectValue placeholder="Select faculty (optional)" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
-                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                    <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {faculty.map((f) => (
                       <SelectItem key={f.id} value={f.id.toString()} className="text-primary-text hover:bg-card/50">
                         {f.user.first_name} {f.user.last_name}
@@ -1038,7 +1038,7 @@ export default function SectionsPage() {
                       <SelectValue placeholder="Select faculty (optional)" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
-                      <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                      <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                       {faculty.map((f) => (
                         <SelectItem key={f.id} value={f.id.toString()} className="text-primary-text hover:bg-card/50">
                           {f.user.first_name} {f.user.last_name}
