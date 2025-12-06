@@ -6,14 +6,25 @@ import { batches_status } from '@prisma/client';
 // GET /api/batches/[id] - Get a single batch by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Batch ID is required' },
+        { status: 400 }
+      );
+    }
+
     const batch = await prisma.batches.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         program: {
           select: {
+            id: true,
             name: true,
             code: true,
             department: {
@@ -81,7 +92,26 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: batch,
+      data: {
+        id: batch.id,
+        name: batch.name,
+        code: batch.code,
+        startDate: batch.startDate,
+        endDate: batch.endDate,
+        maxStudents: batch.maxStudents,
+        description: batch.description,
+        status: batch.status,
+        program: {
+          id: batch.program.id,
+          name: batch.program.name,
+          code: batch.program.code,
+          department: batch.program.department,
+        },
+        stats: {
+          students: batch._count.students,
+          sections: batch._count.sections,
+        },
+      },
     });
   } catch (error) {
     console.error('Error fetching batch:', error);
@@ -95,7 +125,7 @@ export async function GET(
 // PUT /api/batches/[id] - Update a batch
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
@@ -110,8 +140,9 @@ export async function PUT(
     }
 
     // Check role
-    const { success: roleSuccess, error: roleError } = requireRole(request, [
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
       'admin',
+      'super_admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(
@@ -120,9 +151,19 @@ export async function PUT(
       );
     }
 
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Batch ID is required' },
+        { status: 400 }
+      );
+    }
+
     // Check if batch exists
     const existingBatch = await prisma.batches.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!existingBatch) {
@@ -192,7 +233,7 @@ export async function PUT(
 
     // Update the batch
     const updatedBatch = await prisma.batches.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         name: name ? name.trim() : undefined,
         code: code ? code.trim() : undefined,
@@ -240,7 +281,7 @@ export async function PUT(
 // DELETE /api/batches/[id] - Delete a batch
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
@@ -255,8 +296,9 @@ export async function DELETE(
     }
 
     // Check role
-    const { success: roleSuccess, error: roleError } = requireRole(request, [
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
       'admin',
+      'super_admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(
@@ -265,9 +307,19 @@ export async function DELETE(
       );
     }
 
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Batch ID is required' },
+        { status: 400 }
+      );
+    }
+
     // Check if batch exists
     const existingBatch = await prisma.batches.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         _count: {
           select: {
@@ -301,7 +353,7 @@ export async function DELETE(
 
     // Delete the batch
     await prisma.batches.delete({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     return NextResponse.json({

@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
-        { success: false, error: 'Department not configured in settings' },
+        { success: false, error: 'Department not assigned. Please contact super admin.' },
         { status: 400 }
       );
     }
