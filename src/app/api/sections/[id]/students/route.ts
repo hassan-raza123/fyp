@@ -133,6 +133,53 @@ export async function POST(
       );
     }
 
+    // Check if student is already enrolled in another section of the same course offering
+    const sectionWithCourseOffering = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      select: {
+        courseOfferingId: true,
+      },
+    });
+
+    if (sectionWithCourseOffering) {
+      const existingCourseEnrollment = await prisma.studentsections.findFirst({
+        where: {
+          studentId: parseInt(studentId),
+          section: {
+            courseOfferingId: sectionWithCourseOffering.courseOfferingId,
+          },
+          status: 'active',
+        },
+        include: {
+          section: {
+            include: {
+              courseOffering: {
+                include: {
+                  course: {
+                    select: {
+                      code: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (existingCourseEnrollment) {
+        console.log('Student already enrolled in another section of the same course');
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Student is already enrolled in ${existingCourseEnrollment.section.courseOffering.course.code} (${existingCourseEnrollment.section.courseOffering.course.name}) - Section ${existingCourseEnrollment.section.name}. A student can only be enrolled in one section per course.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get section with course offering and faculty for notification
     const sectionWithDetails = await prisma.sections.findUnique({
       where: { id: sectionId },

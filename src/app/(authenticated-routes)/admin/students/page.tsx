@@ -87,7 +87,6 @@ export default function StudentsPage() {
     departmentId: '',
     programId: '',
     batchId: '',
-    sectionId: '',
     status: 'active' as 'active' | 'inactive',
   });
   const [editStudent, setEditStudent] = useState({
@@ -103,8 +102,6 @@ export default function StudentsPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [fetchingPrograms, setFetchingPrograms] = useState(false);
   const [fetchingBatches, setFetchingBatches] = useState(false);
-  const [sections, setSections] = useState<{ id: number; name: string }[]>([]);
-  const [fetchingSections, setFetchingSections] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -125,11 +122,6 @@ export default function StudentsPage() {
     }
   }, [newStudent.programId]);
 
-  useEffect(() => {
-    if (newStudent.batchId) {
-      fetchSectionsForBatch(newStudent.batchId);
-    }
-  }, [newStudent.batchId]);
 
   const fetchPrograms = async () => {
     try {
@@ -181,21 +173,6 @@ export default function StudentsPage() {
     }
   };
 
-  const fetchSectionsForBatch = async (batchId: string) => {
-    try {
-      setFetchingSections(true);
-      const response = await fetch(`/api/batches/${batchId}`);
-      if (!response.ok) throw new Error('Failed to fetch batch sections');
-      const data = await response.json();
-      if (data.success) {
-        setSections(data.data.sections || []);
-      }
-    } catch (error) {
-      console.error('Error fetching sections:', error);
-    } finally {
-      setFetchingSections(false);
-    }
-  };
 
   const fetchBatches = async () => {
     try {
@@ -330,7 +307,6 @@ export default function StudentsPage() {
           ...newStudent,
           departmentId: parseInt(newStudent.departmentId),
           programId: parseInt(newStudent.programId),
-          sectionId: newStudent.sectionId ? parseInt(newStudent.sectionId) : undefined,
         }),
       });
 
@@ -349,7 +325,6 @@ export default function StudentsPage() {
         departmentId: '',
         programId: '',
         batchId: '',
-        sectionId: '',
         status: 'active',
       });
       fetchStudents();
@@ -789,7 +764,7 @@ export default function StudentsPage() {
               <Select
                 value={newStudent.programId}
                 onValueChange={(value) => {
-                  setNewStudent({ ...newStudent, programId: value, batchId: '', sectionId: '' });
+                  setNewStudent({ ...newStudent, programId: value, batchId: '' });
                 }}
                 disabled={fetchingPrograms}
               >
@@ -814,7 +789,7 @@ export default function StudentsPage() {
               <Select
                 value={newStudent.batchId}
                 onValueChange={(value) => {
-                  setNewStudent({ ...newStudent, batchId: value, sectionId: '' });
+                  setNewStudent({ ...newStudent, batchId: value });
                 }}
                 disabled={fetchingBatches || !newStudent.programId}
               >
@@ -825,29 +800,6 @@ export default function StudentsPage() {
                   {batches.map((batch) => (
                     <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
                       {batch.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create_sectionId" className="text-xs text-primary-text">Section (Optional)</Label>
-              <Select
-                value={newStudent.sectionId || ''}
-                onValueChange={(value) => setNewStudent({ ...newStudent, sectionId: value })}
-                disabled={fetchingSections || !newStudent.batchId || sections.length === 0}
-              >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
-                  <SelectValue placeholder="Select section (optional)" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-card-border">
-                  {sections.map((section) => (
-                    <SelectItem
-                      key={section.id}
-                      value={section.id.toString()}
-                      className="text-primary-text hover:bg-card/50"
-                    >
-                      {section.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
