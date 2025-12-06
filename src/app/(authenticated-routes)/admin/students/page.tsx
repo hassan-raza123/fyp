@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -22,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Trash2, Loader2, Edit } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, Loader2, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -56,6 +55,9 @@ export default function StudentsPage() {
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
   const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
   
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -267,7 +269,9 @@ export default function StudentsPage() {
     setIsLoadingStudent(true);
     setShowEditModal(true);
     try {
-      const response = await fetch(`/api/students/${student.id}`);
+      const response = await fetch(`/api/students/${student.id}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch student');
       const data = await response.json();
       if (data.success && data.data) {
@@ -310,6 +314,7 @@ export default function StudentsPage() {
       const response = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...newStudent,
           departmentId: parseInt(newStudent.departmentId),
@@ -319,7 +324,7 @@ export default function StudentsPage() {
       });
 
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to create student');
       }
 
@@ -359,6 +364,7 @@ export default function StudentsPage() {
       const response = await fetch(`/api/students/${selectedStudent.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...editStudent,
           departmentId: editStudent.departmentId ? parseInt(editStudent.departmentId) : null,
@@ -367,7 +373,7 @@ export default function StudentsPage() {
       });
 
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to update student');
       }
 
@@ -424,38 +430,47 @@ export default function StudentsPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div 
             className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: primaryColor }}
-          />
-          <p className="text-xs text-secondary-text">Loading students...</p>
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          ></div>
+          <p className="text-xs text-secondary-text">
+            Loading students...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className='text-lg font-bold text-primary-text'>Students</h1>
-          <p className='text-xs text-secondary-text mt-0.5'>
+          <h1 className="text-lg font-bold text-primary-text">
+            Students
+          </h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Manage student accounts and information
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs border-card-border bg-transparent"
+          <button
+            onClick={() => router.push('/admin/students/bulk-import')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
             style={{
               color: isDarkMode ? '#ffffff' : '#111827',
               borderColor: isDarkMode ? '#404040' : '#e5e7eb',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+              e.currentTarget.style.backgroundColor = iconBgColor;
               e.currentTarget.style.borderColor = primaryColor;
               e.currentTarget.style.color = primaryColor;
             }}
@@ -464,131 +479,123 @@ export default function StudentsPage() {
               e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
               e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
             }}
-            onClick={() => router.push('/admin/students/bulk-import')}
           >
             Bulk Import
-          </Button>
-          <Button 
-            size="sm" 
-            className="h-8 text-xs text-white"
+          </button>
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
             style={{
-              backgroundColor: primaryColor,
-              color: 'white',
+              backgroundColor: iconBgColor,
+              color: primaryColor,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColor;
+              e.currentTarget.style.backgroundColor = iconBgColor;
             }}
-            onClick={() => setShowCreateModal(true)}
           >
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            Add Student
-          </Button>
+            <Plus className="w-3.5 h-3.5" />
+            Create Student
+          </button>
         </div>
       </div>
 
-      <div className='flex items-center gap-3'>
-        <form
-          onSubmit={handleSearch}
-          className='flex-1 flex items-center gap-4'
-        >
-          <div className='relative flex-1'>
-            <Search className='absolute left-2 top-2 h-3.5 w-3.5 text-muted-text' />
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
-              placeholder='Search students...'
+              placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className='pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary'
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearch(e);
+                }
+              }}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
             />
           </div>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className='w-[140px] h-8 text-xs bg-card border-card-border text-primary-text'>
-              <SelectValue placeholder='Filter by status' />
-            </SelectTrigger>
-            <SelectContent className="bg-card border-card-border">
-              <SelectItem value='all' className="text-primary-text hover:bg-card/50">All Status</SelectItem>
-              <SelectItem value='active' className="text-primary-text hover:bg-card/50">Active</SelectItem>
-              <SelectItem value='inactive' className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={batchFilter}
-            onValueChange={(value) => {
-              setBatchFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className='w-[140px] h-8 text-xs bg-card border-card-border text-primary-text'>
-              <SelectValue placeholder='Filter by batch' />
-            </SelectTrigger>
-            <SelectContent className="bg-card border-card-border">
-              <SelectItem value='all' className="text-primary-text hover:bg-card/50">All Batches</SelectItem>
-              {batches.map((batch) => (
-                <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
-                  {batch.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button 
-            type='submit' 
-            size="sm"
-            className="h-8 text-xs text-white"
-            style={{
-              backgroundColor: primaryColor,
-              color: 'white',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColor;
-            }}
-          >
-            Search
-          </Button>
-        </form>
+        </div>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+            <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={batchFilter}
+          onValueChange={(value) => {
+            setBatchFilter(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by batch" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Batches</SelectItem>
+            {batches.map((batch) => (
+              <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
+                {batch.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className='rounded-lg border border-card-border bg-card overflow-hidden'>
+      {/* Students Table */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Roll Number</TableHead>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Name</TableHead>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Email</TableHead>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Batch</TableHead>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Sections</TableHead>
-              <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Status</TableHead>
-              <TableHead className='text-right text-xs font-semibold text-primary-text h-9 py-2'>Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">ID</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Email</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Batch</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {students.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className='text-center text-xs text-secondary-text py-6'>
-                  No students found
+                <TableCell colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Plus className="w-8 h-8 text-muted-text" />
+                    <p className="text-xs text-secondary-text">No students found</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               students.map((student) => (
-                <TableRow key={student.id} className="hover:bg-hover-bg transition-colors">
-                  <TableCell className="text-xs text-primary-text py-2">{student.rollNumber}</TableCell>
-                  <TableCell className="text-xs text-primary-text py-2">
+                <TableRow 
+                  key={student.id}
+                  className="hover:bg-hover-bg transition-colors"
+                >
+                  <TableCell className="text-xs text-primary-text">{student.id}</TableCell>
+                  <TableCell className="text-xs font-medium text-primary-text">{student.rollNumber}</TableCell>
+                  <TableCell className="text-xs font-medium text-primary-text">
                     {student.user.firstName} {student.user.lastName}
                   </TableCell>
-                  <TableCell className="text-xs text-secondary-text py-2">{student.user.email}</TableCell>
-                  <TableCell className="text-xs text-secondary-text py-2">{student.batch?.name || 'No Batch'}</TableCell>
-                  <TableCell className="text-xs text-secondary-text py-2">{student.currentStudents}</TableCell>
-                  <TableCell className="py-2">
+                  <TableCell className="text-xs text-secondary-text">{student.user.email}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{student.batch?.name || 'N/A'}</TableCell>
+                  <TableCell>
                     <Badge
                       className={`${getStatusColor(student.status)} text-[10px] px-1.5 py-0.5`}
                       variant='secondary'
@@ -597,51 +604,59 @@ export default function StudentsPage() {
                         student.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-right py-2'>
-                    <div className='flex justify-end gap-1'>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-7 w-7 border-card-border bg-transparent'
-                        style={{
-                          color: isDarkMode ? '#ffffff' : '#111827',
-                          borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-                          e.currentTarget.style.color = primaryColor;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
-                        }}
+                  <TableCell>
+                    <div className="flex gap-1.5">
+                      <button
                         onClick={() => handleViewStudent(student)}
-                      >
-                        <Eye className='h-3.5 w-3.5' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-7 w-7 border-card-border bg-transparent'
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
-                          color: isDarkMode ? '#ffffff' : '#111827',
-                          borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#dc2626';
-                          e.currentTarget.style.color = '#ffffff';
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                          e.currentTarget.style.backgroundColor = iconBgColor;
                         }}
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => handleEditStudent(student)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                      <button
                         onClick={() => {
                           setSelectedStudent(student);
                           setShowDeleteDialog(true);
                         }}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: 'var(--error-opacity-10)',
+                          color: 'var(--error)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
+                        }}
                       >
-                        <Trash2 className='h-3.5 w-3.5' />
-                      </Button>
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -651,65 +666,60 @@ export default function StudentsPage() {
         </Table>
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className='flex items-center justify-end gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-7 text-xs border-card-border bg-transparent'
-            style={{
-              color: isDarkMode ? '#ffffff' : '#111827',
-              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-            }}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-                e.currentTarget.style.borderColor = primaryColor;
-                e.currentTarget.style.color = primaryColor;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
-                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
-              }
-            }}
+        <div className="flex justify-center items-center gap-2">
+          <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <span className='text-[10px] text-secondary-text'>
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-7 text-xs border-card-border bg-transparent'
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              color: isDarkMode ? '#ffffff' : '#111827',
-              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              backgroundColor: page === 1 
+                ? 'var(--gray-100)' 
+                : iconBgColor,
+              color: page === 1 ? 'var(--gray-500)' : primaryColor,
             }}
             onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-                e.currentTarget.style.borderColor = primaryColor;
-                e.currentTarget.style.color = primaryColor;
+              if (page !== 1) {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
-                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+              if (page !== 1) {
+                e.currentTarget.style.backgroundColor = iconBgColor;
               }
             }}
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            Previous
+          </button>
+          <span className="text-xs text-secondary-text px-2">
+            Page {page} of {totalPages}
+          </span>
+          <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: page === totalPages 
+                ? 'var(--gray-100)' 
+                : iconBgColor,
+              color: page === totalPages ? 'var(--gray-500)' : primaryColor,
+            }}
+            onMouseEnter={(e) => {
+              if (page !== totalPages) {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (page !== totalPages) {
+                e.currentTarget.style.backgroundColor = iconBgColor;
+              }
+            }}
           >
             Next
-          </Button>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
@@ -849,24 +859,7 @@ export default function StudentsPage() {
             </div>
           </div>
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowCreateModal(false);
                 setNewStudent({
@@ -882,12 +875,28 @@ export default function StudentsPage() {
                 });
               }}
               disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleCreateStudent}
+              disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
                 backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
                 color: 'white',
@@ -902,18 +911,16 @@ export default function StudentsPage() {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }
               }}
-              onClick={handleCreateStudent}
-              disabled={isCreating}
             >
               {isCreating ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Creating...
                 </>
               ) : (
                 'Create Student'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1021,35 +1028,34 @@ export default function StudentsPage() {
             </div>
           )}
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+            <button
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingStudent(null);
+              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
-              onClick={() => {
-                setShowViewModal(false);
-                setViewingStudent(null);
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
-            </Button>
+            </button>
             {viewingStudent && (
-              <Button
-                size="sm"
-                className="h-8 text-xs text-white"
+              <button
+                onClick={() => {
+                  if (selectedStudent) {
+                    setShowViewModal(false);
+                    handleEditStudent(selectedStudent);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white flex items-center gap-1.5"
                 style={{
                   backgroundColor: primaryColor,
                   color: 'white',
@@ -1060,16 +1066,10 @@ export default function StudentsPage() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }}
-                onClick={() => {
-                  if (selectedStudent) {
-                    setShowViewModal(false);
-                    handleEditStudent(selectedStudent);
-                  }
-                }}
               >
-                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                <Edit className="h-3.5 w-3.5" />
                 Edit Student
-              </Button>
+              </button>
             )}
           </DialogFooter>
         </DialogContent>
@@ -1203,35 +1203,34 @@ export default function StudentsPage() {
             </div>
           )}
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowEditModal(false);
                 setSelectedStudent(null);
               }}
               disabled={isUpdating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleUpdateStudent}
+              disabled={isUpdating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
                 backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
                 color: 'white',
@@ -1246,18 +1245,16 @@ export default function StudentsPage() {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }
               }}
-              onClick={handleUpdateStudent}
-              disabled={isUpdating}
             >
               {isUpdating ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Saving...
                 </>
               ) : (
                 'Save Changes'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1280,53 +1277,49 @@ export default function StudentsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
-              variant='outline'
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+            <button
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!deleting) {
                   e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!deleting) {
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }
               }}
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={deleting}
             >
               Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting || (selectedStudent?.currentStudents ?? 0) > 0}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: '#dc2626',
                 color: '#ffffff',
                 borderColor: '#dc2626',
               }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!deleting && !e.currentTarget.disabled) {
                   e.currentTarget.style.backgroundColor = '#b91c1c';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!deleting) {
                   e.currentTarget.style.backgroundColor = '#dc2626';
                 }
               }}
-              onClick={handleDelete}
-              disabled={deleting || (selectedStudent?.currentStudents ?? 0) > 0}
             >
               {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

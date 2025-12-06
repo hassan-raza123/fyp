@@ -35,17 +35,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Import getCurrentDepartmentId
-    const { getCurrentDepartmentId } = await import('@/lib/auth');
+    // Import getDepartmentIdFromRequest
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
-    if (!currentDepartmentId) {
+    // Get department ID from authenticated user
+    const currentDepartmentId = await getDepartmentIdFromRequest(request);
+    
+    // For super_admin, allow access without department restriction
+    if (!currentDepartmentId && user.role !== 'super_admin') {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Department not configured. Please set department in Settings.',
+          error: 'Department not assigned. Please contact super admin to assign a department to your account.',
         },
         { status: 400 }
       );
@@ -102,7 +103,8 @@ export async function GET(request: NextRequest) {
 
     const where = {
       AND: [
-        { departmentId: currentDepartmentId }, // Always filter by current department
+        // Only filter by department if we have a department ID (not for super_admin without department)
+        ...(currentDepartmentId ? [{ departmentId: currentDepartmentId }] : []),
         studentIds ? { id: { in: studentIds } } : {}, // Filter by faculty's students if faculty
         status ? { status } : {},
         batchId ? { batchId } : {},
