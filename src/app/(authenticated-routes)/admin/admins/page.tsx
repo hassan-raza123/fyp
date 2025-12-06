@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -143,12 +142,16 @@ export default function AdminsPage() {
     setIsLoadingAdmin(true);
     setShowViewModal(true);
     try {
-      const response = await fetch(`/api/users/${admin.userId}`, {
+      const response = await fetch(`/api/admins/${admin.userId}`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch admin');
       const data = await response.json();
-      setViewingAdmin(data);
+      if (data.success) {
+        setViewingAdmin(data.data);
+      } else {
+        throw new Error(data.error || 'Failed to fetch admin');
+      }
     } catch (error) {
       console.error('Error fetching admin:', error);
       toast.error('Failed to load admin details');
@@ -163,18 +166,23 @@ export default function AdminsPage() {
     setIsLoadingAdmin(true);
     setShowEditModal(true);
     try {
-      const response = await fetch(`/api/users/${admin.userId}`, {
+      const response = await fetch(`/api/admins/${admin.userId}`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch admin');
       const data = await response.json();
-      setEditAdmin({
-        firstName: data.first_name || '',
-        lastName: data.last_name || '',
-        email: data.email || '',
-        phoneNumber: data.phone_number || '',
-        status: (data.status || 'active') as 'active' | 'inactive',
-      });
+      if (data.success) {
+        const adminData = data.data;
+        setEditAdmin({
+          firstName: adminData.user.first_name || '',
+          lastName: adminData.user.last_name || '',
+          email: adminData.user.email || '',
+          phoneNumber: adminData.user.phone_number || '',
+          status: (adminData.user.status || 'active') as 'active' | 'inactive',
+        });
+      } else {
+        throw new Error(data.error || 'Failed to fetch admin');
+      }
     } catch (error) {
       console.error('Error fetching admin:', error);
       toast.error('Failed to load admin details');
@@ -193,8 +201,7 @@ export default function AdminsPage() {
     setIsCreating(true);
     setErrors({});
     try {
-      // Create user first
-      const userResponse = await fetch('/api/users', {
+      const response = await fetch('/api/admins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -203,40 +210,19 @@ export default function AdminsPage() {
           first_name: newAdmin.firstName,
           last_name: newAdmin.lastName,
           phone_number: newAdmin.phoneNumber || null,
-          password: getDefaultPassword('admin'),
+          status: newAdmin.status,
         }),
       });
 
-      const userData = await userResponse.json();
-      if (!userResponse.ok) {
-        throw new Error(userData.error || 'Failed to create user');
-      }
-
-      if (!userData.success || !userData.data) {
-        throw new Error('Failed to create user account');
-      }
-
-      const userId = userData.data.id;
-
-      // Assign admin role
-      const roleResponse = await fetch(`/api/users/${userId}/roles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          roles: ['admin'],
-          facultyDetails: {},
-        }),
-      });
-
-      const roleData = await roleResponse.json();
-      if (!roleResponse.ok) {
-        await fetch(`/api/users/${userId}`, { method: 'DELETE', credentials: 'include' });
-        throw new Error(roleData.error || 'Failed to assign admin role');
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create admin');
       }
 
       toast.success('Admin user created successfully');
-      toast.info(`Login credentials - Email: ${newAdmin.email}, Password: ${getDefaultPassword('admin')}`);
+      if (data.defaultPassword) {
+        toast.info(`Login credentials - Email: ${newAdmin.email}, Password: ${data.defaultPassword}`);
+      }
       setShowCreateModal(false);
       setNewAdmin({
         firstName: '',
@@ -265,18 +251,7 @@ export default function AdminsPage() {
     setIsUpdating(true);
     setErrors({});
     try {
-      // Get user with faculty info
-      const userGetResponse = await fetch(`/api/users/${selectedAdmin.userId}`, {
-        credentials: 'include',
-      });
-      const userGetData = await userGetResponse.json();
-      
-      if (!userGetResponse.ok || userGetData.error) {
-        throw new Error(userGetData.error || 'Failed to fetch user');
-      }
-
-      // Update user
-      const userResponse = await fetch(`/api/users/${selectedAdmin.userId}`, {
+      const response = await fetch(`/api/admins/${selectedAdmin.userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -289,26 +264,9 @@ export default function AdminsPage() {
         }),
       });
 
-      const userData = await userResponse.json();
-      if (!userResponse.ok) {
-        throw new Error(userData.error || 'Failed to update user');
-      }
-
-      // Update faculty/admin details if faculty record exists
-      if (userGetData.faculty?.id) {
-        const facultyResponse = await fetch(`/api/faculty/${userGetData.faculty.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            designation: 'Admin', // Admin designation is always "Admin"
-            status: editAdmin.status,
-          }),
-        });
-
-        if (!facultyResponse.ok) {
-          console.warn('Failed to update faculty details');
-        }
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update admin');
       }
 
       toast.success('Admin updated successfully');
@@ -328,14 +286,14 @@ export default function AdminsPage() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/users/${selectedAdmin.userId}`, {
+      const response = await fetch(`/api/admins/${selectedAdmin.userId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete admin');
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete admin');
       }
 
       toast.success('Admin deleted successfully');
@@ -365,16 +323,26 @@ export default function AdminsPage() {
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
   const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div 
             className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: primaryColor }}
-          />
-          <p className="text-xs text-secondary-text">Loading admins...</p>
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          ></div>
+          <p className="text-xs text-secondary-text">
+            Loading admins...
+          </p>
         </div>
       </div>
     );
@@ -382,34 +350,33 @@ export default function AdminsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold flex items-center gap-2 text-primary-text">
-            <Shield className="h-4 w-4" style={{ color: primaryColor }} />
+          <h1 className="text-lg font-bold text-primary-text">
             Department Admins
           </h1>
           <p className="text-xs text-secondary-text mt-0.5">
             Manage admin users in your department
           </p>
         </div>
-        <Button 
-          size="sm" 
-          className="h-8 text-xs text-white"
+        <button 
+          onClick={() => setShowCreateModal(true)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
           style={{
-            backgroundColor: primaryColor,
-            color: 'white',
+            backgroundColor: iconBgColor,
+            color: primaryColor,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = primaryColor;
+            e.currentTarget.style.backgroundColor = iconBgColor;
           }}
-          onClick={() => setShowCreateModal(true)}
         >
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Add Admin
-        </Button>
+          <Plus className="w-3.5 h-3.5" />
+          Create Admin
+        </button>
       </div>
 
       <div className="flex items-center gap-3">
@@ -436,127 +403,107 @@ export default function AdminsPage() {
         </Select>
       </div>
 
+      {/* Admins Table */}
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Name</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Email</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Password</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Department</TableHead>
-                  <TableHead className="text-xs font-semibold text-primary-text h-9 py-2">Status</TableHead>
-                  <TableHead className="text-right text-xs font-semibold text-primary-text h-9 py-2">Actions</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-xs font-semibold text-primary-text">ID</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Email</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Department</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {admins.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Shield className="w-8 h-8 text-muted-text" />
+                    <p className="text-xs text-secondary-text">No admins found</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              admins.map((admin) => (
+                <TableRow 
+                  key={admin.userId}
+                  className="hover:bg-hover-bg transition-colors"
+                >
+                  <TableCell className="text-xs text-primary-text">{admin.userId}</TableCell>
+                  <TableCell className="text-xs font-medium text-primary-text">
+                    {admin.user.first_name} {admin.user.last_name}
+                  </TableCell>
+                  <TableCell className="text-xs text-secondary-text">{admin.user.email}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">
+                    {admin.department
+                      ? `${admin.department.name} (${admin.department.code})`
+                      : 'N/A'}
+                  </TableCell>
+                  <TableCell>{getStatusBadge(admin.user.status)}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleViewAdmin(admin)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => handleEditAdmin(admin)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedAdmin(admin);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: 'var(--error-opacity-10)',
+                          color: 'var(--error)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {admins.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-xs text-secondary-text py-6">
-                      No admin users found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  admins.map((admin) => (
-                    <TableRow key={admin.userId} className="hover:bg-hover-bg transition-colors">
-                      <TableCell className="text-xs text-primary-text py-2">
-                        {admin.user.first_name} {admin.user.last_name}
-                      </TableCell>
-                      <TableCell className="text-xs text-secondary-text py-2">{admin.user.email}</TableCell>
-                      <TableCell className="text-xs py-2">
-                        <code className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--hover-bg)', color: 'var(--text-primary)' }}>
-                          {getDefaultPassword('admin')}
-                        </code>
-                        <span className="text-[10px] text-muted-text ml-1.5">
-                          (default)
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs text-secondary-text py-2">
-                        {admin.department
-                          ? `${admin.department.name} (${admin.department.code})`
-                          : 'N/A'}
-                      </TableCell>
-                      <TableCell className="py-2">
-                        {getStatusBadge(admin.user.status)}
-                      </TableCell>
-                      <TableCell className="text-right py-2">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs px-2 border-card-border bg-transparent"
-                            style={{
-                              color: isDarkMode ? '#ffffff' : '#111827',
-                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-                              e.currentTarget.style.borderColor = primaryColor;
-                              e.currentTarget.style.color = primaryColor;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
-                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
-                            }}
-                            onClick={() => handleViewAdmin(admin)}
-                          >
-                            <Eye className="h-3.5 w-3.5 mr-1" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs px-2 border-card-border bg-transparent"
-                            style={{
-                              color: isDarkMode ? '#ffffff' : '#111827',
-                              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-                              e.currentTarget.style.borderColor = primaryColor;
-                              e.currentTarget.style.color = primaryColor;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? '#404040' : '#e5e7eb';
-                              e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
-                            }}
-                            onClick={() => handleEditAdmin(admin)}
-                          >
-                            <Edit className="h-3.5 w-3.5 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-7 text-xs px-2 text-white"
-                            style={{
-                              backgroundColor: '#dc2626',
-                              color: '#ffffff',
-                              borderColor: '#dc2626',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#b91c1c';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#dc2626';
-                            }}
-                            onClick={() => {
-                              setSelectedAdmin(admin);
-                              setShowDeleteDialog(true);
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {/* Create Admin Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
@@ -631,24 +578,7 @@ export default function AdminsPage() {
             </div>
           </div>
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowCreateModal(false);
                 setNewAdmin({
@@ -660,12 +590,28 @@ export default function AdminsPage() {
                 });
               }}
               disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCreating) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleCreateAdmin}
+              disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
                 backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
                 color: 'white',
@@ -680,18 +626,16 @@ export default function AdminsPage() {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }
               }}
-              onClick={handleCreateAdmin}
-              disabled={isCreating}
             >
               {isCreating ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Creating...
                 </>
               ) : (
                 'Create Admin'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -722,35 +666,35 @@ export default function AdminsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">First Name</p>
-                    <p className="text-xs text-primary-text">{viewingAdmin.first_name || 'N/A'}</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.user?.first_name || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">Last Name</p>
-                    <p className="text-xs text-primary-text">{viewingAdmin.last_name || 'N/A'}</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.user?.last_name || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">Email</p>
-                    <p className="text-xs text-primary-text">{viewingAdmin.email || 'N/A'}</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.user?.email || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">Phone Number</p>
-                    <p className="text-xs text-primary-text">{viewingAdmin.phone_number || 'N/A'}</p>
+                    <p className="text-xs text-primary-text">{viewingAdmin.user?.phone_number || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-text mb-1">Status</p>
-                    <div className="mt-1">{getStatusBadge(viewingAdmin.status)}</div>
+                    <div className="mt-1">{getStatusBadge(viewingAdmin.user?.status || 'active')}</div>
                   </div>
                 </div>
               </div>
-              {viewingAdmin.faculty && (
+              {viewingAdmin.department && (
                 <div>
                   <h3 className="text-xs font-semibold text-secondary-text mb-3">Admin Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] text-muted-text mb-1">Department</p>
                       <p className="text-xs text-primary-text">
-                        {viewingAdmin.faculty.department
-                          ? `${viewingAdmin.faculty.department.name} (${viewingAdmin.faculty.department.code})`
+                        {viewingAdmin.department
+                          ? `${viewingAdmin.department.name} (${viewingAdmin.department.code})`
                           : 'N/A'}
                       </p>
                     </div>
@@ -764,35 +708,35 @@ export default function AdminsPage() {
             </div>
           )}
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+            <button
+              onClick={() => {
+                setShowViewModal(false);
+                setViewingAdmin(null);
+              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
-              onClick={() => {
-                setShowViewModal(false);
-                setViewingAdmin(null);
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
-            </Button>
+            </button>
             {viewingAdmin && (
-              <Button
-                size="sm"
-                className="h-8 text-xs text-white"
+              <button
+                onClick={() => {
+                  const admin = admins.find(a => a.userId === viewingAdmin.userId);
+                  if (admin) {
+                    setShowViewModal(false);
+                    handleEditAdmin(admin);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white"
                 style={{
                   backgroundColor: primaryColor,
                   color: 'white',
@@ -803,17 +747,10 @@ export default function AdminsPage() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }}
-                onClick={() => {
-                  const admin = admins.find(a => a.userId === viewingAdmin.id);
-                  if (admin) {
-                    setShowViewModal(false);
-                    handleEditAdmin(admin);
-                  }
-                }}
               >
-                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                <Edit className="h-3.5 w-3.5 mr-1.5 inline" />
                 Edit Admin
-              </Button>
+              </button>
             )}
           </DialogFooter>
         </DialogContent>
@@ -898,35 +835,34 @@ export default function AdminsPage() {
             </div>
           )}
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowEditModal(false);
                 setSelectedAdmin(null);
               }}
               disabled={isUpdating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleUpdateAdmin}
+              disabled={isUpdating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
                 backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
                 color: 'white',
@@ -941,18 +877,16 @@ export default function AdminsPage() {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }
               }}
-              onClick={handleUpdateAdmin}
-              disabled={isUpdating}
             >
               {isUpdating ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Updating...
                 </>
               ) : (
                 'Update Admin'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -972,56 +906,52 @@ export default function AdminsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+            <button
               onClick={() => {
                 setShowDeleteDialog(false);
                 setSelectedAdmin(null);
               }}
               disabled={isDeleting}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: '#dc2626',
                 color: '#ffffff',
                 borderColor: '#dc2626',
               }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!isDeleting) {
                   e.currentTarget.style.backgroundColor = '#b91c1c';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
+                if (!isDeleting) {
                   e.currentTarget.style.backgroundColor = '#dc2626';
                 }
               }}
-              onClick={handleDelete}
-              disabled={isDeleting}
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
