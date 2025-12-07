@@ -609,7 +609,7 @@ export default function SectionsPage() {
   }
 
   if (error && sections.length === 0) {
-    return (
+  return (
       <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="text-center">
           <AlertCircle 
@@ -1333,10 +1333,8 @@ export default function SectionsPage() {
             </div>
           )}
           <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+            <button
+              className="h-8 text-xs border-card-border bg-transparent px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
@@ -1358,10 +1356,9 @@ export default function SectionsPage() {
               disabled={isUpdating}
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs text-white"
+            </button>
+            <button
+              className="h-8 text-xs text-white px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
               }}
@@ -1386,7 +1383,7 @@ export default function SectionsPage() {
               ) : (
                 'Update Section'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
