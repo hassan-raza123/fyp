@@ -294,20 +294,27 @@ export default function StudentsPage() {
       return;
     }
 
-    // Department ID will be automatically set by backend from authenticated user
+    // Department ID will be automatically set by backend from authenticated user's department
 
     setIsCreating(true);
     setErrors({});
     try {
+      // Don't include departmentId - backend will automatically get it from authenticated admin's department
+      const requestBody = {
+        firstName: newStudent.firstName,
+        lastName: newStudent.lastName,
+        email: newStudent.email,
+        rollNumber: newStudent.rollNumber,
+        programId: parseInt(newStudent.programId),
+        batchId: newStudent.batchId,
+        status: newStudent.status,
+      };
+
       const response = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          ...newStudent,
-          departmentId: parseInt(newStudent.departmentId),
-          programId: parseInt(newStudent.programId),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -833,7 +840,6 @@ export default function StudentsPage() {
                   departmentId: '',
                   programId: '',
                   batchId: '',
-                  sectionId: '',
                   status: 'active',
                 });
               }}

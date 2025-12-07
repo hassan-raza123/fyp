@@ -10,7 +10,7 @@ const createStudentSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   rollNumber: z.string().min(1, 'Roll number is required'),
-  departmentId: z.number(),
+  departmentId: z.number().nullable().optional(),
   programId: z.number(),
   batchId: z.string(),
   status: z.enum(['active', 'inactive']),
@@ -268,11 +268,25 @@ export async function POST(request: NextRequest) {
       lastName,
       email,
       rollNumber,
-      departmentId,
+      departmentId: providedDepartmentId,
       programId,
       batchId,
       status,
     } = result.data;
+
+    // Get department ID from authenticated user if not provided
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+    let departmentId = providedDepartmentId;
+    
+    if (!departmentId) {
+      departmentId = await getDepartmentIdFromRequest(request);
+      if (!departmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Department not configured. Please set department in Settings.' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Check if user with email already exists
     const existingUser = await prisma.users.findUnique({
@@ -457,8 +471,19 @@ export async function POST(request: NextRequest) {
 
     // Transform the data to include currentStudents count
     const transformedStudent = {
-      ...student,
-      currentStudents: student._count.studentsections,
+      id: student.id,
+      rollNumber: student.rollNumber,
+      status: student.status,
+      user: {
+        id: student.user.id,
+        firstName: student.user.first_name,
+        lastName: student.user.last_name,
+        email: student.user.email,
+      },
+      batch: student.batch,
+      department: student.department,
+      program: student.program,
+      currentStudents: student._count?.studentsections || 0,
     };
 
     return NextResponse.json({
