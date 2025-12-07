@@ -415,7 +415,7 @@ export default function SectionsPage() {
   };
 
   const fetchAvailableStudents = async (section: Section) => {
-    if (!section.batchId) {
+    if (!section.batch?.id) {
       toast.error('Section batch not found');
       return;
     }
@@ -423,7 +423,7 @@ export default function SectionsPage() {
     setLoadingStudents(true);
     try {
       // Fetch all students from the batch
-      const response = await fetch(`/api/students?batchId=${section.batchId}&status=active&limit=1000`, {
+      const response = await fetch(`/api/students?batchId=${section.batch.id}&status=active&limit=1000`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch students');
