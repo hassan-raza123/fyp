@@ -72,10 +72,11 @@ export default function AdminCLOsPage() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.15)' 
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
-  
+
   const router = useRouter();
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -99,7 +100,7 @@ export default function AdminCLOsPage() {
   const [newMapping, setNewMapping] = useState({ ploId: '', weight: '0.5' });
   const [existingMappings, setExistingMappings] = useState<any[]>([]);
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -175,36 +176,34 @@ export default function AdminCLOsPage() {
 
   const fetchAvailablePLOs = async (courseId: string) => {
     try {
-      // First get the course with its programs
       const courseResponse = await fetch(`/api/courses/${courseId}`, {
         credentials: 'include',
       });
       const courseData = await courseResponse.json();
-      
+
       if (!courseData.success || !courseData.data?.programs) {
         setAvailablePLOs([]);
         return;
       }
 
       const programIds = courseData.data.programs.map((p: any) => p.id);
-      
-      // Fetch PLOs for all programs
+
       const ploPromises = programIds.map((programId: number) =>
         fetch(`/api/plos?programId=${programId}`, { credentials: 'include' })
       );
-      
+
       const ploResponses = await Promise.all(ploPromises);
       const ploDataArray = await Promise.all(
         ploResponses.map((r) => r.json())
       );
-      
+
       const allPLOs: PLO[] = [];
       ploDataArray.forEach((data) => {
         if (data.success && Array.isArray(data.data)) {
           allPLOs.push(...data.data);
         }
       });
-      
+
       setAvailablePLOs(allPLOs);
     } catch (error) {
       console.error('Error fetching available PLOs:', error);
@@ -219,10 +218,9 @@ export default function AdminCLOsPage() {
         credentials: 'include',
       });
       const data = await response.json();
-      
+
       if (data.success) {
         setExistingMappings(data.data);
-        // Convert to PLOMapping format for display
         const formattedMappings: PLOMapping[] = data.data.map((m: any) => ({
           id: m.id,
           ploId: m.ploId,
@@ -255,13 +253,12 @@ export default function AdminCLOsPage() {
     const selectedPLO = availablePLOs.find(
       (p) => p.id === parseInt(newMapping.ploId)
     );
-    
+
     if (!selectedPLO) {
       toast.error('Selected PLO not found');
       return;
     }
 
-    // Check if already added
     if (ploMappings.some((m) => m.ploId === selectedPLO.id)) {
       toast.error('This PLO is already mapped');
       return;
@@ -304,15 +301,11 @@ export default function AdminCLOsPage() {
 
     try {
       const responses = await Promise.all(mappingPromises);
-      const results = await Promise.all(
-        responses.map((r) => r.json())
-      );
+      const results = await Promise.all(responses.map((r) => r.json()));
 
       const failed = results.filter((r) => !r.success);
       if (failed.length > 0) {
-        toast.error(
-          `Failed to create ${failed.length} mapping(s). ${failed[0].error}`
-        );
+        toast.error(`Failed to create ${failed.length} mapping(s). ${failed[0].error}`);
       } else if (mappings.length > 0) {
         toast.success(`Successfully created ${mappings.length} PLO mapping(s)`);
       }
@@ -330,9 +323,7 @@ export default function AdminCLOsPage() {
     try {
       const response = await fetch(`/api/courses/${formData.courseId}/clos`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           code: formData.code,
@@ -345,21 +336,14 @@ export default function AdminCLOsPage() {
       const data = await response.json();
       if (data.success) {
         const newCLOId = data.data.id;
-        
-        // Create PLO mappings if any
+
         if (ploMappings.length > 0) {
           await createPLOMappings(newCLOId);
         }
-        
+
         toast.success('CLO created successfully');
         setIsCreateDialogOpen(false);
-        setFormData({
-          code: '',
-          description: '',
-          courseId: '',
-          bloomLevel: '',
-          status: 'active',
-        });
+        setFormData({ code: '', description: '', courseId: '', bloomLevel: '', status: 'active' });
         setPloMappings([]);
         setNewMapping({ ploId: '', weight: '0.5' });
         fetchData();
@@ -379,9 +363,7 @@ export default function AdminCLOsPage() {
         `/api/courses/${selectedCLO.courseId}/clos/${selectedCLO.id}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             code: formData.code,
@@ -394,16 +376,8 @@ export default function AdminCLOsPage() {
 
       const data = await response.json();
       if (data.success) {
-        // Handle PLO mappings: delete removed ones and add new ones
-        const existingMappingIds = existingMappings.map((m: any) => m.id);
-        const currentMappingIds = ploMappings
-          .filter((m) => m.id)
-          .map((m) => m.id!);
-        
-        // Delete removed mappings
-        const toDelete = existingMappings.filter(
-          (m: any) => !currentMappingIds.includes(m.id)
-        );
+        const currentMappingIds = ploMappings.filter((m) => m.id).map((m) => m.id!);
+        const toDelete = existingMappings.filter((m: any) => !currentMappingIds.includes(m.id));
         for (const mapping of toDelete) {
           await fetch(`/api/clo-plo-mappings/${mapping.id}`, {
             method: 'DELETE',
@@ -411,7 +385,6 @@ export default function AdminCLOsPage() {
           });
         }
 
-        // Add new mappings (those without id)
         const newMappings = ploMappings.filter((m) => !m.id);
         if (newMappings.length > 0) {
           await createPLOMappings(selectedCLO.id, newMappings);
@@ -420,13 +393,7 @@ export default function AdminCLOsPage() {
         toast.success('CLO updated successfully');
         setIsEditDialogOpen(false);
         setSelectedCLO(null);
-        setFormData({
-          code: '',
-          description: '',
-          courseId: '',
-          bloomLevel: '',
-          status: 'active',
-        });
+        setFormData({ code: '', description: '', courseId: '', bloomLevel: '', status: 'active' });
         setPloMappings([]);
         setNewMapping({ ploId: '', weight: '0.5' });
         fetchData();
@@ -444,10 +411,7 @@ export default function AdminCLOsPage() {
     try {
       const response = await fetch(
         `/api/courses/${selectedCLO.courseId}/clos/${selectedCLO.id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
+        { method: 'DELETE', credentials: 'include' }
       );
 
       const data = await response.json();
@@ -502,7 +466,8 @@ export default function AdminCLOsPage() {
 
   const filteredCLOs = clos.filter((clo) => {
     const matchesCourse = selectedCourse === 'all' || clo.courseId.toString() === selectedCourse;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch =
+      searchQuery === '' ||
       clo.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       clo.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       clo.course?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -540,10 +505,7 @@ export default function AdminCLOsPage() {
         <button
           onClick={() => setIsCreateDialogOpen(true)}
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-          style={{
-            backgroundColor: iconBgColor,
-            color: primaryColor,
-          }}
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
           }}
@@ -610,10 +572,7 @@ export default function AdminCLOsPage() {
               </TableRow>
             ) : (
               filteredCLOs.map((clo) => (
-                <TableRow 
-                  key={clo.id}
-                  className="hover:bg-hover-bg transition-colors"
-                >
+                <TableRow key={clo.id} className="hover:bg-hover-bg transition-colors">
                   <TableCell className="text-xs text-primary-text">{clo.id}</TableCell>
                   <TableCell className="text-xs text-primary-text">
                     <div>
@@ -634,64 +593,36 @@ export default function AdminCLOsPage() {
                       <button
                         onClick={() => handleViewClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                       >
                         <Eye className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => handleEditClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                       >
                         <Edit className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: 'var(--error-opacity-10)',
-                          color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
-                        }}
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => router.push(`/admin/clo-plo-mappings?cloId=${clo.id}`)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                         title="View Mappings"
                       >
                         <BookOpen className="w-3 h-3" />
@@ -707,10 +638,10 @@ export default function AdminCLOsPage() {
 
       {/* View CLO Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>CLO Details</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">CLO Details</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               View Course Learning Outcome information
             </DialogDescription>
           </DialogHeader>
@@ -749,10 +680,7 @@ export default function AdminCLOsPage() {
                   <p className="text-[10px] text-muted-text mb-2">PLO Mappings</p>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {existingMappings.map((mapping: any) => (
-                      <div
-                        key={mapping.id}
-                        className="p-2 rounded border border-card-border bg-card/50"
-                      >
+                      <div key={mapping.id} className="p-2 rounded border border-card-border bg-card/50">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="text-xs font-medium text-primary-text">
@@ -778,14 +706,13 @@ export default function AdminCLOsPage() {
               )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsViewDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Close
             </button>
@@ -795,10 +722,10 @@ export default function AdminCLOsPage() {
 
       {/* Create CLO Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Create CLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create CLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Add a new Course Learning Outcome
             </DialogDescription>
           </DialogHeader>
@@ -807,9 +734,7 @@ export default function AdminCLOsPage() {
               <Label htmlFor='course' className="text-xs text-primary-text">Course *</Label>
               <Select
                 value={formData.courseId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, courseId: value })
-                }
+                onValueChange={(value) => setFormData({ ...formData, courseId: value })}
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder='Select course' />
@@ -828,9 +753,7 @@ export default function AdminCLOsPage() {
               <Input
                 id='code'
                 value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 placeholder='e.g., CLO1'
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
@@ -840,9 +763,7 @@ export default function AdminCLOsPage() {
               <Textarea
                 id='description'
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder='Enter CLO description'
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 rows={4}
@@ -851,16 +772,16 @@ export default function AdminCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='bloomLevel' className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
-                value={formData.bloomLevel}
+                value={formData.bloomLevel || 'none'}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
+                  setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                  <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
                     <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
@@ -892,20 +813,14 @@ export default function AdminCLOsPage() {
             {formData.courseId && (
               <div className="space-y-3 pt-2 border-t border-card-border">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-primary-text font-semibold">
-                    PLO Mappings (Optional)
-                  </Label>
-                  <span className="text-[10px] text-secondary-text">
-                    {ploMappings.length} mapped
-                  </span>
+                  <Label className="text-xs text-primary-text font-semibold">PLO Mappings (Optional)</Label>
+                  <span className="text-[10px] text-secondary-text">{ploMappings.length} mapped</span>
                 </div>
-
-                {/* Add New Mapping */}
                 <div className="grid grid-cols-[1fr_auto_auto] gap-2">
                   <Select
-                    value={newMapping.ploId}
+                    value={newMapping.ploId || 'none'}
                     onValueChange={(value) =>
-                      setNewMapping({ ...newMapping, ploId: value })
+                      setNewMapping({ ...newMapping, ploId: value === 'none' ? '' : value })
                     }
                     disabled={availablePLOs.length === 0}
                   >
@@ -913,17 +828,11 @@ export default function AdminCLOsPage() {
                       <SelectValue placeholder="Select PLO" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
+                      <SelectItem value="none" className="text-primary-text hover:bg-card/50 text-xs">Select PLO</SelectItem>
                       {availablePLOs
-                        .filter(
-                          (plo) =>
-                            !ploMappings.some((m) => m.ploId === plo.id)
-                        )
+                        .filter((plo) => !ploMappings.some((m) => m.ploId === plo.id))
                         .map((plo) => (
-                          <SelectItem
-                            key={plo.id}
-                            value={plo.id.toString()}
-                            className="text-primary-text hover:bg-card/50 text-xs"
-                          >
+                          <SelectItem key={plo.id} value={plo.id.toString()} className="text-primary-text hover:bg-card/50 text-xs">
                             {plo.code} - {plo.program.name}
                           </SelectItem>
                         ))}
@@ -935,9 +844,7 @@ export default function AdminCLOsPage() {
                     max="1"
                     step="0.1"
                     value={newMapping.weight}
-                    onChange={(e) =>
-                      setNewMapping({ ...newMapping, weight: e.target.value })
-                    }
+                    onChange={(e) => setNewMapping({ ...newMapping, weight: e.target.value })}
                     placeholder="Weight"
                     className="w-20 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
@@ -945,51 +852,26 @@ export default function AdminCLOsPage() {
                     onClick={addPLOMapping}
                     disabled={!newMapping.ploId || availablePLOs.length === 0}
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-8 flex items-center justify-center"
-                    style={{
-                      backgroundColor: iconBgColor,
-                      color: primaryColor,
-                      opacity: !newMapping.ploId ? 0.5 : 1,
-                    }}
+                    style={{ backgroundColor: iconBgColor, color: primaryColor, opacity: !newMapping.ploId ? 0.5 : 1 }}
                     onMouseEnter={(e) => {
-                      if (newMapping.ploId) {
-                        e.currentTarget.style.backgroundColor = isDarkMode
-                          ? 'rgba(252, 153, 40, 0.2)'
-                          : 'rgba(38, 40, 149, 0.2)';
-                      }
+                      if (newMapping.ploId) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = iconBgColor;
-                    }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                   >
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
-
-                {/* Mappings List */}
                 {ploMappings.length > 0 && (
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {ploMappings.map((mapping, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 rounded border border-card-border bg-card/50 text-xs"
-                      >
+                      <div key={index} className="flex items-center justify-between p-2 rounded border border-card-border bg-card/50 text-xs">
                         <div className="flex-1 min-w-0">
-                          <p className="text-primary-text font-medium truncate">
-                            {mapping.ploCode} - {mapping.programName}
-                          </p>
-                          <p className="text-[10px] text-secondary-text truncate">
-                            {mapping.ploDescription.substring(0, 40)}...
-                          </p>
+                          <p className="text-primary-text font-medium truncate">{mapping.ploCode} - {mapping.programName}</p>
+                          <p className="text-[10px] text-secondary-text truncate">{mapping.ploDescription.substring(0, 40)}...</p>
                         </div>
                         <div className="flex items-center gap-2 ml-2">
-                          <Badge className="text-[10px] px-1.5">
-                            {(mapping.weight * 100).toFixed(0)}%
-                          </Badge>
-                          <button
-                            onClick={() => removePLOMapping(index)}
-                            className="p-0.5 rounded hover:bg-error/10 transition-colors"
-                            style={{ color: 'var(--error)' }}
-                          >
+                          <Badge className="text-[10px] px-1.5">{(mapping.weight * 100).toFixed(0)}%</Badge>
+                          <button onClick={() => removePLOMapping(index)} className="p-0.5 rounded hover:bg-error/10 transition-colors" style={{ color: 'var(--error)' }}>
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -997,11 +879,8 @@ export default function AdminCLOsPage() {
                     ))}
                   </div>
                 )}
-
                 {availablePLOs.length === 0 && formData.courseId && (
-                  <p className="text-[10px] text-secondary-text">
-                    No PLOs available for this course's programs
-                  </p>
+                  <p className="text-[10px] text-secondary-text">No PLOs available for this course's programs</p>
                 )}
               </div>
             )}
@@ -1010,26 +889,18 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsCreateDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleCreateCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{
-                backgroundColor: primaryColor,
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
-              }}
+              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
             >
               Create CLO
             </button>
@@ -1039,10 +910,10 @@ export default function AdminCLOsPage() {
 
       {/* Edit CLO Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Edit CLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit CLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Update Course Learning Outcome details
             </DialogDescription>
           </DialogHeader>
@@ -1052,9 +923,7 @@ export default function AdminCLOsPage() {
               <Input
                 id='edit-code'
                 value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 placeholder='e.g., CLO1'
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
@@ -1064,9 +933,7 @@ export default function AdminCLOsPage() {
               <Textarea
                 id='edit-description'
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder='Enter CLO description'
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 rows={4}
@@ -1075,16 +942,16 @@ export default function AdminCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='edit-bloomLevel' className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
-                value={formData.bloomLevel}
+                value={formData.bloomLevel || 'none'}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
+                  setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                  <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
                     <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
@@ -1116,20 +983,14 @@ export default function AdminCLOsPage() {
             {formData.courseId && (
               <div className="space-y-3 pt-2 border-t border-card-border">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-primary-text font-semibold">
-                    PLO Mappings
-                  </Label>
-                  <span className="text-[10px] text-secondary-text">
-                    {ploMappings.length} mapped
-                  </span>
+                  <Label className="text-xs text-primary-text font-semibold">PLO Mappings</Label>
+                  <span className="text-[10px] text-secondary-text">{ploMappings.length} mapped</span>
                 </div>
-
-                {/* Add New Mapping */}
                 <div className="grid grid-cols-[1fr_auto_auto] gap-2">
                   <Select
-                    value={newMapping.ploId}
+                    value={newMapping.ploId || 'none'}
                     onValueChange={(value) =>
-                      setNewMapping({ ...newMapping, ploId: value })
+                      setNewMapping({ ...newMapping, ploId: value === 'none' ? '' : value })
                     }
                     disabled={availablePLOs.length === 0}
                   >
@@ -1137,17 +998,11 @@ export default function AdminCLOsPage() {
                       <SelectValue placeholder="Select PLO" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
+                      <SelectItem value="none" className="text-primary-text hover:bg-card/50 text-xs">Select PLO</SelectItem>
                       {availablePLOs
-                        .filter(
-                          (plo) =>
-                            !ploMappings.some((m) => m.ploId === plo.id)
-                        )
+                        .filter((plo) => !ploMappings.some((m) => m.ploId === plo.id))
                         .map((plo) => (
-                          <SelectItem
-                            key={plo.id}
-                            value={plo.id.toString()}
-                            className="text-primary-text hover:bg-card/50 text-xs"
-                          >
+                          <SelectItem key={plo.id} value={plo.id.toString()} className="text-primary-text hover:bg-card/50 text-xs">
                             {plo.code} - {plo.program.name}
                           </SelectItem>
                         ))}
@@ -1159,9 +1014,7 @@ export default function AdminCLOsPage() {
                     max="1"
                     step="0.1"
                     value={newMapping.weight}
-                    onChange={(e) =>
-                      setNewMapping({ ...newMapping, weight: e.target.value })
-                    }
+                    onChange={(e) => setNewMapping({ ...newMapping, weight: e.target.value })}
                     placeholder="Weight"
                     className="w-20 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
@@ -1169,41 +1022,22 @@ export default function AdminCLOsPage() {
                     onClick={addPLOMapping}
                     disabled={!newMapping.ploId || availablePLOs.length === 0}
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-8 flex items-center justify-center"
-                    style={{
-                      backgroundColor: iconBgColor,
-                      color: primaryColor,
-                      opacity: !newMapping.ploId ? 0.5 : 1,
-                    }}
+                    style={{ backgroundColor: iconBgColor, color: primaryColor, opacity: !newMapping.ploId ? 0.5 : 1 }}
                     onMouseEnter={(e) => {
-                      if (newMapping.ploId) {
-                        e.currentTarget.style.backgroundColor = isDarkMode
-                          ? 'rgba(252, 153, 40, 0.2)'
-                          : 'rgba(38, 40, 149, 0.2)';
-                      }
+                      if (newMapping.ploId) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = iconBgColor;
-                    }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                   >
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
-
-                {/* Mappings List */}
                 {ploMappings.length > 0 && (
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {ploMappings.map((mapping, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 rounded border border-card-border bg-card/50 text-xs"
-                      >
+                      <div key={index} className="flex items-center justify-between p-2 rounded border border-card-border bg-card/50 text-xs">
                         <div className="flex-1 min-w-0">
-                          <p className="text-primary-text font-medium truncate">
-                            {mapping.ploCode} - {mapping.programName}
-                          </p>
-                          <p className="text-[10px] text-secondary-text truncate">
-                            {mapping.ploDescription.substring(0, 40)}...
-                          </p>
+                          <p className="text-primary-text font-medium truncate">{mapping.ploCode} - {mapping.programName}</p>
+                          <p className="text-[10px] text-secondary-text truncate">{mapping.ploDescription.substring(0, 40)}...</p>
                         </div>
                         <div className="flex items-center gap-2 ml-2">
                           <Input
@@ -1219,11 +1053,7 @@ export default function AdminCLOsPage() {
                             }}
                             className="w-16 h-6 text-xs bg-card border-card-border text-primary-text"
                           />
-                          <button
-                            onClick={() => removePLOMapping(index)}
-                            className="p-0.5 rounded hover:bg-error/10 transition-colors"
-                            style={{ color: 'var(--error)' }}
-                          >
+                          <button onClick={() => removePLOMapping(index)} className="p-0.5 rounded hover:bg-error/10 transition-colors" style={{ color: 'var(--error)' }}>
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -1231,11 +1061,8 @@ export default function AdminCLOsPage() {
                     ))}
                   </div>
                 )}
-
                 {availablePLOs.length === 0 && formData.courseId && (
-                  <p className="text-[10px] text-secondary-text">
-                    No PLOs available for this course's programs
-                  </p>
+                  <p className="text-[10px] text-secondary-text">No PLOs available for this course's programs</p>
                 )}
               </div>
             )}
@@ -1244,26 +1071,18 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsEditDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleUpdateCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{
-                backgroundColor: primaryColor,
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
-              }}
+              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
             >
               Update CLO
             </button>
@@ -1273,38 +1092,29 @@ export default function AdminCLOsPage() {
 
       {/* Delete CLO Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Delete CLO</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this CLO? This action cannot be
-              undone.
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete CLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Are you sure you want to delete this CLO? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-              }}
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{
-                backgroundColor: 'var(--error)',
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
-              }}
+              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b91c1c'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
             >
               Delete
             </button>
