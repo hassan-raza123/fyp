@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const sectionId = parseInt(params.id);
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
 
     if (isNaN(sectionId)) {
       return NextResponse.json(
@@ -37,7 +38,20 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(results);
+    // Shape expected by CLOAttainments: items as { itemId, marks, totalMarks }[]
+    const shaped = results.map((r) => ({
+      id: r.id,
+      studentId: r.studentId,
+      obtainedMarks: r.obtainedMarks,
+      totalMarks: r.totalMarks,
+      items: (r.itemResults || []).map((ir) => ({
+        itemId: ir.assessmentItemId,
+        marks: ir.obtainedMarks,
+        totalMarks: ir.totalMarks,
+      })),
+    }));
+
+    return NextResponse.json(shaped);
   } catch (error) {
     console.error('Error fetching assessment results:', error);
     return NextResponse.json(
