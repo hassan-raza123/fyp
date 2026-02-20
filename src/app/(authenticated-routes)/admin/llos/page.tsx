@@ -352,7 +352,7 @@ export default function AdminLLOsPage() {
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
             <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Courses</SelectItem>
-            {courses.map((course) => (
+            {courses.filter(c => c.id != null && c.id.toString() !== '').map((course) => (
               <SelectItem key={course.id} value={course.id.toString()} className="text-primary-text hover:bg-card/50">
                 {course.name} ({course.code})
               </SelectItem>
@@ -551,7 +551,7 @@ export default function AdminLLOsPage() {
             <div className="grid gap-2">
               <Label htmlFor="course" className="text-xs text-primary-text">Course *</Label>
               <Select
-                value={formData.courseId}
+                value={formData.courseId || undefined}
                 onValueChange={(value) =>
                   setFormData({ ...formData, courseId: value })
                 }
@@ -560,7 +560,7 @@ export default function AdminLLOsPage() {
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  {courses.map((course) => (
+                  {courses.filter(c => c.id != null && c.id.toString() !== '').map((course) => (
                     <SelectItem key={course.id} value={course.id.toString()} className="text-primary-text hover:bg-card/50">
                       {course.name} ({course.code})
                     </SelectItem>
