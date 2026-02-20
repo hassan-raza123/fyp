@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -20,10 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, BookOpen } from 'lucide-react';
+import { Plus, Edit, Trash2, BookOpen, Search, Eye } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -59,6 +57,10 @@ export default function AdminLLOsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode 
+    ? 'rgba(252, 153, 40, 0.15)' 
+    : 'rgba(38, 40, 149, 0.15)';
   
   const router = useRouter();
   const [llos, setLLOs] = useState<LLO[]>([]);
@@ -68,7 +70,9 @@ export default function AdminLLOsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     code: '',
     description: '',
@@ -132,12 +136,12 @@ export default function AdminLLOsPage() {
   }, []);
 
   const handleCreateLLO = async () => {
-    try {
-      if (!formData.courseId || !formData.code || !formData.description) {
-        toast.error('Please fill in all required fields');
-        return;
-      }
+    if (!formData.courseId || !formData.code || !formData.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
+    try {
       const response = await fetch('/api/llos', {
         method: 'POST',
         headers: {
@@ -238,6 +242,11 @@ export default function AdminLLOsPage() {
     }
   };
 
+  const handleViewClick = (llo: LLO) => {
+    setSelectedLLO(llo);
+    setIsViewDialogOpen(true);
+  };
+
   const handleEditClick = (llo: LLO) => {
     setSelectedLLO(llo);
     setFormData({
@@ -255,10 +264,28 @@ export default function AdminLLOsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const filteredLLOs =
-    selectedCourse === 'all'
-      ? llos
-      : llos.filter((llo) => llo.courseId.toString() === selectedCourse);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'inactive':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
+  };
+
+  const filteredLLOs = llos.filter((llo) => {
+    const matchesCourse = selectedCourse === 'all' || llo.courseId.toString() === selectedCourse;
+    const matchesSearch = searchQuery === '' || 
+      llo.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      llo.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      llo.course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      llo.course.code.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCourse && matchesSearch;
+  });
 
   if (!mounted || isLoading) {
     return (
@@ -275,100 +302,167 @@ export default function AdminLLOsPage() {
           <h1 className="text-2xl font-bold text-primary-text">Lab Learning Outcomes (LLOs)</h1>
           <p className="text-secondary-text">Manage all lab learning outcomes</p>
         </div>
-        <div className="flex gap-4">
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add LLO
-          </Button>
-          <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by course" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Courses</SelectItem>
-              {courses.map((course) => (
-                <SelectItem key={course.id} value={course.id.toString()}>
-                  {course.name} ({course.code})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="px-4 py-2 rounded-lg transition-colors text-sm font-medium h-9 flex items-center gap-2"
+          style={{
+            backgroundColor: primaryColor,
+            color: '#ffffff',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.9';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1';
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Add LLO
+        </button>
       </div>
 
-      <Card>
+      {/* Filters */}
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search LLOs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            />
+          </div>
+        </div>
+        <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by course" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Courses</SelectItem>
+            {courses.map((course) => (
+              <SelectItem key={course.id} value={course.id.toString()} className="text-primary-text hover:bg-card/50">
+                {course.name} ({course.code})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* LLOs Table */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Course</TableHead>
-              <TableHead>LLO Code</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Bloom's Level</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">ID</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Course</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Bloom's Level</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredLLOs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  No LLOs found. Create your first LLO to get started.
+                <TableCell colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Plus className="w-8 h-8 text-muted-text" />
+                    <p className="text-xs text-secondary-text">No LLOs found</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredLLOs.map((llo) => (
-                <TableRow key={llo.id}>
-                  <TableCell>
+                <TableRow 
+                  key={llo.id}
+                  className="hover:bg-hover-bg transition-colors"
+                >
+                  <TableCell className="text-xs text-primary-text">{llo.id}</TableCell>
+                  <TableCell className="text-xs text-primary-text">
                     <div>
                       <div className="font-medium">{llo.course.name}</div>
-                      <div className="text-sm text-secondary-text">
-                        {llo.course.code}
-                      </div>
+                      <div className="text-secondary-text">{llo.course.code}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium">{llo.code}</TableCell>
-                  <TableCell className="max-w-md truncate">
+                  <TableCell className="text-xs font-medium text-primary-text">{llo.code}</TableCell>
+                  <TableCell className="text-xs text-secondary-text max-w-md truncate">
                     {llo.description}
                   </TableCell>
-                  <TableCell>{llo.bloomLevel || '-'}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{llo.bloomLevel || '-'}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        llo.status === 'active'
-                          ? 'default'
-                          : llo.status === 'inactive'
-                          ? 'secondary'
-                          : 'destructive'
-                      }
-                    >
-                      {llo.status}
+                    <Badge className={`${getStatusColor(llo.status)} text-[10px] px-1.5 py-0.5`} variant='secondary'>
+                      {llo.status.charAt(0).toUpperCase() + llo.status.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleViewClick(llo)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
+                      <button
                         onClick={() => handleEditClick(llo)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
                       >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                        <Edit className="w-3 h-3" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteClick(llo)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: 'var(--error-opacity-10)',
+                          color: 'var(--error)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
+                        }}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/admin/courses/${llo.courseId}`)
-                        }
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => router.push(`/admin/llo-plo-mappings?lloId=${llo.id}`)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{
+                          backgroundColor: iconBgColor,
+                          color: primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
+                        title="View Mappings"
                       >
-                        <BookOpen className="w-4 h-4" />
-                      </Button>
+                        <BookOpen className="w-3 h-3" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -376,7 +470,61 @@ export default function AdminLLOsPage() {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
+
+      {/* View LLO Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>LLO Details</DialogTitle>
+            <DialogDescription>
+              View Lab Learning Outcome information
+            </DialogDescription>
+          </DialogHeader>
+          {selectedLLO && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-muted-text mb-1">Course</p>
+                  <p className="text-sm font-medium text-primary-text">
+                    {selectedLLO.course.name} ({selectedLLO.course.code})
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-text mb-1">LLO Code</p>
+                  <p className="text-sm font-medium text-primary-text">{selectedLLO.code}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-text mb-1">Bloom's Level</p>
+                  <p className="text-sm text-primary-text">{selectedLLO.bloomLevel || 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-text mb-1">Status</p>
+                  <Badge className={getStatusColor(selectedLLO.status)} variant='secondary'>
+                    {selectedLLO.status}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-text mb-1">Description</p>
+                <p className="text-sm text-primary-text">{selectedLLO.description}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <button
+              onClick={() => setIsViewDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+            >
+              Close
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create LLO Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -389,19 +537,19 @@ export default function AdminLLOsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="course">Course *</Label>
+              <Label htmlFor="course" className="text-xs text-primary-text">Course *</Label>
               <Select
                 value={formData.courseId}
                 onValueChange={(value) =>
                   setFormData({ ...formData, courseId: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id.toString()}>
+                    <SelectItem key={course.id} value={course.id.toString()} className="text-primary-text hover:bg-card/50">
                       {course.name} ({course.code})
                     </SelectItem>
                   ))}
@@ -409,7 +557,7 @@ export default function AdminLLOsPage() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="code">LLO Code *</Label>
+              <Label htmlFor="code" className="text-xs text-primary-text">LLO Code *</Label>
               <Input
                 id="code"
                 value={formData.code}
@@ -417,10 +565,11 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, code: e.target.value })
                 }
                 placeholder="e.g., LLO1, LLO2"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description" className="text-xs text-primary-text">Description *</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -428,24 +577,25 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Enter LLO description"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 rows={4}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="bloomLevel">Bloom's Taxonomy Level</Label>
+              <Label htmlFor="bloomLevel" className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
                 value={formData.bloomLevel}
                 onValueChange={(value) =>
                   setFormData({ ...formData, bloomLevel: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
-                    <SelectItem key={level} value={level}>
+                    <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
                     </SelectItem>
                   ))}
@@ -453,32 +603,51 @@ export default function AdminLLOsPage() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-xs text-primary-text">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value: 'active' | 'inactive' | 'archived') =>
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  <SelectItem value="archived" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="mt-4">
+            <button
               onClick={() => setIsCreateDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCreateLLO}>Create LLO</Button>
+            </button>
+            <button
+              onClick={handleCreateLLO}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{
+                backgroundColor: primaryColor,
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
+              Create LLO
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -494,7 +663,7 @@ export default function AdminLLOsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-code">LLO Code *</Label>
+              <Label htmlFor="edit-code" className="text-xs text-primary-text">LLO Code *</Label>
               <Input
                 id="edit-code"
                 value={formData.code}
@@ -502,10 +671,11 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, code: e.target.value })
                 }
                 placeholder="e.g., LLO1, LLO2"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description *</Label>
+              <Label htmlFor="edit-description" className="text-xs text-primary-text">Description *</Label>
               <Textarea
                 id="edit-description"
                 value={formData.description}
@@ -513,24 +683,25 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Enter LLO description"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 rows={4}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-bloomLevel">Bloom's Taxonomy Level</Label>
+              <Label htmlFor="edit-bloomLevel" className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
                 value={formData.bloomLevel}
                 onValueChange={(value) =>
                   setFormData({ ...formData, bloomLevel: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
-                    <SelectItem key={level} value={level}>
+                    <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
                     </SelectItem>
                   ))}
@@ -538,32 +709,51 @@ export default function AdminLLOsPage() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-status">Status</Label>
+              <Label htmlFor="edit-status" className="text-xs text-primary-text">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value: 'active' | 'inactive' | 'archived') =>
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  <SelectItem value="archived" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="mt-4">
+            <button
               onClick={() => setIsEditDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleUpdateLLO}>Update LLO</Button>
+            </button>
+            <button
+              onClick={handleUpdateLLO}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{
+                backgroundColor: primaryColor,
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
+              Update LLO
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -579,19 +769,35 @@ export default function AdminLLOsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
             >
               Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteLLO}>
+            </button>
+            <button
+              onClick={handleDeleteLLO}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{
+                backgroundColor: 'var(--error)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               Delete
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
