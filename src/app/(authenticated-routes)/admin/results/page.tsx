@@ -1,14 +1,10 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import {
   BarChart3,
-  FileText,
   GraduationCap,
-  LineChart,
-  ListChecks,
   Target,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,61 +18,13 @@ export default function ResultsPage() {
     <div className='space-y-4'>
       {/* Header */}
       <div>
-        <h1 className='text-lg font-bold text-primary-text'>Results Management</h1>
-        <p className='text-xs text-secondary-text mt-0.5'>View and manage student results and attainments</p>
+        <h1 className='text-lg font-bold text-primary-text'>Results</h1>
+        <p className='text-xs text-secondary-text mt-0.5'>View attainments and analytics across the department</p>
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        <Link href='/admin/results/marks-entry'>
-          <Card 
-            className='transition-colors cursor-pointer border-card-border'
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--card-bg)';
-            }}
-          >
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2 text-primary-text'>
-                <FileText className='h-5 w-5' style={{ color: primaryColor }} />
-                Marks Entry
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-secondary-text'>
-                Enter and manage student assessment marks
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href='/admin/results/result-evaluation'>
-          <Card 
-            className='transition-colors cursor-pointer border-card-border'
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--card-bg)';
-            }}
-          >
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2 text-primary-text'>
-                <ListChecks className='h-5 w-5' style={{ color: primaryColor }} />
-                Result Evaluation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-secondary-text'>
-                Review and evaluate assessment results
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
         <Link href='/admin/results/analytics'>
-          <Card 
+          <Card
             className='transition-colors cursor-pointer border-card-border'
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
@@ -100,7 +48,7 @@ export default function ResultsPage() {
         </Link>
 
         <Link href='/admin/results/clo-attainments'>
-          <Card 
+          <Card
             className='transition-colors cursor-pointer border-card-border'
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
@@ -124,7 +72,7 @@ export default function ResultsPage() {
         </Link>
 
         <Link href='/admin/results/plo-attainments'>
-          <Card 
+          <Card
             className='transition-colors cursor-pointer border-card-border'
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
@@ -148,7 +96,7 @@ export default function ResultsPage() {
         </Link>
 
         <Link href='/admin/results/llo-attainments'>
-          <Card 
+          <Card
             className='transition-colors cursor-pointer border-card-border'
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
@@ -170,26 +118,11 @@ export default function ResultsPage() {
             </CardContent>
           </Card>
         </Link>
-
       </div>
 
       <div>
         <h2 className='text-sm font-semibold mb-3 text-primary-text'>Quick Actions</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-          <Link
-            href='/admin/results/marks-entry'
-            className='transition-colors hover:underline'
-            style={{ color: primaryColor }}
-          >
-            Enter New Marks
-          </Link>
-          <Link
-            href='/admin/results/result-evaluation'
-            className='transition-colors hover:underline'
-            style={{ color: primaryColor }}
-          >
-            Evaluate Results
-          </Link>
           <Link
             href='/admin/results/clo-attainments'
             className='transition-colors hover:underline'

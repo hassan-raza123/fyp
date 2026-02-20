@@ -5,17 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -56,8 +48,6 @@ export default function AssessmentViewPage() {
   const params = useParams();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -80,28 +70,6 @@ export default function AssessmentViewPage() {
       router.push('/admin/assessments');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      const response = await fetch(`/api/assessments/${params.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete assessment');
-      }
-
-      toast.success('Assessment deleted successfully');
-      router.push('/admin/assessments');
-    } catch (error) {
-      console.error('Error deleting assessment:', error);
-      toast.error('Failed to delete assessment');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
     }
   };
 
@@ -128,44 +96,17 @@ export default function AssessmentViewPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/admin/assessments')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{assessment.title}</h1>
-            <p className="text-muted-foreground">Assessment Details</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/admin/assessments/${assessment.id}/edit`)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(`/admin/assessments/${assessment.id}/items`)
-            }
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Manage Items
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push('/admin/assessments')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">{assessment.title}</h1>
+          <p className="text-muted-foreground">Assessment Details</p>
         </div>
       </div>
 
@@ -267,65 +208,7 @@ export default function AssessmentViewPage() {
             </CardContent>
           </Card>
         )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(`/admin/results/marks-entry?assessmentId=${assessment.id}`)
-                }
-              >
-                Enter Marks
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(
-                    `/admin/results/result-evaluation?assessmentId=${assessment.id}`
-                  )
-                }
-              >
-                Evaluate Results
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Assessment</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{assessment.title}"? This action
-              cannot be undone and will delete all associated assessment items and
-              results.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
-
