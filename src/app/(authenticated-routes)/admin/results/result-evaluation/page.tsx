@@ -95,7 +95,9 @@ const ResultEvaluationPage = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
         if (data.success) {
@@ -245,17 +247,18 @@ const ResultEvaluationPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const baseClass = 'text-[10px] px-1.5 py-0.5';
     switch (status) {
       case 'published':
-        return <Badge variant="default">Published</Badge>;
+        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Published</Badge>;
       case 'evaluated':
-        return <Badge variant="default">Evaluated</Badge>;
+        return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Evaluated</Badge>;
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge className={`bg-[var(--gray-500)] text-white ${baseClass}`} variant="secondary">Pending</Badge>;
       case 'draft':
-        return <Badge variant="outline">Draft</Badge>;
+        return <Badge className={`bg-[var(--gray-400)] text-white ${baseClass}`} variant="secondary">Draft</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className={baseClass} variant="secondary">{status}</Badge>;
     }
   };
 
@@ -334,7 +337,7 @@ const ResultEvaluationPage = () => {
             <div className="overflow-x-auto rounded-lg border border-card-border">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-card hover:bg-card border-card-border">
+                  <TableRow className="border-b border-card-border">
                     <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
                     <TableHead className="text-xs font-semibold text-primary-text">Student Name</TableHead>
                     {assessments.map((assessment) => (

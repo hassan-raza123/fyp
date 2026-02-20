@@ -351,7 +351,7 @@ export default function LLOAttainmentsPage() {
                 </div>
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="border-b border-card-border">
                       <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
                       <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
                       <TableHead className="text-xs font-semibold text-primary-text">Total Students</TableHead>

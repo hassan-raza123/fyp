@@ -49,7 +49,9 @@ const CLOAttainmentsPage = () => {
     const fetchSections = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
         if (data.success) {

@@ -47,7 +47,7 @@ const PLOAttainmentsPage = () => {
     const fetchPrograms = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/programs');
+        const response = await fetch('/api/programs', { credentials: 'include' });
         if (!response.ok) throw new Error('Failed to fetch programs');
         const result = await response.json();
         if (result.success && Array.isArray(result.data)) {
@@ -67,7 +67,7 @@ const PLOAttainmentsPage = () => {
   useEffect(() => {
     const fetchSemesters = async () => {
       try {
-        const response = await fetch('/api/semesters');
+        const response = await fetch('/api/semesters', { credentials: 'include' });
         if (!response.ok) throw new Error('Failed to fetch semesters');
         const result = await response.json();
         if (result.success && Array.isArray(result.data)) {

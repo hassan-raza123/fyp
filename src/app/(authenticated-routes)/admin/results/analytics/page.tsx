@@ -62,14 +62,12 @@ const AnalyticsPage = () => {
     const fetchSections = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        if (data.success) {
-          setSections(data.data);
-        } else {
-          setSections(data);
-        }
+        setSections(data?.success ? (data.data ?? []) : Array.isArray(data) ? data : []);
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
@@ -95,11 +93,12 @@ const AnalyticsPage = () => {
         const section = sections.find((s) => s.id.toString() === selectedSection);
         if (section) {
           const response = await fetch(
-            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`,
+            { credentials: 'include' }
           );
           if (!response.ok) throw new Error('Failed to fetch assessments');
           const data = await response.json();
-          setAssessments(Array.isArray(data) ? data : []);
+          setAssessments(Array.isArray(data) ? data : data?.data ?? []);
         }
       } catch (err) {
         setError('Failed to load assessments');
