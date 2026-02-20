@@ -35,7 +35,6 @@ import {
   Download,
   Trash2,
   Eye,
-  FileText,
   Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -445,43 +444,43 @@ export default function ReportsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="reportType">Report Type *</Label>
+              <Label htmlFor="reportType" className="text-xs text-primary-text">Report Type *</Label>
               <Select
                 value={formData.reportType}
                 onValueChange={(value: obe_report_type) =>
                   setFormData({ ...formData, reportType: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clo_attainment">CLO Attainment Report</SelectItem>
-                  <SelectItem value="plo_attainment">PLO Attainment Report</SelectItem>
-                  <SelectItem value="program_assessment">
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="clo_attainment" className="text-primary-text hover:bg-card/50">CLO Attainment Report</SelectItem>
+                  <SelectItem value="plo_attainment" className="text-primary-text hover:bg-card/50">PLO Attainment Report</SelectItem>
+                  <SelectItem value="program_assessment" className="text-primary-text hover:bg-card/50">
                     Program Assessment Report
                   </SelectItem>
-                  <SelectItem value="semester_summary">Semester Summary Report</SelectItem>
-                  <SelectItem value="course_wise">Course Wise Report</SelectItem>
+                  <SelectItem value="semester_summary" className="text-primary-text hover:bg-card/50">Semester Summary Report</SelectItem>
+                  <SelectItem value="course_wise" className="text-primary-text hover:bg-card/50">Course Wise Report</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="programId">Program</Label>
+                <Label htmlFor="programId" className="text-xs text-primary-text">Program</Label>
                 <Select
                   value={formData.programId}
                   onValueChange={(value) =>
                     setFormData({ ...formData, programId: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select program (optional)" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {programs.map((program) => (
-                      <SelectItem key={program.id} value={program.id.toString()}>
+                      <SelectItem key={program.id} value={program.id.toString()} className="text-primary-text hover:bg-card/50">
                         {program.code} - {program.name}
                       </SelectItem>
                     ))}
@@ -489,20 +488,20 @@ export default function ReportsPage() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="semesterId">Semester</Label>
+                <Label htmlFor="semesterId" className="text-xs text-primary-text">Semester</Label>
                 <Select
                   value={formData.semesterId}
                   onValueChange={(value) =>
                     setFormData({ ...formData, semesterId: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select semester (optional)" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {semesters.map((semester) => (
-                      <SelectItem key={semester.id} value={semester.id.toString()}>
+                      <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                         {semester.name}
                       </SelectItem>
                     ))}
@@ -511,7 +510,7 @@ export default function ReportsPage() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="text-xs text-primary-text">Title *</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -520,10 +519,11 @@ export default function ReportsPage() {
                 }
                 placeholder="Enter report title"
                 required
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-xs text-primary-text">Description</Label>
               <Input
                 id="description"
                 value={formData.description}
@@ -531,6 +531,7 @@ export default function ReportsPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Enter report description (optional)"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
           </div>
