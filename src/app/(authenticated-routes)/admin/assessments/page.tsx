@@ -141,25 +141,26 @@ export default function AssessmentsPage() {
               Create Assessment
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
             <DialogHeader>
-              <DialogTitle>Create New Assessment</DialogTitle>
+              <DialogTitle className="text-sm font-bold text-primary-text">Create New Assessment</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="courseOffering">Course Offering *</Label>
+                <Label htmlFor="courseOffering" className="text-xs text-primary-text">Course Offering *</Label>
                 <Select
                   value={selectedCourseOffering}
                   onValueChange={setSelectedCourseOffering}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select course offering" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-card-border">
                     {courseOfferings.map((offering) => (
                       <SelectItem
                         key={offering.id}
                         value={offering.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {offering.course.code} - {offering.course.name} (
                         {offering.semester.name})

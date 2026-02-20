@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PLOAttainments } from '@/components/assessments/PLOAttainments';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import {
   Select,
   SelectContent,
@@ -10,9 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Program {
@@ -27,14 +24,21 @@ interface Semester {
 }
 
 const PLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [selectedSemester, setSelectedSemester] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch programs
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const fetchPrograms = async () => {
       setLoading(true);
@@ -46,13 +50,8 @@ const PLOAttainmentsPage = () => {
           setPrograms(result.data);
         } else if (Array.isArray(result)) {
           setPrograms(result as Program[]);
-        } else {
-          console.error('Invalid programs data format:', result);
-          setError('Invalid programs data format received from server');
         }
       } catch (err) {
-        console.error('Error fetching programs:', err);
-        setError('Failed to load programs');
         toast.error('Failed to load programs');
       } finally {
         setLoading(false);
@@ -61,7 +60,6 @@ const PLOAttainmentsPage = () => {
     fetchPrograms();
   }, []);
 
-  // Fetch semesters
   useEffect(() => {
     const fetchSemesters = async () => {
       try {
@@ -72,114 +70,103 @@ const PLOAttainmentsPage = () => {
           setSemesters(result.data);
         } else if (Array.isArray(result)) {
           setSemesters(result as Semester[]);
-        } else {
-          console.error('Invalid semesters data format:', result);
-          setError('Invalid semesters data format received from server');
         }
       } catch (err) {
-        console.error('Error fetching semesters:', err);
-        setError('Failed to load semesters');
         toast.error('Failed to load semesters');
       }
     };
     fetchSemesters();
   }, []);
 
+  if (!mounted || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading PLO Attainments...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">PLO Attainments</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4">
+      {/* Header */}
+      <div>
+        <h1 className="text-lg font-bold text-primary-text">PLO Attainments</h1>
+        <p className="text-xs text-secondary-text mt-0.5">
           Track and analyze Program Learning Outcome achievements
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <Select
+            value={selectedProgram}
+            onValueChange={setSelectedProgram}
+            disabled={!programs.length}
+          >
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a program" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-card-border">
+              {programs.map((program) => (
+                <SelectItem
+                  key={program.id}
+                  value={program.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {program.code} - {program.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <Select
+            value={selectedSemester}
+            onValueChange={setSelectedSemester}
+            disabled={!semesters.length}
+          >
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a semester" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-card-border">
+              {semesters.map((semester) => (
+                <SelectItem
+                  key={semester.id}
+                  value={semester.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {semester.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      <Card className="p-6 mb-6">
-        <CardHeader>
-          <CardTitle>Select Program and Semester</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="program">Program *</Label>
-              <Select
-                value={selectedProgram}
-                onValueChange={setSelectedProgram}
-                disabled={loading || !programs.length}
-              >
-                <SelectTrigger id="program">
-                  <SelectValue placeholder="Select a program" />
-                </SelectTrigger>
-                <SelectContent>
-                  {programs.map((program) => (
-                    <SelectItem key={program.id} value={program.id.toString()}>
-                      {program.code} - {program.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {programs.length === 0 && !loading && (
-                <p className="text-sm text-muted-foreground">
-                  No programs found
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="semester">Semester *</Label>
-              <Select
-                value={selectedSemester}
-                onValueChange={setSelectedSemester}
-                disabled={loading || !semesters.length}
-              >
-                <SelectTrigger id="semester">
-                  <SelectValue placeholder="Select a semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters.map((semester) => (
-                    <SelectItem
-                      key={semester.id}
-                      value={semester.id.toString()}
-                    >
-                      {semester.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {semesters.length === 0 && !loading && (
-                <p className="text-sm text-muted-foreground">
-                  No semesters found
-                </p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {loading ? (
-        <Card className="p-6">
-          <div className="text-center py-4">Loading data...</div>
-        </Card>
-      ) : selectedProgram && selectedSemester ? (
+      {/* Content */}
+      {selectedProgram && selectedSemester ? (
         <PLOAttainments
           programId={parseInt(selectedProgram)}
           semesterId={parseInt(selectedSemester)}
         />
       ) : (
-        <Card className="p-6">
-          <div className="text-center text-muted-foreground py-4">
-            {!selectedProgram || !selectedSemester
-              ? 'Please select a program and semester to view PLO attainments'
-              : 'No data available'}
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text">
+            Please select a program and semester to view PLO attainments
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
