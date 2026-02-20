@@ -28,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Search } from 'lucide-react';
 
 interface CLO {
   id: number;
@@ -73,6 +73,7 @@ export function CLOPLOMappingList() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -88,6 +89,7 @@ export function CLOPLOMappingList() {
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [plos, setPLOs] = useState<PLO[]>([]);
   const [availablePLOs, setAvailablePLOs] = useState<PLO[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -244,17 +246,29 @@ export function CLOPLOMappingList() {
     }
   };
 
+  const filteredMappings = mappings.filter((mapping) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      mapping.clo.code.toLowerCase().includes(q) ||
+      mapping.clo.course.name.toLowerCase().includes(q) ||
+      mapping.clo.course.code.toLowerCase().includes(q) ||
+      mapping.plo.code.toLowerCase().includes(q) ||
+      mapping.plo.program.name.toLowerCase().includes(q)
+    );
+  });
+
   if (!mounted || isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div
-            className="w-8 h-8 border-2 rounded-full animate-spin"
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
             style={{
-              borderTopColor: 'transparent',
+              borderTopColor: primaryColor,
               borderBottomColor: primaryColor,
               borderRightColor: 'transparent',
-              borderLeftColor: primaryColor,
+              borderLeftColor: 'transparent',
             }}
           />
           <p className="text-xs text-secondary-text">Loading mappings...</p>
@@ -265,7 +279,14 @@ export function CLOPLOMappingList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">CLO-PLO Mappings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Manage mappings between Course Learning Outcomes (CLO) and Program Learning Outcomes (PLO)
+          </p>
+        </div>
         <button
           onClick={() => setIsDialogOpen(true)}
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
@@ -284,6 +305,22 @@ export function CLOPLOMappingList() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search mappings..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
@@ -297,7 +334,7 @@ export function CLOPLOMappingList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mappings.length === 0 ? (
+            {filteredMappings.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
                   <div className="flex flex-col items-center space-y-2">
@@ -307,7 +344,7 @@ export function CLOPLOMappingList() {
                 </TableCell>
               </TableRow>
             ) : (
-              mappings.map((mapping) => (
+              filteredMappings.map((mapping) => (
                 <TableRow
                   key={mapping.id}
                   className="hover:bg-hover-bg transition-colors"
@@ -359,12 +396,10 @@ export function CLOPLOMappingList() {
                         color: 'var(--error)',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          'var(--error-opacity-20)';
+                        e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          'var(--error-opacity-10)';
+                        e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                       }}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -379,10 +414,12 @@ export function CLOPLOMappingList() {
 
       {/* Create Mapping Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="bg-card border-card-border max-w-lg p-5">
           <DialogHeader>
-            <DialogTitle>Create CLO-PLO Mapping</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">
+              Create CLO-PLO Mapping
+            </DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Map a Course Learning Outcome to a Program Learning Outcome
             </DialogDescription>
           </DialogHeader>
@@ -451,20 +488,28 @@ export function CLOPLOMappingList() {
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="e.g., 1.0, 0.7, 0.4"
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
               <p className="text-[10px] text-secondary-text">
                 High = 1.0, Medium = 0.7, Low = 0.4
               </p>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
@@ -474,10 +519,10 @@ export function CLOPLOMappingList() {
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
               style={{ backgroundColor: primaryColor, color: '#ffffff' }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = primaryColorDark;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Create Mapping
@@ -488,21 +533,30 @@ export function CLOPLOMappingList() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Delete Mapping</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this mapping? This action cannot
-              be undone.
+            <DialogTitle className="text-sm font-bold text-primary-text">
+              Delete Mapping
+            </DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Are you sure you want to delete this mapping? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
@@ -510,12 +564,12 @@ export function CLOPLOMappingList() {
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error)', color: '#ffffff' }}
+              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = '#b91c1c';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = '#dc2626';
               }}
             >
               Delete
