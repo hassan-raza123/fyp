@@ -149,119 +149,129 @@ export default function CoursesPage() {
     );
   }
 
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   return (
     <div className="space-y-4">
-      {/* Header - same as admin/faculty dashboard */}
+      {/* Header - same as admin CLO page */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-primary-text flex items-center gap-2">
-            <BookOpen className="w-5 h-5" style={{ color: primaryColor }} />
-            My Courses
-          </h1>
+          <h1 className="text-lg font-bold text-primary-text">My Courses</h1>
           <p className="text-xs text-secondary-text mt-0.5">
             View and manage your assigned courses
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-text" />
+      {/* Filters - inline row like admin CLO page */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
               placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs border-card-border"
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
             />
           </div>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs border-card-border">
-              <SelectValue placeholder="Course Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="THEORY">Theory</SelectItem>
-              <SelectItem value="LAB">Lab</SelectItem>
-              <SelectItem value="PROJECT">Project</SelectItem>
-              <SelectItem value="THESIS">Thesis</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs border-card-border">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="INACTIVE">Inactive</SelectItem>
-              <SelectItem value="ARCHIVED">Archived</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
+        <Select value={type} onValueChange={setType}>
+          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Course Type" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+            <SelectItem value="THEORY" className="text-primary-text hover:bg-card/50">Theory</SelectItem>
+            <SelectItem value="LAB" className="text-primary-text hover:bg-card/50">Lab</SelectItem>
+            <SelectItem value="PROJECT" className="text-primary-text hover:bg-card/50">Project</SelectItem>
+            <SelectItem value="THESIS" className="text-primary-text hover:bg-card/50">Thesis</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="ACTIVE" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+            <SelectItem value="INACTIVE" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+            <SelectItem value="ARCHIVED" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Table */}
-      <div className="bg-card border-card-border rounded-xl shadow-sm border">
-        <div className="p-4 border-b border-card-border">
-          <h2 className="text-sm font-semibold text-primary-text">Course list</h2>
-          <p className="text-xs text-secondary-text mt-0.5">
-            {courses.length} course{courses.length !== 1 ? 's' : ''} found
-          </p>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-card-border hover:bg-transparent">
-                <TableHead className="text-xs text-secondary-text">Code</TableHead>
-                <TableHead className="text-xs text-secondary-text">Name</TableHead>
-                <TableHead className="text-xs text-secondary-text">Credit Hours</TableHead>
-                <TableHead className="text-xs text-secondary-text">Type</TableHead>
-                <TableHead className="text-xs text-secondary-text">Status</TableHead>
-                <TableHead className="text-xs text-secondary-text text-right">Actions</TableHead>
+      {/* Table - same wrapper as admin CLO: rounded-lg border bg-card, no extra header */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Credit Hours</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {courses.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-2">
+                    <BookOpen className="w-8 h-8 text-muted-text" />
+                    <p className="text-xs text-secondary-text">No courses found</p>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courses.length === 0 ? (
-                <TableRow className="border-card-border hover:bg-transparent">
-                  <TableCell colSpan={6} className="text-center py-8 text-xs text-muted-text">
-                    No courses found
+            ) : (
+              courses.map((course) => (
+                <TableRow
+                  key={course.id}
+                  className="hover:bg-[var(--hover-bg)] transition-colors cursor-pointer"
+                  onClick={() => router.push(`/faculty/courses/${course.id}`)}
+                >
+                  <TableCell className="text-xs font-medium text-primary-text">{course.code}</TableCell>
+                  <TableCell className="text-xs text-primary-text">
+                    <div>
+                      <div className="font-medium">{course.name}</div>
+                      {course.department?.code && (
+                        <div className="text-secondary-text">{course.department.code}</div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-secondary-text">{course.creditHours}</TableCell>
+                  <TableCell>{getTypeBadge(course.type)}</TableCell>
+                  <TableCell>{getStatusBadge(course.status)}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => router.push(`/faculty/courses/${course.id}`)}
+                      className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
+                      style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = iconBgColor;
+                      }}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      View
+                    </button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                courses.map((course) => (
-                  <TableRow
-                    key={course.id}
-                    className="border-card-border hover:bg-[var(--hover-bg)] cursor-pointer"
-                    onClick={() => router.push(`/faculty/courses/${course.id}`)}
-                  >
-                    <TableCell className="font-medium text-sm text-primary-text">{course.code}</TableCell>
-                    <TableCell className="text-sm text-primary-text">{course.name}</TableCell>
-                    <TableCell className="text-xs text-secondary-text">{course.creditHours}</TableCell>
-                    <TableCell>{getTypeBadge(course.type)}</TableCell>
-                    <TableCell>{getStatusBadge(course.status)}</TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => router.push(`/faculty/courses/${course.id}`)}
-                        className="p-2 rounded-lg transition-colors hover:bg-[var(--hover-bg)]"
-                        style={{ color: primaryColor }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - same as before */}
       {totalPages > 1 && (
         <div className="flex justify-center">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               variant="outline"
               size="sm"
@@ -271,7 +281,7 @@ export default function CoursesPage() {
             >
               Previous
             </Button>
-            <span className="flex items-center px-3 text-xs text-secondary-text">
+            <span className="text-xs text-secondary-text">
               Page {page} of {totalPages}
             </span>
             <Button
