@@ -36,6 +36,7 @@ import {
   Trash2,
   Eye,
   Loader2,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -126,7 +127,9 @@ export default function ReportsPage() {
         params.append('status', statusFilter);
       }
 
-      const response = await fetch(`/api/obe-reports?${params.toString()}`);
+      const response = await fetch(`/api/obe-reports?${params.toString()}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch reports');
       const data = await response.json();
       if (data.success) {
@@ -156,7 +159,7 @@ export default function ReportsPage() {
 
   const fetchPrograms = async () => {
     try {
-      const response = await fetch('/api/programs');
+      const response = await fetch('/api/programs', { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch programs');
       const data = await response.json();
       if (data.success) {
@@ -169,7 +172,7 @@ export default function ReportsPage() {
 
   const fetchSemesters = async () => {
     try {
-      const response = await fetch('/api/semesters');
+      const response = await fetch('/api/semesters', { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch semesters');
       const data = await response.json();
       if (data.success) {
@@ -191,6 +194,7 @@ export default function ReportsPage() {
       const response = await fetch('/api/obe-reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           reportType: formData.reportType,
           programId: formData.programId ? parseInt(formData.programId) : undefined,
@@ -236,6 +240,7 @@ export default function ReportsPage() {
     try {
       const response = await fetch(`/api/obe-reports/${selectedReport.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -284,13 +289,21 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header - CLO style with icon box */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">OBE Reports</h1>
-          <p className="text-xs text-secondary-text mt-0.5">
-            Generate and manage OBE reports
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">OBE Reports</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Generate and manage OBE reports
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setIsCreateDialogOpen(true)}
@@ -351,7 +364,7 @@ export default function ReportsPage() {
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-b border-card-border">
               <TableHead className="text-xs font-semibold text-primary-text">Title</TableHead>
               <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
               <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
@@ -433,12 +446,12 @@ export default function ReportsPage() {
         </Table>
       </div>
 
-      {/* Create Report Dialog */}
+      {/* Create Report Dialog - CLO style */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Generate OBE Report</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Generate OBE Report</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Create a new OBE report with specified parameters
             </DialogDescription>
           </DialogHeader>
@@ -451,7 +464,7 @@ export default function ReportsPage() {
                   setFormData({ ...formData, reportType: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -474,9 +487,9 @@ export default function ReportsPage() {
                     setFormData({ ...formData, programId: value === "none" ? "" : value })
                   }
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select program (optional)" />
-                  </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select program (optional)" />
+                </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
                     <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {programs.map((program) => (
@@ -495,9 +508,9 @@ export default function ReportsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select semester (optional)" />
-                  </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select semester (optional)" />
+                </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
                     <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {semesters.map((semester) => (
@@ -519,7 +532,7 @@ export default function ReportsPage() {
                 }
                 placeholder="Enter report title"
                 required
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
             <div className="grid gap-2">
@@ -531,23 +544,25 @@ export default function ReportsPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Enter report description (optional)"
-                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50"
               style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: iconBgColor, color: primaryColor }}
               onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
@@ -565,30 +580,31 @@ export default function ReportsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Report Dialog */}
+      {/* Delete Report Dialog - CLO style */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border max-w-md p-5">
           <DialogHeader>
-            <DialogTitle>Delete Report</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{selectedReport?.title}"? This
-              action cannot be undone.
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete Report</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Are you sure you want to delete &quot;{selectedReport?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b91c1c'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
+              style={{ backgroundColor: 'var(--error)', color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-dark)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error)'; }}
             >
               Delete
             </button>
