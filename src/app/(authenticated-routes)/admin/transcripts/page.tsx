@@ -35,7 +35,6 @@ import {
   Download,
   Trash2,
   Eye,
-  FileText,
   Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -469,19 +468,19 @@ export default function TranscriptsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="studentId">Student *</Label>
+              <Label htmlFor="studentId" className="text-xs text-primary-text">Student *</Label>
               <Select
                 value={formData.studentId}
                 onValueChange={(value) =>
                   setFormData({ ...formData, studentId: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {students.map((student) => (
-                    <SelectItem key={student.id} value={student.id.toString()}>
+                    <SelectItem key={student.id} value={student.id.toString()} className="text-primary-text hover:bg-card/50">
                       {student.rollNumber} - {student.user.first_name}{' '}
                       {student.user.last_name} ({student.program.code})
                     </SelectItem>
@@ -491,39 +490,39 @@ export default function TranscriptsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="transcriptType">Transcript Type *</Label>
+                <Label htmlFor="transcriptType" className="text-xs text-primary-text">Transcript Type *</Label>
                 <Select
                   value={formData.transcriptType}
                   onValueChange={(value: transcript_type) =>
                     setFormData({ ...formData, transcriptType: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="official">Official</SelectItem>
-                    <SelectItem value="unofficial">Unofficial</SelectItem>
-                    <SelectItem value="semester">Semester</SelectItem>
-                    <SelectItem value="complete">Complete</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="official" className="text-primary-text hover:bg-card/50">Official</SelectItem>
+                    <SelectItem value="unofficial" className="text-primary-text hover:bg-card/50">Unofficial</SelectItem>
+                    <SelectItem value="semester" className="text-primary-text hover:bg-card/50">Semester</SelectItem>
+                    <SelectItem value="complete" className="text-primary-text hover:bg-card/50">Complete</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="semesterId">Semester</Label>
+                <Label htmlFor="semesterId" className="text-xs text-primary-text">Semester</Label>
                 <Select
                   value={formData.semesterId}
                   onValueChange={(value) =>
                     setFormData({ ...formData, semesterId: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select semester (optional)" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                  <SelectContent className="bg-card border-card-border">
+                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {semesters.map((semester) => (
-                      <SelectItem key={semester.id} value={semester.id.toString()}>
+                      <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                         {semester.name}
                       </SelectItem>
                     ))}
@@ -541,7 +540,7 @@ export default function TranscriptsPage() {
                 }
                 className="h-4 w-4"
               />
-              <Label htmlFor="isOfficial">Mark as Official</Label>
+              <Label htmlFor="isOfficial" className="text-xs text-primary-text">Mark as Official</Label>
             </div>
           </div>
           <DialogFooter>
