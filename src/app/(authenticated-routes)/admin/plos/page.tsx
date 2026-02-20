@@ -59,8 +59,9 @@ function PLOsPageContent() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.15)' 
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
   
   const router = useRouter();
@@ -483,10 +484,10 @@ function PLOsPageContent() {
 
       {/* View PLO Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>PLO Details</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">PLO Details</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               View Program Learning Outcome information
             </DialogDescription>
           </DialogHeader>
@@ -520,13 +521,19 @@ function PLOsPageContent() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsViewDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -537,10 +544,10 @@ function PLOsPageContent() {
 
       {/* Create PLO Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Create PLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Add a new Program Learning Outcome
             </DialogDescription>
           </DialogHeader>
@@ -638,6 +645,12 @@ function PLOsPageContent() {
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               Cancel
             </button>
@@ -649,10 +662,10 @@ function PLOsPageContent() {
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = primaryColorDark;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Create PLO
@@ -663,10 +676,10 @@ function PLOsPageContent() {
 
       {/* Edit PLO Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Edit PLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Update Program Learning Outcome details
             </DialogDescription>
           </DialogHeader>
@@ -744,6 +757,12 @@ function PLOsPageContent() {
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               Cancel
             </button>
@@ -755,10 +774,10 @@ function PLOsPageContent() {
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = primaryColorDark;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Update PLO
@@ -769,21 +788,27 @@ function PLOsPageContent() {
 
       {/* Delete PLO Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Delete PLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Are you sure you want to delete this PLO? This action cannot be
               undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
@@ -792,14 +817,14 @@ function PLOsPageContent() {
               onClick={handleDeletePLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
               style={{
-                backgroundColor: 'var(--error)',
+                backgroundColor: '#dc2626',
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = '#b91c1c';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = '#dc2626';
               }}
             >
               Delete
