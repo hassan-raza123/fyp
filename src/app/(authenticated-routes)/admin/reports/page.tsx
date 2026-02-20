@@ -258,13 +258,13 @@ export default function ReportsPage() {
   const getStatusBadge = (status: report_status) => {
     switch (status) {
       case 'generated':
-        return <Badge variant="default">Generated</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Generated</Badge>;
       case 'published':
-        return <Badge variant="default">Published</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Published</Badge>;
       case 'archived':
-        return <Badge variant="secondary">Archived</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Archived</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5" variant="secondary">{status}</Badge>;
     }
   };
 
@@ -586,9 +586,9 @@ export default function ReportsPage() {
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b91c1c'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
             >
               Delete
             </button>
