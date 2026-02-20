@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/clos/[id]
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid CLO ID' },
@@ -47,11 +48,12 @@ export async function GET(
 
 // PUT /api/clos/[id]
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid CLO ID' },
@@ -62,7 +64,6 @@ export async function PUT(
     const data = await req.json();
     const { code, description, courseId, bloomLevel, status } = data;
 
-    // Validate required fields
     if (!code || !description || !courseId) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
@@ -70,23 +71,15 @@ export async function PUT(
       );
     }
 
-    // Validate code format
     const codeRegex = /^CLO\d+$/;
     if (!codeRegex.test(code)) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid CLO code format. Use format: CLO1, CLO2, etc.',
-        },
+        { success: false, error: 'Invalid CLO code format. Use format: CLO1, CLO2, etc.' },
         { status: 400 }
       );
     }
 
-    // Check if CLO exists
-    const existingCLO = await prisma.clos.findUnique({
-      where: { id },
-    });
-
+    const existingCLO = await prisma.clos.findUnique({ where: { id } });
     if (!existingCLO) {
       return NextResponse.json(
         { success: false, error: 'CLO not found' },
@@ -94,11 +87,7 @@ export async function PUT(
       );
     }
 
-    // Check if course exists
-    const course = await prisma.courses.findUnique({
-      where: { id: courseId },
-    });
-
+    const course = await prisma.courses.findUnique({ where: { id: courseId } });
     if (!course) {
       return NextResponse.json(
         { success: false, error: 'Course not found' },
@@ -106,15 +95,9 @@ export async function PUT(
       );
     }
 
-    // Check if CLO code already exists for the course (excluding current CLO)
     const duplicateCLO = await prisma.clos.findFirst({
-      where: {
-        code,
-        courseId,
-        id: { not: id },
-      },
+      where: { code, courseId, id: { not: id } },
     });
-
     if (duplicateCLO) {
       return NextResponse.json(
         { success: false, error: 'CLO code already exists for this course' },
@@ -122,23 +105,12 @@ export async function PUT(
       );
     }
 
-    // Update CLO
     const updatedCLO = await prisma.clos.update({
       where: { id },
-      data: {
-        code,
-        description,
-        courseId,
-        bloomLevel,
-        status: status || 'active',
-      },
+      data: { code, description, courseId, bloomLevel, status: status || 'active' },
       include: {
         course: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
+          select: { id: true, code: true, name: true },
         },
       },
     });
@@ -155,28 +127,22 @@ export async function PUT(
 
 // DELETE /api/clos/[id]
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid CLO ID' }, { status: 400 });
     }
 
-    // Check if CLO exists
-    const existingCLO = await prisma.clos.findUnique({
-      where: { id },
-    });
-
+    const existingCLO = await prisma.clos.findUnique({ where: { id } });
     if (!existingCLO) {
       return NextResponse.json({ error: 'CLO not found' }, { status: 404 });
     }
 
-    // Delete CLO
-    await prisma.clos.delete({
-      where: { id },
-    });
+    await prisma.clos.delete({ where: { id } });
 
     return NextResponse.json({ message: 'CLO deleted successfully' });
   } catch (error) {

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const courseId = await Promise.resolve(parseInt(params.id));
+    const { id } = await params;
+    const courseId = parseInt(id);
 
     if (isNaN(courseId)) {
       return NextResponse.json({ error: 'Invalid course ID' }, { status: 400 });
@@ -34,10 +35,11 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const courseId = await Promise.resolve(parseInt(params.id));
+    const { id } = await params;
+    const courseId = parseInt(id);
     if (isNaN(courseId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid course id' },
