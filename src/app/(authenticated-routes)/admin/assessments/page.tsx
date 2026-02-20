@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { AssessmentList } from '@/components/assessments/AssessmentList';
 import { CreateAssessmentForm } from '@/components/assessments/CreateAssessmentForm';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -111,21 +110,36 @@ export default function AssessmentsPage() {
     return null;
   }
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-primary-text">Assessments</h1>
-          <p className="text-secondary-text">
+          <h1 className="text-lg font-bold text-primary-text">Assessments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Create and manage assessment tools to measure learning outcomes
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 h-4 w-4" />
+            <button
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = iconBgColor;
+              }}
+            >
+              <PlusIcon className="w-3.5 h-3.5" />
               Create Assessment
-            </Button>
+            </button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

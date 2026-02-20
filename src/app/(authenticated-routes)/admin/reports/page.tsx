@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -283,137 +281,150 @@ export default function ReportsPage() {
   }
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
-            <FileText className="h-8 w-8" style={{ color: primaryColor }} />
-            OBE Reports
-          </h1>
-          <p className="text-secondary-text">
+          <h1 className="text-lg font-bold text-primary-text">OBE Reports</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Generate and manage OBE reports
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <Plus className="w-3.5 h-3.5" />
           Generate Report
-        </Button>
+        </button>
       </div>
 
-      <Card className="p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
-              <Input
-                placeholder="Search reports..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search reports..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+            />
           </div>
-          <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="clo_attainment">CLO Attainment</SelectItem>
-              <SelectItem value="plo_attainment">PLO Attainment</SelectItem>
-              <SelectItem value="program_assessment">Program Assessment</SelectItem>
-              <SelectItem value="semester_summary">Semester Summary</SelectItem>
-              <SelectItem value="course_wise">Course Wise</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="generated">Generated</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-      </Card>
+        <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
+          <SelectTrigger className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+            <SelectItem value="clo_attainment" className="text-primary-text hover:bg-card/50">CLO Attainment</SelectItem>
+            <SelectItem value="plo_attainment" className="text-primary-text hover:bg-card/50">PLO Attainment</SelectItem>
+            <SelectItem value="program_assessment" className="text-primary-text hover:bg-card/50">Program Assessment</SelectItem>
+            <SelectItem value="semester_summary" className="text-primary-text hover:bg-card/50">Semester Summary</SelectItem>
+            <SelectItem value="course_wise" className="text-primary-text hover:bg-card/50">Course Wise</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="generated" className="text-primary-text hover:bg-card/50">Generated</SelectItem>
+            <SelectItem value="published" className="text-primary-text hover:bg-card/50">Published</SelectItem>
+            <SelectItem value="archived" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Card>
+      {/* Table */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Program</TableHead>
-              <TableHead>Semester</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Generated By</TableHead>
-              <TableHead>Generated At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Title</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Generated By</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Generated At</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  Loading...
+                <TableCell colSpan={8} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">Loading...</p>
                 </TableCell>
               </TableRow>
             ) : reports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  No reports found
+                <TableCell colSpan={8} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">No reports found</p>
                 </TableCell>
               </TableRow>
             ) : (
               reports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell className="font-medium">{report.title}</TableCell>
-                  <TableCell>{getReportTypeLabel(report.reportType)}</TableCell>
-                  <TableCell>
+                <TableRow key={report.id} className="hover:bg-hover-bg transition-colors">
+                  <TableCell className="text-xs font-medium text-primary-text">{report.title}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{getReportTypeLabel(report.reportType)}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {report.program
                       ? `${report.program.code} - ${report.program.name}`
                       : '-'}
                   </TableCell>
-                  <TableCell>{report.semester?.name || '-'}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{report.semester?.name || '-'}</TableCell>
                   <TableCell>{getStatusBadge(report.status)}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {report.generator.first_name} {report.generator.last_name}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {format(new Date(report.generatedAt), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       {report.filePath && (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        <button
                           onClick={() => window.open(report.filePath || '', '_blank')}
+                          className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                         >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                          <Download className="h-3 w-3" />
+                        </button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/admin/reports/${report.id}`)
-                        }
+                      <button
+                        onClick={() => router.push(`/admin/reports/${report.id}`)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                       >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                        <Eye className="h-3 w-3" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteClick(report)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -421,7 +432,7 @@ export default function ReportsPage() {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Create Report Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -524,23 +535,31 @@ export default function ReportsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCreate} disabled={isGenerating}>
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={isGenerating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
+            >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                   Generating...
                 </>
               ) : (
                 'Generate Report'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -556,15 +575,22 @@ export default function ReportsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+            >
               Delete
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

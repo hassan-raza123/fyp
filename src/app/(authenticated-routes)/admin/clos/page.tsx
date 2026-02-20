@@ -490,13 +490,13 @@ export default function AdminCLOsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-[var(--gray-500)] text-white';
       case 'archived':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+        return 'bg-[var(--gray-500)] text-white';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
 
@@ -512,40 +512,52 @@ export default function AdminCLOsPage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="text-center py-12 text-secondary-text">Loading CLOs...</div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          ></div>
+          <p className="text-xs text-secondary-text">Loading CLOs...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex justify-between items-center mb-6'>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold text-primary-text'>Course Learning Outcomes</h1>
-          <p className='text-secondary-text'>Manage all course learning outcomes</p>
+          <h1 className='text-lg font-bold text-primary-text'>Course Learning Outcomes</h1>
+          <p className='text-xs text-secondary-text mt-0.5'>Manage all course learning outcomes</p>
         </div>
         <button
           onClick={() => setIsCreateDialogOpen(true)}
-          className="px-4 py-2 rounded-lg transition-colors text-sm font-medium h-9 flex items-center gap-2"
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
           style={{
-            backgroundColor: primaryColor,
-            color: '#ffffff',
+            backgroundColor: iconBgColor,
+            color: primaryColor,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '0.9';
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '1';
+            e.currentTarget.style.backgroundColor = iconBgColor;
           }}
         >
-          <Plus className='w-4 h-4' />
+          <Plus className='w-3.5 h-3.5' />
           Add CLO
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4">
+      <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -307,139 +305,150 @@ export default function TranscriptsPage() {
   }
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
-            <FileText className="h-8 w-8" style={{ color: primaryColor }} />
-            Transcripts
-          </h1>
-          <p className="text-secondary-text">
+          <h1 className="text-lg font-bold text-primary-text">Transcripts</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Generate and manage student academic transcripts
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <Plus className="w-3.5 h-3.5" />
           Generate Transcript
-        </Button>
+        </button>
       </div>
 
-      <Card className="p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
-              <Input
-                placeholder="Search transcripts..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search transcripts..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+            />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="generated">Generated</SelectItem>
-              <SelectItem value="issued">Issued</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-      </Card>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="generated" className="text-primary-text hover:bg-card/50">Generated</SelectItem>
+            <SelectItem value="issued" className="text-primary-text hover:bg-card/50">Issued</SelectItem>
+            <SelectItem value="cancelled" className="text-primary-text hover:bg-card/50">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Card>
+      {/* Table */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Roll Number</TableHead>
-              <TableHead>Program</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Semester</TableHead>
-              <TableHead>CGPA</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Generated At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Student</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">CGPA</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Generated At</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center">
-                  Loading...
+                <TableCell colSpan={9} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">Loading...</p>
                 </TableCell>
               </TableRow>
             ) : transcripts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center">
-                  No transcripts found
+                <TableCell colSpan={9} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">No transcripts found</p>
                 </TableCell>
               </TableRow>
             ) : (
               transcripts.map((transcript) => (
-                <TableRow key={transcript.id}>
-                  <TableCell className="font-medium">
+                <TableRow key={transcript.id} className="hover:bg-hover-bg transition-colors">
+                  <TableCell className="text-xs font-medium text-primary-text">
                     {transcript.student.user.first_name}{' '}
                     {transcript.student.user.last_name}
                   </TableCell>
-                  <TableCell>{transcript.student.rollNumber}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">{transcript.student.rollNumber}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {transcript.student.program.code} -{' '}
                     {transcript.student.program.name}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {getTranscriptTypeLabel(transcript.transcriptType)}
                     {transcript.isOfficial && (
-                      <Badge variant="outline" className="ml-2">
+                      <Badge variant="outline" className="ml-2 text-[10px]">
                         Official
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell>{transcript.semester?.name || 'Complete'}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">{transcript.semester?.name || 'Complete'}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {transcript.totalCGPA
                       ? transcript.totalCGPA.toFixed(2)
                       : '-'}
                   </TableCell>
                   <TableCell>{getStatusBadge(transcript.status)}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {format(new Date(transcript.generatedAt), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       {transcript.filePath && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            window.open(transcript.filePath || '', '_blank')
-                          }
+                        <button
+                          onClick={() => window.open(transcript.filePath || '', '_blank')}
+                          className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                         >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                          <Download className="h-3 w-3" />
+                        </button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/admin/transcripts/${transcript.id}`)
-                        }
+                      <button
+                        onClick={() => router.push(`/admin/transcripts/${transcript.id}`)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                       >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                        <Eye className="h-3 w-3" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteClick(transcript)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -447,7 +456,7 @@ export default function TranscriptsPage() {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Create Transcript Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -536,23 +545,31 @@ export default function TranscriptsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCreate} disabled={isGenerating}>
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={isGenerating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
+            >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                   Generating...
                 </>
               ) : (
                 'Generate Transcript'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -568,15 +585,22 @@ export default function TranscriptsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+            >
               Delete
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

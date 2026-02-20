@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -19,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -275,149 +274,166 @@ export default function NotificationsPage() {
   }
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-primary-text">
-            <Bell className="h-8 w-8" style={{ color: primaryColor }} />
+          <h1 className="text-lg font-bold text-primary-text flex items-center gap-2">
             Notifications
             {unreadCount > 0 && (
-              <Badge variant="destructive" className="ml-2">
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
                 {unreadCount} unread
               </Badge>
             )}
           </h1>
-          <p className="text-secondary-text">
+          <p className="text-xs text-secondary-text mt-0.5">
             Manage system notifications and announcements
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <Plus className="w-3.5 h-3.5" />
           Create Notification
-        </Button>
+        </button>
       </div>
 
-      <Card className="p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-text" />
-              <Input
-                placeholder="Search notifications..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
+            <Input
+              placeholder="Search notifications..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+            />
           </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-              <SelectItem value="course">Course</SelectItem>
-              <SelectItem value="announcement">Announcement</SelectItem>
-              <SelectItem value="alert">Alert</SelectItem>
-              <SelectItem value="grade">Grade</SelectItem>
-              <SelectItem value="result">Result</SelectItem>
-              <SelectItem value="assessment">Assessment</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={readFilter} onValueChange={setReadFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="unread">Unread</SelectItem>
-              <SelectItem value="read">Read</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-      </Card>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[150px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+            <SelectItem value="system" className="text-primary-text hover:bg-card/50">System</SelectItem>
+            <SelectItem value="course" className="text-primary-text hover:bg-card/50">Course</SelectItem>
+            <SelectItem value="announcement" className="text-primary-text hover:bg-card/50">Announcement</SelectItem>
+            <SelectItem value="alert" className="text-primary-text hover:bg-card/50">Alert</SelectItem>
+            <SelectItem value="grade" className="text-primary-text hover:bg-card/50">Grade</SelectItem>
+            <SelectItem value="result" className="text-primary-text hover:bg-card/50">Result</SelectItem>
+            <SelectItem value="assessment" className="text-primary-text hover:bg-card/50">Assessment</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={readFilter} onValueChange={setReadFilter}>
+          <SelectTrigger className="w-[130px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All</SelectItem>
+            <SelectItem value="unread" className="text-primary-text hover:bg-card/50">Unread</SelectItem>
+            <SelectItem value="read" className="text-primary-text hover:bg-card/50">Read</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Card>
+      {/* Table */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Message</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Recipient</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Title</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Message</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Recipient</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Created At</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  Loading...
+                <TableCell colSpan={7} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">Loading...</p>
                 </TableCell>
               </TableRow>
             ) : notifications.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  No notifications found
+                <TableCell colSpan={7} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">No notifications found</p>
                 </TableCell>
               </TableRow>
             ) : (
               notifications.map((notification) => (
                 <TableRow
                   key={notification.id}
+                  className="hover:bg-hover-bg transition-colors"
                   style={{
-                    backgroundColor: !notification.isRead 
+                    backgroundColor: !notification.isRead
                       ? isDarkMode ? 'rgba(38, 40, 149, 0.1)' : 'rgba(38, 40, 149, 0.05)'
-                      : 'transparent',
+                      : undefined,
                   }}
                 >
-                  <TableCell className="font-medium">
+                  <TableCell className="text-xs font-medium text-primary-text">
                     {notification.title}
                   </TableCell>
-                  <TableCell className="max-w-md truncate">
+                  <TableCell className="text-xs text-secondary-text max-w-xs truncate">
                     {notification.message}
                   </TableCell>
                   <TableCell>{getTypeBadge(notification.type)}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-primary-text">
                     {notification.user.first_name} {notification.user.last_name}
                     <br />
-                    <span className="text-xs text-muted-text">
+                    <span className="text-[10px] text-muted-text">
                       {notification.user.email} ({notification.user.role})
                     </span>
                   </TableCell>
                   <TableCell>
                     {notification.isRead ? (
-                      <Badge variant="secondary">Read</Badge>
+                      <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Read</Badge>
                     ) : (
-                      <Badge variant="default">Unread</Badge>
+                      <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Unread</Badge>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs text-secondary-text">
                     {format(new Date(notification.createdAt), 'MMM d, yyyy HH:mm')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       {!notification.isRead && (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        <button
                           onClick={() => handleMarkAsRead(notification.id)}
+                          className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
+                          title="Mark as read"
                         >
-                          <Check className="h-4 w-4" />
-                        </Button>
+                          <Check className="h-3 w-3" />
+                        </button>
                       )}
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                      <button
                         onClick={() => handleDeleteClick(notification)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -425,7 +441,7 @@ export default function NotificationsPage() {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Create Notification Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -438,19 +454,19 @@ export default function NotificationsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="userId">Recipient *</Label>
+              <Label htmlFor="userId" className="text-xs text-primary-text">Recipient *</Label>
               <Select
                 value={formData.userId}
                 onValueChange={(value) =>
                   setFormData({ ...formData, userId: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
+                    <SelectItem key={user.id} value={user.id.toString()} className="text-primary-text hover:bg-card/50">
                       {user.first_name} {user.last_name} ({user.email}) -{' '}
                       {user.role}
                     </SelectItem>
@@ -459,29 +475,29 @@ export default function NotificationsPage() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="type">Type *</Label>
+              <Label htmlFor="type" className="text-xs text-primary-text">Type *</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value: notification_type) =>
                   setFormData({ ...formData, type: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select notification type" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="system">System</SelectItem>
-                  <SelectItem value="course">Course</SelectItem>
-                  <SelectItem value="announcement">Announcement</SelectItem>
-                  <SelectItem value="alert">Alert</SelectItem>
-                  <SelectItem value="grade">Grade</SelectItem>
-                  <SelectItem value="result">Result</SelectItem>
-                  <SelectItem value="assessment">Assessment</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="system" className="text-primary-text hover:bg-card/50">System</SelectItem>
+                  <SelectItem value="course" className="text-primary-text hover:bg-card/50">Course</SelectItem>
+                  <SelectItem value="announcement" className="text-primary-text hover:bg-card/50">Announcement</SelectItem>
+                  <SelectItem value="alert" className="text-primary-text hover:bg-card/50">Alert</SelectItem>
+                  <SelectItem value="grade" className="text-primary-text hover:bg-card/50">Grade</SelectItem>
+                  <SelectItem value="result" className="text-primary-text hover:bg-card/50">Result</SelectItem>
+                  <SelectItem value="assessment" className="text-primary-text hover:bg-card/50">Assessment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="text-xs text-primary-text">Title *</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -490,10 +506,11 @@ export default function NotificationsPage() {
                 }
                 placeholder="Enter notification title"
                 required
+                className="bg-card border-card-border text-primary-text"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="message">Message *</Label>
+              <Label htmlFor="message" className="text-xs text-primary-text">Message *</Label>
               <Input
                 id="message"
                 value={formData.message}
@@ -502,27 +519,36 @@ export default function NotificationsPage() {
                 }
                 placeholder="Enter notification message"
                 required
+                className="bg-card border-card-border text-primary-text"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCreate} disabled={isCreating}>
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={isCreating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              onMouseEnter={(e) => { if (!isCreating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
+            >
               {isCreating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                   Creating...
                 </>
               ) : (
                 'Create Notification'
               )}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -538,15 +564,22 @@ export default function NotificationsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+            >
               Delete
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
