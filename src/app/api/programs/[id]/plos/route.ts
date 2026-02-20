@@ -6,7 +6,7 @@ import { plo_status } from '@prisma/client';
 // GET /api/programs/[id]/plos
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -18,7 +18,8 @@ export async function GET(
       );
     }
 
-    const programId = parseInt(params.id);
+    const { id } = await params;
+    const programId = parseInt(id);
     if (isNaN(programId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid program ID' },
@@ -67,7 +68,7 @@ export async function GET(
 // POST /api/programs/[id]/plos
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -79,7 +80,8 @@ export async function POST(
       );
     }
 
-    const programId = parseInt(params.id);
+    const { id } = await params;
+    const programId = parseInt(id);
     if (isNaN(programId)) {
       return NextResponse.json(
         { success: false, error: 'Invalid program ID' },
@@ -163,7 +165,7 @@ export async function POST(
 // PUT /api/programs/[id]/plos/[ploId]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; ploId: string } }
+  { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
   try {
     // Check authentication
@@ -175,8 +177,9 @@ export async function PUT(
       );
     }
 
-    const programId = parseInt(params.id);
-    const ploId = parseInt(params.ploId);
+    const { id, ploId: ploIdParam } = await params;
+    const programId = parseInt(id);
+    const ploId = parseInt(ploIdParam);
 
     if (isNaN(programId) || isNaN(ploId)) {
       return NextResponse.json(
@@ -252,7 +255,7 @@ export async function PUT(
 // DELETE /api/programs/[id]/plos/[ploId]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; ploId: string } }
+  { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
   try {
     // Check authentication
@@ -264,8 +267,9 @@ export async function DELETE(
       );
     }
 
-    const programId = parseInt(params.id);
-    const ploId = parseInt(params.ploId);
+    const { id, ploId: ploIdParam } = await params;
+    const programId = parseInt(id);
+    const ploId = parseInt(ploIdParam);
 
     if (isNaN(programId) || isNaN(ploId)) {
       return NextResponse.json(
