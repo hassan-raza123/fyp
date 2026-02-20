@@ -174,6 +174,7 @@ export default function AssessmentsPage() {
                   sectionId={parseInt(selectedCourseOffering)}
                   onSubmit={handleCreateAssessment}
                   isLoading={isLoading}
+                  onCancel={() => setIsDialogOpen(false)}
                 />
               )}
             </div>

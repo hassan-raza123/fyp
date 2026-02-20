@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -24,6 +26,7 @@ interface CreateAssessmentFormProps {
   sectionId?: number;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
+  onCancel?: () => void;
 }
 
 interface CourseOffering {
@@ -43,7 +46,6 @@ interface CourseOffering {
   }>;
 }
 
-// Static assessment types (must match backend)
 const ASSESSMENT_TYPES = [
   'quiz',
   'assignment',
@@ -62,7 +64,15 @@ export function CreateAssessmentForm({
   sectionId,
   onSubmit,
   isLoading = false,
+  onCancel,
 }: CreateAssessmentFormProps) {
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode
+    ? 'var(--orange-dark)'
+    : 'var(--blue-dark)';
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -84,9 +94,7 @@ export function CreateAssessmentForm({
         });
         if (!response.ok) throw new Error('Failed to fetch course offerings');
         const data = await response.json();
-        if (data.success) {
-          setCourseOfferings(data.data);
-        }
+        if (data.success) setCourseOfferings(data.data);
       } catch (error) {
         console.error('Error fetching course offerings:', error);
       } finally {
@@ -114,34 +122,12 @@ export function CreateAssessmentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
-      <div className='space-y-2'>
-        <Label htmlFor='title'>Assessment Title</Label>
-        <Input
-          id='title'
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder='Enter assessment title'
-          required
-        />
-      </div>
-
-      <div className='space-y-2'>
-        <Label htmlFor='description'>Description</Label>
-        <Textarea
-          id='description'
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          placeholder='Enter assessment description'
-          required
-        />
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-4">
       {!sectionId && (
-        <div className='space-y-2'>
-          <Label htmlFor='courseOfferingId'>Course Offering</Label>
+        <div className="grid gap-2">
+          <Label htmlFor="courseOfferingId" className="text-xs text-primary-text">
+            Course Offering *
+          </Label>
           <Select
             value={formData.courseOfferingId}
             onValueChange={(value) =>
@@ -149,14 +135,15 @@ export function CreateAssessmentForm({
             }
             disabled={loadingOfferings}
           >
-            <SelectTrigger>
-              <SelectValue placeholder='Select course offering' />
+            <SelectTrigger className="bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select course offering" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-card-border">
               {courseOfferings.map((offering) => (
                 <SelectItem
                   key={offering.id}
                   value={offering.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
                 >
                   {offering.course.code} - {offering.course.name} (
                   {offering.semester.name})
@@ -167,18 +154,55 @@ export function CreateAssessmentForm({
         </div>
       )}
 
-      <div className='space-y-2'>
-        <Label htmlFor='type'>Assessment Type</Label>
+      <div className="grid gap-2">
+        <Label htmlFor="title" className="text-xs text-primary-text">
+          Assessment Title *
+        </Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="Enter assessment title"
+          required
+          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="description" className="text-xs text-primary-text">
+          Description *
+        </Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          placeholder="Enter assessment description"
+          required
+          rows={3}
+          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="type" className="text-xs text-primary-text">
+          Assessment Type *
+        </Label>
         <Select
           value={formData.type}
           onValueChange={(value) => setFormData({ ...formData, type: value })}
         >
-          <SelectTrigger>
-            <SelectValue placeholder='Select assessment type' />
+          <SelectTrigger className="bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Select assessment type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-card border-card-border">
             {ASSESSMENT_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
+              <SelectItem
+                key={type}
+                value={type}
+                className="text-primary-text hover:bg-card/50"
+              >
                 {type
                   .replace(/_/g, ' ')
                   .replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -188,56 +212,62 @@ export function CreateAssessmentForm({
         </Select>
       </div>
 
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='totalMarks'>Total Marks</Label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="totalMarks" className="text-xs text-primary-text">
+            Total Marks *
+          </Label>
           <Input
-            id='totalMarks'
-            type='number'
+            id="totalMarks"
+            type="number"
             value={formData.totalMarks}
             onChange={(e) =>
               setFormData({ ...formData, totalMarks: Number(e.target.value) })
             }
             required
+            className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
           />
         </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='weightage'>Weightage (%)</Label>
+        <div className="grid gap-2">
+          <Label htmlFor="weightage" className="text-xs text-primary-text">
+            Weightage (%) *
+          </Label>
           <Input
-            id='weightage'
-            type='number'
+            id="weightage"
+            type="number"
             value={formData.weightage}
             onChange={(e) =>
               setFormData({ ...formData, weightage: Number(e.target.value) })
             }
             required
+            className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
           />
         </div>
       </div>
 
-      <div className='space-y-2'>
-        <Label>Due Date</Label>
+      <div className="grid gap-2">
+        <Label className="text-xs text-primary-text">Due Date *</Label>
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              variant={'outline'}
+            <button
+              type="button"
               className={cn(
-                'w-full justify-start text-left font-normal',
-                !formData.dueDate && 'text-muted-foreground'
+                'w-full h-9 px-3 rounded-md border text-xs text-left flex items-center gap-2 transition-colors',
+                'bg-card border-card-border text-primary-text',
+                !formData.dueDate && 'text-secondary-text'
               )}
             >
-              <CalendarIcon className='mr-2 h-4 w-4' />
+              <CalendarIcon className="h-3.5 w-3.5 text-secondary-text" />
               {formData.dueDate ? (
                 format(formData.dueDate, 'PPP')
               ) : (
-                <span>Pick a date</span>
+                <span className="text-secondary-text">Pick a date</span>
               )}
-            </Button>
+            </button>
           </PopoverTrigger>
-          <PopoverContent className='w-auto p-0'>
+          <PopoverContent className="w-auto p-0 bg-card border-card-border">
             <Calendar
-              mode='single'
+              mode="single"
               selected={formData.dueDate}
               onSelect={(date) =>
                 date && setFormData({ ...formData, dueDate: date })
@@ -248,22 +278,61 @@ export function CreateAssessmentForm({
         </Popover>
       </div>
 
-      <div className='space-y-2'>
-        <Label htmlFor='instructions'>Instructions</Label>
+      <div className="grid gap-2">
+        <Label htmlFor="instructions" className="text-xs text-primary-text">
+          Instructions *
+        </Label>
         <Textarea
-          id='instructions'
+          id="instructions"
           value={formData.instructions}
           onChange={(e) =>
             setFormData({ ...formData, instructions: e.target.value })
           }
-          placeholder='Enter assessment instructions'
+          placeholder="Enter assessment instructions"
           required
+          rows={3}
+          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
         />
       </div>
 
-      <Button type='submit' className='w-full' disabled={isLoading}>
-        {isLoading ? 'Creating Assessment...' : 'Create Assessment'}
-      </Button>
+      <div className="flex justify-end gap-2 pt-2">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+            style={{
+              color: isDarkMode ? '#ffffff' : '#111827',
+              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+          style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+          onMouseEnter={(e) => {
+            if (!isLoading)
+              e.currentTarget.style.backgroundColor = primaryColorDark;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = primaryColor;
+          }}
+        >
+          {isLoading ? 'Creating...' : 'Create Assessment'}
+        </button>
+      </div>
     </form>
   );
 }
