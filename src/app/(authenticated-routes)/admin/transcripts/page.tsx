@@ -36,6 +36,7 @@ import {
   Trash2,
   Eye,
   Loader2,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -152,7 +153,9 @@ export default function TranscriptsPage() {
         params.append('status', statusFilter);
       }
 
-      const response = await fetch(`/api/transcripts?${params.toString()}`);
+      const response = await fetch(`/api/transcripts?${params.toString()}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch transcripts');
       const data = await response.json();
       if (data.success) {
@@ -182,7 +185,9 @@ export default function TranscriptsPage() {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/students?status=active');
+      const response = await fetch('/api/students?status=active', {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch students');
       const data = await response.json();
       if (data.success) {
@@ -195,7 +200,7 @@ export default function TranscriptsPage() {
 
   const fetchSemesters = async () => {
     try {
-      const response = await fetch('/api/semesters');
+      const response = await fetch('/api/semesters', { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch semesters');
       const data = await response.json();
       if (data.success) {
@@ -217,6 +222,7 @@ export default function TranscriptsPage() {
       const response = await fetch('/api/transcripts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           studentId: parseInt(formData.studentId),
           semesterId: formData.semesterId ? parseInt(formData.semesterId) : undefined,
@@ -260,6 +266,7 @@ export default function TranscriptsPage() {
     try {
       const response = await fetch(`/api/transcripts/${selectedTranscript.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -280,15 +287,16 @@ export default function TranscriptsPage() {
   };
 
   const getStatusBadge = (status: transcript_status) => {
+    const baseClass = 'text-[10px] px-1.5 py-0.5';
     switch (status) {
       case 'generated':
-        return <Badge variant="default">Generated</Badge>;
+        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Generated</Badge>;
       case 'issued':
-        return <Badge variant="default">Issued</Badge>;
+        return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Issued</Badge>;
       case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
+        return <Badge className={`bg-[var(--error)] text-white ${baseClass}`} variant="secondary">Cancelled</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className={baseClass} variant="secondary">{status}</Badge>;
     }
   };
 
@@ -308,13 +316,21 @@ export default function TranscriptsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header - CLO style with icon box */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Transcripts</h1>
-          <p className="text-xs text-secondary-text mt-0.5">
-            Generate and manage student academic transcripts
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Transcripts</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Generate and manage student academic transcripts
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setIsCreateDialogOpen(true)}
@@ -362,7 +378,7 @@ export default function TranscriptsPage() {
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-b border-card-border">
               <TableHead className="text-xs font-semibold text-primary-text">Student</TableHead>
               <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
               <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
@@ -457,12 +473,12 @@ export default function TranscriptsPage() {
         </Table>
       </div>
 
-      {/* Create Transcript Dialog */}
+      {/* Create Transcript Dialog - CLO style */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Generate Transcript</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Generate Transcript</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Create a new academic transcript for a student
             </DialogDescription>
           </DialogHeader>
@@ -475,7 +491,7 @@ export default function TranscriptsPage() {
                   setFormData({ ...formData, studentId: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -497,9 +513,9 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, transcriptType: value })
                   }
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
                     <SelectItem value="official" className="text-primary-text hover:bg-card/50">Official</SelectItem>
                     <SelectItem value="unofficial" className="text-primary-text hover:bg-card/50">Unofficial</SelectItem>
@@ -516,9 +532,9 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select semester (optional)" />
-                  </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select semester (optional)" />
+                </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
                     <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {semesters.map((semester) => (
@@ -530,7 +546,7 @@ export default function TranscriptsPage() {
                 </Select>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isOfficial"
@@ -538,25 +554,29 @@ export default function TranscriptsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, isOfficial: e.target.checked })
                 }
-                className="h-4 w-4"
+                className="h-4 w-4 rounded border-2 border-card-border bg-card accent-[var(--primary-600)] cursor-pointer focus:ring-2 focus:ring-offset-0"
+                style={{ accentColor: primaryColor }}
               />
-              <Label htmlFor="isOfficial" className="text-xs text-primary-text">Mark as Official</Label>
+              <Label htmlFor="isOfficial" className="text-xs text-primary-text cursor-pointer">Mark as Official</Label>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50"
               style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleCreate}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: iconBgColor, color: primaryColor, borderColor: 'transparent' }}
               onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
             >
@@ -573,30 +593,31 @@ export default function TranscriptsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Transcript Dialog */}
+      {/* Delete Transcript Dialog - CLO style */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border max-w-md p-5">
           <DialogHeader>
-            <DialogTitle>Delete Transcript</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this transcript? This action
-              cannot be undone.
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete Transcript</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Are you sure you want to delete this transcript? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+              style={{ backgroundColor: 'var(--error)', color: '#ffffff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-dark)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error)'; }}
             >
               Delete
             </button>
