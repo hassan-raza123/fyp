@@ -59,6 +59,28 @@ export async function GET(req: NextRequest) {
     const sectionIds = sections.map((s) => s.id);
     const courseOfferingIds = sections.map((s) => s.courseOfferingId);
 
+    // When faculty has no sections, return empty analytics shape
+    if (sectionIds.length === 0 || courseOfferingIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          performance: {
+            overall: [],
+            sectionComparison: [],
+            studentTrends: [],
+          },
+          clo: { trends: [], weakCLOs: [], suggestions: [] },
+          student: {
+            topPerformers: [],
+            atRiskStudents: [],
+            distribution: { excellent: 0, good: 0, average: 0, poor: 0 },
+            gradeDistribution: { 'A+': 0, A: 0, 'B+': 0, B: 0, 'C+': 0, C: 0, F: 0 },
+          },
+          assessment: [],
+        },
+      });
+    }
+
     // Get assessments
     const assessments = await prisma.assessments.findMany({
       where: {
@@ -88,58 +110,57 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Get assessment results
-    const assessmentResults = await prisma.studentassessmentresults.findMany({
-      where: {
-        assessmentId: {
-          in: assessments.map((a) => a.id),
-        },
-        student: {
-          studentsections: {
-            some: {
-              sectionId: {
-                in: sectionIds,
+    const assessmentIds = assessments.map((a) => a.id);
+
+    // Get assessment results (skip if no assessments)
+    const assessmentResults =
+      assessmentIds.length > 0
+        ? await prisma.studentassessmentresults.findMany({
+            where: {
+              assessmentId: { in: assessmentIds },
+              student: {
+                studentsections: {
+                  some: {
+                    sectionId: { in: sectionIds },
+                  },
+                },
+              },
+              status: { in: ['evaluated', 'published'] },
+            },
+            include: {
+              student: {
+                include: {
+                  user: {
+                    select: {
+                      first_name: true,
+                      last_name: true,
+                    },
+                  },
+                },
+              },
+              assessment: {
+                select: {
+                  id: true,
+                  title: true,
+                  type: true,
+                  totalMarks: true,
+                  courseOfferingId: true,
+                },
+              },
+              itemResults: {
+                include: {
+                  assessmentItem: {
+                    select: {
+                      id: true,
+                      marks: true,
+                      cloId: true,
+                    },
+                  },
+                },
               },
             },
-          },
-        },
-        status: {
-          in: ['evaluated', 'published'],
-        },
-      },
-      include: {
-        student: {
-          include: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true,
-              },
-            },
-          },
-        },
-        assessment: {
-          select: {
-            id: true,
-            title: true,
-            type: true,
-            totalMarks: true,
-            courseOfferingId: true,
-          },
-        },
-        itemResults: {
-          include: {
-            assessmentItem: {
-              select: {
-                id: true,
-                marks: true,
-                cloId: true,
-              },
-            },
-          },
-        },
-      },
-    });
+          })
+        : [];
 
     // Get CLO attainments
     const cloAttainments = await prisma.closattainments.findMany({
