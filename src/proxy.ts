@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-import { AUTH_TOKEN_COOKIE } from '@/constants/auth';
+import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
+
+// Use same secret resolution as auth.ts so sign and verify always match
+const getJwtSecret = () =>
+  new TextEncoder().encode(
+    process.env.JWT_SECRET || 'your-strong-secret-key-for-development-12345'
+  );
 
 // Auth routes that should redirect to dashboard if user is logged in
 const authRoutes = [
@@ -44,8 +50,7 @@ function getUserDashboard(role: string): string {
 // Function to verify token and get user details
 async function verifyToken(token: string) {
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getJwtSecret());
 
     // Ensure userId is converted to string for header
     const userId = payload.userId ? String(payload.userId) : '';
@@ -57,8 +62,8 @@ async function verifyToken(token: string) {
       email: payload.email as string,
       userData: payload.userData,
     };
-  } catch (error) {
-    console.error('Token verification error:', error);
+  } catch {
+    // Invalid/expired or wrong-secret token – caller will clear cookie
     return {
       isValid: false,
       userRole: null,
@@ -94,10 +99,21 @@ function isRouteAllowedForRole(path: string, userRole: string): boolean {
   return false;
 }
 
+// Clear auth cookie (must use same path as when set, else browser keeps it)
+function clearAuthCookie(response: NextResponse) {
+  response.cookies.set(AUTH_TOKEN_COOKIE, '', {
+    path: COOKIE_OPTIONS.path,
+    maxAge: 0,
+    httpOnly: COOKIE_OPTIONS.httpOnly,
+    sameSite: COOKIE_OPTIONS.sameSite,
+    secure: COOKIE_OPTIONS.secure,
+  });
+}
+
 // Function to create redirect response with token cleanup
 function createLoginRedirect(request: NextRequest, reason: string) {
   const response = NextResponse.redirect(new URL('/login', request.url));
-  // response.cookies.delete(AUTH_TOKEN_COOKIE);
+  clearAuthCookie(response);
   return response;
 }
 
@@ -182,9 +198,9 @@ export async function proxy(request: NextRequest) {
 
         return NextResponse.redirect(new URL(dashboard, request.url));
       } else {
-        // Invalid token, clear it and allow access to auth route
+        // Invalid/expired token (e.g. wrong secret or old cookie) – clear it and show login
         const response = NextResponse.next();
-        // response.cookies.delete(AUTH_TOKEN_COOKIE);
+        clearAuthCookie(response);
         return response;
       }
     }
