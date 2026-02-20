@@ -100,8 +100,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the course belongs to the same program as the PLO
+    // Only enforce when the course has programs assigned; if none, allow any PLO
     const courseProgramIds = clo.course.programs.map((p) => p.id);
-    if (!courseProgramIds.includes(plo.program.id)) {
+    if (courseProgramIds.length > 0 && !courseProgramIds.includes(plo.program.id)) {
       return NextResponse.json(
         {
           success: false,

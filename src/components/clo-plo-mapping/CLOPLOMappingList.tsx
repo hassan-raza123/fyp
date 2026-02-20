@@ -104,22 +104,18 @@ export function CLOPLOMappingList() {
   useEffect(() => {
     if (selectedCLO) {
       const selectedCLOData = clos.find((c) => c.id === Number(selectedCLO));
-      if (selectedCLOData?.course?.programs) {
-        const courseProgramIds = selectedCLOData.course.programs.map(
-          (p) => p.id
-        );
-        const filteredPLOs = plos.filter((p) =>
-          courseProgramIds.includes(p.programId)
-        );
-        setAvailablePLOs(filteredPLOs);
-        if (
-          selectedPLO &&
-          !filteredPLOs.some((p) => p.id === Number(selectedPLO))
-        ) {
-          setSelectedPLO('');
-        }
+      const programs = selectedCLOData?.course?.programs ?? [];
+      let newAvailable: PLO[];
+      if (programs.length > 0) {
+        // Course has programs — only show PLOs from those programs
+        const courseProgramIds = programs.map((p) => p.id);
+        newAvailable = plos.filter((p) => courseProgramIds.includes(p.programId));
       } else {
-        setAvailablePLOs([]);
+        // Course has no programs linked yet — show all PLOs as fallback
+        newAvailable = plos;
+      }
+      setAvailablePLOs(newAvailable);
+      if (selectedPLO && !newAvailable.some((p) => p.id === Number(selectedPLO))) {
         setSelectedPLO('');
       }
     } else {
