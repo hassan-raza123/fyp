@@ -6,7 +6,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string; ploId: string } }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
@@ -37,7 +37,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string; ploId: string } }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
@@ -81,7 +81,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string; ploId: string } }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
