@@ -469,16 +469,16 @@ export default function ReportsPage() {
               <div className="grid gap-2">
                 <Label htmlFor="programId" className="text-xs text-primary-text">Program</Label>
                 <Select
-                  value={formData.programId}
+                  value={formData.programId || "none"}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, programId: value })
+                    setFormData({ ...formData, programId: value === "none" ? "" : value })
                   }
                 >
                   <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select program (optional)" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
-                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                    <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {programs.map((program) => (
                       <SelectItem key={program.id} value={program.id.toString()} className="text-primary-text hover:bg-card/50">
                         {program.code} - {program.name}
@@ -490,16 +490,16 @@ export default function ReportsPage() {
               <div className="grid gap-2">
                 <Label htmlFor="semesterId" className="text-xs text-primary-text">Semester</Label>
                 <Select
-                  value={formData.semesterId}
+                  value={formData.semesterId || "none"}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, semesterId: value })
+                    setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
                   <SelectTrigger className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select semester (optional)" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
-                    <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                    <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                     {semesters.map((semester) => (
                       <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                         {semester.name}
