@@ -234,12 +234,6 @@ const adminNavigation = [
         icon: Link,
         href: '/admin/llo-plo-mappings',
       },
-      {
-        id: 'plo-attainments',
-        label: 'PLO Attainments',
-        icon: TrendingUp,
-        href: '/admin/results/plo-attainments',
-      },
     ],
   },
   {
