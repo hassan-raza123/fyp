@@ -18,7 +18,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success } = requireAuth(request);
+    const { success } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -93,8 +93,8 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateLLOSchema.parse(body);
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },

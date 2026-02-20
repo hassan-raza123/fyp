@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 // Simple endpoint to get department ID by code
 export async function GET(request: NextRequest) {
   try {
-    const { success } = requireAuth(request);
+    const { success } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

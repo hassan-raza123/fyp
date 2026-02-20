@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { success } = requireAuth(req);
+    const { success } = await requireAuth(req);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -26,8 +26,8 @@ export async function GET(
       );
     }
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(req);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -81,7 +81,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { success, user } = requireAuth(req);
+    const { success, user } = await requireAuth(req);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -97,8 +97,8 @@ export async function POST(
       );
     }
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(req);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },

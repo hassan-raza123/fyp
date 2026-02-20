@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
         { error: 'Department not configured in settings' },

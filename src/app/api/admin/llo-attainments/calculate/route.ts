@@ -6,10 +6,10 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // POST - Calculate LLO attainments for a course offering or specific LLO
 export async function POST(req: NextRequest) {
   try {
-    const { success, user } = requireAuth(req);
+    const { success, user, error } = await requireAuth(req);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(req);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -112,18 +112,11 @@ export async function POST(req: NextRequest) {
     const assessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        status: {
-          in: ['active', 'evaluated', 'published'],
-        },
-        // Filter for lab assessments if needed
-        // type: 'lab',
+        status: 'active',
       },
       include: {
         assessmentItems: {
-          where: {
-            // LLOs might be mapped differently, for now we'll calculate based on all items
-            // In a full implementation, assessment items would have lloId field
-          },
+          where: {},
         },
       },
     });

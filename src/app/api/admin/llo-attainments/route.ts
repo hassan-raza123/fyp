@@ -6,10 +6,10 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/admin/llo-attainments
 export async function GET(request: NextRequest) {
   try {
-    const { success } = requireAuth(request);
+    const { success, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     const courseOfferingId = searchParams.get('courseOfferingId');
     const lloId = searchParams.get('lloId');
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
