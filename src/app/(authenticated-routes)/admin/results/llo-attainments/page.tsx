@@ -219,13 +219,21 @@ export default function LLOAttainmentsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header - CLO style */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">LLO Attainments</h1>
-          <p className="text-xs text-secondary-text mt-0.5">
-            Calculate and analyze Lab Learning Outcome achievement percentages
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Calculator className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">LLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Calculate and analyze Lab Learning Outcome achievement percentages
+            </p>
+          </div>
         </div>
         {selectedCourseOffering && (
           <button

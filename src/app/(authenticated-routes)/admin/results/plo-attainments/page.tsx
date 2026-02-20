@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { GraduationCap } from 'lucide-react';
 import { PLOAttainments } from '@/components/assessments/PLOAttainments';
 import { useTheme } from 'next-themes';
 import {
@@ -28,6 +29,9 @@ const PLOAttainmentsPage = () => {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
 
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -99,12 +103,20 @@ const PLOAttainmentsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-lg font-bold text-primary-text">PLO Attainments</h1>
-        <p className="text-xs text-secondary-text mt-0.5">
-          Track and analyze Program Learning Outcome achievements
-        </p>
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">PLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Track and analyze Program Learning Outcome achievements
+          </p>
+        </div>
       </div>
 
       {/* Filters */}

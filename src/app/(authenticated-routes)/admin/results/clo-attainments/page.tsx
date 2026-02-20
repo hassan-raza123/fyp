@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Target } from 'lucide-react';
 import { CLOAttainments } from '@/components/assessments/CLOAttainments';
 import { useTheme } from 'next-themes';
 import {
@@ -32,6 +33,9 @@ const CLOAttainmentsPage = () => {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
 
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -89,12 +93,20 @@ const CLOAttainmentsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-lg font-bold text-primary-text">CLO Attainments</h1>
-        <p className="text-xs text-secondary-text mt-0.5">
-          Calculate and analyze Course Learning Outcome achievement percentages
-        </p>
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Target className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">CLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Calculate and analyze Course Learning Outcome achievement percentages
+          </p>
+        </div>
       </div>
 
       {/* Filter */}
