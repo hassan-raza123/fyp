@@ -593,16 +593,16 @@ function PLOsPageContent() {
             <div className='grid gap-2'>
               <Label htmlFor='bloomLevel' className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
-                value={formData.bloomLevel}
+                value={formData.bloomLevel || 'none'}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
+                  setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                  <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
                     <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
@@ -699,16 +699,16 @@ function PLOsPageContent() {
             <div className='grid gap-2'>
               <Label htmlFor='edit-bloomLevel' className="text-xs text-primary-text">Bloom's Taxonomy Level</Label>
               <Select
-                value={formData.bloomLevel}
+                value={formData.bloomLevel || 'none'}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
+                  setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
                 <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="" className="text-primary-text hover:bg-card/50">None</SelectItem>
+                  <SelectItem value="none" className="text-primary-text hover:bg-card/50">None</SelectItem>
                   {bloomLevels.map((level) => (
                     <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
