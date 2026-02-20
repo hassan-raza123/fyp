@@ -58,8 +58,9 @@ export default function AdminLLOsPage() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.15)' 
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
   
   const router = useRouter();
@@ -486,10 +487,10 @@ export default function AdminLLOsPage() {
 
       {/* View LLO Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>LLO Details</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">LLO Details</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               View Lab Learning Outcome information
             </DialogDescription>
           </DialogHeader>
@@ -523,13 +524,19 @@ export default function AdminLLOsPage() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsViewDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -540,10 +547,10 @@ export default function AdminLLOsPage() {
 
       {/* Create LLO Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Create LLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create LLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Add a new Lab Learning Outcome
             </DialogDescription>
           </DialogHeader>
@@ -641,6 +648,12 @@ export default function AdminLLOsPage() {
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               Cancel
             </button>
@@ -652,10 +665,10 @@ export default function AdminLLOsPage() {
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = primaryColorDark;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Create LLO
@@ -666,10 +679,10 @@ export default function AdminLLOsPage() {
 
       {/* Edit LLO Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto p-5">
           <DialogHeader>
-            <DialogTitle>Edit LLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit LLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Update Lab Learning Outcome details
             </DialogDescription>
           </DialogHeader>
@@ -747,6 +760,12 @@ export default function AdminLLOsPage() {
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               Cancel
             </button>
@@ -758,10 +777,10 @@ export default function AdminLLOsPage() {
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = primaryColorDark;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Update LLO
@@ -772,21 +791,27 @@ export default function AdminLLOsPage() {
 
       {/* Delete LLO Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Delete LLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete LLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Are you sure you want to delete this LLO? This action cannot be
               undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
                 color: isDarkMode ? '#ffffff' : '#111827',
                 borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
@@ -795,14 +820,14 @@ export default function AdminLLOsPage() {
               onClick={handleDeleteLLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
               style={{
-                backgroundColor: 'var(--error)',
+                backgroundColor: '#dc2626',
                 color: '#ffffff',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.backgroundColor = '#b91c1c';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.backgroundColor = '#dc2626';
               }}
             >
               Delete
