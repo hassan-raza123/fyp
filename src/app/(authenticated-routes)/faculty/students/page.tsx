@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,9 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Trash2, Download, Upload, Send, FileSpreadsheet } from 'lucide-react';
+import { Search, Eye, Trash2, Download, Upload, Send, FileSpreadsheet, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -52,7 +52,14 @@ interface Student {
 }
 
 export default function StudentsPage() {
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,37 +179,55 @@ export default function StudentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-[var(--success-green)] text-white';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)] text-white';
     }
   };
 
+  if (loading && students.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading students...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex items-center justify-between mb-6'>
+    <div className="space-y-4">
+      {/* Header - same as My Courses / My Sections */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className='text-3xl font-bold'>Students</h1>
-          <p className='text-muted-foreground'>
-            Manage student accounts and information
+          <h1 className="text-lg font-bold text-primary-text">My Students</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            View and manage your students
           </p>
         </div>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
+        <div className="flex flex-wrap gap-2">
+          <button
             onClick={() => {
-              // Export student data to CSV
               const csv = [
                 ['Roll Number', 'Name', 'Email', 'Batch', 'Enrolled Sections', 'Status'],
-                ...students.map((student) => [
-                  student.rollNumber,
-                  `${student.user.firstName} ${student.user.lastName}`,
-                  student.user.email,
-                  student.batch?.name || 'N/A',
-                  student.currentStudents.toString(),
-                  student.status,
+                ...students.map((s) => [
+                  s.rollNumber,
+                  `${s.user.firstName} ${s.user.lastName}`,
+                  s.user.email,
+                  s.batch?.name || 'N/A',
+                  s.currentStudents.toString(),
+                  s.status,
                 ]),
               ]
                 .map((row) => row.map((cell) => `"${cell}"`).join(','))
@@ -215,19 +240,33 @@ export default function StudentsPage() {
               a.click();
               toast.success('Student data exported successfully');
             }}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <Download className='w-4 h-4 mr-2' />
+            <Download className="w-3.5 h-3.5" />
             Export
-          </Button>
-          <Button
-            variant='outline'
+          </button>
+          <button
             onClick={() => setShowBulkGradeDialog(true)}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <Upload className='w-4 h-4 mr-2' />
+            <Upload className="w-3.5 h-3.5" />
             Bulk Grade Entry
-          </Button>
-          <Button
-            variant='outline'
+          </button>
+          <button
             onClick={() => {
               if (selectedStudentsForNotification.length === 0) {
                 toast.error('Please select students first');
@@ -236,73 +275,95 @@ export default function StudentsPage() {
               setShowNotificationDialog(true);
             }}
             disabled={selectedStudentsForNotification.length === 0}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5 disabled:opacity-50"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              if (selectedStudentsForNotification.length > 0) {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <Send className='w-4 h-4 mr-2' />
+            <Send className="w-3.5 h-3.5" />
             Send Notification ({selectedStudentsForNotification.length})
-          </Button>
+          </button>
         </div>
       </div>
 
-      <div className='flex items-center gap-4 mb-6'>
-        <form
-          onSubmit={handleSearch}
-          className='flex-1 flex items-center gap-4'
-        >
-          <div className='relative flex-1'>
-            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+      {/* Filters - inline row like My Courses */}
+      <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <div className="relative">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
-              placeholder='Search students...'
+              placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className='pl-8'
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
             />
           </div>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className='w-[180px]'>
-              <SelectValue placeholder='Filter by status' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Status</SelectItem>
-              <SelectItem value='active'>Active</SelectItem>
-              <SelectItem value='inactive'>Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={batchFilter}
-            onValueChange={(value) => {
-              setBatchFilter(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className='w-[180px]'>
-              <SelectValue placeholder='Filter by batch' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Batches</SelectItem>
-              {batches.map((batch) => (
-                <SelectItem key={batch.id} value={batch.id}>
-                  {batch.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button type='submit'>Search</Button>
-        </form>
-      </div>
+        </div>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+            <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={batchFilter}
+          onValueChange={(value) => {
+            setBatchFilter(value);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Filter by batch" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Batches</SelectItem>
+            {batches.map((batch) => (
+              <SelectItem key={batch.id} value={batch.id} className="text-primary-text hover:bg-card/50">
+                {batch.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <button
+          type="submit"
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          Search
+        </button>
+      </form>
 
-          <div className='rounded-md border'>
+      {/* Table - same wrapper as My Courses / admin CLO */}
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[50px]'>
+              <TableHead className="w-[40px]">
                 <input
-                  type='checkbox'
+                  type="checkbox"
+                  className="rounded border-card-border"
                   onChange={(e) => {
                     if (e.target.checked) {
                       setSelectedStudentsForNotification(students.map((s) => s.id));
@@ -316,34 +377,42 @@ export default function StudentsPage() {
                   }
                 />
               </TableHead>
-              <TableHead>Roll Number</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Batch</TableHead>
-              <TableHead>Enrolled Sections</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className='text-right'>Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Email</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Batch</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Sections</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className='text-center'>
-                  Loading...
+                <TableCell colSpan={8} className="text-center py-8">
+                  <p className="text-xs text-secondary-text">Loading...</p>
                 </TableCell>
               </TableRow>
             ) : students.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className='text-center'>
-                  No students found
+                <TableCell colSpan={8} className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-2">
+                    <GraduationCap className="w-8 h-8 text-muted-text" />
+                    <p className="text-xs text-secondary-text">No students found</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
+                <TableRow
+                  key={student.id}
+                  className="hover:bg-[var(--hover-bg)] transition-colors cursor-pointer"
+                  onClick={() => handleEdit(student)}
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <input
-                      type='checkbox'
+                      type="checkbox"
+                      className="rounded border-card-border"
                       checked={selectedStudentsForNotification.includes(student.id)}
                       onChange={(e) => {
                         if (e.target.checked) {
@@ -353,49 +422,54 @@ export default function StudentsPage() {
                           ]);
                         } else {
                           setSelectedStudentsForNotification(
-                            selectedStudentsForNotification.filter(
-                              (id) => id !== student.id
-                            )
+                            selectedStudentsForNotification.filter((id) => id !== student.id)
                           );
                         }
                       }}
                     />
                   </TableCell>
-                  <TableCell>{student.rollNumber}</TableCell>
-                  <TableCell>
-                    {student.user.firstName} {student.user.lastName}
+                  <TableCell className="text-xs font-medium text-primary-text">{student.rollNumber}</TableCell>
+                  <TableCell className="text-xs text-primary-text">
+                    <div className="font-medium">
+                      {student.user.firstName} {student.user.lastName}
+                    </div>
                   </TableCell>
-                  <TableCell>{student.user.email}</TableCell>
-                  <TableCell>{student.batch?.name || 'No Batch'}</TableCell>
-                  <TableCell>{student.currentStudents}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{student.user.email}</TableCell>
+                  <TableCell className="text-xs text-secondary-text">{student.batch?.name || 'No Batch'}</TableCell>
+                  <TableCell className="text-xs text-primary-text">{student.currentStudents}</TableCell>
                   <TableCell>
                     <Badge
-                      className={getStatusColor(student.status)}
-                      variant='secondary'
+                      className={`${getStatusColor(student.status)} text-[10px] px-1.5 py-0.5`}
+                      variant="secondary"
                     >
-                      {student.status.charAt(0).toUpperCase() +
-                        student.status.slice(1)}
+                      {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-right'>
-                    <div className='flex justify-end gap-2'>
-                      <Button
-                        variant='ghost'
-                        size='icon'
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-1.5">
+                      <button
                         onClick={() => handleEdit(student)}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
                       >
-                        <Eye className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='icon'
+                        <Eye className="h-3.5 w-3.5" />
+                        View
+                      </button>
+                      <button
                         onClick={() => {
                           setSelectedStudent(student);
                           setShowDeleteDialog(true);
                         }}
+                        className="p-1.5 rounded-md transition-colors hover:bg-[var(--error)]/10 text-[var(--error)]"
                       >
-                        <Trash2 className='h-4 w-4' />
-                      </Button>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -406,26 +480,30 @@ export default function StudentsPage() {
       </div>
 
       {totalPages > 1 && (
-        <div className='flex items-center justify-end gap-2 mt-4'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <span className='text-sm text-muted-foreground'>
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            Next
-          </Button>
+        <div className="flex justify-center">
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 border-card-border"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-xs text-secondary-text">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 border-card-border"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
 
