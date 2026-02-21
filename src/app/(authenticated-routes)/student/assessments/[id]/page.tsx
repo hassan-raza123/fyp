@@ -256,7 +256,14 @@ export default function AssessmentDetailsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/student/assessments')}
-            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

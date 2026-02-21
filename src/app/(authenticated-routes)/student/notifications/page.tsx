@@ -289,14 +289,14 @@ export default function StudentNotificationsPage() {
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="assessment">Assessment</SelectItem>
-                  <SelectItem value="grade">Grade</SelectItem>
-                  <SelectItem value="result">Result</SelectItem>
-                  <SelectItem value="course">Course</SelectItem>
-                  <SelectItem value="announcement">Announcement</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                  <SelectItem value="alert">Alert</SelectItem>
+                  <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+                  <SelectItem value="assessment" className="text-primary-text hover:bg-card/50">Assessment</SelectItem>
+                  <SelectItem value="grade" className="text-primary-text hover:bg-card/50">Grade</SelectItem>
+                  <SelectItem value="result" className="text-primary-text hover:bg-card/50">Result</SelectItem>
+                  <SelectItem value="course" className="text-primary-text hover:bg-card/50">Course</SelectItem>
+                  <SelectItem value="announcement" className="text-primary-text hover:bg-card/50">Announcement</SelectItem>
+                  <SelectItem value="system" className="text-primary-text hover:bg-card/50">System</SelectItem>
+                  <SelectItem value="alert" className="text-primary-text hover:bg-card/50">Alert</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -307,9 +307,9 @@ export default function StudentNotificationsPage() {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="unread">Unread</SelectItem>
-                  <SelectItem value="read">Read</SelectItem>
+                  <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+                  <SelectItem value="unread" className="text-primary-text hover:bg-card/50">Unread</SelectItem>
+                  <SelectItem value="read" className="text-primary-text hover:bg-card/50">Read</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -371,8 +371,14 @@ export default function StudentNotificationsPage() {
                       <button
                         type="button"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="ml-4 px-2 py-1 rounded text-xs font-medium hover:bg-hover-bg text-primary-text"
-                        style={{ color: primaryColor }}
+                        className="ml-4 px-2 py-1 rounded transition-colors text-xs font-medium h-7"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
                       >
                         <Check className="w-3.5 h-3.5 inline mr-1" />
                         Mark as Read

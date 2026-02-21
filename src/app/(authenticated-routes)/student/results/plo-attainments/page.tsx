@@ -193,6 +193,8 @@ const PLOAttainmentsPage = () => {
     );
   };
 
+  if (!mounted) return null;
+
   const getComparisonIcon = (
     studentPercent: number,
     classPercent: number
@@ -256,10 +258,19 @@ const PLOAttainmentsPage = () => {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style with icon */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">My PLO Attainments</h1>
-          <p className="text-xs text-secondary-text mt-0.5">View Program Learning Outcomes achievement</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">My PLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">View Program Learning Outcomes achievement</p>
+          </div>
         </div>
         {data && data.ploAttainments.length > 0 && (
           <button
@@ -327,8 +338,21 @@ const PLOAttainmentsPage = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className='text-center py-4'>Loading PLO attainments...</div>
+      {loading && !data ? (
+        <div className="flex items-center justify-center min-h-[280px] bg-card border border-card-border rounded-lg">
+          <div className="flex flex-col items-center space-y-3">
+            <div
+              className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+              style={{
+                borderTopColor: primaryColor,
+                borderBottomColor: primaryColor,
+                borderRightColor: 'transparent',
+                borderLeftColor: 'transparent',
+              }}
+            />
+            <p className="text-xs text-secondary-text">Loading PLO attainments...</p>
+          </div>
+        </div>
       ) : data && data.ploAttainments.length > 0 ? (
         <div className="space-y-6">
           {/* Program Info */}

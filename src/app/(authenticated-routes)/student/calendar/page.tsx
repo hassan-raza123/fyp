@@ -453,7 +453,14 @@ const CalendarPage = () => {
                 <button
                   type="button"
                   onClick={() => navigateMonth('prev')}
-                  className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+                  className="p-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = iconBgColor;
+                  }}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -467,7 +474,14 @@ const CalendarPage = () => {
                 <button
                   type="button"
                   onClick={() => navigateMonth('next')}
-                  className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+                  className="p-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = iconBgColor;
+                  }}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

@@ -188,7 +188,14 @@ export default function CourseDetailsPage() {
         <p className="text-xs text-[var(--error)]">{error}</p>
         <button
           onClick={() => router.push('/student/courses')}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Courses
@@ -204,7 +211,14 @@ export default function CourseDetailsPage() {
         <p className="text-xs text-secondary-text">Course not found</p>
         <button
           onClick={() => router.push('/student/courses')}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Courses
@@ -220,7 +234,14 @@ export default function CourseDetailsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/student/courses')}
-            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
