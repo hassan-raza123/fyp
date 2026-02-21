@@ -387,62 +387,35 @@ const CLOAttainmentsPage = () => {
           {selectedCourseData && (
             <div className="space-y-4">
               {/* Overall Statistics */}
-              <div className="grid grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Total CLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.totalCLOs}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Attained CLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">
-                      {selectedCourseData.attainedCLOs}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Average Attainment</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.averageAttainment.toFixed(1)}%
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Attainment Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.totalCLOs > 0
-                        ? (
-                            (selectedCourseData.attainedCLOs /
-                              selectedCourseData.totalCLOs) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Total CLOs</p>
+                  <div className="text-lg font-bold text-primary-text">{selectedCourseData.totalCLOs}</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Attained CLOs</p>
+                  <div className="text-lg font-bold text-[var(--success-green)]">{selectedCourseData.attainedCLOs}</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Average Attainment</p>
+                  <div className="text-lg font-bold text-primary-text">{selectedCourseData.averageAttainment.toFixed(1)}%</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Attainment Rate</p>
+                  <div className="text-lg font-bold text-primary-text">
+                    {selectedCourseData.totalCLOs > 0
+                      ? ((selectedCourseData.attainedCLOs / selectedCourseData.totalCLOs) * 100).toFixed(1)
+                      : 0}%
+                  </div>
+                </div>
               </div>
 
               {/* CLO Attainment Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>CLO Attainment Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">CLO Attainment Overview</h3>
+                </div>
+                <div className="p-4">
                   {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={chartData}>
@@ -457,22 +430,20 @@ const CLOAttainmentsPage = () => {
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">
+                    <p className="text-secondary-text text-center py-8 text-xs">
                       No CLO attainment data available
                     </p>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* CLOs List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>CLOs List</CardTitle>
-                  <CardDescription>
-                    Click on a CLO to view detailed information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">CLOs List</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">Click on a CLO to view detailed information</p>
+                </div>
+                <div className="p-4">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -534,17 +505,15 @@ const CLOAttainmentsPage = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
 
           {!selectedCourse && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a course to view CLO attainments
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+              Select a course to view CLO attainments
+            </div>
           )}
         </TabsContent>
 

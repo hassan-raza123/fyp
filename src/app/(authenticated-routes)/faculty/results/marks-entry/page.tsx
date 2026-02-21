@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -679,99 +677,82 @@ const MarksEntryPage = () => {
 
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
-        <Card className="border-red-500">
-          <CardHeader>
-            <CardTitle className="text-red-600 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              Validation Errors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm">
-              {validationErrors.map((error, index) => (
-                <li key={index} className="text-red-600">
-                  {error}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-[var(--error)]/40 bg-[var(--error-opacity-05)] p-4">
+          <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2 mb-2">
+            <AlertCircle className="w-4 h-4 text-[var(--error)]" />
+            Validation Errors
+          </h3>
+          <ul className="list-disc list-inside space-y-1 text-xs text-primary-text">
+            {validationErrors.map((error, index) => (
+              <li key={index} className="text-[var(--error)]">{error}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Warnings */}
       {warnings.length > 0 && (
-        <Card className="border-yellow-500">
-          <CardHeader>
-            <CardTitle className="text-yellow-600 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              Warnings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm">
-              {warnings.map((warning, index) => (
-                <li key={index} className="text-yellow-600">
-                  {warning}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-[var(--warning)]/50 p-4" style={{ backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.08)' : 'rgba(252, 153, 40, 0.08)' }}>
+          <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2 mb-2">
+            <AlertCircle className="w-4 h-4" style={{ color: primaryColor }} />
+            Warnings
+          </h3>
+          <ul className="list-disc list-inside space-y-1 text-xs text-primary-text">
+            {warnings.map((warning, index) => (
+              <li key={index}>{warning}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Locked Status */}
       {isLocked && (
-        <Card className="border-blue-500 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-600 flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              Marks Locked
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-blue-600">
-              These marks have been published and are locked. You can still save
-              as draft, but final submission will update existing published
-              marks.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderLeftWidth: '4px', borderLeftColor: primaryColor }}>
+          <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2 mb-2">
+            <Lock className="w-4 h-4" style={{ color: primaryColor }} />
+            Marks Locked
+          </h3>
+          <p className="text-xs text-secondary-text">
+            These marks have been published and are locked. You can still save as draft, but final submission will update existing published marks.
+          </p>
+        </div>
       )}
 
       {/* Marks Entry Table */}
       {loading ? (
-        <div className="text-center py-8">Loading marks data...</div>
+        <div className="text-center py-8 text-xs text-secondary-text">Loading marks data...</div>
       ) : marksData ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-sm font-semibold text-primary-text">
                 {marksData.assessment.title}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Total Marks: {marksData.assessment.totalMarks} | Students:{' '}
-                {marksData.students.length}
+              <p className="text-xs text-secondary-text mt-0.5">
+                Total Marks: {marksData.assessment.totalMarks} | Students: {marksData.students.length}
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
                 onClick={exportTemplate}
                 disabled={!marksData}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50 inline-flex items-center gap-1.5"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-3.5 h-3.5" />
                 Download Template
-              </Button>
-              <Button
-                variant="outline"
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowBulkUpload(true)}
                 disabled={!marksData}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50 inline-flex items-center gap-1.5"
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-3.5 h-3.5" />
                 Bulk Upload
-              </Button>
-              <Button
-                variant="outline"
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const validation = validateMarks();
                   setValidationErrors(validation.errors);
@@ -779,55 +760,55 @@ const MarksEntryPage = () => {
                   setShowReview(true);
                 }}
                 disabled={!marksData}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50 inline-flex items-center gap-1.5"
               >
-                <Eye className="w-4 h-4 mr-2" />
+                <Eye className="w-3.5 h-3.5" />
                 Review
-              </Button>
-              <Button
-                variant="outline"
+              </button>
+              <button
+                type="button"
                 onClick={() => saveMarks(true)}
                 disabled={saving || !marksData || isLocked}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50 inline-flex items-center gap-1.5"
               >
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-3.5 h-3.5" />
                 Save Draft
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
                 onClick={() => saveMarks(false)}
                 disabled={saving || !marksData || isLocked}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 disabled:opacity-50"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
+                <CheckCircle className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Submit Marks'}
-              </Button>
+              </button>
             </div>
           </div>
 
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="sticky left-0 bg-background z-10">
-                        Roll No
-                      </TableHead>
-                      <TableHead className="sticky left-12 bg-background z-10">
-                        Name
-                      </TableHead>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="sticky left-0 bg-card z-10 text-xs font-semibold text-primary-text">
+                      Roll No
+                    </TableHead>
+                    <TableHead className="sticky left-12 bg-card z-10 text-xs font-semibold text-primary-text">
+                      Name
+                    </TableHead>
                       {marksData.assessment.items.map((item) => (
-                        <TableHead key={item.id} className="min-w-[120px]">
+                        <TableHead key={item.id} className="min-w-[120px] text-xs font-semibold text-primary-text">
                           <div className="text-center">
-                            <div className="font-semibold">
-                              {item.questionNo}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Max: {item.marks}
-                            </div>
+                            <div className="font-semibold">{item.questionNo}</div>
+                            <div className="text-xs text-secondary-text">Max: {item.marks}</div>
                           </div>
                         </TableHead>
                       ))}
-                      <TableHead className="text-center">Total</TableHead>
-                      <TableHead className="text-center">%</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Total</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">%</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -845,20 +826,20 @@ const MarksEntryPage = () => {
                         totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
 
                       return (
-                        <TableRow key={student.studentId}>
-                          <TableCell className="sticky left-0 bg-background font-medium">
+                        <TableRow key={student.studentId} className="hover:bg-[var(--hover-bg)]">
+                          <TableCell className="sticky left-0 bg-card font-medium text-xs text-primary-text">
                             {student.rollNumber}
                           </TableCell>
-                          <TableCell className="sticky left-12 bg-background">
+                          <TableCell className="sticky left-12 bg-card text-xs text-primary-text">
                             {student.name}
                           </TableCell>
                           {marksData.assessment.items.map((item) => (
-                            <TableCell key={item.id}>
+                            <TableCell key={item.id} className="text-xs text-primary-text">
                               <Input
                                 type="number"
-                                min="0"
+                                min={0}
                                 max={item.marks}
-                                step="0.5"
+                                step={0.5}
                                 value={studentMarks[item.id] || ''}
                                 onChange={(e) =>
                                   handleMarkChange(
@@ -867,18 +848,18 @@ const MarksEntryPage = () => {
                                     e.target.value
                                   )
                                 }
-                                className="w-20 text-center"
+                                className="w-20 text-center h-8 text-xs bg-card border-card-border text-primary-text"
                                 disabled={isLocked && student.status === 'published'}
                               />
                             </TableCell>
                           ))}
-                          <TableCell className="text-center font-medium">
+                          <TableCell className="text-center font-medium text-xs text-primary-text">
                             {obtainedMarks.toFixed(1)} / {totalMarks}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center text-xs text-primary-text">
                             {percentage.toFixed(1)}%
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center text-xs text-primary-text">
                             <Badge
                               variant={
                                 student.status === 'published'
@@ -897,142 +878,97 @@ const MarksEntryPage = () => {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Select a section and assessment to enter marks
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+          Select a section and assessment to enter marks
+        </div>
       )}
 
       {/* Review Dialog */}
       <Dialog open={showReview} onOpenChange={setShowReview}>
-        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Marks Review & Statistics</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Marks Review & Statistics</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Review marks, statistics, and outliers before final submission
             </DialogDescription>
           </DialogHeader>
           {statistics && (
             <Tabs defaultValue="statistics" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="statistics">Statistics</TabsTrigger>
-                <TabsTrigger value="preview">Preview</TabsTrigger>
-                <TabsTrigger value="outliers">Outliers</TabsTrigger>
-                <TabsTrigger value="comparison">Comparison</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 bg-card border border-card-border p-1 rounded-lg">
+                <TabsTrigger value="statistics" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text">Statistics</TabsTrigger>
+                <TabsTrigger value="preview" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text">Preview</TabsTrigger>
+                <TabsTrigger value="outliers" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text">Outliers</TabsTrigger>
+                <TabsTrigger value="comparison" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text">Comparison</TabsTrigger>
               </TabsList>
 
               <TabsContent value="statistics" className="space-y-4">
-                <div className="grid grid-cols-4 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Total Students</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {statistics.totalStudents}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Average Marks</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {statistics.averageMarks.toFixed(1)} /{' '}
-                        {marksData?.assessment.totalMarks}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Average %</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {statistics.averagePercentage.toFixed(1)}%
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Range</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {statistics.lowestMarks.toFixed(1)} -{' '}
-                        {statistics.highestMarks.toFixed(1)}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="rounded-lg border border-card-border bg-card p-4">
+                    <p className="text-xs font-medium text-secondary-text mb-1">Total Students</p>
+                    <div className="text-lg font-bold text-primary-text">{statistics.totalStudents}</div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card p-4">
+                    <p className="text-xs font-medium text-secondary-text mb-1">Average Marks</p>
+                    <div className="text-lg font-bold text-primary-text">
+                      {statistics.averageMarks.toFixed(1)} / {marksData?.assessment.totalMarks}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card p-4">
+                    <p className="text-xs font-medium text-secondary-text mb-1">Average %</p>
+                    <div className="text-lg font-bold text-primary-text">{statistics.averagePercentage.toFixed(1)}%</div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card p-4">
+                    <p className="text-xs font-medium text-secondary-text mb-1">Range</p>
+                    <div className="text-lg font-bold text-primary-text">
+                      {statistics.lowestMarks.toFixed(1)} - {statistics.highestMarks.toFixed(1)}
+                    </div>
+                  </div>
                 </div>
 
                 {validationErrors.length > 0 && (
-                  <Card className="border-red-500">
-                    <CardHeader>
-                      <CardTitle className="text-red-600 text-sm">
-                        Validation Errors ({validationErrors.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="list-disc list-inside space-y-1 text-xs">
-                        {validationErrors.slice(0, 5).map((error, index) => (
-                          <li key={index} className="text-red-600">
-                            {error}
-                          </li>
-                        ))}
-                        {validationErrors.length > 5 && (
-                          <li className="text-red-600">
-                            ...and {validationErrors.length - 5} more errors
-                          </li>
-                        )}
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  <div className="rounded-lg border border-[var(--error)]/40 bg-[var(--error-opacity-05)] p-4">
+                    <h3 className="text-sm font-semibold text-primary-text mb-2">Validation Errors ({validationErrors.length})</h3>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-[var(--error)]">
+                      {validationErrors.slice(0, 5).map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                      {validationErrors.length > 5 && (
+                        <li>...and {validationErrors.length - 5} more errors</li>
+                      )}
+                    </ul>
+                  </div>
                 )}
 
                 {warnings.length > 0 && (
-                  <Card className="border-yellow-500">
-                    <CardHeader>
-                      <CardTitle className="text-yellow-600 text-sm">
-                        Warnings ({warnings.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="list-disc list-inside space-y-1 text-xs">
-                        {warnings.slice(0, 5).map((warning, index) => (
-                          <li key={index} className="text-yellow-600">
-                            {warning}
-                          </li>
-                        ))}
-                        {warnings.length > 5 && (
-                          <li className="text-yellow-600">
-                            ...and {warnings.length - 5} more warnings
-                          </li>
-                        )}
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderLeftWidth: '4px', borderLeftColor: primaryColor }}>
+                    <h3 className="text-sm font-semibold text-primary-text mb-2">Warnings ({warnings.length})</h3>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-secondary-text">
+                      {warnings.slice(0, 5).map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                      {warnings.length > 5 && (
+                        <li>...and {warnings.length - 5} more warnings</li>
+                      )}
+                    </ul>
+                  </div>
                 )}
               </TabsContent>
 
               <TabsContent value="preview" className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Student Results Preview</h3>
-                  <div className="max-h-96 overflow-y-auto">
+                  <h3 className="text-sm font-semibold text-primary-text mb-2">Student Results Preview</h3>
+                  <div className="max-h-96 overflow-y-auto rounded-lg border border-card-border bg-card">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Roll No</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Marks</TableHead>
-                          <TableHead>Percentage</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1041,14 +977,14 @@ const MarksEntryPage = () => {
                             (s) => s.studentId === result.studentId
                           );
                           return (
-                            <TableRow key={result.studentId}>
-                              <TableCell>{result.rollNumber}</TableCell>
-                              <TableCell>{result.name}</TableCell>
-                              <TableCell>
+                            <TableRow key={result.studentId} className="hover:bg-[var(--hover-bg)]">
+                              <TableCell className="text-xs text-primary-text">{result.rollNumber}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{result.name}</TableCell>
+                              <TableCell className="text-xs text-primary-text">
                                 {result.obtainedMarks.toFixed(1)} / {result.totalMarks}
                               </TableCell>
-                              <TableCell>{result.percentage.toFixed(1)}%</TableCell>
-                              <TableCell>
+                              <TableCell className="text-xs text-primary-text">{result.percentage.toFixed(1)}%</TableCell>
+                              <TableCell className="text-xs text-primary-text">
                                 <Badge
                                   variant={
                                     student?.status === 'published'
@@ -1057,6 +993,7 @@ const MarksEntryPage = () => {
                                       ? 'secondary'
                                       : 'outline'
                                   }
+                                  className="text-[10px]"
                                 >
                                   {student?.status || 'Pending'}
                                 </Badge>
@@ -1072,26 +1009,24 @@ const MarksEntryPage = () => {
 
               <TabsContent value="outliers" className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">
+                  <h3 className="text-sm font-semibold text-primary-text mb-2">
                     Outlier Detection ({detectedOutliers.length})
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Students with marks significantly different from the average (2+
-                    standard deviations)
+                  <p className="text-xs text-secondary-text mb-4">
+                    Students with marks significantly different from the average (2+ standard deviations)
                   </p>
                   {detectedOutliers.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      No outliers detected
-                    </p>
+                    <p className="text-xs text-secondary-text text-center py-8">No outliers detected</p>
                   ) : (
+                    <div className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Roll No</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Marks</TableHead>
-                          <TableHead>Percentage</TableHead>
-                          <TableHead>Deviation</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Deviation</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1099,19 +1034,16 @@ const MarksEntryPage = () => {
                           const deviation =
                             outlier.obtainedMarks - statistics.averageMarks;
                           return (
-                            <TableRow key={outlier.studentId}>
-                              <TableCell>{outlier.rollNumber}</TableCell>
-                              <TableCell>{outlier.name}</TableCell>
-                              <TableCell>
+                            <TableRow key={outlier.studentId} className="hover:bg-[var(--hover-bg)]">
+                              <TableCell className="text-xs text-primary-text">{outlier.rollNumber}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{outlier.name}</TableCell>
+                              <TableCell className="text-xs text-primary-text">
                                 {outlier.obtainedMarks.toFixed(1)} / {outlier.totalMarks}
                               </TableCell>
-                              <TableCell>{outlier.percentage.toFixed(1)}%</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={deviation > 0 ? 'default' : 'destructive'}
-                                >
-                                  {deviation > 0 ? '+' : ''}
-                                  {deviation.toFixed(1)} from average
+                              <TableCell className="text-xs text-primary-text">{outlier.percentage.toFixed(1)}%</TableCell>
+                              <TableCell className="text-xs text-primary-text">
+                                <Badge variant={deviation > 0 ? 'default' : 'destructive'} className="text-[10px]">
+                                  {deviation > 0 ? '+' : ''}{deviation.toFixed(1)} from average
                                 </Badge>
                               </TableCell>
                             </TableRow>
@@ -1119,103 +1051,83 @@ const MarksEntryPage = () => {
                         })}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </div>
               </TabsContent>
 
               <TabsContent value="comparison" className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Comparison with Previous Assessments</h3>
+                  <h3 className="text-sm font-semibold text-primary-text mb-2">Comparison with Previous Assessments</h3>
                   {previousAssessmentData ? (
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-4">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Previous Average</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {previousAssessmentData.averageMarks?.toFixed(1) || 'N/A'}
-                            </div>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Current Average</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {statistics.averageMarks.toFixed(1)}
-                            </div>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Difference</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {previousAssessmentData.averageMarks
-                                ? (
-                                    statistics.averageMarks -
-                                    previousAssessmentData.averageMarks
-                                  ).toFixed(1)
-                                : 'N/A'}
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <div className="rounded-lg border border-card-border bg-card p-4">
+                          <p className="text-xs font-medium text-secondary-text mb-1">Previous Average</p>
+                          <div className="text-lg font-bold text-primary-text">{previousAssessmentData.averageMarks?.toFixed(1) || 'N/A'}</div>
+                        </div>
+                        <div className="rounded-lg border border-card-border bg-card p-4">
+                          <p className="text-xs font-medium text-secondary-text mb-1">Current Average</p>
+                          <div className="text-lg font-bold text-primary-text">{statistics.averageMarks.toFixed(1)}</div>
+                        </div>
+                        <div className="rounded-lg border border-card-border bg-card p-4">
+                          <p className="text-xs font-medium text-secondary-text mb-1">Difference</p>
+                          <div className="text-lg font-bold text-primary-text">
+                            {previousAssessmentData.averageMarks
+                              ? (statistics.averageMarks - previousAssessmentData.averageMarks).toFixed(1)
+                              : 'N/A'}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {previousAssessmentData.assessmentTitle || 'Previous assessment data'}
-                      </p>
+                      <p className="text-xs text-secondary-text">{previousAssessmentData.assessmentTitle || 'Previous assessment data'}</p>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      No previous assessment data available for comparison
-                    </p>
+                    <p className="text-xs text-secondary-text text-center py-8">No previous assessment data available for comparison</p>
                   )}
                 </div>
               </TabsContent>
             </Tabs>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowReview(false)}>
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowReview(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+            >
               Close
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowReview(false);
-                saveMarks(true);
-              }}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowReview(false); saveMarks(true); }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Save Draft
-            </Button>
-            <Button
-              onClick={() => {
-                setShowReview(false);
-                saveMarks(false);
-              }}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowReview(false); saveMarks(false); }}
               disabled={validationErrors.length > 0}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
             >
               Submit Marks
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Bulk Upload Dialog */}
       <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Bulk Upload Marks</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Bulk Upload Marks</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Upload a CSV file with marks. Download template for format.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>CSV File</Label>
+              <Label className="text-xs text-secondary-text">CSV File</Label>
               <Input
                 type="file"
                 accept=".csv"
@@ -1223,20 +1135,30 @@ const MarksEntryPage = () => {
                   const file = e.target.files?.[0];
                   if (file) setBulkFile(file);
                 }}
-                className="mt-2"
+                className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text"
               />
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-secondary-text mt-2">
                 Format: rollNumber, itemId1, marks1, itemId2, marks2, ...
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowBulkUpload(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+            >
               Cancel
-            </Button>
-            <Button onClick={handleBulkUpload} disabled={!bulkFile}>
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkUpload}
+              disabled={!bulkFile}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+            >
               Upload
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
