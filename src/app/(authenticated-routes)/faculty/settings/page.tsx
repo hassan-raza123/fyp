@@ -259,17 +259,17 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-card border border-card-border p-1 rounded-lg grid w-full grid-cols-3">
-          <TabsTrigger value="profile" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">
-            <User className="w-3.5 h-3.5 mr-2" />
+        <TabsList className="inline-flex h-10 w-full max-w-md items-center justify-start gap-0 rounded-lg border border-card-border bg-card p-1 text-[var(--text-secondary)]">
+          <TabsTrigger value="profile" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <User className="w-3.5 h-3.5 mr-2 shrink-0" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="preferences" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">
-            <Settings className="w-3.5 h-3.5 mr-2" />
+          <TabsTrigger value="preferences" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <Settings className="w-3.5 h-3.5 mr-2 shrink-0" />
             Preferences
           </TabsTrigger>
-          <TabsTrigger value="teaching" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">
-            <GraduationCap className="w-3.5 h-3.5 mr-2" />
+          <TabsTrigger value="teaching" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <GraduationCap className="w-3.5 h-3.5 mr-2 shrink-0" />
             Teaching
           </TabsTrigger>
         </TabsList>
