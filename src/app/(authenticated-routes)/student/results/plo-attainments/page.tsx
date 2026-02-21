@@ -100,6 +100,7 @@ const PLOAttainmentsPage = () => {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   useEffect(() => {
@@ -265,6 +266,12 @@ const PLOAttainmentsPage = () => {
             onClick={exportToCSV}
             className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
             style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
             <Download className="h-3.5 w-3.5" />
             Export to CSV
@@ -285,12 +292,12 @@ const PLOAttainmentsPage = () => {
             onValueChange={(value) => setSelectedProgram(parseInt(value))}
             disabled={loading || !programs.length}
           >
-            <SelectTrigger id="program-select" className="mt-2">
+            <SelectTrigger id="program-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder='Select a program' />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-card-border">
               {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id.toString()}>
+                <SelectItem key={program.id} value={program.id.toString()} className="text-primary-text hover:bg-card/50">
                   {program.code} - {program.name}
                 </SelectItem>
               ))}
@@ -305,13 +312,13 @@ const PLOAttainmentsPage = () => {
             onValueChange={setSelectedSemester}
             disabled={loading || !semesters.length}
           >
-            <SelectTrigger id="semester-select" className="mt-2">
+            <SelectTrigger id="semester-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder='All Semesters' />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Semesters</SelectItem>
+            <SelectContent className="bg-card border-card-border">
+              <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Semesters</SelectItem>
               {semesters.map((semester) => (
-                <SelectItem key={semester.id} value={semester.id.toString()}>
+                <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                   {semester.name}
                 </SelectItem>
               ))}

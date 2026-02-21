@@ -71,6 +71,8 @@ export default function SettingsPage() {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   useEffect(() => {
     setMounted(true);
@@ -262,7 +264,7 @@ export default function SettingsPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+      <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div
             className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
@@ -303,10 +305,10 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="profile">
-          <Card>
+          <Card className="bg-card border-card-border">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-primary-text">Profile Information</CardTitle>
+              <CardDescription className="text-secondary-text">
                 Update your personal information
               </CardDescription>
             </CardHeader>
@@ -320,7 +322,7 @@ export default function SettingsPage() {
                         id="rollNumber"
                         value={profile.rollNumber}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text"
                       />
                       <p className="text-xs text-gray-500">
                         Roll number cannot be changed
@@ -332,7 +334,7 @@ export default function SettingsPage() {
                         id="program"
                         value={profile.program?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text"
                       />
                       <p className="text-xs text-gray-500">
                         Program cannot be changed
@@ -344,7 +346,7 @@ export default function SettingsPage() {
                         id="department"
                         value={profile.department?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text"
                       />
                       <p className="text-xs text-gray-500">
                         Department cannot be changed
@@ -356,7 +358,7 @@ export default function SettingsPage() {
                         id="batch"
                         value={profile.batch?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text"
                       />
                       <p className="text-xs text-gray-500">
                         Batch cannot be changed
@@ -432,9 +434,9 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="password">
-          <Card>
+          <Card className="bg-card border-card-border">
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
+              <CardTitle className="text-primary-text">Change Password</CardTitle>
               <CardDescription>
                 Update your password to keep your account secure
               </CardDescription>
@@ -519,9 +521,9 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="preferences">
-          <Card>
+          <Card className="bg-card border-card-border">
             <CardHeader>
-              <CardTitle>Preferences</CardTitle>
+              <CardTitle className="text-primary-text">Preferences</CardTitle>
               <CardDescription>
                 Customize your notification and display preferences
               </CardDescription>

@@ -212,7 +212,27 @@ export default function ResultsPage() {
   );
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -224,7 +244,14 @@ export default function ResultsPage() {
         {grades.length > 0 && (
           <button
             onClick={exportToCSV}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
             <Download className="h-3.5 w-3.5" />
             Export to CSV
@@ -342,8 +369,14 @@ export default function ResultsPage() {
                     <TableCell>
                       <button
                         onClick={() => router.push(`/student/courses/${grade.courseOffering.course.id}`)}
-                        className="px-2 py-1 rounded-md text-xs font-medium h-7 flex items-center gap-1"
+                        className="px-2 py-1 rounded-md text-xs font-medium h-7 flex items-center gap-1 transition-colors"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = iconBgColor;
+                        }}
                       >
                         <Eye className="h-3 w-3" />
                         Details

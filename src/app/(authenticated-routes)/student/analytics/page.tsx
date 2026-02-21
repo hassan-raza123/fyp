@@ -139,6 +139,7 @@ const AnalyticsPage = () => {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
   useEffect(() => {
@@ -216,7 +217,7 @@ const AnalyticsPage = () => {
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+      <div className="flex items-center justify-center min-h-screen bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div
             className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"

@@ -58,8 +58,9 @@ export function AssessmentList() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const isDarkMode = resolvedTheme === 'dark';
+  const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -332,7 +333,7 @@ export function AssessmentList() {
               filteredAssessments.map((assessment) => (
                 <TableRow
                   key={assessment.id}
-                  className="hover:bg-[var(--hover-bg)] transition-colors cursor-pointer"
+                  className="hover:bg-hover-bg transition-colors cursor-pointer"
                   onClick={() => {
                     setSelectedAssessment(assessment);
                     setIsViewDialogOpen(true);
