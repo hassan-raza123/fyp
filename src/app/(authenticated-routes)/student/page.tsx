@@ -12,7 +12,6 @@ import {
   GraduationCap,
   Target,
   Award,
-  CheckCircle,
   AlertCircle,
   TrendingUp,
   BarChart3,
@@ -75,7 +74,6 @@ interface CourseCardProps {
   courseName: string;
   instructor: string;
   grade?: string;
-  attendance: number;
   nextClass: string;
   color: string;
   courseId?: number;
@@ -86,7 +84,6 @@ const CourseCard = ({
   courseName,
   instructor,
   grade,
-  attendance,
   nextClass,
   color,
   courseId,
@@ -108,10 +105,6 @@ const CourseCard = ({
       )}
     </div>
     <div className="space-y-2">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-secondary-text">Attendance</span>
-        <span className="font-medium text-primary-text">{attendance}%</span>
-      </div>
       <div className="flex items-center justify-between text-xs">
         <span className="text-secondary-text">Next Class</span>
         <span className="font-medium text-primary-text">{nextClass}</span>
@@ -200,7 +193,6 @@ interface StudentDashboardData {
   stats: {
     enrolledCourses: number;
     averageGrade: number;
-    attendanceRate: number;
     completedAssignments: number;
     pendingAssignments?: number;
   };
@@ -209,7 +201,6 @@ interface StudentDashboardData {
     courseName: string;
     instructor: string;
     grade?: string;
-    attendance: number;
     nextClass: string;
     color: string;
     courseId?: number;
@@ -274,8 +265,7 @@ export default function StudentDashboard() {
               courseName: course.name,
               instructor: course.instructor,
               grade: course.grade || undefined,
-              attendance: 0, // TODO: Implement attendance
-              nextClass: 'N/A', // TODO: Implement next class
+              nextClass: 'N/A',
               color: ['blue', 'green', 'purple', 'orange', 'pink'][index % 5],
               courseId: course.id,
             })),
@@ -381,15 +371,6 @@ export default function StudentDashboard() {
           iconColor={iconColor}
         />
         <StatCard
-          title='Attendance Rate'
-          value={`${data.stats.attendanceRate}%`}
-          icon={<CheckCircle className='w-6 h-6' />}
-          change={2.1}
-          trend='up'
-          iconBgColor={iconBgColor}
-          iconColor={iconColor}
-        />
-        <StatCard
           title='Completed Assignments'
           value={data.stats.completedAssignments}
           icon={<FileText className='w-6 h-6' />}
@@ -421,9 +402,9 @@ export default function StudentDashboard() {
                   courseName={course.courseName}
                   instructor={course.instructor}
                   grade={course.grade}
-                  attendance={course.attendance}
                   nextClass={course.nextClass}
                   color={course.color}
+                  courseId={course.courseId}
                 />
               ))}
             </div>

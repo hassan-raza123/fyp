@@ -720,7 +720,6 @@ model passfailcriteria {
   id               Int                     @id @default(autoincrement())
   courseOfferingId Int                     @unique(map: "passFailCriteria_courseOfferingId_key")
   minPassPercent   Float                   @default(50)
-  minAttendance    Float                   @default(75)
   status           passfailcriteria_status @default(active)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime
