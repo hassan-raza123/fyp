@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -479,7 +478,7 @@ const CLOAttainmentsPage = () => {
                                 <span>{clo.attainmentPercent.toFixed(1)}%</span>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">N/A</span>
+                              <span className="text-secondary-text">N/A</span>
                             )}
                           </TableCell>
                           <TableCell>{clo.threshold}%</TableCell>
@@ -490,16 +489,17 @@ const CLOAttainmentsPage = () => {
                               : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedCLO(clo.id);
                               }}
+                              className="p-2 rounded-lg text-xs font-medium h-7 inline-flex items-center justify-center hover:bg-[var(--hover-bg)]"
+                              style={{ backgroundColor: iconBgColor, color: primaryColor }}
                             >
-                              <Eye className="w-4 h-4" />
-                            </Button>
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -528,17 +528,17 @@ const CLOAttainmentsPage = () => {
                 <CardContent>
                   <div className="grid grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Course</p>
+                      <p className="text-sm text-secondary-text">Course</p>
                       <p className="font-semibold">
                         {cloDetails.clo.course.code} - {cloDetails.clo.course.name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Bloom's Level</p>
+                      <p className="text-sm text-secondary-text">Bloom's Level</p>
                       <p className="font-semibold">{cloDetails.clo.bloomLevel}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-secondary-text">
                         Latest Attainment
                       </p>
                       <p className="font-semibold">
@@ -548,7 +548,7 @@ const CLOAttainmentsPage = () => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Status</p>
+                      <p className="text-sm text-secondary-text">Status</p>
                       {getStatusBadge(
                         cloDetails.attainments[0]?.status || 'not_calculated'
                       )}
@@ -696,11 +696,9 @@ const CLOAttainmentsPage = () => {
               </Card>
             </div>
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a CLO from the dashboard to view details
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+              Select a CLO from the dashboard to view details
+            </div>
           )}
         </TabsContent>
 
@@ -712,7 +710,7 @@ const CLOAttainmentsPage = () => {
                   <CardTitle>Trend Analysis</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     Historical trend analysis coming soon...
                   </p>
                 </CardContent>
@@ -723,7 +721,7 @@ const CLOAttainmentsPage = () => {
                   <CardTitle>Section Comparison</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     Section-wise comparison coming soon...
                   </p>
                 </CardContent>
@@ -784,22 +782,29 @@ const CLOAttainmentsPage = () => {
                 value={threshold}
                 onChange={(e) => setThreshold(parseFloat(e.target.value) || 60)}
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-secondary-text mt-1">
                 Minimum percentage required for CLO attainment (default: 60%)
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setShowCalculateDialog(false)}
               disabled={calculating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button onClick={handleCalculate} disabled={calculating || !selectedCourseOffering}>
+            </button>
+            <button
+              type="button"
+              onClick={handleCalculate}
+              disabled={calculating || !selectedCourseOffering}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+            >
               {calculating ? 'Calculating...' : 'Calculate'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -836,9 +841,7 @@ function CLOPLOMappingsView({ courseId }: { courseId: number }) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">Loading mappings...</CardContent>
-      </Card>
+      <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">Loading mappings...</div>
     );
   }
 
@@ -852,7 +855,7 @@ function CLOPLOMappingsView({ courseId }: { courseId: number }) {
       </CardHeader>
       <CardContent>
         {mappings.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
+          <p className="text-secondary-text text-center py-8">
             No CLO-PLO mappings found
           </p>
         ) : (

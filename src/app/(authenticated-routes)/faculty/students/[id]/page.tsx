@@ -982,7 +982,7 @@ export default function StudentDetailsPage() {
                             {analytics.totalAssessments}
                           </p>
                         </div>
-                        <FileText className="w-8 h-8 text-blue-600" />
+                        <FileText className="w-8 h-8 text-primary-text" />
                       </div>
                     </div>
                   </div>
@@ -1101,11 +1101,11 @@ export default function StudentDetailsPage() {
                                 {course.difference >= 0 ? (
                                   <TrendingUp className="w-4 h-4 text-green-600" />
                                 ) : (
-                                  <TrendingUp className="w-4 h-4 text-red-600 rotate-180" />
+                                  <TrendingUp className="w-4 h-4 text-[var(--error)] rotate-180" />
                                 )}
                                 <span
                                   className={
-                                    course.difference >= 0 ? 'text-green-600' : 'text-red-600'
+                                    course.difference >= 0 ? 'text-[var(--success-green)]' : 'text-[var(--error)]'
                                   }
                                 >
                                   {course.difference >= 0 ? '+' : ''}

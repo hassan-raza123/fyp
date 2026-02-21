@@ -607,7 +607,7 @@ export default function SectionDetailsPage() {
                             {analytics.section.totalStudents}
                           </p>
                         </div>
-                        <Users className="w-8 h-8 text-blue-600" />
+                        <Users className="w-8 h-8 text-primary-text" />
                       </div>
                     </div>
                   </div>

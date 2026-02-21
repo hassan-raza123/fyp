@@ -590,13 +590,13 @@ export default function StudentsPage() {
                   Download Template
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-secondary-text mt-2">
                 CSV format: studentId, assessmentId, itemId1, marks1, itemId2, marks2, ...
               </p>
             </div>
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm font-medium mb-2">Instructions:</p>
-              <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+              <ul className="text-xs text-secondary-text space-y-1 list-disc list-inside">
                 <li>First row should contain headers: studentId, assessmentId, itemId1, marks1, etc.</li>
                 <li>Each row represents one student's marks for one assessment</li>
                 <li>Include all assessment items with their IDs and marks</li>
@@ -766,7 +766,7 @@ export default function StudentsPage() {
               />
             </div>
             <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-secondary-text">
                 Recipients: {selectedStudentsForNotification.length} student(s)
               </p>
             </div>
