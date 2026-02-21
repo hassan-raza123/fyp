@@ -106,26 +106,34 @@ export default function CourseCLOsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style with icon */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push(`/student/courses/${courseId}`)}
-            className="p-2 rounded-lg transition-colors"
-            style={{ backgroundColor: iconBgColor, color: primaryColor }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = iconBgColor;
-            }}
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
           >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+            <Target className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
             <h1 className="text-lg font-bold text-primary-text">CLOs for {course?.name} ({course?.code})</h1>
             <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes</p>
           </div>
         </div>
+        <button
+          onClick={() => router.push(`/student/courses/${courseId}`)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Course
+        </button>
       </div>
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <div className="p-4 border-b border-card-border flex items-center gap-2">

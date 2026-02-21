@@ -223,9 +223,17 @@ const MessagesPage = () => {
   if (error) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Messages & Announcements</h1>
-          <p className="text-xs text-secondary-text mt-0.5">View messages and updates</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <MessageSquare className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Messages & Announcements</h1>
+            <p className="text-xs text-secondary-text mt-0.5">View messages and updates</p>
+          </div>
         </div>
         <div className="rounded-lg border border-card-border bg-card p-4">
           <p className="text-sm text-primary-text">{error}</p>
@@ -238,13 +246,21 @@ const MessagesPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header - admin CLO style with icon */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Messages & Announcements</h1>
-          <p className="text-xs text-secondary-text mt-0.5">
-            View messages from faculty, course announcements, and system updates
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <MessageSquare className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Messages & Announcements</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              View messages from faculty, course announcements, and system updates
+            </p>
+          </div>
         </div>
         {data.summary.unread > 0 && (
           <button

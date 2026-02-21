@@ -119,19 +119,37 @@ export default function CourseAnalyticsPage() {
   if (!data) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Course Analytics</h1>
-          <p className="text-xs text-secondary-text mt-0.5">No analytics data available</p>
-        </div>
-        <div className="rounded-lg border border-card-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-primary-text">Course Analytics</h1>
+              <p className="text-xs text-secondary-text mt-0.5">No analytics data available</p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => router.push(`/student/courses/${courseId}`)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Course
           </button>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs text-secondary-text">No analytics data available for this course.</p>
         </div>
       </div>
     );
@@ -162,14 +180,15 @@ export default function CourseAnalyticsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style with icon */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push(`/student/courses/${courseId}`)}
-            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
           >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+            <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
             <h1 className="text-lg font-bold text-primary-text">Course Analytics</h1>
             <p className="text-xs text-secondary-text mt-0.5">
@@ -177,6 +196,20 @@ export default function CourseAnalyticsPage() {
             </p>
           </div>
         </div>
+        <button
+          onClick={() => router.push(`/student/courses/${courseId}`)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Course
+        </button>
       </div>
 
       {/* Overall Performance */}

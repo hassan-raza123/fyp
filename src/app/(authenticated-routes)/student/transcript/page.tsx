@@ -173,11 +173,19 @@ const TranscriptPage = () => {
 
   return (
     <div className="space-y-4 print:p-4">
-      {/* Header Actions - Hidden in print */}
+      {/* Header - admin CLO style with icon (hidden in print) */}
       <div className="flex items-center justify-between print:hidden">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
-          <p className="text-xs text-secondary-text mt-0.5">Your official academic record</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
+            <p className="text-xs text-secondary-text mt-0.5">Your official academic record</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <button
