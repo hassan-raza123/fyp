@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,6 +51,7 @@ import {
   Edit,
   CheckSquare,
   Square,
+  ListChecks,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -112,6 +114,14 @@ interface StudentResult {
 
 const ResultEvaluationPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>(
     []
@@ -146,6 +156,10 @@ const ResultEvaluationPage = () => {
   const [bulkAction, setBulkAction] = useState<
     'approve' | 'reject' | 'evaluate' | 'publish'
   >('evaluate');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchAssessments();
@@ -390,99 +404,106 @@ const ResultEvaluationPage = () => {
     );
   };
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Result Evaluation</h1>
-          <p className="text-muted-foreground">
-            Evaluate and manage student assessment results
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <ListChecks className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Result Evaluation</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Evaluate and manage student assessment results
+            </p>
+          </div>
         </div>
         {selectedAssessment && evaluationData && (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setShowBulkDialog(true)}
               disabled={selectedResults.size === 0}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
-              <CheckSquare className="w-4 h-4 mr-2" />
+              <CheckSquare className="w-3.5 h-3.5" />
               Bulk Evaluate ({selectedResults.size})
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
+              type="button"
               onClick={() => setSelectedAssessment(null)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Back to List
-            </Button>
+            </button>
           </div>
         )}
       </div>
 
       {!selectedAssessment ? (
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList>
-            <TabsTrigger value="dashboard">Evaluation Dashboard</TabsTrigger>
+          <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+            <TabsTrigger value="dashboard" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Evaluation Dashboard</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-4">
             {/* Filters */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Filters</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Filters</h2>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Status Filter</Label>
-                    <Select
-                      value={statusFilter}
-                      onValueChange={setStatusFilter}
-                    >
-                      <SelectTrigger>
+                    <Label className="text-xs text-secondary-text">Status Filter</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Assessments</SelectItem>
-                        <SelectItem value="pending">
-                          Pending Evaluation
-                        </SelectItem>
-                        <SelectItem value="evaluated">Evaluated</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Assessments</SelectItem>
+                        <SelectItem value="pending" className="text-primary-text hover:bg-card/50">Pending Evaluation</SelectItem>
+                        <SelectItem value="evaluated" className="text-primary-text hover:bg-card/50">Evaluated</SelectItem>
+                        <SelectItem value="published" className="text-primary-text hover:bg-card/50">Published</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Search</Label>
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Label className="text-xs text-secondary-text">Search</Label>
+                    <div className="relative mt-1">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-text" />
                       <Input
                         placeholder="Search by title, course code..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                       />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Assessments List */}
             {loading ? (
-              <div className="text-center py-8">Loading assessments...</div>
+              <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+                <p className="text-xs text-secondary-text">Loading assessments...</p>
+              </div>
             ) : filteredAssessments.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  No assessments found
-                </CardContent>
-              </Card>
+              <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+                <p className="text-xs text-secondary-text">No assessments found</p>
+              </div>
             ) : (
               <div className="grid gap-4">
                 {filteredAssessments.map((assessment) => (
                   <Card
                     key={assessment.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="rounded-lg border border-card-border bg-card transition-colors hover:bg-[var(--hover-bg)]"
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between">

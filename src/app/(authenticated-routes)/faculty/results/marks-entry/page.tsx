@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ import {
   Download,
   Eye,
   Lock,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -87,6 +89,14 @@ interface MarksData {
 }
 
 const MarksEntryPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
@@ -112,6 +122,10 @@ const MarksEntryPage = () => {
   const [previousAssessmentData, setPreviousAssessmentData] =
     useState<any>(null);
   const [outliers, setOutliers] = useState<any[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch sections
   useEffect(() => {
@@ -578,44 +592,55 @@ const MarksEntryPage = () => {
 
   const detectedOutliers = outliers;
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
+      {/* Header - same as Results Management / admin CLO */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Marks Entry</h1>
-          <p className="text-muted-foreground">
-            Enter and manage student assessment marks
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Marks Entry</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Enter and manage student assessment marks
+            </p>
+          </div>
         </div>
         {lastSaved && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs text-secondary-text">
             Last saved: {lastSaved.toLocaleTimeString()}
           </div>
         )}
       </div>
 
       {/* Selection Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Assessment & Section</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Select Assessment & Section</h2>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Section</Label>
+              <Label className="text-xs text-secondary-text">Section</Label>
               <Select
                 value={selectedSection?.toString() || ''}
                 onValueChange={(value) => {
-                  setSelectedSection(parseInt(value));
+                  setSelectedSection(value ? parseInt(value) : null);
                   setSelectedAssessment(null);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a section" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {sections.map((section) => (
-                    <SelectItem key={section.id} value={section.id.toString()}>
+                    <SelectItem key={section.id} value={section.id.toString()} className="text-primary-text hover:bg-card/50">
                       {section.courseOffering.course.code} - {section.name} (
                       {section.courseOffering.semester.name})
                     </SelectItem>
@@ -624,22 +649,23 @@ const MarksEntryPage = () => {
               </Select>
             </div>
             <div>
-              <Label>Assessment</Label>
+              <Label className="text-xs text-secondary-text">Assessment</Label>
               <Select
                 value={selectedAssessment?.toString() || ''}
                 onValueChange={(value) =>
-                  setSelectedAssessment(parseInt(value))
+                  setSelectedAssessment(value ? parseInt(value) : null)
                 }
                 disabled={!selectedSection}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select an assessment" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {assessments.map((assessment) => (
                     <SelectItem
                       key={assessment.id}
                       value={assessment.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
                     >
                       {assessment.title} ({assessment.type})
                     </SelectItem>
@@ -648,8 +674,8 @@ const MarksEntryPage = () => {
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Validation Errors */}
       {validationErrors.length > 0 && (

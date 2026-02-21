@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -152,6 +153,14 @@ interface CLODetails {
 
 const CLOAttainmentsPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
@@ -161,6 +170,10 @@ const CLOAttainmentsPage = () => {
   const [calculating, setCalculating] = useState(false);
   const [selectedCourseOffering, setSelectedCourseOffering] = useState<number | null>(null);
   const [threshold, setThreshold] = useState(60);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCourses();
@@ -291,74 +304,85 @@ const CLOAttainmentsPage = () => {
 
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00'];
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">CLO Attainments</h1>
-          <p className="text-muted-foreground">
-            Calculate and analyze Course Learning Outcomes attainment
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Target className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">CLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Calculate and analyze Course Learning Outcomes attainment
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={() => setShowCalculateDialog(true)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
           >
-            <Calculator className="w-4 h-4 mr-2" />
+            <Calculator className="w-3.5 h-3.5" />
             Calculate Attainments
-          </Button>
-          <Button variant="outline" onClick={fetchCourses}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+          </button>
+          <button
+            type="button"
+            onClick={fetchCourses}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
             Refresh
-          </Button>
+          </button>
         </div>
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="details" disabled={!selectedCLO}>
-            CLO Details
-          </TabsTrigger>
-          <TabsTrigger value="analysis" disabled={!selectedCourse}>
-            Analysis
-          </TabsTrigger>
-          <TabsTrigger value="plo-mappings" disabled={!selectedCourse}>
-            CLO-PLO Mappings
-          </TabsTrigger>
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="dashboard" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Dashboard</TabsTrigger>
+          <TabsTrigger value="details" disabled={!selectedCLO} className="text-xs rounded-md">CLO Details</TabsTrigger>
+          <TabsTrigger value="analysis" disabled={!selectedCourse} className="text-xs rounded-md">Analysis</TabsTrigger>
+          <TabsTrigger value="plo-mappings" disabled={!selectedCourse} className="text-xs rounded-md">CLO-PLO Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
           {/* Course Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Course</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Select Course</h2>
+            </div>
+            <div className="p-4">
               <Select
                 value={selectedCourse?.toString() || ''}
                 onValueChange={(value) => {
-                  setSelectedCourse(parseInt(value));
+                  setSelectedCourse(value ? parseInt(value) : null);
                   setSelectedCLO(null);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a course" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courses.map((course) => (
                     <SelectItem
                       key={course.course.id}
                       value={course.course.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
                     >
                       {course.course.code} - {course.course.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {selectedCourseData && (
             <div className="space-y-4">
