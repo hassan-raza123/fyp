@@ -229,20 +229,13 @@ export default function StudentNotificationsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <Bell className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">Notifications</h1>
-            <p className="text-xs text-secondary-text mt-0.5">
-              Stay updated with assessment, grade, and system notifications
-            </p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Notifications</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Stay updated with assessment, grade, and system notifications
+          </p>
         </div>
         {unreadCount > 0 && (
           <button

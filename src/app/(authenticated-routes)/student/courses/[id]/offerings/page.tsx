@@ -116,17 +116,9 @@ export default function CourseOfferingsPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: iconBgColor }}
-            >
-              <Calendar className="h-5 w-5" style={{ color: primaryColor }} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
-              <p className="text-xs text-secondary-text mt-0.5">No offerings data available</p>
-            </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
+            <p className="text-xs text-secondary-text mt-0.5">No offerings data available</p>
           </div>
           <button
             type="button"
@@ -168,21 +160,13 @@ export default function CourseOfferingsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header - admin CLO style with icon */}
+      {/* Header - admin CLO style (title + subtitle, back on right) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <Calendar className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
-            <p className="text-xs text-secondary-text mt-0.5">
-              {data.course.code} - {data.course.name}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            {data.course.code} - {data.course.name}
+          </p>
         </div>
         <button
           onClick={() => router.push(`/student/courses/${courseId}`)}

@@ -106,19 +106,11 @@ export default function CourseCLOsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header - admin CLO style with icon */}
+      {/* Header - admin CLO style (title + subtitle, back on right) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <Target className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">CLOs for {course?.name} ({course?.code})</h1>
-            <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">CLOs for {course?.name} ({course?.code})</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes</p>
         </div>
         <button
           onClick={() => router.push(`/student/courses/${courseId}`)}

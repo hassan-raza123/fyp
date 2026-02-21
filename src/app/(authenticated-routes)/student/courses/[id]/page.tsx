@@ -185,17 +185,9 @@ export default function CourseDetailsPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: iconBgColor }}
-            >
-              <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-primary-text">Course</h1>
-              <p className="text-xs text-secondary-text mt-0.5">{error}</p>
-            </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Course</h1>
+            <p className="text-xs text-secondary-text mt-0.5">{error}</p>
           </div>
           <button
             onClick={() => router.push('/student/courses')}
@@ -224,17 +216,9 @@ export default function CourseDetailsPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: iconBgColor }}
-            >
-              <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-primary-text">Course</h1>
-              <p className="text-xs text-secondary-text mt-0.5">Course not found</p>
-            </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Course</h1>
+            <p className="text-xs text-secondary-text mt-0.5">Course not found</p>
           </div>
           <button
             onClick={() => router.push('/student/courses')}
@@ -258,21 +242,13 @@ export default function CourseDetailsPage() {
     );
   }
 
-  // Main content - admin CLO style header with icon
+  // Main content - admin CLO style (title + subtitle, back on right)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">{course?.name || 'Untitled Course'}</h1>
-            <p className="text-xs text-secondary-text mt-0.5">Course Code: {course?.code || 'N/A'}</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">{course?.name || 'Untitled Course'}</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Course Code: {course?.code || 'N/A'}</p>
         </div>
         <button
           onClick={() => router.push('/student/courses')}

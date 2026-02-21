@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { FileText } from 'lucide-react';
 import { AssessmentList } from '@/components/assessments/AssessmentList';
 
 export default function AssessmentsPage() {
@@ -18,20 +17,13 @@ export default function AssessmentsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">My Assessments</h1>
-            <p className="text-xs text-secondary-text mt-0.5">
-              View all assessments for your enrolled courses
-            </p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Assessments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            View all assessments for your enrolled courses
+          </p>
         </div>
       </div>
       <AssessmentList />

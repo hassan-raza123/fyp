@@ -298,19 +298,11 @@ const AnalyticsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header - admin CLO style with icon */}
+      {/* Header - admin CLO style (title + subtitle only) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
-            <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis and insights</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis and insights</p>
         </div>
         <button
           onClick={exportToCSV}

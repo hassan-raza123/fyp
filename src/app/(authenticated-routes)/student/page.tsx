@@ -19,7 +19,6 @@ import {
   User,
   Clock3,
   BookMarked,
-  Activity,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -337,21 +336,13 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Header - Admin CLO style */}
+      {/* Header - admin CLO style (title + subtitle only) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <Activity className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">Student Dashboard</h1>
-            <p className="text-xs text-secondary-text mt-0.5">
-              Welcome back, {data.studentInfo.name}! Here&apos;s your academic overview.
-            </p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Student Dashboard</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Welcome back, {data.studentInfo.name}! Here&apos;s your academic overview.
+          </p>
         </div>
         <div className='flex items-center space-x-4'>
           <div className='text-right'>

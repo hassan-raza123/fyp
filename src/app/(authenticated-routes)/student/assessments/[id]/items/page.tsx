@@ -104,18 +104,11 @@ export default function AssessmentItemsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle, back on right) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
-          >
-            <List className="h-5 w-5" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary-text">{assessmentTitle}</h1>
-            <p className="text-xs text-secondary-text mt-0.5">Assessment Items</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">{assessmentTitle}</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Assessment Items</p>
         </div>
         <button
           onClick={() => router.back()}
