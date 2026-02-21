@@ -68,33 +68,34 @@ function SubmissionList({ assessmentId }: { assessmentId: number }) {
   };
 
   if (loading) {
-    return <p className="text-secondary-text">Loading submissions...</p>;
+    return <p className="text-xs text-secondary-text">Loading submissions...</p>;
   }
 
   return (
+    <div className="rounded-lg border border-card-border bg-card overflow-hidden">
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Roll Number</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Submitted At</TableHead>
-          <TableHead>Marks</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Submitted At</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {submissions.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={5} className="text-center text-xs text-secondary-text py-8">
               No submissions yet
             </TableCell>
           </TableRow>
         ) : (
           submissions.map((submission) => (
-            <TableRow key={submission.studentId}>
-              <TableCell>{submission.rollNumber}</TableCell>
-              <TableCell>{submission.studentName}</TableCell>
-              <TableCell>
+            <TableRow key={submission.studentId} className="hover:bg-[var(--hover-bg)]">
+              <TableCell className="text-xs text-primary-text">{submission.rollNumber}</TableCell>
+              <TableCell className="text-xs text-primary-text">{submission.studentName}              </TableCell>
+              <TableCell className="text-xs text-primary-text">
                 <Badge
                   variant={
                     submission.status === 'published'
@@ -103,24 +104,25 @@ function SubmissionList({ assessmentId }: { assessmentId: number }) {
                       ? 'secondary'
                       : 'outline'
                   }
+                  className="text-[10px]"
                 >
                   {submission.status}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-xs text-secondary-text">
                 {submission.submittedAt
                   ? format(new Date(submission.submittedAt), 'PPP')
                   : 'Not submitted'}
               </TableCell>
-              <TableCell>
-                {submission.obtainedMarks} / {submission.totalMarks} (
-                {submission.percentage.toFixed(1)}%)
+              <TableCell className="text-xs text-primary-text">
+                {submission.obtainedMarks} / {submission.totalMarks} ({submission.percentage.toFixed(1)}%)
               </TableCell>
             </TableRow>
           ))
         )}
       </TableBody>
     </Table>
+    </div>
   );
 }
 
@@ -437,10 +439,16 @@ export default function AssessmentDetailsPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
             <h1 className="text-lg font-bold text-primary-text">{assessment.title}</h1>
             <p className="text-xs text-secondary-text mt-0.5">
@@ -496,12 +504,12 @@ export default function AssessmentDetailsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="info">Info</TabsTrigger>
-          <TabsTrigger value="items">Items</TabsTrigger>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="clo-coverage">CLO Coverage</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="info" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Info</TabsTrigger>
+          <TabsTrigger value="items" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Items</TabsTrigger>
+          <TabsTrigger value="submissions" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Submissions</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Results</TabsTrigger>
+          <TabsTrigger value="clo-coverage" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Coverage</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">

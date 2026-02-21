@@ -139,7 +139,7 @@ export default function CourseAnalyticsPage() {
     return (
       <div className="space-y-4">
         <div className="rounded-lg border border-card-border bg-card py-12 text-center">
-          <BarChart2 className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+          <BarChart2 className="w-10 h-10 mx-auto mb-3 text-secondary-text" />
           <p className="text-xs text-secondary-text">No analytics data available</p>
         </div>
       </div>
@@ -171,10 +171,16 @@ export default function CourseAnalyticsPage() {
         <button
           type="button"
           onClick={() => router.push(`/faculty/courses/${courseId}`)}
-          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <BarChart2 className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
           <h1 className="text-lg font-bold text-primary-text">
             Course Analytics - {course?.name} ({course?.code})
@@ -196,7 +202,7 @@ export default function CourseAnalyticsPage() {
                   {analytics.overallPerformance.totalStudents}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-purple-600" />
+              <Users className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
           </CardContent>
         </Card>
@@ -209,7 +215,7 @@ export default function CourseAnalyticsPage() {
                   {analytics.overallPerformance.totalAssessments}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-blue-600" />
+              <FileText className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
           </CardContent>
         </Card>
@@ -222,7 +228,7 @@ export default function CourseAnalyticsPage() {
                   {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
                 </p>
               </div>
-              <Target className="w-8 h-8 text-green-600" />
+              <Target className="w-8 h-8" style={{ color: 'var(--success-green)' }} />
             </div>
           </CardContent>
         </Card>
@@ -236,7 +242,7 @@ export default function CourseAnalyticsPage() {
                   {analytics.overallPerformance.totalCLOs}
                 </p>
               </div>
-              <TrendingUp className="w-8 h-8 text-orange-600" />
+              <TrendingUp className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
           </CardContent>
         </Card>

@@ -114,10 +114,16 @@ export default function CourseOfferingsPage() {
         <button
           type="button"
           onClick={() => router.push(`/faculty/courses/${courseId}`)}
-          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
           <h1 className="text-lg font-bold text-primary-text">
             Course Offerings - {course?.name} ({course?.code})
@@ -130,7 +136,7 @@ export default function CourseOfferingsPage() {
 
       {offerings.length === 0 ? (
         <div className="rounded-lg border border-card-border bg-card py-12 text-center">
-          <FileText className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+          <FileText className="w-10 h-10 mx-auto mb-3 text-secondary-text" />
           <p className="text-xs text-secondary-text">No course offerings found for this course</p>
         </div>
       ) : (
@@ -178,7 +184,7 @@ export default function CourseOfferingsPage() {
                             <TableCell className="text-xs text-primary-text">{section.batch?.name || 'N/A'}</TableCell>
                             <TableCell className="text-xs text-primary-text">
                               <div className="flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5 text-muted-text" />
+                                <Users className="w-3.5 h-3.5 text-secondary-text" />
                                 {section.currentStudents}
                               </div>
                             </TableCell>

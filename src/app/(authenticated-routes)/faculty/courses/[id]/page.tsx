@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Course {
@@ -204,10 +204,16 @@ export default function CourseDetailsPage() {
           <button
             type="button"
             onClick={() => router.push('/faculty/courses')}
-            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
             <h1 className="text-lg font-bold text-primary-text">
               {course?.name || 'Untitled Course'}
@@ -457,9 +463,9 @@ function CourseOfferingsPreview({ courseId }: { courseId: string }) {
       {offerings.map((offering) => (
         <div
           key={offering.id}
-          className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+          className="p-3 border border-card-border bg-card rounded-lg"
         >
-          <p className="font-medium text-sm">{offering.semester.name}</p>
+          <p className="font-medium text-sm text-primary-text">{offering.semester.name}</p>
           <p className="text-xs text-secondary-text mt-1">
             {offering.sections.length} section(s) •{' '}
             {offering.totalAssessments} assessment(s)
@@ -515,28 +521,23 @@ function CourseAnalyticsPreview({ courseId }: { courseId: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="p-3 bg-muted rounded-lg">
-        <p className="text-sm font-medium">Overall Performance</p>
-        <p className="text-2xl font-bold mt-1">
+      <div className="p-3 rounded-lg border border-card-border bg-card">
+        <p className="text-xs font-medium text-secondary-text">Overall Performance</p>
+        <p className="text-lg font-bold text-primary-text mt-1">
           {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
         </p>
         <p className="text-xs text-secondary-text mt-1">
-          {analytics.overallPerformance.attainedCLOs} /{' '}
-          {analytics.overallPerformance.totalCLOs} CLOs attained
+          {analytics.overallPerformance.attainedCLOs} / {analytics.overallPerformance.totalCLOs} CLOs attained
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div>
           <p className="text-secondary-text">Total Students</p>
-          <p className="font-medium">
-            {analytics.overallPerformance.totalStudents}
-          </p>
+          <p className="font-medium text-primary-text">{analytics.overallPerformance.totalStudents}</p>
         </div>
         <div>
           <p className="text-secondary-text">Assessments</p>
-          <p className="font-medium">
-            {analytics.overallPerformance.totalAssessments}
-          </p>
+          <p className="font-medium text-primary-text">{analytics.overallPerformance.totalAssessments}</p>
         </div>
       </div>
     </div>

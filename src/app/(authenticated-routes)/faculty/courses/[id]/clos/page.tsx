@@ -180,10 +180,16 @@ export default function CourseCLOsPage() {
         <button
           type="button"
           onClick={() => router.push(`/faculty/courses/${courseId}`)}
-          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Target className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
           <h1 className="text-lg font-bold text-primary-text">
             CLOs for {course?.name} ({course?.code})
