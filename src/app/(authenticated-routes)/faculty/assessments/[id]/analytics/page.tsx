@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import {
@@ -146,52 +145,36 @@ export default function AssessmentAnalyticsPage() {
 
       {/* Overall Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary-text">Total Students</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-primary-text">{data.overall.totalStudents}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary-text">Average Marks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-primary-text">
-              {data.overall.averageMarks.toFixed(1)} / {data.overall.totalMarks}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary-text">Average %</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-primary-text">
-              {data.overall.averagePercentage.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary-text">Range</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-primary-text">
-              {data.overall.lowestMarks} - {data.overall.highestMarks}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Total Students</p>
+          <div className="text-lg font-bold text-primary-text">{data.overall.totalStudents}</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average Marks</p>
+          <div className="text-lg font-bold text-primary-text">
+            {data.overall.averageMarks.toFixed(1)} / {data.overall.totalMarks}
+          </div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average %</p>
+          <div className="text-lg font-bold text-primary-text">
+            {data.overall.averagePercentage.toFixed(1)}%
+          </div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Range</p>
+          <div className="text-lg font-bold text-primary-text">
+            {data.overall.lowestMarks} - {data.overall.highestMarks}
+          </div>
+        </div>
       </div>
 
       {/* Grade Distribution */}
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Grade Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Grade Distribution</h2>
+        </div>
+        <div className="p-4">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.gradeDistribution}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -202,15 +185,15 @@ export default function AssessmentAnalyticsPage() {
               <Bar dataKey="count" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* CLO Performance */}
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Performance by CLO</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Performance by CLO</h2>
+        </div>
+        <div className="p-4">
           <div className="space-y-4">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.cloPerformance}>
@@ -251,15 +234,15 @@ export default function AssessmentAnalyticsPage() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Item-wise Analysis */}
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Item-wise Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Item-wise Analysis</h2>
+        </div>
+        <div className="p-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -284,15 +267,15 @@ export default function AssessmentAnalyticsPage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Student Results */}
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Student Results</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Student Results</h2>
+        </div>
+        <div className="p-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -325,8 +308,8 @@ export default function AssessmentAnalyticsPage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

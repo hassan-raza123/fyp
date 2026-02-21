@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AssessmentItemsPage() {
   const params = useParams();
@@ -348,7 +347,6 @@ export default function AssessmentItemsPage() {
               <AssessmentItemForm
                 assessmentId={assessmentId}
                 clos={clos}
-                plos={plos}
                 onSubmit={handleSubmit}
                 isLoading={isSubmitting}
                 initialData={editingItem}
@@ -358,11 +356,11 @@ export default function AssessmentItemsPage() {
         </div>
       </div>
 
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Assessment Items ({items.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Assessment Items ({items.length})</h2>
+        </div>
+        <div className="p-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -421,8 +419,8 @@ export default function AssessmentItemsPage() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

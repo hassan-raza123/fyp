@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -815,16 +813,20 @@ export default function StudentDetailsPage() {
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
-            <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-              <CardHeader>
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border">
                 <div className='flex items-center justify-between'>
-                  <CardTitle className="text-sm font-semibold text-primary-text">Enrolled Sections</CardTitle>
+                  <h2 className="text-sm font-semibold text-primary-text">Enrolled Sections</h2>
                   <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                      <Button>
-                        <Plus className='w-4 h-4 mr-2' />
+                      <button
+                        type="button"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2"
+                        style={{ backgroundColor: primaryColor, color: '#fff' }}
+                      >
+                        <Plus className='w-4 h-4' />
                         Add Section
-                      </Button>
+                      </button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
@@ -867,20 +869,21 @@ export default function StudentDetailsPage() {
                               </FormItem>
                             )}
                           />
-                          <Button
+                          <button
                             type='submit'
-                            className='w-full'
+                            className='w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50'
+                            style={{ backgroundColor: primaryColor, color: '#fff' }}
                             disabled={addSection.isPending}
                           >
                             {addSection.isPending ? 'Adding...' : 'Add Section'}
-                          </Button>
+                          </button>
                         </form>
                       </Form>
                     </DialogContent>
                   </Dialog>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="p-4">
                 <div className='rounded-md border'>
                   <Table>
                     <TableHeader>
@@ -910,9 +913,10 @@ export default function StudentDetailsPage() {
                               {enrollment.section.courseOffering.semester.name}
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant='ghost'
-                                size='sm'
+                              <button
+                                type="button"
+                                className="px-2 py-1 rounded-lg text-xs font-medium h-7"
+                                style={{ backgroundColor: iconBgColor, color: primaryColor }}
                                 onClick={async () => {
                                   try {
                                     const response = await fetch(
@@ -939,7 +943,7 @@ export default function StudentDetailsPage() {
                                 }}
                               >
                                 Remove
-                              </Button>
+                              </button>
                             </TableCell>
                           </TableRow>
                         ))
@@ -947,8 +951,8 @@ export default function StudentDetailsPage() {
                     </TableBody>
                   </Table>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">
@@ -956,8 +960,8 @@ export default function StudentDetailsPage() {
               <>
                 {/* Performance Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Overall Performance</p>
@@ -967,10 +971,10 @@ export default function StudentDetailsPage() {
                         </div>
                         <TrendingUp className="w-8 h-8 text-green-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Total Assessments</p>
@@ -980,10 +984,10 @@ export default function StudentDetailsPage() {
                         </div>
                         <FileText className="w-8 h-8 text-blue-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Completed</p>
@@ -993,10 +997,10 @@ export default function StudentDetailsPage() {
                         </div>
                         <Target className="w-8 h-8 text-purple-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Completion Rate</p>
@@ -1008,17 +1012,17 @@ export default function StudentDetailsPage() {
                         </div>
                         <BarChart2 className="w-8 h-8 text-orange-600" />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Performance Trends */}
                 {analytics.performanceTrends.length > 0 && (
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="text-sm font-semibold text-primary-text">Performance Trends by Semester</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4 border-b border-card-border">
+                      <h2 className="text-sm font-semibold text-primary-text">Performance Trends by Semester</h2>
+                    </div>
+                    <div className="p-4">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -1049,16 +1053,16 @@ export default function StudentDetailsPage() {
                           ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
                 {/* Course Performance with Class Comparison */}
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">Course Performance vs Class Average</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Course Performance vs Class Average</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1116,16 +1120,16 @@ export default function StudentDetailsPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading performance data...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -1133,13 +1137,13 @@ export default function StudentDetailsPage() {
             {analytics ? (
               analytics.cloAttainmentSummary.length > 0 ? (
                 analytics.cloAttainmentSummary.map((course) => (
-                  <Card key={course.courseId} className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="text-sm font-semibold text-primary-text">
+                  <div key={course.courseId} className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4 border-b border-card-border">
+                      <h2 className="text-sm font-semibold text-primary-text">
                         {course.courseCode} - {course.courseName}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                      </h2>
+                    </div>
+                    <div className="p-4">
                       {course.clos.length > 0 ? (
                         <Table>
                           <TableHeader>
@@ -1176,39 +1180,38 @@ export default function StudentDetailsPage() {
                           No CLO attainment data available for this course
                         </p>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))
               ) : (
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardContent className="py-8 text-center">
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 py-8 text-center">
                     <Target className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
                     <p className="text-secondary-text">No CLO attainment data available</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading CLO attainments...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
           <TabsContent value="assessments" className="space-y-4">
             {analytics ? (
               analytics.assessmentResults.length > 0 ? (
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-semibold text-primary-text">Assessment Results</CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <h2 className="text-sm font-semibold text-primary-text">Assessment Results</h2>
+                      <button
+                        type="button"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center gap-2"
                         onClick={() => {
-                          // Export functionality
                           const csv = [
                             ['Assessment', 'Course', 'Semester', 'Marks', 'Percentage', 'Status'],
                             ...analytics.assessmentResults.map((r) => [
@@ -1230,12 +1233,12 @@ export default function StudentDetailsPage() {
                           a.click();
                         }}
                       >
-                        <Download className="w-4 h-4 mr-2" />
+                        <Download className="w-4 h-4" />
                         Export
-                      </Button>
+                      </button>
                     </div>
-                  </CardHeader>
-                  <CardContent>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1299,34 +1302,34 @@ export default function StudentDetailsPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ) : (
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardContent className="py-8 text-center">
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 py-8 text-center">
                     <FileText className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
                     <p className="text-secondary-text">No assessment results available</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading assessment results...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
           <TabsContent value="enrollment" className="space-y-4">
             {analytics ? (
               analytics.enrollmentHistory.length > 0 ? (
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">Enrollment History</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Enrollment History</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1363,23 +1366,23 @@ export default function StudentDetailsPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ) : (
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardContent className="py-8 text-center">
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 py-8 text-center">
                     <Users className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
                     <p className="text-secondary-text">No enrollment history available</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading enrollment history...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>
@@ -1401,21 +1404,23 @@ export default function StudentDetailsPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowDeleteDialog(false)}
               disabled={deleting}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button
-              variant='destructive'
+            </button>
+            <button
+              type="button"
               onClick={handleDelete}
               disabled={deleting || student.sections.length > 0}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-white hover:opacity-90"
             >
               {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

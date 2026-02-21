@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -165,85 +164,59 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Students
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.totalStudents}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Marks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.averageMarks.toFixed(1)} /{' '}
-              {analytics.overall.totalMarks}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average %</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.averagePercentage.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.totalStudents > 0
-                ? (
-                    (analytics.gradeDistribution
-                      .filter((g: any) => g.grade !== 'F')
-                      .reduce((sum: number, g: any) => sum + g.count, 0) /
-                      analytics.overall.totalStudents) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              %
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Total Students</p>
+          <div className="text-lg font-bold text-primary-text">{analytics.overall.totalStudents}</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average Marks</p>
+          <div className="text-lg font-bold text-primary-text">
+            {analytics.overall.averageMarks.toFixed(1)} / {analytics.overall.totalMarks}
+          </div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average %</p>
+          <div className="text-lg font-bold text-primary-text">{analytics.overall.averagePercentage.toFixed(1)}%</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Pass Rate</p>
+          <div className="text-lg font-bold text-primary-text">
+            {analytics.overall.totalStudents > 0
+              ? (
+                  (analytics.gradeDistribution
+                    .filter((g: any) => g.grade !== 'F')
+                    .reduce((sum: number, g: any) => sum + g.count, 0) /
+                    analytics.overall.totalStudents) *
+                  100
+                ).toFixed(1)
+              : 0}%
+          </div>
+        </div>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Grade Distribution</h3>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h3 className="text-sm font-semibold text-primary-text">Grade Distribution</h3>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Grade</TableHead>
-              <TableHead>Count</TableHead>
-              <TableHead>Percentage</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Count</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {analytics.gradeDistribution.map((grade: any) => (
-              <TableRow key={grade.grade}>
-                <TableCell>
-                  <Badge variant="outline">{grade.grade}</Badge>
+              <TableRow key={grade.grade} className="hover:bg-[var(--hover-bg)]">
+                <TableCell className="text-xs text-primary-text">
+                  <Badge variant="outline" className="text-[10px] border-card-border text-primary-text">{grade.grade}</Badge>
                 </TableCell>
-                <TableCell>{grade.count}</TableCell>
-                <TableCell>
+                <TableCell className="text-xs text-primary-text">{grade.count}</TableCell>
+                <TableCell className="text-xs text-primary-text">
                   {analytics.overall.totalStudents > 0
-                    ? (
-                        (grade.count / analytics.overall.totalStudents) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %
+                    ? ((grade.count / analytics.overall.totalStudents) * 100).toFixed(1)
+                    : 0}%
                 </TableCell>
               </TableRow>
             ))}
@@ -418,16 +391,29 @@ export default function AssessmentDetailsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6">
-        <div>Loading...</div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!assessment) {
     return (
-      <div className="container mx-auto py-6">
-        <div>Assessment not found</div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4">
+        <p className="text-xs text-secondary-text">Assessment not found</p>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -513,17 +499,17 @@ export default function AssessmentDetailsPage() {
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">
-          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-primary-text">Assessment Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Assessment Information</h2>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-secondary-text">
                     Type
                   </p>
-                  <p className="text-lg">
+                  <p className="text-lg text-primary-text">
                     {assessment.type
                       .replace(/_/g, ' ')
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -547,19 +533,19 @@ export default function AssessmentDetailsPage() {
                   <p className="text-sm font-medium text-secondary-text">
                     Total Marks
                   </p>
-                  <p className="text-lg">{assessment.totalMarks}</p>
+                  <p className="text-lg text-primary-text">{assessment.totalMarks}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-secondary-text">
                     Weightage
                   </p>
-                  <p className="text-lg">{assessment.weightage}%</p>
+                  <p className="text-lg text-primary-text">{assessment.weightage}%</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-secondary-text">
                     Due Date
                   </p>
-                  <p className="text-lg flex items-center gap-2">
+                  <p className="text-lg flex items-center gap-2 text-primary-text">
                     <Calendar className="w-4 h-4" />
                     {format(new Date(assessment.dueDate), 'PPP')}
                   </p>
@@ -569,24 +555,24 @@ export default function AssessmentDetailsPage() {
                 <p className="text-sm font-medium text-secondary-text">
                   Description
                 </p>
-                <p className="text-sm mt-1">{assessment.description}</p>
+                <p className="text-sm mt-1 text-primary-text">{assessment.description}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-secondary-text">
                   Instructions
                 </p>
-                <p className="text-sm mt-1 whitespace-pre-wrap">
+                <p className="text-sm mt-1 whitespace-pre-wrap text-primary-text">
                   {assessment.instructions}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="items" className="space-y-4">
-          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-primary-text">Assessment Items</CardTitle>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border flex flex-row items-center justify-between flex-wrap gap-2">
+              <h2 className="text-sm font-semibold text-primary-text">Assessment Items</h2>
               <Link
                 href={`/faculty/assessments/${params.id}/items`}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
@@ -594,39 +580,37 @@ export default function AssessmentDetailsPage() {
               >
                 Manage Items
               </Link>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="p-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Question No</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Marks</TableHead>
-                    <TableHead>CLO</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Question No</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {assessment.assessmentItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={4} className="text-center text-xs text-secondary-text py-8">
                         No items added yet
                       </TableCell>
                     </TableRow>
                   ) : (
                     assessment.assessmentItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.questionNo}</TableCell>
-                        <TableCell className="max-w-md truncate">
+                      <TableRow key={item.id} className="hover:bg-[var(--hover-bg)]">
+                        <TableCell className="text-xs text-primary-text">{item.questionNo}</TableCell>
+                        <TableCell className="max-w-md truncate text-xs text-primary-text">
                           {item.description}
                         </TableCell>
-                        <TableCell>{item.marks}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
+                        <TableCell className="text-xs text-primary-text">
                           {item.clo ? (
-                            <Badge variant="outline">{item.clo.code}</Badge>
+                            <Badge variant="outline" className="text-[10px] border-card-border">{item.clo.code}</Badge>
                           ) : (
-                            <span className="text-secondary-text">
-                              No CLO
-                            </span>
+                            <span className="text-secondary-text">No CLO</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -634,38 +618,38 @@ export default function AssessmentDetailsPage() {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="submissions" className="space-y-4">
-          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-primary-text">Student Submissions</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Student Submissions</h2>
+            </div>
+            <div className="p-4">
               <SubmissionList assessmentId={assessment.id} />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="results" className="space-y-4">
-          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-primary-text">Results Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Results Overview</h2>
+            </div>
+            <div className="p-4">
               <ResultsOverview assessmentId={assessment.id} />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="clo-coverage" className="space-y-4">
-          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-primary-text">CLO Coverage Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">CLO Coverage Analysis</h2>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 {assessment.assessmentItems.length > 0 ? (
                   <>
@@ -830,8 +814,8 @@ export default function AssessmentDetailsPage() {
                   </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -839,7 +823,7 @@ export default function AssessmentDetailsPage() {
       <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
         <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle className="text-primary-text">Extend Due Date</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-primary-text">Extend Due Date</DialogTitle>
             <DialogDescription className="text-secondary-text text-xs">
               Select a new due date for this assessment
             </DialogDescription>
@@ -878,7 +862,7 @@ export default function AssessmentDetailsPage() {
       <Dialog open={showReminderDialog} onOpenChange={setShowReminderDialog}>
         <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle className="text-primary-text">Send Reminder to Students</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-primary-text">Send Reminder to Students</DialogTitle>
             <DialogDescription className="text-secondary-text text-xs">
               Send a reminder message to all students enrolled in this
               assessment

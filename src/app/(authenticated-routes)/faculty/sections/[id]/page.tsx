@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -426,16 +424,17 @@ export default function SectionDetailsPage() {
                       </FormItem>
                     )}
                   />
-                  <Button
+                  <button
                     type='submit'
-                    className='w-full'
+                    className='w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50'
+                    style={{ backgroundColor: primaryColor, color: '#fff' }}
                     disabled={addStudentMutation.isPending}
                   >
                     {addStudentMutation.isPending && (
                       <Loader2 className='w-4 h-4 mr-2 animate-spin' />
                     )}
                     Add Student
-                  </Button>
+                  </button>
                 </form>
               </Form>
             </DialogContent>
@@ -444,27 +443,27 @@ export default function SectionDetailsPage() {
       </div>
 
       <div className='grid gap-6'>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-primary-text">Section Details</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Section Details</h2>
+          </div>
+          <div className="p-4">
             <div className='grid grid-cols-2 gap-4'>
               <div>
                 <p className='text-sm text-secondary-text'>Course</p>
-                <p className='font-medium'>
+                <p className='font-medium text-primary-text'>
                   {section.courseOffering.course.name}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-secondary-text'>Semester</p>
-                <p className='font-medium'>
+                <p className='font-medium text-primary-text'>
                   {section.courseOffering.semester.name}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-secondary-text'>Faculty</p>
-                <p className='font-medium'>
+                <p className='font-medium text-primary-text'>
                   {section.faculty
                     ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
                     : 'Not assigned'}
@@ -472,11 +471,11 @@ export default function SectionDetailsPage() {
               </div>
               <div>
                 <p className='text-sm text-secondary-text'>Batch</p>
-                <p className='font-medium'>{section.batch.name}</p>
+                <p className='font-medium text-primary-text'>{section.batch.name}</p>
               </div>
               <div>
                 <p className='text-sm text-secondary-text'>Students</p>
-                <p className='font-medium'>
+                <p className='font-medium text-primary-text'>
                   {section._count.studentsections} / {section.maxStudents}
                 </p>
               </div>
@@ -486,13 +485,14 @@ export default function SectionDetailsPage() {
                   variant={
                     section.status === 'active' ? 'default' : 'secondary'
                   }
+                  className="text-[10px]"
                 >
                   {section.status}
                 </Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -502,11 +502,11 @@ export default function SectionDetailsPage() {
           </TabsList>
 
           <TabsContent value="students" className="space-y-4">
-            <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-primary-text">Enrolled Students</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Enrolled Students</h2>
+              </div>
+              <div className="p-4">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -538,9 +538,10 @@ export default function SectionDetailsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant='ghost'
-                            size='icon'
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg shrink-0 disabled:opacity-50"
+                            style={{ backgroundColor: iconBgColor, color: primaryColor }}
                             onClick={() => {
                               if (
                                 window.confirm(
@@ -557,9 +558,9 @@ export default function SectionDetailsPage() {
                             {removeStudentMutation.isPending ? (
                               <Loader2 className='w-4 h-4 animate-spin' />
                             ) : (
-                              <Trash2 className='w-4 h-4 text-red-500' />
+                              <Trash2 className='w-4 h-4 text-[var(--error)]' />
                             )}
-                          </Button>
+                          </button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -575,8 +576,8 @@ export default function SectionDetailsPage() {
                     )}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">
@@ -584,8 +585,8 @@ export default function SectionDetailsPage() {
               <>
                 {/* Performance Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Avg Performance</p>
@@ -595,10 +596,10 @@ export default function SectionDetailsPage() {
                         </div>
                         <TrendingUp className="w-8 h-8 text-green-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Total Students</p>
@@ -608,10 +609,10 @@ export default function SectionDetailsPage() {
                         </div>
                         <Users className="w-8 h-8 text-blue-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">Assessments</p>
@@ -621,10 +622,10 @@ export default function SectionDetailsPage() {
                         </div>
                         <FileText className="w-8 h-8 text-purple-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-secondary-text">CLOs Attained</p>
@@ -634,16 +635,16 @@ export default function SectionDetailsPage() {
                         </div>
                         <Target className="w-8 h-8 text-orange-600" />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Student Performance Table */}
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">Student Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Student Performance</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -682,29 +683,30 @@ export default function SectionDetailsPage() {
                               {student.completionRate.toFixed(1)}%
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <button
+                                type="button"
+                                className="px-2 py-1 rounded-lg text-xs font-medium h-7"
+                                style={{ backgroundColor: iconBgColor, color: primaryColor }}
                                 onClick={() =>
                                   router.push(`/faculty/students/${student.studentId}`)
                                 }
                               >
                                 View Details
-                              </Button>
+                              </button>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Assessment Completion Rates */}
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">Assessment Completion Rates</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Assessment Completion Rates</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -755,16 +757,16 @@ export default function SectionDetailsPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading performance data...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -772,11 +774,11 @@ export default function SectionDetailsPage() {
             {analytics ? (
               <>
                 {/* Performance Distribution */}
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">Performance Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Performance Distribution</h2>
+                  </div>
+                  <div className="p-4">
                     <div className="space-y-4">
                       {analytics.performanceDistribution.map((range) => (
                         <div key={range.range} className="flex items-center gap-4">
@@ -793,15 +795,15 @@ export default function SectionDetailsPage() {
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* CLO Attainment Summary */}
-                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-primary-text">CLO Attainment Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">CLO Attainment Summary</h2>
+                  </div>
+                  <div className="p-4">
                     {analytics.cloAttainmentSummary.length > 0 ? (
                       <Table>
                         <TableHeader>
@@ -838,16 +840,16 @@ export default function SectionDetailsPage() {
                         No CLO attainment data available
                       </p>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             ) : (
-              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-secondary-text">Loading analytics...</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>

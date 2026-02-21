@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, FileText, TrendingUp } from 'lucide-react';
 import {
@@ -142,14 +141,14 @@ export default function CourseOfferingsPage() {
       ) : (
         <div className="space-y-4">
           {offerings.map((offering) => (
-            <Card key={offering.id} className="rounded-lg border border-card-border bg-card overflow-hidden">
-              <CardHeader className="pb-2">
+            <div key={offering.id} className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 pb-2 border-b border-card-border">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary-text">
+                    <h2 className="flex items-center gap-2 text-sm font-semibold text-primary-text">
                       <FileText className="w-4 h-4" style={{ color: primaryColor }} />
                       {offering.semester.name}
-                    </CardTitle>
+                    </h2>
                     <p className="text-xs text-secondary-text mt-0.5">
                       {offering.semester.startDate && new Date(offering.semester.startDate).toLocaleDateString()}
                       {' - '}
@@ -160,8 +159,8 @@ export default function CourseOfferingsPage() {
                     {offering.status}
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="p-4">
                 {offering.sections.length === 0 ? (
                   <p className="text-xs text-secondary-text text-center py-4">No sections found</p>
                 ) : (
@@ -211,8 +210,8 @@ export default function CourseOfferingsPage() {
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}

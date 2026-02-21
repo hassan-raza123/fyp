@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, TrendingUp, Users, FileText, Target, BarChart2 } from 'lucide-react';
 import {
@@ -193,69 +192,61 @@ export default function CourseAnalyticsPage() {
 
       {/* Overall Performance Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardContent className="p-4">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-text">Total Students</p>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold text-primary-text">
                   {analytics.overallPerformance.totalStudents}
                 </p>
               </div>
               <Users className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardContent className="p-4">
+          </div>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-text">Total Assessments</p>
-                <p className="text-2xl font-bold">
-                  {analytics.overallPerformance.totalAssessments}
+<p className="text-2xl font-bold text-primary-text">
+                {analytics.overallPerformance.totalAssessments}
                 </p>
               </div>
               <FileText className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardContent className="p-4">
+          </div>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-text">CLO Attainment</p>
-                <p className="text-2xl font-bold">
-                  {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
+<p className="text-2xl font-bold text-primary-text">
+                {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
                 </p>
               </div>
               <Target className="w-8 h-8" style={{ color: 'var(--success-green)' }} />
             </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardContent className="p-4">
+          </div>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-text">CLOs Attained</p>
-                <p className="text-2xl font-bold">
-                  {analytics.overallPerformance.attainedCLOs} /{' '}
+<p className="text-2xl font-bold text-primary-text">
+                {analytics.overallPerformance.attainedCLOs} /{' '}
                   {analytics.overallPerformance.totalCLOs}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8" style={{ color: primaryColor }} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Enrollment Trend */}
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-primary-text">Student Enrollment Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Student Enrollment Trend</h2>
+          </div>
+          <div className="p-4">
             {enrollmentChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={enrollmentChartData}>
@@ -276,15 +267,15 @@ export default function CourseAnalyticsPage() {
                 No enrollment data available
               </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* CLO Performance */}
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-primary-text">Assessment Performance by CLO</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Assessment Performance by CLO</h2>
+          </div>
+          <div className="p-4">
             {cloPerformanceData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={cloPerformanceData}>
@@ -300,16 +291,16 @@ export default function CourseAnalyticsPage() {
                 No CLO performance data available
               </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Section-wise Performance */}
-      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-primary-text">Section-wise Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Section-wise Performance</h2>
+        </div>
+        <div className="p-4">
           {analytics.sectionPerformance.length > 0 ? (
             <Table>
               <TableHeader>
@@ -370,16 +361,16 @@ export default function CourseAnalyticsPage() {
               No section performance data available
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* CLO Performance Table */}
       {analytics.assessmentPerformanceByCLO.length > 0 && (
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-primary-text">CLO Performance Details</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">CLO Performance Details</h2>
+          </div>
+          <div className="p-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -410,8 +401,8 @@ export default function CourseAnalyticsPage() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

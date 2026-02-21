@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
@@ -226,7 +225,7 @@ export default function CourseDetailsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-sm font-semibold text-primary-text mb-4">Basic Information</h2>
           <div className="space-y-4">
             <div>
@@ -258,9 +257,9 @@ export default function CourseDetailsPage() {
               <div className="mt-1">{getStatusBadge(course.status)}</div>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-sm font-semibold text-primary-text mb-4">Course Details</h2>
           <div className="space-y-4">
             {course.description && (
@@ -294,9 +293,9 @@ export default function CourseDetailsPage() {
               </div>
             )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-semibold text-primary-text">
               Course Learning Outcomes
@@ -333,9 +332,9 @@ export default function CourseDetailsPage() {
               </p>
             )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-sm font-semibold text-primary-text mb-4">Assigned Faculty</h2>
           <div className="space-y-4">
             {course.faculty && course.faculty.length > 0 ? (
@@ -355,9 +354,9 @@ export default function CourseDetailsPage() {
               <p className="text-secondary-text">No faculty assigned</p>
             )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6 md:col-span-2">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6 md:col-span-2">
           <h2 className="text-sm font-semibold text-primary-text mb-4">
             Programs Offering This Course
           </h2>
@@ -381,12 +380,12 @@ export default function CourseDetailsPage() {
               </p>
             )}
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Course Offerings & Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-semibold text-primary-text">Course Offerings</h2>
             <button
@@ -399,9 +398,9 @@ export default function CourseDetailsPage() {
             </button>
           </div>
           <CourseOfferingsPreview courseId={courseId as string} />
-        </Card>
+        </div>
 
-        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-semibold text-primary-text">Course Analytics</h2>
             <button
@@ -414,7 +413,7 @@ export default function CourseDetailsPage() {
             </button>
           </div>
           <CourseAnalyticsPreview courseId={courseId as string} />
-        </Card>
+        </div>
       </div>
     </div>
   );
