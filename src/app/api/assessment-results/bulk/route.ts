@@ -39,6 +39,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if the course offering results are locked
+    const offering = await prisma.courseofferings.findUnique({
+      where: { id: assessment.courseOfferingId },
+      select: { isResultsLocked: true },
+    });
+    if (offering?.isResultsLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Results are locked for this course offering. Contact your department admin to unlock.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Verify assessment belongs to faculty
     if (assessment.conductedBy !== facultyId) {
       return NextResponse.json(

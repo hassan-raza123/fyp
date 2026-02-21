@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { PenLine } from 'lucide-react';
+import { PenLine, Lock, LockOpen } from 'lucide-react';
 import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';
 import { ResultModeration } from '@/components/assessments/ResultModeration';
 import { Button } from '@/components/ui/button';
@@ -77,6 +77,8 @@ const MarksEntryPage = () => {
   const [selectedAssessment, setSelectedAssessment] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isResultsLocked, setIsResultsLocked] = useState<boolean>(false);
+  const [lockLoading, setLockLoading] = useState(false);
 
   // Fetch sections on component mount
   useEffect(() => {
@@ -122,18 +124,28 @@ const MarksEntryPage = () => {
         const studentsData = await studentsResponse.json();
         setStudents(studentsData);
 
-        // Fetch assessments for the section's course offering
+        // Fetch assessments + lock status for the section's course offering
         const section = sections.find(
           (s) => s.id.toString() === selectedSection
         );
         if (section) {
-          const assessmentsResponse = await fetch(
-            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
-          );
+          const [assessmentsResponse, lockResponse] = await Promise.all([
+            fetch(`/api/assessments?courseOfferingId=${section.courseOffering.id}`),
+            fetch(`/api/course-offerings/${section.courseOffering.id}/lock`),
+          ]);
           if (!assessmentsResponse.ok)
             throw new Error('Failed to fetch assessments');
           const assessmentsData = await assessmentsResponse.json();
-          setAssessments(Array.isArray(assessmentsData) ? assessmentsData : []);
+          // API now returns { assessments, usedWeightage, remainingWeightage } when filtered by courseOfferingId
+          setAssessments(
+            Array.isArray(assessmentsData)
+              ? assessmentsData
+              : assessmentsData.assessments ?? []
+          );
+          if (lockResponse.ok) {
+            const lockData = await lockResponse.json();
+            setIsResultsLocked(lockData.data?.isResultsLocked ?? false);
+          }
         }
       } catch (err) {
         setError('Failed to load data');
@@ -151,6 +163,32 @@ const MarksEntryPage = () => {
     (a) => a.id.toString() === selectedAssessment
   );
 
+  const selectedSectionData = sections.find(
+    (s) => s.id.toString() === selectedSection
+  );
+
+  const handleToggleLock = async () => {
+    if (!selectedSectionData) return;
+    setLockLoading(true);
+    try {
+      const res = await fetch(
+        `/api/course-offerings/${selectedSectionData.courseOffering.id}/lock`,
+        { method: 'PATCH', credentials: 'include' }
+      );
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsResultsLocked(data.data.isResultsLocked);
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || 'Failed to toggle lock');
+      }
+    } catch {
+      toast.error('Failed to toggle lock');
+    } finally {
+      setLockLoading(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -160,19 +198,55 @@ const MarksEntryPage = () => {
   return (
     <div className="space-y-4">
       {/* Header - CLO style */}
-      <div className="flex items-center gap-3">
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <PenLine className="h-5 w-5" style={{ color: primaryColor }} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <PenLine className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Marks Entry</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Enter student marks for assessments
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Marks Entry</h1>
-          <p className="text-xs text-secondary-text mt-0.5">
-            Enter student marks for assessments
-          </p>
-        </div>
+
+        {selectedSection && (
+          <div className="flex items-center gap-2">
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium"
+              style={{
+                backgroundColor: isResultsLocked
+                  ? 'rgba(239,68,68,0.1)'
+                  : 'rgba(16,185,129,0.1)',
+                color: isResultsLocked ? '#ef4444' : '#10b981',
+              }}
+            >
+              {isResultsLocked ? (
+                <Lock className="h-3 w-3" />
+              ) : (
+                <LockOpen className="h-3 w-3" />
+              )}
+              {isResultsLocked ? 'Results Locked' : 'Results Open'}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleToggleLock}
+              disabled={lockLoading}
+              className="h-7 text-xs border-card-border text-primary-text hover:bg-hover-bg"
+            >
+              {lockLoading
+                ? 'Updating...'
+                : isResultsLocked
+                ? 'Unlock Results'
+                : 'Lock Results'}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card className="rounded-lg border border-card-border bg-card p-6">

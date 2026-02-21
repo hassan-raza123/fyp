@@ -85,6 +85,8 @@ export function CreateAssessmentForm({
   });
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [loadingOfferings, setLoadingOfferings] = useState(true);
+  const [usedWeightage, setUsedWeightage] = useState<number | null>(null);
+  const [loadingWeightage, setLoadingWeightage] = useState(false);
 
   useEffect(() => {
     const fetchCourseOfferings = async () => {
@@ -108,6 +110,33 @@ export function CreateAssessmentForm({
       setLoadingOfferings(false);
     }
   }, [sectionId]);
+
+  // Fetch used weightage when course offering changes
+  useEffect(() => {
+    const offeringId = sectionId || formData.courseOfferingId;
+    if (!offeringId) {
+      setUsedWeightage(null);
+      return;
+    }
+    const fetchWeightage = async () => {
+      setLoadingWeightage(true);
+      try {
+        const res = await fetch(`/api/assessments?courseOfferingId=${offeringId}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.usedWeightage !== undefined) {
+          setUsedWeightage(data.usedWeightage);
+        }
+      } catch {
+        // silent fail
+      } finally {
+        setLoadingWeightage(false);
+      }
+    };
+    fetchWeightage();
+  }, [formData.courseOfferingId, sectionId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,9 +260,28 @@ export function CreateAssessmentForm({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="weightage" className="text-xs text-secondary-text">
-            Weightage (%) *
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="weightage" className="text-xs text-secondary-text">
+              Weightage (%) *
+            </Label>
+            {usedWeightage !== null && !loadingWeightage && (
+              <span
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                style={{
+                  backgroundColor:
+                    100 - usedWeightage < formData.weightage
+                      ? 'rgba(239,68,68,0.12)'
+                      : 'rgba(16,185,129,0.12)',
+                  color:
+                    100 - usedWeightage < formData.weightage
+                      ? '#ef4444'
+                      : '#10b981',
+                }}
+              >
+                {usedWeightage}% used · {(100 - usedWeightage).toFixed(0)}% left
+              </span>
+            )}
+          </div>
           <Input
             id="weightage"
             type="number"
@@ -245,8 +293,18 @@ export function CreateAssessmentForm({
             }
             required
             placeholder="0"
-            className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            className={cn(
+              'h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary',
+              usedWeightage !== null &&
+                100 - usedWeightage < formData.weightage &&
+                'border-red-500'
+            )}
           />
+          {usedWeightage !== null && 100 - usedWeightage < formData.weightage && (
+            <p className="text-[10px] text-red-500">
+              Exceeds available weightage. Reduce to {(100 - usedWeightage).toFixed(0)}% or less.
+            </p>
+          )}
         </div>
       </div>
 

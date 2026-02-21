@@ -22,16 +22,18 @@ model users {
   email_verified      Boolean          @default(false)
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  auditlogs           auditlogs[]
-  departmentAdmin     departments?     @relation("DepartmentAdmin")
-  faculty             faculties?
-  notifications       notifications[]
-  passwordresets      passwordresets[]
-  ploCalculated       ploattainments[] @relation("PLOAttainmentCalculator")
-  reportsGenerated    obereports[]     @relation("ReportGenerator")
-  student             students?
-  transcriptGenerated transcripts[]    @relation("TranscriptGenerator")
-  userrole            userroles?
+  auditlogs              auditlogs[]
+  departmentAdmin        departments?       @relation("DepartmentAdmin")
+  faculty                faculties?
+  notifications          notifications[]
+  passwordresets         passwordresets[]
+  ploCalculated          ploattainments[]   @relation("PLOAttainmentCalculator")
+  reportsGenerated       obereports[]       @relation("ReportGenerator")
+  student                students?
+  transcriptGenerated    transcripts[]      @relation("TranscriptGenerator")
+  userrole               userroles?
+  lockedCourseOfferings  courseofferings[]  @relation("CourseOfferingLocker")
+  surveysCreated         surveys[]          @relation("SurveyCreator")
 }
 
 model roles {
@@ -172,6 +174,9 @@ model courseofferings {
   courseId         Int
   semesterId       Int
   status           course_offering_status @default(active)
+  isResultsLocked  Boolean                @default(false)
+  lockedAt         DateTime?
+  lockedBy         Int?
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   assessments      assessments[]
@@ -179,10 +184,12 @@ model courseofferings {
   llosAttainments  llosattainments[]
   course           courses                @relation(fields: [courseId], references: [id])
   semester         semesters              @relation(fields: [semesterId], references: [id])
+  lockedByUser     users?                 @relation("CourseOfferingLocker", fields: [lockedBy], references: [id])
   passfailcriteria passfailcriteria?
   ploScores        ploscores[]
   sections         sections[]
   studentGrades    studentgrades[]
+  surveys          surveys[]
 
   @@unique([courseId, semesterId])
   @@index([courseId])
@@ -253,6 +260,7 @@ model students {
   user              users                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentsections   studentsections[]
   transcripts       transcripts[]
+  surveyResponses   survey_responses[]
 
   @@index([departmentId])
   @@index([programId])
@@ -284,11 +292,12 @@ model plos {
   status         plo_status       @default(active)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  cloMappings    cloplomappings[]
-  lloMappings    lloplomappings[]
-  ploAttainments ploattainments[]
-  program        programs         @relation(fields: [programId], references: [id])
-  ploScores      ploscores[]
+  cloMappings      cloplomappings[]
+  lloMappings      lloplomappings[]
+  ploAttainments   ploattainments[]
+  program          programs           @relation(fields: [programId], references: [id])
+  ploScores        ploscores[]
+  surveyQuestions  survey_questions[]
 
   @@unique([code, programId])
   @@index([programId])
@@ -935,4 +944,81 @@ enum transcript_status {
   generated
   issued
   cancelled
+}
+
+// ─── Indirect Assessment (Exit Surveys) ───────────────────────────────────────
+
+model surveys {
+  id               Int              @id @default(autoincrement())
+  title            String
+  description      String?
+  courseOfferingId Int
+  createdBy        Int
+  status           survey_status    @default(draft)
+  dueDate          DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  creator          users            @relation("SurveyCreator", fields: [createdBy], references: [id])
+  questions        survey_questions[]
+  responses        survey_responses[]
+
+  @@index([courseOfferingId])
+  @@index([createdBy])
+}
+
+model survey_questions {
+  id           Int                  @id @default(autoincrement())
+  surveyId     Int
+  ploId        Int?
+  question     String
+  questionType survey_question_type @default(rating)
+  orderIndex   Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  survey       surveys              @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  plo          plos?                @relation(fields: [ploId], references: [id])
+  answers      survey_answers[]
+
+  @@index([surveyId])
+  @@index([ploId])
+}
+
+model survey_responses {
+  id          Int              @id @default(autoincrement())
+  surveyId    Int
+  studentId   Int
+  submittedAt DateTime         @default(now())
+  survey      surveys          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  student     students         @relation(fields: [studentId], references: [id])
+  answers     survey_answers[]
+
+  @@unique([surveyId, studentId])
+  @@index([surveyId])
+  @@index([studentId])
+}
+
+model survey_answers {
+  id          Int              @id @default(autoincrement())
+  responseId  Int
+  questionId  Int
+  ratingValue Int?
+  textValue   String?
+  response    survey_responses @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question    survey_questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, questionId])
+  @@index([responseId])
+  @@index([questionId])
+}
+
+enum survey_status {
+  draft
+  active
+  closed
+}
+
+enum survey_question_type {
+  rating
+  text
 }

@@ -269,6 +269,12 @@ const adminNavigation = [
         href: '/admin/transcripts',
       },
       {
+        id: 'surveys',
+        label: 'Surveys',
+        icon: ClipboardList,
+        href: '/admin/surveys',
+      },
+      {
         id: 'notifications',
         label: 'Notifications',
         icon: Bell,
@@ -467,6 +473,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'PLO Attainments',
           icon: TrendingUp,
           href: '/student/results/plo-attainments',
+        },
+        {
+          id: 'surveys',
+          label: 'Surveys',
+          icon: ClipboardList,
+          href: '/student/surveys',
         },
       ],
     },

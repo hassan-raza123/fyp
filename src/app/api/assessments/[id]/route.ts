@@ -9,6 +9,35 @@ export async function PUT(
     const body = await request.json();
     const { title, description, dueDate, totalMarks, instructions, weightage } = body;
 
+    // If weightage is being changed, validate the new total won't exceed 100
+    if (weightage !== undefined) {
+      const current = await prisma.assessments.findUnique({
+        where: { id: parseInt(params.id) },
+        select: { courseOfferingId: true, weightage: true },
+      });
+      if (current) {
+        const existingWeightage = await prisma.assessments.aggregate({
+          where: {
+            courseOfferingId: current.courseOfferingId,
+            status: { not: 'cancelled' },
+            id: { not: parseInt(params.id) }, // exclude current assessment
+          },
+          _sum: { weightage: true },
+        });
+        const otherWeightage = existingWeightage._sum.weightage ?? 0;
+        if (otherWeightage + Number(weightage) > 100) {
+          return NextResponse.json(
+            {
+              error: `Total weightage would exceed 100%. Other assessments use: ${otherWeightage}%. Available: ${(100 - otherWeightage).toFixed(1)}%`,
+              usedWeightage: otherWeightage,
+              remainingWeightage: 100 - otherWeightage,
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const assessment = await prisma.assessments.update({
       where: {
         id: parseInt(params.id),
