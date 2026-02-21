@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -95,12 +96,21 @@ interface CLOAttainmentsData {
 }
 
 const CLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<CLOAttainmentsData | null>(null);
   const [expandedCLO, setExpandedCLO] = useState<number | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch sections on component mount
   useEffect(() => {
@@ -177,12 +187,12 @@ const CLOAttainmentsPage = () => {
     studentPercent: number,
     classPercent: number | null
   ) => {
-    if (!classPercent) return <Minus className="h-4 w-4 text-gray-400" />;
+    if (!classPercent) return <Minus className="h-4 w-4 text-muted-text" />;
     if (studentPercent > classPercent)
-      return <TrendingUp className="h-4 w-4 text-green-600" />;
+      return <TrendingUp className="h-4 w-4 text-[var(--success-green)]" />;
     if (studentPercent < classPercent)
-      return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return <Minus className="h-4 w-4 text-gray-400" />;
+      return <TrendingDown className="h-4 w-4 text-[var(--error)]" />;
+    return <Minus className="h-4 w-4 text-muted-text" />;
   };
 
   // Prepare chart data
@@ -229,7 +239,10 @@ const CLOAttainmentsPage = () => {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <div
+            className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
           <span className="text-xs text-secondary-text ml-2">Loading CLO attainments...</span>
         </div>
       ) : data && data.cloAttainments.length > 0 ? (

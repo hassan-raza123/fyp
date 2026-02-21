@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -62,9 +63,18 @@ interface Preferences {
 }
 
 export default function SettingsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Profile state
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -250,11 +260,19 @@ export default function SettingsPage() {
 
   const passwordStrength = getPasswordStrength(passwordForm.newPassword);
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
           <p className="text-xs text-secondary-text">Loading...</p>
         </div>
       </div>

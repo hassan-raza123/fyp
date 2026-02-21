@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import {
   Table,
   TableBody,
@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, Target } from 'lucide-react';
@@ -34,10 +33,20 @@ interface Course {
 export default function CourseCLOsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const courseId = params.id as string;
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -75,14 +84,20 @@ export default function CourseCLOsPage() {
     }
   }, [courseId]);
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading CLOs...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading CLOs...</p>
         </div>
       </div>
     );
@@ -104,45 +119,42 @@ export default function CourseCLOsPage() {
           </div>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Course Learning Outcomes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary-text" style={{ color: primaryColor }} />
+          <h2 className="text-sm font-semibold text-primary-text">Course Learning Outcomes</h2>
+        </div>
+        <div className="p-4">
           {clos.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No learning outcomes defined for this course
-              </p>
+              <p className="text-xs text-secondary-text">No learning outcomes defined for this course</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Bloom's Level</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Bloom&apos;s Level</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clos.map((clo) => (
-                  <TableRow key={clo.id}>
-                    <TableCell className="font-medium">{clo.code}</TableCell>
-                    <TableCell>{clo.description}</TableCell>
-                    <TableCell>{clo.bloomLevel || '-'}</TableCell>
+                  <TableRow key={clo.id} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">{clo.code}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{clo.description}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{clo.bloomLevel || '-'}</TableCell>
                     <TableCell>
                       <Badge
-                        variant={
+                        className={
                           clo.status === 'active'
-                            ? 'default'
+                            ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5'
                             : clo.status === 'inactive'
-                            ? 'secondary'
-                            : 'destructive'
+                            ? 'bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5'
+                            : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'
                         }
+                        variant="secondary"
                       >
                         {clo.status}
                       </Badge>
@@ -152,8 +164,8 @@ export default function CourseCLOsPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

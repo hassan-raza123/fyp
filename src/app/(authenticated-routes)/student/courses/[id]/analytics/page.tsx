@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BarChart3, Target, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
@@ -54,9 +54,19 @@ interface AnalyticsData {
 export default function CourseAnalyticsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const courseId = params?.id;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsData | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!courseId) return;
@@ -86,14 +96,20 @@ export default function CourseAnalyticsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading analytics...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading analytics...</p>
         </div>
       </div>
     );
@@ -101,16 +117,20 @@ export default function CourseAnalyticsPage() {
 
   if (!data) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">No analytics data available</p>
-          <Button
-            variant="outline"
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Course Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">No analytics data available</p>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <button
+            type="button"
             onClick={() => router.push(`/student/courses/${courseId}`)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back to Course
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -120,20 +140,20 @@ export default function CourseAnalyticsPage() {
     switch (status) {
       case 'published':
       case 'evaluated':
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Completed</Badge>;
       case 'submitted':
-        return <Badge variant="default">Submitted</Badge>;
+        return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5 dark:bg-[var(--orange)]">Submitted</Badge>;
       case 'not_submitted':
-        return <Badge variant="secondary">Not Submitted</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Not Submitted</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }
   };
 
   const getAttainmentBadge = (attainment: number, threshold: number) => {
     const isAttained = attainment >= threshold;
     return (
-      <Badge variant={isAttained ? 'success' : 'destructive'}>
+      <Badge className={isAttained ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {attainment.toFixed(1)}% {isAttained ? '✓' : '✗'}
       </Badge>
     );
@@ -159,148 +179,96 @@ export default function CourseAnalyticsPage() {
       </div>
 
       {/* Overall Performance */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Average Percentage
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data.overallPerformance.averagePercentage.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Current Grade
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data.overallPerformance.currentGrade || 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Completed Assessments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data.overallPerformance.completedAssessments} /{' '}
-              {data.overallPerformance.totalAssessments}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              GPA Points
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data.overallPerformance.gpaPoints?.toFixed(2) || 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">Average Percentage</p>
+          <div className="text-xl font-bold mt-1 text-primary-text">{data.overallPerformance.averagePercentage.toFixed(1)}%</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">Current Grade</p>
+          <div className="text-xl font-bold mt-1 text-primary-text">{data.overallPerformance.currentGrade || 'N/A'}</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">Completed Assessments</p>
+          <div className="text-xl font-bold mt-1 text-primary-text">
+            {data.overallPerformance.completedAssessments} / {data.overallPerformance.totalAssessments}
+          </div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">GPA Points</p>
+          <div className="text-xl font-bold mt-1 text-primary-text">{data.overallPerformance.gpaPoints?.toFixed(2) || 'N/A'}</div>
+        </div>
       </div>
 
       {/* Assessment Performance */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Assessment Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden mb-6">
+        <div className="p-4 border-b border-card-border flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-primary-text" style={{ color: primaryColor }} />
+          <h2 className="text-sm font-semibold text-primary-text">Assessment Performance</h2>
+        </div>
+        <div className="p-4">
           {data.assessmentPerformance.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No assessments available
-            </p>
+            <p className="text-xs text-secondary-text text-center py-4">No assessments available</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Assessment</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Marks</TableHead>
-                  <TableHead>Percentage</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Assessment</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.assessmentPerformance.map((assessment) => (
-                  <TableRow key={assessment.id}>
-                    <TableCell className="font-medium">
-                      {assessment.title}
-                    </TableCell>
+                  <TableRow key={assessment.id} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">{assessment.title}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {assessment.type.replace(/_/g, ' ')}
-                      </Badge>
+                      <Badge className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">{assessment.type.replace(/_/g, ' ')}</Badge>
                     </TableCell>
-                    <TableCell>
-                      {assessment.obtainedMarks.toFixed(1)} /{' '}
-                      {assessment.totalMarks.toFixed(1)}
+                    <TableCell className="text-xs text-primary-text">
+                      {assessment.obtainedMarks.toFixed(1)} / {assessment.totalMarks.toFixed(1)}
                     </TableCell>
-                    <TableCell>{assessment.percentage.toFixed(1)}%</TableCell>
+                    <TableCell className="text-xs text-primary-text">{assessment.percentage.toFixed(1)}%</TableCell>
                     <TableCell>{getStatusBadge(assessment.status)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* CLO Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            CLO Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary-text" style={{ color: primaryColor }} />
+          <h2 className="text-sm font-semibold text-primary-text">CLO Performance</h2>
+        </div>
+        <div className="p-4">
           {data.cloPerformance.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No CLO attainments available
-            </p>
+            <p className="text-xs text-secondary-text text-center py-4">No CLO attainments available</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>CLO Code</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Attainment</TableHead>
-                  <TableHead>Threshold</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Attainment</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Threshold</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.cloPerformance.map((clo) => (
-                  <TableRow key={clo.cloId}>
-                    <TableCell className="font-medium">{clo.cloCode}</TableCell>
-                    <TableCell className="max-w-md truncate">
-                      {clo.cloDescription}
-                    </TableCell>
+                  <TableRow key={clo.cloId} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">{clo.cloCode}</TableCell>
+                    <TableCell className="text-xs text-secondary-text max-w-md truncate">{clo.cloDescription}</TableCell>
+                    <TableCell>{getAttainmentBadge(clo.attainmentPercent, clo.threshold)}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{clo.threshold}%</TableCell>
                     <TableCell>
-                      {getAttainmentBadge(clo.attainmentPercent, clo.threshold)}
-                    </TableCell>
-                    <TableCell>{clo.threshold}%</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          clo.status === 'attained' ? 'success' : 'destructive'
-                        }
-                      >
+                      <Badge className={clo.status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
                         {clo.status === 'attained' ? 'Attained' : 'Not Attained'}
                       </Badge>
                     </TableCell>
@@ -309,8 +277,8 @@ export default function CourseAnalyticsPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

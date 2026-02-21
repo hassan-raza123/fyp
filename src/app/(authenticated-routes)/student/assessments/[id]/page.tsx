@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -102,12 +103,22 @@ interface CLOCoverage {
 export default function AssessmentDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const assessmentId = params?.id;
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('information');
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null);
   const [items, setItems] = useState<AssessmentItem[]>([]);
   const [cloCoverage, setCloCoverage] = useState<CLOCoverage[]>([]);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!assessmentId) return;
@@ -181,33 +192,39 @@ export default function AssessmentDetailsPage() {
     switch (status) {
       case 'published':
       case 'evaluated':
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Completed</Badge>;
       case 'submitted':
-        return <Badge variant="default">Submitted</Badge>;
+        return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5 dark:bg-[var(--orange)]">Submitted</Badge>;
       case 'not_submitted':
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Pending</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }
   };
 
   const getTypeBadge = (type: string) => {
     return (
-      <Badge variant="outline">
+      <Badge className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">
         {type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
       </Badge>
     );
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading assessment details...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading assessment details...</p>
         </div>
       </div>
     );

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   TrendingUp,
@@ -131,9 +131,19 @@ interface AnalyticsData {
 }
 
 const AnalyticsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,12 +214,20 @@ const AnalyticsPage = () => {
     toast.success('Analytics exported successfully');
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto'></div>
-          <p className='mt-4 text-gray-600'>Loading analytics...</p>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading analytics...</p>
         </div>
       </div>
     );
@@ -217,8 +235,14 @@ const AnalyticsPage = () => {
 
   if (error) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-100 text-red-700 p-4 rounded'>{error}</div>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis</p>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">{error}</p>
+        </div>
       </div>
     );
   }
@@ -271,7 +295,14 @@ const AnalyticsPage = () => {
         </div>
         <button
           onClick={exportToCSV}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
         >
           <Download className="h-3.5 w-3.5" />
           Export to CSV
@@ -280,76 +311,36 @@ const AnalyticsPage = () => {
 
       {/* Overall Performance Cards */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Overall Average
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-3xl font-bold'>
-              {data.overallPerformance.averagePercentage.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              CGPA
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-3xl font-bold'>
-              {data.overallPerformance.cgpa.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Total Assessments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-3xl font-bold'>
-              {data.overallPerformance.totalAssessments}
-            </div>
-            <p className='text-sm text-muted-foreground mt-1'>
-              {data.overallPerformance.completedAssessments} completed
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              CLO Attainment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-3xl font-bold'>
-              {data.cloAnalytics.attained} / {data.cloAnalytics.total}
-            </div>
-            <p className='text-sm text-muted-foreground mt-1'>
-              {data.cloAnalytics.total > 0
-                ? (
-                    (data.cloAnalytics.attained / data.cloAnalytics.total) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              % attained
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">Overall Average</p>
+          <div className="text-2xl font-bold mt-1 text-primary-text">{data.overallPerformance.averagePercentage.toFixed(1)}%</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">CGPA</p>
+          <div className="text-2xl font-bold mt-1 text-primary-text">{data.overallPerformance.cgpa.toFixed(2)}</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">Total Assessments</p>
+          <div className="text-2xl font-bold mt-1 text-primary-text">{data.overallPerformance.totalAssessments}</div>
+          <p className="text-xs text-muted-text mt-1">{data.overallPerformance.completedAssessments} completed</p>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+          <p className="text-xs font-medium text-secondary-text">CLO Attainment</p>
+          <div className="text-2xl font-bold mt-1 text-primary-text">{data.cloAnalytics.attained} / {data.cloAnalytics.total}</div>
+          <p className="text-xs text-muted-text mt-1">
+            {data.cloAnalytics.total > 0 ? ((data.cloAnalytics.attained / data.cloAnalytics.total) * 100).toFixed(1) : 0}% attained
+          </p>
+        </div>
       </div>
 
       {/* Charts Grid */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
         {/* GPA Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>GPA Trend Over Time</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">GPA Trend Over Time</h2>
+          </div>
+          <div className="p-4">
             <div className='h-[300px]'>
               <ResponsiveContainer width='100%' height='100%'>
                 <LineChart data={semesterTrendData}>
@@ -368,15 +359,15 @@ const AnalyticsPage = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Performance Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Performance Trend</h2>
+          </div>
+          <div className="p-4">
             <div className='h-[300px]'>
               <ResponsiveContainer width='100%' height='100%'>
                 <LineChart data={semesterTrendData}>
@@ -395,15 +386,15 @@ const AnalyticsPage = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Grade Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Grade Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Grade Distribution</h2>
+          </div>
+          <div className="p-4">
             <div className='h-[300px]'>
               <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
@@ -430,15 +421,15 @@ const AnalyticsPage = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Assessment Performance by Type */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance by Assessment Type</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Performance by Assessment Type</h2>
+          </div>
+          <div className="p-4">
             <div className='h-[300px]'>
               <ResponsiveContainer width='100%' height='100%'>
                 <BarChart data={assessmentTypeData}>
@@ -451,16 +442,16 @@ const AnalyticsPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Course Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Performing Courses</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Top Performing Courses</h2>
+        </div>
+        <div className="p-4">
           <div className='h-[300px]'>
             <ResponsiveContainer width='100%' height='100%'>
               <BarChart data={coursePerformanceData}>
@@ -473,151 +464,105 @@ const AnalyticsPage = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* CLO Analytics */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Strong CLOs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Award className='h-5 w-5 text-green-600' />
-              Strong CLOs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border flex items-center gap-2">
+            <Award className="h-5 w-5" style={{ color: 'var(--success-green)' }} />
+            <h2 className="text-sm font-semibold text-primary-text">Strong CLOs</h2>
+          </div>
+          <div className="p-4">
             <div className='space-y-3'>
               {data.cloAnalytics.strongCLOs.slice(0, 5).map((clo) => (
-                <div
-                  key={clo.cloId}
-                  className='p-3 bg-green-50 rounded-lg border border-green-200'
-                >
+                <div key={clo.cloId} className='p-3 rounded-lg border border-card-border bg-[var(--success-green-opacity-10)] dark:bg-[var(--success-green-opacity-10)]'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <p className='font-semibold'>{clo.cloCode}</p>
-                      <p className='text-sm text-muted-foreground'>
-                        {clo.courseCode}
-                      </p>
+                      <p className='text-xs font-semibold text-primary-text'>{clo.cloCode}</p>
+                      <p className='text-xs text-secondary-text'>{clo.courseCode}</p>
                     </div>
-                    <Badge variant='success'>
-                      {clo.studentAttainment.toFixed(1)}%
-                    </Badge>
+                    <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}
               {data.cloAnalytics.strongCLOs.length === 0 && (
-                <p className='text-center text-muted-foreground py-4'>
-                  No strong CLOs yet
-                </p>
+                <p className='text-center text-xs text-secondary-text py-4'>No strong CLOs yet</p>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Weak CLOs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <AlertCircle className='h-5 w-5 text-orange-600' />
-              Areas for Improvement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          </div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" style={{ color: 'var(--warning)' }} />
+            <h2 className="text-sm font-semibold text-primary-text">Areas for Improvement</h2>
+          </div>
+          <div className="p-4">
             <div className='space-y-3'>
               {data.cloAnalytics.weakCLOs.slice(0, 5).map((clo) => (
-                <div
-                  key={clo.cloId}
-                  className='p-3 bg-orange-50 rounded-lg border border-orange-200'
-                >
+                <div key={clo.cloId} className='p-3 rounded-lg border border-card-border bg-[var(--brand-secondary-opacity-10)] dark:bg-[var(--brand-secondary-opacity-10)]'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <p className='font-semibold'>{clo.cloCode}</p>
-                      <p className='text-sm text-muted-foreground'>
-                        {clo.courseCode}
-                      </p>
+                      <p className='text-xs font-semibold text-primary-text'>{clo.cloCode}</p>
+                      <p className='text-xs text-secondary-text'>{clo.courseCode}</p>
                     </div>
-                    <Badge variant='destructive'>
-                      {clo.studentAttainment.toFixed(1)}%
-                    </Badge>
+                    <Badge className="bg-[var(--warning)] text-white text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}
               {data.cloAnalytics.weakCLOs.length === 0 && (
-                <p className='text-center text-muted-foreground py-4'>
-                  Great job! No weak areas identified
-                </p>
+                <p className='text-center text-xs text-secondary-text py-4'>Great job! No weak areas identified</p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Assessment Analytics */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Best Performing Assessments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <TrendingUp className='h-5 w-5 text-green-600' />
-              Best Performing Assessments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" style={{ color: 'var(--success-green)' }} />
+            <h2 className="text-sm font-semibold text-primary-text">Best Performing Assessments</h2>
+          </div>
+          <div className="p-4">
             <div className='space-y-3'>
               {data.assessmentAnalytics.bestPerforming.map((assessment) => (
-                <div
-                  key={assessment.id}
-                  className='p-3 bg-gray-50 rounded-lg border'
-                >
+                <div key={assessment.id} className='p-3 rounded-lg border border-card-border bg-hover-bg/50'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <p className='font-semibold'>{assessment.title}</p>
-                      <p className='text-sm text-muted-foreground'>
-                        {assessment.course} • {assessment.type.replace(/_/g, ' ')}
-                      </p>
+                      <p className='text-xs font-semibold text-primary-text'>{assessment.title}</p>
+                      <p className='text-xs text-secondary-text'>{assessment.course} • {assessment.type.replace(/_/g, ' ')}</p>
                     </div>
-                    <Badge variant='success'>
-                      {assessment.percentage.toFixed(1)}%
-                    </Badge>
+                    <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">{assessment.percentage.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Needs Improvement */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Target className='h-5 w-5 text-orange-600' />
-              Assessments Needing Improvement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          </div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-card-border flex items-center gap-2">
+            <Target className="h-5 w-5" style={{ color: primaryColor }} />
+            <h2 className="text-sm font-semibold text-primary-text">Assessments Needing Improvement</h2>
+          </div>
+          <div className="p-4">
             <div className='space-y-3'>
               {data.assessmentAnalytics.needsImprovement.map((assessment) => (
-                <div
-                  key={assessment.id}
-                  className='p-3 bg-gray-50 rounded-lg border'
-                >
+                <div key={assessment.id} className='p-3 rounded-lg border border-card-border bg-hover-bg/50'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <p className='font-semibold'>{assessment.title}</p>
-                      <p className='text-sm text-muted-foreground'>
-                        {assessment.course} • {assessment.type.replace(/_/g, ' ')}
-                      </p>
+                      <p className='text-xs font-semibold text-primary-text'>{assessment.title}</p>
+                      <p className='text-xs text-secondary-text'>{assessment.course} • {assessment.type.replace(/_/g, ' ')}</p>
                     </div>
-                    <Badge variant='destructive'>
-                      {assessment.percentage.toFixed(1)}%
-                    </Badge>
+                    <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">{assessment.percentage.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

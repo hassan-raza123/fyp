@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, User, Award } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Table,
@@ -51,9 +50,18 @@ interface OfferingsData {
 export default function CourseOfferingsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const courseId = params?.id;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<OfferingsData | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!courseId) return;
@@ -83,14 +91,20 @@ export default function CourseOfferingsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading offerings...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading offerings...</p>
         </div>
       </div>
     );
@@ -98,26 +112,28 @@ export default function CourseOfferingsPage() {
 
   if (!data) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">No offerings data available</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/student/courses/${courseId}`)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Course
-          </Button>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">No offerings data available</p>
         </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/student/courses/${courseId}`)}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Course
+        </button>
       </div>
     );
   }
 
   const getGradeBadgeColor = (grade: string) => {
-    if (['A+', 'A'].includes(grade)) return 'bg-green-100 text-green-800';
-    if (['B+', 'B'].includes(grade)) return 'bg-blue-100 text-blue-800';
-    if (['C+', 'C'].includes(grade)) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-white';
+    if (['B+', 'B'].includes(grade)) return 'bg-[var(--blue)] text-white dark:bg-[var(--orange)]';
+    if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
+    return 'bg-[var(--error)] text-white';
   };
 
   const formatDate = (dateString: string) => {
@@ -147,68 +163,56 @@ export default function CourseOfferingsPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            All Semesters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary-text" style={{ color: primaryColor }} />
+          <h2 className="text-sm font-semibold text-primary-text">All Semesters</h2>
+        </div>
+        <div className="p-4">
           {data.offerings.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No course offerings found
-            </p>
+            <p className="text-xs text-secondary-text text-center py-4">No course offerings found</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Semester</TableHead>
-                  <TableHead>Section</TableHead>
-                  <TableHead>Instructor</TableHead>
-                  <TableHead>Enrollment Date</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Percentage</TableHead>
-                  <TableHead>GPA Points</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Section</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Instructor</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Enrollment Date</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">GPA Points</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.offerings.map((offering) => (
-                  <TableRow key={offering.courseOfferingId}>
-                    <TableCell className="font-medium">
-                      {offering.semester.name}
-                    </TableCell>
-                    <TableCell>{offering.section.name}</TableCell>
-                    <TableCell>{offering.section.faculty}</TableCell>
-                    <TableCell>
-                      {formatDate(offering.enrollmentDate)}
-                    </TableCell>
+                  <TableRow key={offering.courseOfferingId} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">{offering.semester.name}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{offering.section.name}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{offering.section.faculty}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{formatDate(offering.enrollmentDate)}</TableCell>
                     <TableCell>
                       {offering.grade ? (
-                        <Badge className={getGradeBadgeColor(offering.grade.grade)}>
+                        <Badge className={`${getGradeBadgeColor(offering.grade.grade)} text-[10px] px-1.5 py-0.5`}>
                           {offering.grade.grade}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">N/A</span>
+                        <span className="text-xs text-muted-text">N/A</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {offering.grade
-                        ? `${offering.grade.percentage.toFixed(1)}%`
-                        : 'N/A'}
+                    <TableCell className="text-xs text-primary-text">
+                      {offering.grade ? `${offering.grade.percentage.toFixed(1)}%` : 'N/A'}
                     </TableCell>
-                    <TableCell>
-                      {offering.grade
-                        ? offering.grade.gpaPoints.toFixed(2)
-                        : 'N/A'}
+                    <TableCell className="text-xs text-primary-text">
+                      {offering.grade ? offering.grade.gpaPoints.toFixed(2) : 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

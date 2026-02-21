@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -43,11 +37,21 @@ interface Notification {
 }
 
 export default function StudentNotificationsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [readFilter, setReadFilter] = useState<string>('all');
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -204,11 +208,19 @@ export default function StudentNotificationsPage() {
   const gradeNotifications = notifications.filter((n) => n.type === 'grade')
     .length;
 
-  if (loading && notifications.length === 0) {
+  if (!mounted || (loading && notifications.length === 0)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
           <p className="text-xs text-secondary-text">Loading notifications...</p>
         </div>
       </div>
@@ -227,7 +239,8 @@ export default function StudentNotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllAsRead}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
           >
             <CheckCheck className="h-3.5 w-3.5" />
             Mark All as Read ({unreadCount})
@@ -256,19 +269,19 @@ export default function StudentNotificationsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Filters</h2>
+        </div>
+        <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Filter by Type</label>
+              <label className="text-xs font-medium text-primary-text">Filter by Type</label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="assessment">Assessment</SelectItem>
                   <SelectItem value="grade">Grade</SelectItem>
@@ -281,12 +294,12 @@ export default function StudentNotificationsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Filter by Status</label>
+              <label className="text-xs font-medium text-primary-text">Filter by Status</label>
               <Select value={readFilter} onValueChange={setReadFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="unread">Unread</SelectItem>
                   <SelectItem value="read">Read</SelectItem>
@@ -294,95 +307,77 @@ export default function StudentNotificationsPage() {
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Notifications List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>
-            {filteredNotifications.length} notification(s) found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Notifications</h2>
+          <p className="text-xs text-secondary-text mt-0.5">{filteredNotifications.length} notification(s) found</p>
+        </div>
+        <div className="p-4">
           {filteredNotifications.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No notifications found</p>
+            <div className="text-center py-12">
+              <Bell className="w-12 h-12 mx-auto mb-4 text-muted-text opacity-50" />
+              <p className="text-xs text-secondary-text">No notifications found</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-lg border ${
-                    notification.isRead
-                      ? 'bg-gray-50 border-gray-200'
-                      : 'bg-white border-blue-200 shadow-sm'
+                  className={`p-4 rounded-lg border border-card-border ${
+                    notification.isRead ? 'bg-hover-bg/50' : 'bg-card'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
                       <div
-                        className={`p-2 rounded-lg ${getNotificationBadgeColor(
+                        className={`p-2 rounded-lg text-white ${getNotificationBadgeColor(
                           notification.type
-                        )} text-white`}
+                        )}`}
                       >
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3
-                            className={`font-semibold ${
-                              !notification.isRead ? 'text-gray-900' : 'text-gray-600'
-                            }`}
-                          >
+                          <h3 className={`text-sm font-semibold ${!notification.isRead ? 'text-primary-text' : 'text-secondary-text'}`}>
                             {notification.title}
                           </h3>
-                          <Badge
-                            variant="outline"
-                            className={getNotificationBadgeColor(
-                              notification.type
-                            )}
-                          >
+                          <Badge className={`${getNotificationBadgeColor(notification.type)} text-white text-[10px] px-1.5 py-0.5`}>
                             {getNotificationTypeLabel(notification.type)}
                           </Badge>
                           {!notification.isRead && (
-                            <Badge variant="default" className="bg-blue-500">
+                            <Badge className="text-[10px] px-1.5 py-0.5" style={{ backgroundColor: iconBgColor, color: primaryColor }}>
                               New
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(
-                            new Date(notification.createdAt),
-                            'MMM dd, yyyy hh:mm a'
-                          )}
+                        <p className="text-xs text-secondary-text mb-2">{notification.message}</p>
+                        <p className="text-[10px] text-muted-text">
+                          {format(new Date(notification.createdAt), 'MMM dd, yyyy hh:mm a')}
                         </p>
                       </div>
                     </div>
                     {!notification.isRead && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
+                        type="button"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="ml-4"
+                        className="ml-4 px-2 py-1 rounded text-xs font-medium hover:bg-hover-bg text-primary-text"
+                        style={{ color: primaryColor }}
                       >
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="w-3.5 h-3.5 inline mr-1" />
                         Mark as Read
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

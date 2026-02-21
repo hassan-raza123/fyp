@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
-import { Link } from 'next/link';
+import Link from 'next/link';
 
 interface CalendarEvent {
   id: string;
@@ -62,12 +63,22 @@ interface CalendarData {
 }
 
 const CalendarPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [data, setData] = useState<CalendarData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCalendarEvents();
@@ -124,15 +135,15 @@ const CalendarPage = () => {
   const getEventColor = (category: string) => {
     switch (category) {
       case 'exam':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-[var(--error-opacity-10)] text-[var(--error)] border border-[var(--error)]/30';
       case 'assessment':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-[var(--brand-primary-opacity-10)] text-[var(--blue)] dark:bg-[var(--brand-secondary-opacity-10)] dark:text-[var(--orange)] border border-card-border';
       case 'semester':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30';
       case 'announcement':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-[var(--success-green-opacity-10)] text-[var(--success-green)] border border-[var(--success-green)]/30';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-hover-bg text-primary-text border border-card-border';
     }
   };
 
@@ -171,7 +182,7 @@ const CalendarPage = () => {
       <div className="space-y-4">
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map((day) => (
-            <div key={day} className="text-center font-semibold text-sm p-2">
+            <div key={day} className="text-center font-semibold text-xs p-2 text-primary-text">
               {day}
             </div>
           ))}
@@ -185,14 +196,16 @@ const CalendarPage = () => {
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[100px] border rounded-lg p-2 ${
-                  isCurrentMonth ? 'bg-white' : 'bg-gray-50'
-                } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                className={`min-h-[100px] border rounded-lg p-2 border-card-border ${
+                  isCurrentMonth ? 'bg-card' : 'bg-card/50'
+                }`}
+                style={isToday ? { boxShadow: `0 0 0 2px ${primaryColor}` } : undefined}
               >
                 <div
                   className={`text-sm font-medium mb-1 ${
-                    isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
-                  } ${isToday ? 'text-blue-600 font-bold' : ''}`}
+                    isCurrentMonth ? 'text-primary-text' : 'text-muted-text'
+                  } ${isToday ? 'font-bold' : ''}`}
+                  style={isToday ? { color: primaryColor } : undefined}
                 >
                   {format(day, 'd')}
                 </div>
@@ -213,7 +226,7 @@ const CalendarPage = () => {
                     </div>
                   ))}
                   {dayEvents.length > 3 && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-text">
                       +{dayEvents.length - 3} more
                     </div>
                   )}
@@ -244,9 +257,10 @@ const CalendarPage = () => {
             return (
               <div key={day.toISOString()} className="space-y-2">
                 <div
-                  className={`text-center p-2 rounded ${
-                    isToday ? 'bg-blue-100 font-bold' : 'bg-gray-100'
+                  className={`text-center p-2 rounded text-primary-text ${
+                    isToday ? 'font-bold' : ''
                   }`}
+                  style={isToday ? { backgroundColor: iconBgColor, color: primaryColor } : { backgroundColor: 'var(--hover-bg)' }}
                 >
                   <div className="text-sm">{format(day, 'EEE')}</div>
                   <div className="text-lg">{format(day, 'd')}</div>
@@ -298,8 +312,8 @@ const CalendarPage = () => {
 
     return (
       <div className="space-y-4">
-        <div className="text-center p-4 bg-gray-100 rounded-lg">
-          <div className="text-2xl font-bold">
+        <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+          <div className="text-xl font-bold text-primary-text">
             {format(currentDate, 'EEEE, MMMM d, yyyy')}
           </div>
         </div>
@@ -384,7 +398,14 @@ const CalendarPage = () => {
         </div>
         <button
           onClick={goToToday}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 transition-colors"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
         >
           Today
         </button>
@@ -393,99 +414,75 @@ const CalendarPage = () => {
       {/* Summary Cards */}
       {data && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.summary.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Assessments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {data.summary.assessments}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Exams
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {data.summary.exams}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Semester Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {data.summary.semesterEvents}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+            <p className="text-xs font-medium text-secondary-text">Total Events</p>
+            <div className="text-xl font-bold mt-1 text-primary-text">{data.summary.total}</div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+            <p className="text-xs font-medium text-secondary-text">Assessments</p>
+            <div className="text-xl font-bold mt-1 text-primary-text" style={{ color: primaryColor }}>{data.summary.assessments}</div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+            <p className="text-xs font-medium text-secondary-text">Exams</p>
+            <div className="text-xl font-bold mt-1 text-[var(--error)]">{data.summary.exams}</div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm">
+            <p className="text-xs font-medium text-secondary-text">Semester Events</p>
+            <div className="text-xl font-bold mt-1 text-primary-text">{data.summary.semesterEvents}</div>
+          </div>
         </div>
       )}
 
       {/* View Controls */}
-      <Card>
-        <CardHeader>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Select value={view} onValueChange={(v: any) => setView(v)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="month">Month</SelectItem>
-                  <SelectItem value="week">Week</SelectItem>
-                  <SelectItem value="day">Day</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="month" className="text-primary-text hover:bg-card/50">Month</SelectItem>
+                  <SelectItem value="week" className="text-primary-text hover:bg-card/50">Week</SelectItem>
+                  <SelectItem value="day" className="text-primary-text hover:bg-card/50">Day</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
+                <button
+                  type="button"
                   onClick={() => navigateMonth('prev')}
+                  className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="text-lg font-semibold min-w-[200px] text-center">
+                </button>
+                <div className="text-sm font-semibold min-w-[200px] text-center text-primary-text">
                   {view === 'month'
                     ? format(currentDate, 'MMMM yyyy')
                     : view === 'week'
                     ? `Week of ${format(startOfWeek(currentDate), 'MMM d')}`
                     : format(currentDate, 'MMMM d, yyyy')}
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
+                <button
+                  type="button"
                   onClick={() => navigateMonth('next')}
+                  className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
                 >
                   <ChevronRight className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-4">
           {loading ? (
-            <div className="text-center py-8">Loading calendar...</div>
+            <div className="flex items-center justify-center py-8">
+              <div
+                className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+              />
+              <span className="text-xs text-secondary-text ml-2">Loading calendar...</span>
+            </div>
           ) : view === 'month' ? (
             renderMonthView()
           ) : view === 'week' ? (
@@ -493,24 +490,24 @@ const CalendarPage = () => {
           ) : (
             renderDayView()
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Event Details Dialog */}
       <Dialog
         open={!!selectedEvent}
         onOpenChange={(open) => !open && setSelectedEvent(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-card border-card-border">
           {selectedEvent && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 text-sm font-bold text-primary-text">
                   {getEventIcon(selectedEvent.type)}
                   {selectedEvent.title}
                 </DialogTitle>
-                <DialogDescription>
-                  <Badge variant="outline" className="mt-2">
+                <DialogDescription className="text-xs text-secondary-text">
+                  <Badge variant="outline" className="mt-2 border-card-border text-primary-text">
                     {selectedEvent.category}
                   </Badge>
                 </DialogDescription>
@@ -518,23 +515,23 @@ const CalendarPage = () => {
               <div className="space-y-4">
                 {selectedEvent.description && (
                   <div>
-                    <h4 className="font-semibold mb-1">Description</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="text-xs font-semibold mb-1 text-primary-text">Description</h4>
+                    <p className="text-sm text-secondary-text">
                       {selectedEvent.description}
                     </p>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-semibold mb-1">Date</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="text-xs font-semibold mb-1 text-primary-text">Date</h4>
+                    <p className="text-sm text-secondary-text">
                       {format(new Date(selectedEvent.date), 'MMMM d, yyyy')}
                     </p>
                   </div>
                   {selectedEvent.startTime && (
                     <div>
-                      <h4 className="font-semibold mb-1">Time</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="text-xs font-semibold mb-1 text-primary-text">Time</h4>
+                      <p className="text-sm text-secondary-text">
                         {format(new Date(selectedEvent.startTime), 'hh:mm a')}
                         {selectedEvent.endTime &&
                           ` - ${format(new Date(selectedEvent.endTime), 'hh:mm a')}`}
@@ -543,43 +540,43 @@ const CalendarPage = () => {
                   )}
                   {selectedEvent.course && (
                     <div>
-                      <h4 className="font-semibold mb-1">Course</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="text-xs font-semibold mb-1 text-primary-text">Course</h4>
+                      <p className="text-sm text-secondary-text">
                         {selectedEvent.course.code} - {selectedEvent.course.name}
                       </p>
                     </div>
                   )}
                   {selectedEvent.semester && (
                     <div>
-                      <h4 className="font-semibold mb-1">Semester</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="text-xs font-semibold mb-1 text-primary-text">Semester</h4>
+                      <p className="text-sm text-secondary-text">
                         {selectedEvent.semester}
                       </p>
                     </div>
                   )}
                   {selectedEvent.totalMarks && (
                     <div>
-                      <h4 className="font-semibold mb-1">Total Marks</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="text-xs font-semibold mb-1 text-primary-text">Total Marks</h4>
+                      <p className="text-sm text-secondary-text">
                         {selectedEvent.totalMarks}
                       </p>
                     </div>
                   )}
                   {selectedEvent.assessmentType && (
                     <div>
-                      <h4 className="font-semibold mb-1">Type</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="text-xs font-semibold mb-1 text-primary-text">Type</h4>
+                      <p className="text-sm text-secondary-text">
                         {selectedEvent.assessmentType.replace(/_/g, ' ')}
                       </p>
                     </div>
                   )}
                 </div>
                 {selectedEvent.assessmentId && (
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t border-card-border">
                     <Link
                       href={`/student/assessments/${selectedEvent.assessmentId}`}
                     >
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-card-border text-primary-text hover:bg-hover-bg">
                         View Assessment Details
                       </Button>
                     </Link>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -86,6 +87,8 @@ interface PLOAttainmentsData {
 }
 
 const PLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
@@ -94,6 +97,14 @@ const PLOAttainmentsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PLOAttainmentsData | null>(null);
   const [expandedPLO, setExpandedPLO] = useState<number | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch programs and semesters
   useEffect(() => {
@@ -175,7 +186,7 @@ const PLOAttainmentsPage = () => {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     return (
-      <Badge variant={status === 'attained' ? 'success' : 'destructive'}>
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {status === 'attained' ? 'Attained' : 'Not Attained'}
       </Badge>
     );
@@ -186,10 +197,10 @@ const PLOAttainmentsPage = () => {
     classPercent: number
   ) => {
     if (studentPercent > classPercent)
-      return <TrendingUp className="h-4 w-4 text-green-600" />;
+      return <TrendingUp className="h-4 w-4 text-[var(--success-green)]" />;
     if (studentPercent < classPercent)
-      return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return <Minus className="h-4 w-4 text-gray-400" />;
+      return <TrendingDown className="h-4 w-4 text-[var(--error)]" />;
+    return <Minus className="h-4 w-4 text-muted-text" />;
   };
 
   const exportToCSV = () => {
@@ -252,7 +263,8 @@ const PLOAttainmentsPage = () => {
         {data && data.ploAttainments.length > 0 && (
           <button
             onClick={exportToCSV}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
           >
             <Download className="h-3.5 w-3.5" />
             Export to CSV

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -81,9 +81,19 @@ interface TranscriptData {
 }
 
 const TranscriptPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<TranscriptData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchTranscript();
@@ -124,12 +134,20 @@ const TranscriptPage = () => {
     toast.info('Use browser print dialog to save as PDF');
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading transcript...</p>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading transcript...</p>
         </div>
       </div>
     );
@@ -137,8 +155,14 @@ const TranscriptPage = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 text-red-700 p-4 rounded">{error}</div>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Your academic record</p>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">{error}</p>
+        </div>
       </div>
     );
   }
