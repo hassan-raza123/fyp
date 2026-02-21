@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText, List, Award, Target } from 'lucide-react';
@@ -233,16 +232,17 @@ export default function AssessmentDetailsPage() {
 
   if (!assessmentData) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Assessment not found</p>
-          <Button
-            variant="outline"
+      <div className="flex items-center justify-center min-h-[60vh] bg-page">
+        <div className="text-center space-y-4">
+          <p className="text-sm text-secondary-text">Assessment not found</p>
+          <button
             onClick={() => router.push('/student/assessments')}
+            className="px-3 py-1.5 rounded-lg border border-card-border bg-transparent text-xs font-medium h-8 flex items-center gap-2 mx-auto"
+            style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Back to Assessments
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -292,30 +292,30 @@ export default function AssessmentDetailsPage() {
         {/* Information Tab */}
         <TabsContent value="information" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle>Assessment Information</CardTitle>
+                <CardTitle className="text-sm font-bold text-primary-text">Assessment Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Title</p>
-                  <p className="font-medium">{assessment.title}</p>
+                  <p className="text-[10px] text-muted-text">Title</p>
+                  <p className="text-sm font-medium text-primary-text">{assessment.title}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-[10px] text-muted-text">Type</p>
                   <div className="mt-1">{getTypeBadge(assessment.type)}</div>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Marks</p>
-                  <p className="font-medium">{assessment.totalMarks}</p>
+                  <p className="text-[10px] text-muted-text">Total Marks</p>
+                  <p className="text-sm font-medium text-primary-text">{assessment.totalMarks}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Weightage</p>
-                  <p className="font-medium">{assessment.weightage}%</p>
+                  <p className="text-[10px] text-muted-text">Weightage</p>
+                  <p className="text-sm font-medium text-primary-text">{assessment.weightage}%</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Due Date</p>
-                  <p className="font-medium">
+                  <p className="text-[10px] text-muted-text">Due Date</p>
+                  <p className="text-sm font-medium text-primary-text">
                     {assessment.dueDate
                       ? format(new Date(assessment.dueDate), 'PPP')
                       : 'No due date'}
@@ -324,30 +324,30 @@ export default function AssessmentDetailsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle>Course Information</CardTitle>
+                <CardTitle className="text-sm font-bold text-primary-text">Course Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Course</p>
-                  <p className="font-medium">
+                  <p className="text-[10px] text-muted-text">Course</p>
+                  <p className="text-sm font-medium text-primary-text">
                     {assessment.course.code} - {assessment.course.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Semester</p>
-                  <p className="font-medium">{assessment.semester.name}</p>
+                  <p className="text-[10px] text-muted-text">Semester</p>
+                  <p className="text-sm font-medium text-primary-text">{assessment.semester.name}</p>
                 </div>
                 {result && (
                   <>
                     <div>
-                      <p className="text-sm text-muted-foreground">Status</p>
+                      <p className="text-[10px] text-muted-text">Status</p>
                       <div className="mt-1">{getStatusBadge(result.status)}</div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Submitted At</p>
-                      <p className="font-medium">
+                      <p className="text-[10px] text-muted-text">Submitted At</p>
+                      <p className="text-sm font-medium text-primary-text">
                         {result.submittedAt
                           ? format(new Date(result.submittedAt), 'PPP p')
                           : 'Not submitted'}
@@ -362,58 +362,60 @@ export default function AssessmentDetailsPage() {
 
         {/* Items Tab */}
         <TabsContent value="items" className="mt-6">
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>Assessment Items</CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">Assessment Items</CardTitle>
             </CardHeader>
             <CardContent>
               {items.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-xs text-secondary-text text-center py-4">
                   No items available
                 </p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Question</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Marks</TableHead>
-                      <TableHead>CLO</TableHead>
-                      <TableHead>Your Marks</TableHead>
-                      <TableHead>Remarks</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          Q{item.questionNo}
-                        </TableCell>
-                        <TableCell className="max-w-md">{item.description}</TableCell>
-                        <TableCell>{item.marks}</TableCell>
-                        <TableCell>
-                          {item.clo ? (
-                            <Badge variant="outline">{item.clo.code}</Badge>
-                          ) : (
-                            '-'
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {item.obtainedMarks !== null ? (
-                            <span className="font-medium">
-                              {item.obtainedMarks} / {item.marks}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">Not evaluated</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-xs">
-                          {item.remarks || '-'}
-                        </TableCell>
+                <div className="rounded-lg border border-card-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-semibold text-primary-text">Question</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Your Marks</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Remarks</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item) => (
+                        <TableRow key={item.id} className="hover:bg-hover-bg transition-colors">
+                          <TableCell className="text-xs font-medium text-primary-text">
+                            Q{item.questionNo}
+                          </TableCell>
+                          <TableCell className="max-w-md text-xs text-secondary-text">{item.description}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
+                          <TableCell>
+                            {item.clo ? (
+                              <Badge variant="outline" className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">{item.clo.code}</Badge>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs text-primary-text">
+                            {item.obtainedMarks !== null ? (
+                              <span className="font-medium">
+                                {item.obtainedMarks} / {item.marks}
+                              </span>
+                            ) : (
+                              <span className="text-secondary-text">Not evaluated</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-xs text-xs text-secondary-text">
+                            {item.remarks || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -424,45 +426,45 @@ export default function AssessmentDetailsPage() {
           {result ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card>
+                <Card className="bg-card border border-card-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <CardTitle className="text-[10px] text-muted-text">
                       Obtained Marks
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold text-primary-text">
                       {result.obtainedMarks.toFixed(1)} / {result.totalMarks.toFixed(1)}
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-card border border-card-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <CardTitle className="text-[10px] text-muted-text">
                       Percentage
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold text-primary-text">
                       {result.percentage.toFixed(1)}%
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-card border border-card-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <CardTitle className="text-[10px] text-muted-text">
                       Grade
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold text-primary-text">
                       {result.grade || 'N/A'}
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-card border border-card-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <CardTitle className="text-[10px] text-muted-text">
                       Status
                     </CardTitle>
                   </CardHeader>
@@ -473,64 +475,66 @@ export default function AssessmentDetailsPage() {
               </div>
 
               {result.remarks && (
-                <Card>
+                <Card className="bg-card border border-card-border">
                   <CardHeader>
-                    <CardTitle>Remarks</CardTitle>
+                    <CardTitle className="text-sm font-bold text-primary-text">Remarks</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>{result.remarks}</p>
+                    <p className="text-sm text-primary-text">{result.remarks}</p>
                   </CardContent>
                 </Card>
               )}
 
-              <Card>
+              <Card className="bg-card border border-card-border">
                 <CardHeader>
-                  <CardTitle>Item-wise Breakdown</CardTitle>
+                  <CardTitle className="text-sm font-bold text-primary-text">Item-wise Breakdown</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Question</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Marks</TableHead>
-                        <TableHead>Obtained</TableHead>
-                        <TableHead>CLO</TableHead>
-                        <TableHead>Remarks</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.itemResults.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">
-                            Q{item.questionNo}
-                          </TableCell>
-                          <TableCell className="max-w-md">{item.description}</TableCell>
-                          <TableCell>{item.totalMarks}</TableCell>
-                          <TableCell className="font-medium">
-                            {item.obtainedMarks.toFixed(1)}
-                          </TableCell>
-                          <TableCell>
-                            {item.clo ? (
-                              <Badge variant="outline">{item.clo.code}</Badge>
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            {item.remarks || '-'}
-                          </TableCell>
+                  <div className="rounded-lg border border-card-border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs font-semibold text-primary-text">Question</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Obtained</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Remarks</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {result.itemResults.map((item) => (
+                          <TableRow key={item.id} className="hover:bg-hover-bg transition-colors">
+                            <TableCell className="text-xs font-medium text-primary-text">
+                              Q{item.questionNo}
+                            </TableCell>
+                            <TableCell className="max-w-md text-xs text-secondary-text">{item.description}</TableCell>
+                            <TableCell className="text-xs text-primary-text">{item.totalMarks}</TableCell>
+                            <TableCell className="text-xs font-medium text-primary-text">
+                              {item.obtainedMarks.toFixed(1)}
+                            </TableCell>
+                            <TableCell>
+                              {item.clo ? (
+                                <Badge variant="outline" className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">{item.clo.code}</Badge>
+                              ) : (
+                                '-'
+                              )}
+                            </TableCell>
+                            <TableCell className="max-w-xs text-xs text-secondary-text">
+                              {item.remarks || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           ) : (
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">
+                <p className="text-xs text-secondary-text">
                   No result available yet. Assessment may not be evaluated.
                 </p>
               </CardContent>
@@ -540,66 +544,68 @@ export default function AssessmentDetailsPage() {
 
         {/* CLO Coverage Tab */}
         <TabsContent value="clo-coverage" className="mt-6">
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>CLO Coverage</CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">CLO Coverage</CardTitle>
             </CardHeader>
             <CardContent>
               {cloCoverage.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-xs text-secondary-text text-center py-4">
                   No CLO coverage data available
                 </p>
               ) : (
                 <div className="space-y-6">
                   {cloCoverage.map((coverage) => (
-                    <Card key={coverage.clo.id}>
+                    <Card key={coverage.clo.id} className="bg-card border border-card-border">
                       <CardHeader>
                         <div className="flex justify-between items-center">
                           <div>
-                            <CardTitle className="text-lg">
+                            <CardTitle className="text-sm font-bold text-primary-text">
                               {coverage.clo.code}
                             </CardTitle>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-xs text-secondary-text mt-1">
                               {coverage.clo.description}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold">
+                            <p className="text-lg font-bold text-primary-text">
                               {coverage.percentage.toFixed(1)}%
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs text-secondary-text">
                               {coverage.obtainedMarks.toFixed(1)} / {coverage.totalMarks.toFixed(1)} marks
                             </p>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Question</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead>Marks</TableHead>
-                              <TableHead>Obtained</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {coverage.items.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell className="font-medium">
-                                  Q{item.questionNo}
-                                </TableCell>
-                                <TableCell className="max-w-md">
-                                  {item.description}
-                                </TableCell>
-                                <TableCell>{item.marks}</TableCell>
-                                <TableCell className="font-medium">
-                                  {item.obtainedMarks.toFixed(1)}
-                                </TableCell>
+                        <div className="rounded-lg border border-card-border overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-xs font-semibold text-primary-text">Question</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Obtained</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                            </TableHeader>
+                            <TableBody>
+                              {coverage.items.map((item) => (
+                                <TableRow key={item.id} className="hover:bg-hover-bg transition-colors">
+                                  <TableCell className="text-xs font-medium text-primary-text">
+                                    Q{item.questionNo}
+                                  </TableCell>
+                                  <TableCell className="max-w-md text-xs text-secondary-text">
+                                    {item.description}
+                                  </TableCell>
+                                  <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
+                                  <TableCell className="text-xs font-medium text-primary-text">
+                                    {item.obtainedMarks.toFixed(1)}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

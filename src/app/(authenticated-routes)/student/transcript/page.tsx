@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Download, Printer, GraduationCap, Award, Target } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -199,11 +200,11 @@ const TranscriptPage = () => {
       {/* Transcript Content */}
       <div className="space-y-6 print:space-y-4">
         {/* Student Information */}
-        <Card className="print:border-0 print:shadow-none">
+        <Card className="bg-card border border-card-border print:border-0 print:shadow-none">
           <CardHeader>
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">ACADEMIC TRANSCRIPT</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-lg font-bold text-primary-text mb-2">ACADEMIC TRANSCRIPT</h2>
+              <p className="text-xs text-secondary-text">
                 {data.student.department?.name || 'University'}
               </p>
             </div>
@@ -211,30 +212,30 @@ const TranscriptPage = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Student Name</p>
-                <p className="font-semibold">{data.student.name}</p>
+                <p className="text-[10px] text-muted-text">Student Name</p>
+                <p className="text-sm font-semibold text-primary-text">{data.student.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Roll Number</p>
-                <p className="font-semibold">{data.student.rollNumber}</p>
+                <p className="text-[10px] text-muted-text">Roll Number</p>
+                <p className="text-sm font-semibold text-primary-text">{data.student.rollNumber}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Program</p>
-                <p className="font-semibold">
+                <p className="text-[10px] text-muted-text">Program</p>
+                <p className="text-sm font-semibold text-primary-text">
                   {data.student.program?.code} - {data.student.program?.name}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Batch</p>
-                <p className="font-semibold">{data.student.batch?.name}</p>
+                <p className="text-[10px] text-muted-text">Batch</p>
+                <p className="text-sm font-semibold text-primary-text">{data.student.batch?.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-semibold">{data.student.email}</p>
+                <p className="text-[10px] text-muted-text">Email</p>
+                <p className="text-sm font-semibold text-primary-text">{data.student.email}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Generated On</p>
-                <p className="font-semibold">
+                <p className="text-[10px] text-muted-text">Generated On</p>
+                <p className="text-sm font-semibold text-primary-text">
                   {new Date(data.generatedAt).toLocaleDateString()}
                 </p>
               </div>
@@ -243,31 +244,31 @@ const TranscriptPage = () => {
         </Card>
 
         {/* Overall Summary */}
-        <Card className="print:border-0 print:shadow-none">
+        <Card className="bg-card border border-card-border print:border-0 print:shadow-none">
           <CardHeader>
-            <CardTitle>Overall Summary</CardTitle>
+            <CardTitle className="text-sm font-bold text-primary-text">Overall Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">CGPA</p>
-                <p className="text-3xl font-bold">{data.overall.cgpa.toFixed(2)}</p>
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">CGPA</p>
+                <p className="text-lg font-bold text-primary-text">{data.overall.cgpa.toFixed(2)}</p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Credit Hours</p>
-                <p className="text-3xl font-bold">
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">Credit Hours</p>
+                <p className="text-lg font-bold text-primary-text">
                   {data.overall.totalCreditHours} / {data.overall.requiredCreditHours}
                 </p>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Completion</p>
-                <p className="text-3xl font-bold">
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">Completion</p>
+                <p className="text-lg font-bold text-primary-text">
                   {data.overall.completionPercentage.toFixed(1)}%
                 </p>
               </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total Courses</p>
-                <p className="text-3xl font-bold">{data.overall.totalCourses}</p>
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">Total Courses</p>
+                <p className="text-lg font-bold text-primary-text">{data.overall.totalCourses}</p>
               </div>
             </div>
           </CardContent>
@@ -275,107 +276,109 @@ const TranscriptPage = () => {
 
         {/* Semester-wise Grades */}
         {data.semesters.map((semester) => (
-          <Card key={semester.semesterId} className="print:border-0 print:shadow-none print:break-inside-avoid">
+          <Card key={semester.semesterId} className="bg-card border border-card-border print:border-0 print:shadow-none print:break-inside-avoid">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>{semester.semester}</CardTitle>
+                <CardTitle className="text-sm font-bold text-primary-text">{semester.semester}</CardTitle>
                 <div className="flex items-center gap-4">
                   <div>
-                    <span className="text-sm text-muted-foreground">GPA: </span>
-                    <span className="font-bold">{semester.gpa.toFixed(2)}</span>
+                    <span className="text-xs text-muted-text">GPA: </span>
+                    <span className="text-sm font-bold text-primary-text">{semester.gpa.toFixed(2)}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-muted-foreground">Credits: </span>
-                    <span className="font-bold">{semester.creditHours}</span>
+                    <span className="text-xs text-muted-text">Credits: </span>
+                    <span className="text-sm font-bold text-primary-text">{semester.creditHours}</span>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Course Code</TableHead>
-                    <TableHead>Course Name</TableHead>
-                    <TableHead className="text-center">Credits</TableHead>
-                    <TableHead className="text-center">Grade</TableHead>
-                    <TableHead className="text-center">GPA Points</TableHead>
-                    <TableHead className="text-center">Percentage</TableHead>
-                    <TableHead className="text-center">CLOs</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {semester.courses.map((course, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">
-                        {course.courseCode}
-                      </TableCell>
-                      <TableCell>{course.courseName}</TableCell>
-                      <TableCell className="text-center">
-                        {course.creditHours}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline" className="font-semibold">
-                          {course.grade}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {course.gpaPoints.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {course.percentage.toFixed(1)}%
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {course.cloAttainments.length > 0 ? (
-                          <div className="flex flex-col gap-1">
-                            {course.cloAttainments.map((clo) => (
-                              <Badge
-                                key={clo.cloCode}
-                                variant={
-                                  clo.status === 'attained'
-                                    ? 'success'
-                                    : 'destructive'
-                                }
-                                className="text-xs"
-                              >
-                                {clo.cloCode} ({clo.attainmentPercent.toFixed(0)}%)
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
+              <div className="rounded-lg border border-card-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs font-semibold text-primary-text">Course Code</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Course Name</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Credits</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Grade</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">GPA Points</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Percentage</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">CLOs</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {semester.courses.map((course, idx) => (
+                      <TableRow key={idx} className="hover:bg-hover-bg transition-colors">
+                        <TableCell className="text-xs font-medium text-primary-text">
+                          {course.courseCode}
+                        </TableCell>
+                        <TableCell className="text-xs text-secondary-text">{course.courseName}</TableCell>
+                        <TableCell className="text-center text-xs text-primary-text">
+                          {course.creditHours}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className="font-semibold text-[10px] border border-card-border text-primary-text">
+                            {course.grade}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center text-xs text-primary-text">
+                          {course.gpaPoints.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center text-xs text-primary-text">
+                          {course.percentage.toFixed(1)}%
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {course.cloAttainments.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {course.cloAttainments.map((clo) => (
+                                <Badge
+                                  key={clo.cloCode}
+                                  variant={
+                                    clo.status === 'attained'
+                                      ? 'success'
+                                      : 'destructive'
+                                  }
+                                  className="text-[10px] px-1.5 py-0.5"
+                                >
+                                  {clo.cloCode} ({clo.attainmentPercent.toFixed(0)}%)
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-secondary-text">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         ))}
 
         {/* CLO Attainments Summary */}
-        <Card className="print:border-0 print:shadow-none print:break-inside-avoid">
+        <Card className="bg-card border border-card-border print:border-0 print:shadow-none print:break-inside-avoid">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-sm font-bold text-primary-text flex items-center gap-2">
               <Target className="h-5 w-5" />
               CLO Attainments Summary
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total CLOs</p>
-                <p className="text-2xl font-bold">
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">Total CLOs</p>
+                <p className="text-lg font-bold text-primary-text">
                   {data.cloAttainmentsSummary.total}
                 </p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Attained CLOs</p>
-                <p className="text-2xl font-bold">
+              <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                <p className="text-[10px] text-muted-text">Attained CLOs</p>
+                <p className="text-lg font-bold text-primary-text">
                   {data.cloAttainmentsSummary.attained}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs text-secondary-text mt-1">
                   (
                   {data.cloAttainmentsSummary.total > 0
                     ? (
@@ -393,27 +396,27 @@ const TranscriptPage = () => {
 
         {/* PLO Attainments Summary */}
         {data.ploAttainmentsSummary.plos.length > 0 && (
-          <Card className="print:border-0 print:shadow-none print:break-inside-avoid">
+          <Card className="bg-card border border-card-border print:border-0 print:shadow-none print:break-inside-avoid">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-primary-text flex items-center gap-2">
                 <GraduationCap className="h-5 w-5" />
                 PLO Attainments Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total PLOs</p>
-                  <p className="text-2xl font-bold">
+                <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                  <p className="text-[10px] text-muted-text">Total PLOs</p>
+                  <p className="text-lg font-bold text-primary-text">
                     {data.ploAttainmentsSummary.total}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Attained PLOs</p>
-                  <p className="text-2xl font-bold">
+                <div className="text-center p-4 rounded-lg border border-card-border bg-card">
+                  <p className="text-[10px] text-muted-text">Attained PLOs</p>
+                  <p className="text-lg font-bold text-primary-text">
                     {data.ploAttainmentsSummary.attained}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs text-secondary-text mt-1">
                     (
                     {data.ploAttainmentsSummary.total > 0
                       ? (
@@ -426,23 +429,24 @@ const TranscriptPage = () => {
                   </p>
                 </div>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>PLO Code</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-center">Attainment</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="rounded-lg border border-card-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs font-semibold text-primary-text">PLO Code</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Attainment</TableHead>
+                      <TableHead className="text-center text-xs font-semibold text-primary-text">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {data.ploAttainmentsSummary.plos.map((plo) => (
                     <TableRow key={plo.ploCode}>
-                      <TableCell className="font-medium">
+                      <TableCell className="text-xs font-medium text-primary-text">
                         {plo.ploCode}
                       </TableCell>
-                      <TableCell>{plo.description}</TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-xs text-secondary-text">{plo.description}</TableCell>
+                      <TableCell className="text-center text-xs text-primary-text">
                         {plo.attainmentPercent.toFixed(1)}%
                       </TableCell>
                       <TableCell className="text-center">
@@ -457,13 +461,14 @@ const TranscriptPage = () => {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground print:mt-8">
+        <div className="text-center text-xs text-secondary-text print:mt-8">
           <p>This is an unofficial transcript generated on {new Date(data.generatedAt).toLocaleString()}</p>
           <p className="mt-2">For official transcript, please contact the registrar's office</p>
         </div>

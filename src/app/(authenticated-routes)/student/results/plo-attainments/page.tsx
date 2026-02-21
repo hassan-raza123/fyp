@@ -332,13 +332,13 @@ const PLOAttainmentsPage = () => {
       ) : data && data.ploAttainments.length > 0 ? (
         <div className="space-y-6">
           {/* Program Info */}
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">
                 {data.program.code} - {data.program.name}
               </CardTitle>
               {data.semester && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-secondary-text">
                   Semester: {data.semester}
                 </p>
               )}
@@ -347,48 +347,48 @@ const PLOAttainmentsPage = () => {
 
           {/* Overall Progress Summary */}
           <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Total PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold'>{data.overallProgress.totalPLOs}</div>
+                <div className='text-lg font-bold text-primary-text'>{data.overallProgress.totalPLOs}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Attained PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold text-green-600'>
+                <div className='text-lg font-bold text-[var(--success-green)]'>
                   {data.overallProgress.attainedPLOs}
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Remaining PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold text-orange-600'>
+                <div className='text-lg font-bold text-[var(--warning)]'>
                   {data.overallProgress.remainingPLOs}
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Overall Progress
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold'>
+                <div className='text-lg font-bold text-primary-text'>
                   {data.overallProgress.progressPercentage.toFixed(1)}%
                 </div>
               </CardContent>
@@ -396,9 +396,9 @@ const PLOAttainmentsPage = () => {
           </div>
 
           {/* Chart */}
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>PLO Attainment Comparison</CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">PLO Attainment Comparison</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
@@ -421,20 +421,20 @@ const PLOAttainmentsPage = () => {
           {/* PLO Details */}
           <div className="space-y-4">
             {data.ploAttainments.map((plo) => (
-              <Card key={plo.ploId}>
+              <Card key={plo.ploId} className="bg-card border border-card-border">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <CardTitle className="text-sm font-bold text-primary-text flex items-center gap-2">
                         <GraduationCap className="h-5 w-5" />
                         {plo.ploCode}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs text-secondary-text mt-1">
                         {plo.description}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold">
+                      <div className="text-lg font-bold text-primary-text">
                         {plo.studentAttainment.percentage.toFixed(1)}%
                       </div>
                       <div className="mt-1">
@@ -446,25 +446,25 @@ const PLOAttainmentsPage = () => {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Your Attainment</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-[10px] text-muted-text">Your Attainment</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {plo.studentAttainment.percentage.toFixed(1)}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Class Average</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-[10px] text-muted-text">Class Average</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {plo.classAttainment.percentage.toFixed(1)}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Comparison</p>
+                      <p className="text-[10px] text-muted-text">Comparison</p>
                       <div className="flex items-center gap-2 mt-1">
                         {getComparisonIcon(
                           plo.studentAttainment.percentage,
                           plo.classAttainment.percentage
                         )}
-                        <span className="text-sm">
+                        <span className="text-xs text-primary-text">
                           {plo.studentAttainment.percentage >
                           plo.classAttainment.percentage
                             ? 'Above Average'
@@ -477,8 +477,8 @@ const PLOAttainmentsPage = () => {
                     </div>
                   </div>
 
-                  <div className="mb-4 p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="mb-4 p-3 rounded border border-card-border bg-card">
+                    <p className="text-xs text-secondary-text">
                       Threshold: {plo.threshold}%
                     </p>
                   </div>
@@ -492,7 +492,7 @@ const PLOAttainmentsPage = () => {
                             expandedPLO === plo.ploId ? null : plo.ploId
                           )
                         }
-                        className="text-sm text-primary hover:underline mb-2"
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
                       >
                         {expandedPLO === plo.ploId ? 'Hide' : 'Show'}{' '}
                         Contributing CLOs ({plo.contributingClos.length})
@@ -503,12 +503,12 @@ const PLOAttainmentsPage = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>CLO Code</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Weight</TableHead>
-                                <TableHead>Your Attainment</TableHead>
-                                <TableHead>Class Average</TableHead>
-                                <TableHead>Contribution</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -520,21 +520,21 @@ const PLOAttainmentsPage = () => {
                                     0
                                   );
                                 return (
-                                  <TableRow key={clo.cloId}>
-                                    <TableCell className="font-medium">
+                                  <TableRow key={clo.cloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
                                       {clo.cloCode}
                                     </TableCell>
-                                    <TableCell className="max-w-md truncate">
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
                                       {clo.cloDescription}
                                     </TableCell>
-                                    <TableCell>{clo.weight}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">{clo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {clo.studentAttainment.toFixed(1)}%
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {clo.classAttainment.toFixed(1)}%
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {contribution.toFixed(2)}%
                                     </TableCell>
                                   </TableRow>
@@ -552,11 +552,11 @@ const PLOAttainmentsPage = () => {
           </div>
         </div>
       ) : selectedProgram ? (
-        <div className='text-center text-gray-500 py-4'>
+        <div className='text-center text-xs text-secondary-text py-4'>
           No PLO attainments data available
         </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
+        <div className='text-center text-xs text-secondary-text py-4'>
           Select a program to view PLO attainments
         </div>
       )}

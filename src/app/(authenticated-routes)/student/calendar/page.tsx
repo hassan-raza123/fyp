@@ -320,7 +320,7 @@ const CalendarPage = () => {
         </div>
         <div className="space-y-3">
           {dayEvents.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-secondary-text">
               No events scheduled for this day
             </div>
           ) : (
@@ -343,7 +343,7 @@ const CalendarPage = () => {
                         <Badge variant="outline">{event.category}</Badge>
                       </div>
                       {event.description && (
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-sm text-secondary-text mb-2">
                           {event.description}
                         </p>
                       )}
@@ -355,7 +355,7 @@ const CalendarPage = () => {
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-secondary-text">
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="w-4 h-4" />
                           <span>

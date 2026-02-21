@@ -305,7 +305,7 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="profile">
-          <Card className="bg-card border-card-border">
+          <Card className="bg-card border border-card-border">
             <CardHeader>
               <CardTitle className="text-primary-text">Profile Information</CardTitle>
               <CardDescription className="text-secondary-text">
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                         disabled
                         className="bg-card border-card-border text-primary-text"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Roll number cannot be changed
                       </p>
                     </div>
@@ -336,7 +336,7 @@ export default function SettingsPage() {
                         disabled
                         className="bg-card border-card-border text-primary-text"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Program cannot be changed
                       </p>
                     </div>
@@ -348,7 +348,7 @@ export default function SettingsPage() {
                         disabled
                         className="bg-card border-card-border text-primary-text"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Department cannot be changed
                       </p>
                     </div>
@@ -360,7 +360,7 @@ export default function SettingsPage() {
                         disabled
                         className="bg-card border-card-border text-primary-text"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Batch cannot be changed
                       </p>
                     </div>
@@ -434,7 +434,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="password">
-          <Card className="bg-card border-card-border">
+          <Card className="bg-card border border-card-border">
             <CardHeader>
               <CardTitle className="text-primary-text">Change Password</CardTitle>
               <CardDescription>
@@ -483,12 +483,12 @@ export default function SettingsPage() {
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-secondary-text">
                       Strength: {passwordStrength.label || 'Enter password'}
                     </p>
                   </div>
                 )}
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-secondary-text">
                   Password must be at least 6 characters long
                 </p>
               </div>
@@ -521,7 +521,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="preferences">
-          <Card className="bg-card border-card-border">
+          <Card className="bg-card border border-card-border">
             <CardHeader>
               <CardTitle className="text-primary-text">Preferences</CardTitle>
               <CardDescription>
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                       <Label htmlFor="emailNotifications">
                         Email Notifications
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-text">
                         Receive notifications via email
                       </p>
                     </div>
@@ -561,7 +561,7 @@ export default function SettingsPage() {
                       <Label htmlFor="assessmentReminders">
                         Assessment Reminders
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-text">
                         Get reminders for upcoming assessments
                       </p>
                     </div>
@@ -584,7 +584,7 @@ export default function SettingsPage() {
                       <Label htmlFor="gradeNotifications">
                         Grade Notifications
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-text">
                         Get notified when grades are published
                       </p>
                     </div>
@@ -605,7 +605,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="systemUpdates">System Updates</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-text">
                         Receive system updates and announcements
                       </p>
                     </div>
