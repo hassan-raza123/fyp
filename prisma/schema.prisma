@@ -34,6 +34,7 @@ model users {
   userrole               userroles?
   lockedCourseOfferings  courseofferings[]  @relation("CourseOfferingLocker")
   surveysCreated         surveys[]          @relation("SurveyCreator")
+  actionPlansCreated     action_plans[]     @relation("ActionPlanCreator")
 }
 
 model roles {
@@ -148,6 +149,7 @@ model semesters {
   ploAttainments  ploattainments[]
   semesterGPA     semestergpa[]
   transcripts     transcripts[]
+  actionPlans     action_plans[]
 }
 
 model batches {
@@ -190,6 +192,7 @@ model courseofferings {
   sections         sections[]
   studentGrades    studentgrades[]
   surveys          surveys[]
+  actionPlans      action_plans[]
 
   @@unique([courseId, semesterId])
   @@index([courseId])
@@ -298,6 +301,7 @@ model plos {
   program          programs           @relation(fields: [programId], references: [id])
   ploScores        ploscores[]
   surveyQuestions  survey_questions[]
+  actionPlans      action_plans[]
 
   @@unique([code, programId])
   @@index([programId])
@@ -418,14 +422,16 @@ model ploattainments {
   totalStudents     Int
   studentsAchieved  Int
   threshold         Float             @default(60)
-  attainmentPercent Float
-  calculatedAt      DateTime          @default(now())
-  calculatedBy      Int
-  status            attainment_status @default(active)
-  calculator        users             @relation("PLOAttainmentCalculator", fields: [calculatedBy], references: [id])
-  plo               plos              @relation(fields: [ploId], references: [id])
-  program           programs          @relation(fields: [programId], references: [id])
-  semester          semesters         @relation(fields: [semesterId], references: [id])
+  attainmentPercent  Float
+  directAttainment   Float?
+  indirectAttainment Float?
+  calculatedAt       DateTime          @default(now())
+  calculatedBy       Int
+  status             attainment_status @default(active)
+  calculator         users             @relation("PLOAttainmentCalculator", fields: [calculatedBy], references: [id])
+  plo                plos              @relation(fields: [ploId], references: [id])
+  program            programs          @relation(fields: [programId], references: [id])
+  semester           semesters         @relation(fields: [semesterId], references: [id])
 
   @@unique([ploId, programId, semesterId])
   @@index([ploId])
@@ -1021,4 +1027,37 @@ enum survey_status {
 enum survey_question_type {
   rating
   text
+}
+
+enum action_plan_status {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+model action_plans {
+  id               Int                @id @default(autoincrement())
+  courseOfferingId Int
+  ploId            Int
+  semesterId       Int
+  attainmentValue  Float
+  threshold        Float              @default(60)
+  rootCause        String?            @db.Text
+  actionTaken      String?            @db.Text
+  expectedOutcome  String?            @db.Text
+  targetDate       DateTime?
+  status           action_plan_status @default(pending)
+  createdBy        Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
+  plo              plos               @relation(fields: [ploId], references: [id])
+  semester         semesters          @relation(fields: [semesterId], references: [id])
+  creator          users              @relation("ActionPlanCreator", fields: [createdBy], references: [id])
+
+  @@index([courseOfferingId])
+  @@index([ploId])
+  @@index([semesterId])
+  @@index([createdBy])
 }

@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Prisma, plo_status } from '@prisma/client';
+import { plo_status } from '@prisma/client';
 
 interface PLOAttainment {
   ploId: number;
   ploCode: string;
   description: string;
   attainment: number;
+  directAttainment: number;
+  indirectAttainment: number | null;
   contributingClos: {
     cloId: number;
     cloCode: string;
@@ -28,7 +30,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch PLOs for the program
+    // Fetch PLOs for the program with CLO mappings and attainments
     const plos = await prisma.plos.findMany({
       where: {
         programId: Number(programId),
@@ -53,9 +55,10 @@ export async function GET(request: Request) {
       },
     });
 
-    // Calculate PLO attainments
-    const ploAttainments: PLOAttainment[] = plos.map((plo) => {
-      // Get CLOs that contribute to this PLO
+    // --- DIRECT ATTAINMENT: weighted average of CLO attainments ---
+    const directAttainmentByPlo = new Map<number, { attainment: number; contributingClos: PLOAttainment['contributingClos'] }>();
+
+    for (const plo of plos) {
       const contributingClos = plo.cloMappings.map((mapping) => ({
         cloId: mapping.clo.id,
         cloCode: mapping.clo.code,
@@ -63,23 +66,90 @@ export async function GET(request: Request) {
         weight: mapping.weight,
       }));
 
-      // Calculate weighted average of CLO attainments
-      const totalWeight = contributingClos.reduce(
-        (sum: number, clo) => sum + clo.weight,
-        0
-      );
+      const totalWeight = contributingClos.reduce((sum, clo) => sum + clo.weight, 0);
+      const weightedSum = contributingClos.reduce((sum, clo) => sum + clo.attainment * clo.weight, 0);
+      const directAttainment = totalWeight > 0 ? weightedSum / totalWeight : 0;
 
-      const weightedSum = contributingClos.reduce(
-        (sum: number, clo) => sum + clo.attainment * clo.weight,
-        0
-      );
+      directAttainmentByPlo.set(plo.id, { attainment: directAttainment, contributingClos });
+    }
 
-      const attainment = totalWeight > 0 ? weightedSum / totalWeight : 0;
+    // --- INDIRECT ATTAINMENT: from closed surveys in this program's course offerings ---
+    const courseOfferings = await prisma.courseofferings.findMany({
+      where: {
+        semesterId: Number(semesterId),
+        course: {
+          programs: { some: { id: Number(programId) } },
+        },
+      },
+      select: { id: true },
+    });
+
+    const offeringIds = courseOfferings.map((co) => co.id);
+    const indirectByPlo = new Map<number, { sumRating: number; count: number }>();
+
+    if (offeringIds.length > 0) {
+      const surveys = await prisma.surveys.findMany({
+        where: {
+          courseOfferingId: { in: offeringIds },
+          status: 'closed',
+        },
+        include: {
+          questions: {
+            where: { ploId: { not: null } },
+            include: {
+              answers: { select: { ratingValue: true } },
+            },
+          },
+          _count: { select: { responses: true } },
+        },
+      });
+
+      for (const survey of surveys) {
+        const responseCount = survey._count.responses;
+        if (responseCount === 0) continue;
+
+        for (const q of survey.questions) {
+          if (!q.ploId) continue;
+          const ratings = q.answers
+            .filter((a) => a.ratingValue !== null)
+            .map((a) => a.ratingValue as number);
+          if (ratings.length === 0) continue;
+
+          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+          const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
+          indirectByPlo.set(q.ploId, {
+            sumRating: existing.sumRating + avg * responseCount,
+            count: existing.count + responseCount,
+          });
+        }
+      }
+    }
+
+    // Convert indirect Map to percentage (rating/5 * 100)
+    const indirectAttainmentByPloId = new Map<number, number>();
+    for (const [ploId, data] of indirectByPlo.entries()) {
+      const avgRating = data.count > 0 ? data.sumRating / data.count : 0;
+      indirectAttainmentByPloId.set(ploId, Math.round((avgRating / 5) * 100 * 10) / 10);
+    }
+
+    // --- COMBINE: 70% direct + 30% indirect (if indirect data exists) ---
+    const ploAttainments: PLOAttainment[] = plos.map((plo) => {
+      const direct = directAttainmentByPlo.get(plo.id);
+      const directAttainment = direct?.attainment ?? 0;
+      const contributingClos = direct?.contributingClos ?? [];
+      const indirectAttainment = indirectAttainmentByPloId.get(plo.id) ?? null;
+
+      const attainment =
+        indirectAttainment !== null
+          ? 0.7 * directAttainment + 0.3 * indirectAttainment
+          : directAttainment;
 
       return {
         ploId: plo.id,
         ploCode: plo.code,
         description: plo.description,
+        directAttainment,
+        indirectAttainment,
         attainment,
         contributingClos,
       };

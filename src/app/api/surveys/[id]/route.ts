@@ -109,9 +109,22 @@ export async function DELETE(
       return NextResponse.json({ success: false, error }, { status: 401 });
     }
 
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
+    // Check if faculty created this survey (allow creator to delete their own)
+    const surveyToDelete = await prisma.surveys.findUnique({
+      where: { id: parseInt(params.id) },
+      select: { createdBy: true },
+    });
+
+    if (!surveyToDelete) {
+      return NextResponse.json({ success: false, error: 'Survey not found.' }, { status: 404 });
+    }
+
+    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+    const isCreator = surveyToDelete.createdBy === user?.userId;
+
+    if (!isAdmin && !isCreator) {
       return NextResponse.json(
-        { success: false, error: 'Only admins can delete surveys.' },
+        { success: false, error: 'Only admins or the survey creator can delete surveys.' },
         { status: 403 }
       );
     }
