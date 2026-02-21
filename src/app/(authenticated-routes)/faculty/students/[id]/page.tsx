@@ -511,11 +511,11 @@ export default function StudentDetailsPage() {
       case 'active':
         return 'bg-green-500';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
       case 'suspended':
         return 'bg-yellow-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
     }
   };
 
@@ -740,7 +740,7 @@ export default function StudentDetailsPage() {
             ) : (
               <div className='grid grid-cols-2 gap-6'>
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Name
                   </h3>
                   <p className='mt-1'>
@@ -749,21 +749,21 @@ export default function StudentDetailsPage() {
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Email
                   </h3>
                   <p className='mt-1'>{student.user.email}</p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Roll Number
                   </h3>
                   <p className='mt-1'>{student.rollNumber}</p>
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Department
                   </h3>
                   <p className='mt-1'>
@@ -772,7 +772,7 @@ export default function StudentDetailsPage() {
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Program
                   </h3>
                   <p className='mt-1'>
@@ -781,7 +781,7 @@ export default function StudentDetailsPage() {
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Batch
                   </h3>
                   <p className='mt-1'>
@@ -790,7 +790,7 @@ export default function StudentDetailsPage() {
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium text-muted-foreground'>
+                  <h3 className='text-sm font-medium text-secondary-text'>
                     Status
                   </h3>
                   <Badge
@@ -960,7 +960,7 @@ export default function StudentDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Overall Performance</p>
+                          <p className="text-sm text-secondary-text">Overall Performance</p>
                           <p className="text-2xl font-bold">
                             {analytics.overallPerformance.toFixed(1)}%
                           </p>
@@ -973,7 +973,7 @@ export default function StudentDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Total Assessments</p>
+                          <p className="text-sm text-secondary-text">Total Assessments</p>
                           <p className="text-2xl font-bold">
                             {analytics.totalAssessments}
                           </p>
@@ -986,7 +986,7 @@ export default function StudentDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Completed</p>
+                          <p className="text-sm text-secondary-text">Completed</p>
                           <p className="text-2xl font-bold">
                             {analytics.completedAssessments}
                           </p>
@@ -999,7 +999,7 @@ export default function StudentDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Completion Rate</p>
+                          <p className="text-sm text-secondary-text">Completion Rate</p>
                           <p className="text-2xl font-bold">
                             {analytics.totalAssessments > 0
                               ? ((analytics.completedAssessments / analytics.totalAssessments) * 100).toFixed(1)
@@ -1075,7 +1075,7 @@ export default function StudentDetailsPage() {
                             <TableCell>
                               <div>
                                 <p className="font-medium">{course.courseCode}</p>
-                                <p className="text-xs text-muted-foreground">{course.courseName}</p>
+                                <p className="text-xs text-secondary-text">{course.courseName}</p>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -1123,7 +1123,7 @@ export default function StudentDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading performance data...</p>
+                  <p className="text-secondary-text">Loading performance data...</p>
                 </CardContent>
               </Card>
             )}
@@ -1133,7 +1133,7 @@ export default function StudentDetailsPage() {
             {analytics ? (
               analytics.cloAttainmentSummary.length > 0 ? (
                 analytics.cloAttainmentSummary.map((course) => (
-                  <Card key={course.courseId}>
+                  <Card key={course.courseId} className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardHeader>
                       <CardTitle className="text-sm font-semibold text-primary-text">
                         {course.courseCode} - {course.courseName}
@@ -1172,7 +1172,7 @@ export default function StudentDetailsPage() {
                           </TableBody>
                         </Table>
                       ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">
+                        <p className="text-sm text-secondary-text text-center py-4">
                           No CLO attainment data available for this course
                         </p>
                       )}
@@ -1182,8 +1182,8 @@ export default function StudentDetailsPage() {
               ) : (
                 <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
-                    <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">No CLO attainment data available</p>
+                    <Target className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
+                    <p className="text-secondary-text">No CLO attainment data available</p>
                   </CardContent>
                 </Card>
               )
@@ -1191,7 +1191,7 @@ export default function StudentDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading CLO attainments...</p>
+                  <p className="text-secondary-text">Loading CLO attainments...</p>
                 </CardContent>
               </Card>
             )}
@@ -1304,8 +1304,8 @@ export default function StudentDetailsPage() {
               ) : (
                 <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">No assessment results available</p>
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
+                    <p className="text-secondary-text">No assessment results available</p>
                   </CardContent>
                 </Card>
               )
@@ -1313,7 +1313,7 @@ export default function StudentDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading assessment results...</p>
+                  <p className="text-secondary-text">Loading assessment results...</p>
                 </CardContent>
               </Card>
             )}
@@ -1368,8 +1368,8 @@ export default function StudentDetailsPage() {
               ) : (
                 <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
-                    <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">No enrollment history available</p>
+                    <Users className="w-12 h-12 mx-auto mb-4 text-secondary-text" />
+                    <p className="text-secondary-text">No enrollment history available</p>
                   </CardContent>
                 </Card>
               )
@@ -1377,7 +1377,7 @@ export default function StudentDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading enrollment history...</p>
+                  <p className="text-secondary-text">Loading enrollment history...</p>
                 </CardContent>
               </Card>
             )}

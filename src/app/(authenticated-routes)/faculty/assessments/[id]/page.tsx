@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,7 +68,7 @@ function SubmissionList({ assessmentId }: { assessmentId: number }) {
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading submissions...</p>;
+    return <p className="text-secondary-text">Loading submissions...</p>;
   }
 
   return (
@@ -155,11 +154,11 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading results...</p>;
+    return <p className="text-secondary-text">Loading results...</p>;
   }
 
   if (!analytics) {
-    return <p className="text-muted-foreground">No results available</p>;
+    return <p className="text-secondary-text">No results available</p>;
   }
 
   return (
@@ -432,15 +431,19 @@ export default function AssessmentDetailsPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+          >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </button>
           <div>
-            <h1 className="text-3xl font-bold">{assessment.title}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-lg font-bold text-primary-text">{assessment.title}</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
               {assessment.courseOffering.course.code} -{' '}
               {assessment.courseOffering.course.name} (
               {assessment.courseOffering.semester.name})
@@ -449,26 +452,46 @@ export default function AssessmentDetailsPage() {
         </div>
         <div className="flex gap-2">
           {assessment.status === 'active' ? (
-            <Button onClick={handlePublish}>Publish</Button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handlePublish}
+            >
+              Publish
+            </button>
           ) : (
-            <Button variant="outline" onClick={handleUnpublish}>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
+              onClick={handleUnpublish}
+            >
               Unpublish
-            </Button>
+            </button>
           )}
-          <Button variant="outline" onClick={() => setShowExtendDialog(true)}>
-            <Clock className="w-4 h-4 mr-2" />
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+            onClick={() => setShowExtendDialog(true)}
+          >
+            <Clock className="w-4 h-4" />
             Extend Due Date
-          </Button>
-          <Button variant="outline" onClick={() => setShowReminderDialog(true)}>
-            <Send className="w-4 h-4 mr-2" />
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+            onClick={() => setShowReminderDialog(true)}
+          >
+            <Send className="w-4 h-4" />
             Send Reminder
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/faculty/assessments/${params.id}/analytics`}>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
+          </button>
+          <Link
+            href={`/faculty/assessments/${params.id}/analytics`}
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </Link>
         </div>
       </div>
 
@@ -484,12 +507,12 @@ export default function AssessmentDetailsPage() {
         <TabsContent value="info" className="space-y-4">
           <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
-              <CardTitle>Assessment Information</CardTitle>
+              <CardTitle className="text-sm font-semibold text-primary-text">Assessment Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Type
                   </p>
                   <p className="text-lg">
@@ -499,7 +522,7 @@ export default function AssessmentDetailsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Status
                   </p>
                   <Badge
@@ -513,19 +536,19 @@ export default function AssessmentDetailsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Total Marks
                   </p>
                   <p className="text-lg">{assessment.totalMarks}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Weightage
                   </p>
                   <p className="text-lg">{assessment.weightage}%</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Due Date
                   </p>
                   <p className="text-lg flex items-center gap-2">
@@ -535,13 +558,13 @@ export default function AssessmentDetailsPage() {
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Description
                 </p>
                 <p className="text-sm mt-1">{assessment.description}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Instructions
                 </p>
                 <p className="text-sm mt-1 whitespace-pre-wrap">
@@ -555,12 +578,14 @@ export default function AssessmentDetailsPage() {
         <TabsContent value="items" className="space-y-4">
           <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Assessment Items</CardTitle>
-              <Button asChild>
-                <Link href={`/faculty/assessments/${params.id}/items`}>
-                  Manage Items
-                </Link>
-              </Button>
+              <CardTitle className="text-sm font-semibold text-primary-text">Assessment Items</CardTitle>
+              <Link
+                href={`/faculty/assessments/${params.id}/items`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Manage Items
+              </Link>
             </CardHeader>
             <CardContent>
               <Table>
@@ -591,7 +616,7 @@ export default function AssessmentDetailsPage() {
                           {item.clo ? (
                             <Badge variant="outline">{item.clo.code}</Badge>
                           ) : (
-                            <span className="text-muted-foreground">
+                            <span className="text-secondary-text">
                               No CLO
                             </span>
                           )}
@@ -608,7 +633,7 @@ export default function AssessmentDetailsPage() {
         <TabsContent value="submissions" className="space-y-4">
           <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
-              <CardTitle>Student Submissions</CardTitle>
+              <CardTitle className="text-sm font-semibold text-primary-text">Student Submissions</CardTitle>
             </CardHeader>
             <CardContent>
               <SubmissionList assessmentId={assessment.id} />
@@ -619,7 +644,7 @@ export default function AssessmentDetailsPage() {
         <TabsContent value="results" className="space-y-4">
           <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
-              <CardTitle>Results Overview</CardTitle>
+              <CardTitle className="text-sm font-semibold text-primary-text">Results Overview</CardTitle>
             </CardHeader>
             <CardContent>
               <ResultsOverview assessmentId={assessment.id} />
@@ -630,7 +655,7 @@ export default function AssessmentDetailsPage() {
         <TabsContent value="clo-coverage" className="space-y-4">
           <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
-              <CardTitle>CLO Coverage Analysis</CardTitle>
+              <CardTitle className="text-sm font-semibold text-primary-text">CLO Coverage Analysis</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -755,26 +780,29 @@ export default function AssessmentDetailsPage() {
                           (item) => item.clo?.code === cloCode
                         );
                         return (
-                          <Card key={cloCode}>
-                            <CardHeader>
-                              <CardTitle className="text-base">
+                          <div
+                            key={cloCode}
+                            className="rounded-lg border border-card-border bg-card overflow-hidden"
+                          >
+                            <div className="p-4 border-b border-card-border">
+                              <p className="text-sm font-semibold text-primary-text">
                                 <Badge variant="outline" className="mr-2">
                                   {cloCode}
                                 </Badge>
                                 {cloItems.length} item(s) -{' '}
                                 {cloItems.reduce((sum, item) => sum + item.marks, 0)} marks
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
+                              </p>
+                            </div>
+                            <div className="p-4">
                               <div className="space-y-2">
                                 {cloItems.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="flex items-center justify-between p-2 border rounded"
+                                    className="flex items-center justify-between p-2 border border-card-border rounded-lg bg-[var(--hover-bg)]"
                                   >
                                     <div>
-                                      <span className="font-medium">{item.questionNo}:</span>{' '}
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className="font-medium text-primary-text">{item.questionNo}:</span>{' '}
+                                      <span className="text-sm text-secondary-text">
                                         {item.description}
                                       </span>
                                     </div>
@@ -782,14 +810,14 @@ export default function AssessmentDetailsPage() {
                                   </div>
                                 ))}
                               </div>
-                            </CardContent>
-                          </Card>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                   </>
                 ) : (
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     No items added yet. Add items to see CLO coverage.
                   </p>
                 )}
@@ -801,63 +829,81 @@ export default function AssessmentDetailsPage() {
 
       {/* Extend Due Date Dialog */}
       <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Extend Due Date</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Extend Due Date</DialogTitle>
+            <DialogDescription className="text-secondary-text text-xs">
               Select a new due date for this assessment
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>New Due Date</Label>
+              <Label className="text-xs text-secondary-text">New Due Date</Label>
               <Input
                 type="datetime-local"
+                className="h-8 text-xs bg-card border-card-border text-primary-text mt-1"
                 onChange={(e) => setNewDueDate(new Date(e.target.value))}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
               onClick={() => setShowExtendDialog(false)}
             >
               Cancel
-            </Button>
-            <Button onClick={handleExtendDueDate}>Extend</Button>
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handleExtendDueDate}
+            >
+              Extend
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Send Reminder Dialog */}
       <Dialog open={showReminderDialog} onOpenChange={setShowReminderDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Send Reminder to Students</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-primary-text">Send Reminder to Students</DialogTitle>
+            <DialogDescription className="text-secondary-text text-xs">
               Send a reminder message to all students enrolled in this
               assessment
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Reminder Message</Label>
+              <Label className="text-xs text-secondary-text">Reminder Message</Label>
               <Textarea
                 value={reminderMessage}
                 onChange={(e) => setReminderMessage(e.target.value)}
                 placeholder="Enter reminder message..."
                 rows={5}
+                className="mt-1 text-xs bg-card border-card-border text-primary-text"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
               onClick={() => setShowReminderDialog(false)}
             >
               Cancel
-            </Button>
-            <Button onClick={handleSendReminder}>Send Reminder</Button>
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handleSendReminder}
+            >
+              Send Reminder
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

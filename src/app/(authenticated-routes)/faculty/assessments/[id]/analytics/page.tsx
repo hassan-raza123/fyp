@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
@@ -70,8 +70,18 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 export default function AssessmentAnalyticsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchAnalytics();
@@ -96,70 +106,80 @@ export default function AssessmentAnalyticsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-6">
-        <div>Loading...</div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading analytics...</p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="container mx-auto py-6">
-        <div>No data available</div>
+      <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+        <p className="text-xs text-secondary-text">No data available</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+        >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </button>
         <div>
-          <h1 className="text-3xl font-bold">Assessment Analytics</h1>
-          <p className="text-muted-foreground">{data.assessment.title}</p>
+          <h1 className="text-lg font-bold text-primary-text">Assessment Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">{data.assessment.title}</p>
         </div>
       </div>
 
       {/* Overall Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary-text">Total Students</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.overall.totalStudents}</div>
+            <div className="text-lg font-bold text-primary-text">{data.overall.totalStudents}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Marks</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary-text">Average Marks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-lg font-bold text-primary-text">
               {data.overall.averageMarks.toFixed(1)} / {data.overall.totalMarks}
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average %</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary-text">Average %</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-lg font-bold text-primary-text">
               {data.overall.averagePercentage.toFixed(1)}%
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Range</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary-text">Range</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-lg font-bold text-primary-text">
               {data.overall.lowestMarks} - {data.overall.highestMarks}
             </div>
           </CardContent>
@@ -167,9 +187,9 @@ export default function AssessmentAnalyticsPage() {
       </div>
 
       {/* Grade Distribution */}
-      <Card>
+      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
         <CardHeader>
-          <CardTitle>Grade Distribution</CardTitle>
+          <CardTitle className="text-sm font-semibold text-primary-text">Grade Distribution</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -186,9 +206,9 @@ export default function AssessmentAnalyticsPage() {
       </Card>
 
       {/* CLO Performance */}
-      <Card>
+      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
         <CardHeader>
-          <CardTitle>Performance by CLO</CardTitle>
+          <CardTitle className="text-sm font-semibold text-primary-text">Performance by CLO</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -235,9 +255,9 @@ export default function AssessmentAnalyticsPage() {
       </Card>
 
       {/* Item-wise Analysis */}
-      <Card>
+      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
         <CardHeader>
-          <CardTitle>Item-wise Analysis</CardTitle>
+          <CardTitle className="text-sm font-semibold text-primary-text">Item-wise Analysis</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -268,9 +288,9 @@ export default function AssessmentAnalyticsPage() {
       </Card>
 
       {/* Student Results */}
-      <Card>
+      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
         <CardHeader>
-          <CardTitle>Student Results</CardTitle>
+          <CardTitle className="text-sm font-semibold text-primary-text">Student Results</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>

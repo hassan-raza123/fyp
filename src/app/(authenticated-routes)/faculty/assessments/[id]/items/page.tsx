@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { AssessmentItemForm } from '@/components/assessments/AssessmentItemForm';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Upload, Edit2, Trash2, FileSpreadsheet } from 'lucide-react';
 import {
   Table,
@@ -30,6 +30,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function AssessmentItemsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
   const [assessment, setAssessment] = useState<any>(null);
   const [clos, setClos] = useState<any[]>([]);
   const [plos, setPlos] = useState<any[]>([]);
@@ -40,6 +45,10 @@ export default function AssessmentItemsPage() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [bulkFile, setBulkFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -198,8 +207,18 @@ export default function AssessmentItemsPage() {
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!assessment) {
@@ -214,22 +233,27 @@ export default function AssessmentItemsPage() {
       : 0;
 
   return (
-    <div className='container mx-auto py-6 space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-4'>
-          <Button variant='ghost' size='icon' onClick={() => router.back()}>
-            <ArrowLeft className='h-4 w-4' />
-          </Button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
           <div>
-            <h1 className='text-3xl font-bold'>Assessment Items</h1>
-            <p className='text-muted-foreground'>
+            <h1 className="text-lg font-bold text-primary-text">Assessment Items</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
               {assessment?.title || 'Loading...'}
             </p>
           </div>
         </div>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
             onClick={() => {
               const template = [
                 ['questionNo', 'description', 'marks', 'cloId'],
@@ -247,63 +271,77 @@ export default function AssessmentItemsPage() {
               toast.success('Template downloaded');
             }}
           >
-            <FileSpreadsheet className='w-4 h-4 mr-2' />
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
             Download Template
-          </Button>
+          </button>
           <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
             <DialogTrigger asChild>
-              <Button variant='outline'>
-                <Upload className='w-4 h-4 mr-2' />
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
                 Bulk Import
-              </Button>
+              </button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card border-card-border text-primary-text">
               <DialogHeader>
-                <DialogTitle>Bulk Import Items</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-primary-text">Bulk Import Items</DialogTitle>
+                <DialogDescription className="text-secondary-text text-xs">
                   Upload a CSV file with assessment items
                 </DialogDescription>
               </DialogHeader>
-              <div className='space-y-4'>
+              <div className="space-y-4">
                 <div>
-                  <Label>CSV File</Label>
+                  <Label className="text-xs text-secondary-text">CSV File</Label>
                   <Input
-                    type='file'
-                    accept='.csv'
+                    type="file"
+                    accept=".csv"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) setBulkFile(file);
                     }}
-                    className='mt-2'
+                    className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
-                  <p className='text-xs text-muted-foreground mt-2'>
+                  <p className="text-xs text-secondary-text mt-2">
                     Format: questionNo, description, marks, cloId
                   </p>
                 </div>
               </div>
-              <div className='flex justify-end gap-2'>
-                <Button
-                  variant='outline'
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
                   onClick={() => setShowBulkImport(false)}
                 >
                   Cancel
-                </Button>
-                <Button onClick={handleBulkImport} disabled={!bulkFile}>
+                </button>
+                <button
+                  type="button"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
+                  style={{ backgroundColor: primaryColor }}
+                  onClick={handleBulkImport}
+                  disabled={!bulkFile}
+                >
                   Import
-                </Button>
+                </button>
               </div>
             </DialogContent>
           </Dialog>
           <Dialog open={showForm} onOpenChange={setShowForm}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className='w-4 h-4 mr-2' />
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white inline-flex items-center gap-2"
+                style={{ backgroundColor: primaryColor }}
+              >
+                <Plus className="w-4 h-4" />
                 Add Item
-              </Button>
+              </button>
             </DialogTrigger>
-            <DialogContent className='max-w-2xl'>
+            <DialogContent className="max-w-2xl bg-card border-card-border text-primary-text">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-primary-text">
                   {editingItem ? 'Edit Item' : 'Add Assessment Item'}
                 </DialogTitle>
               </DialogHeader>
@@ -320,62 +358,62 @@ export default function AssessmentItemsPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
         <CardHeader>
-          <CardTitle>Assessment Items ({items.length})</CardTitle>
+          <CardTitle className="text-sm font-semibold text-primary-text">Assessment Items ({items.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Question No</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Marks</TableHead>
-                <TableHead>CLO</TableHead>
-                <TableHead className='text-right'>Actions</TableHead>
+                <TableHead className="text-xs font-semibold text-primary-text">Question No</TableHead>
+                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
+                <TableHead className="text-right text-xs font-semibold text-primary-text">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className='text-center'>
+                  <TableCell colSpan={5} className="text-center text-xs text-secondary-text">
                     No items added yet
                   </TableCell>
                 </TableRow>
               ) : (
                 items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.questionNo}</TableCell>
-                    <TableCell className='max-w-md truncate'>
+                  <TableRow key={item.id} className="hover:bg-[var(--hover-bg)]">
+                    <TableCell className="text-xs text-primary-text">{item.questionNo}</TableCell>
+                    <TableCell className="max-w-md truncate text-xs text-primary-text">
                       {item.description}
                     </TableCell>
-                    <TableCell>{item.marks}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
                     <TableCell>
                       {item.clo ? (
-                        <Badge variant='outline'>{item.clo.code}</Badge>
+                        <Badge variant="outline">{item.clo.code}</Badge>
                       ) : (
-                        <span className='text-muted-foreground'>No CLO</span>
+                        <span className="text-xs text-secondary-text">No CLO</span>
                       )}
                     </TableCell>
-                    <TableCell className='text-right'>
-                      <div className='flex justify-end gap-2'>
-                        <Button
-                          variant='ghost'
-                          size='icon'
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
                           onClick={() => {
                             setEditingItem(item);
                             setShowForm(true);
                           }}
                         >
-                          <Edit2 className='h-4 w-4' />
-                        </Button>
-                        <Button
-                          variant='ghost'
-                          size='icon'
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
                           onClick={() => handleDelete(item.id)}
                         >
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
@@ -151,12 +150,13 @@ export default function CourseDetailsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading course details...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading course details...</p>
         </div>
       </div>
     );
@@ -165,17 +165,16 @@ export default function CourseDetailsPage() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/faculty/courses')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
-          </Button>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4">
+        <p className="text-xs text-[var(--error)]">{error}</p>
+        <button
+          type="button"
+          onClick={() => router.push('/faculty/courses')}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center gap-1.5"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Courses
+        </button>
       </div>
     );
   }
@@ -183,38 +182,37 @@ export default function CourseDetailsPage() {
   // Not found state
   if (!course) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Course not found</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/faculty/courses')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
-          </Button>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4">
+        <p className="text-xs text-secondary-text">Course not found</p>
+        <button
+          type="button"
+          onClick={() => router.push('/faculty/courses')}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center gap-1.5"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Courses
+        </button>
       </div>
     );
   }
 
   // Main content
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
+    <div className="space-y-4">
+      <div className="flex justify-between items-center flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
             onClick={() => router.push('/faculty/courses')}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
           >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-lg font-bold text-primary-text">
               {course?.name || 'Untitled Course'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xs text-secondary-text mt-0.5">
               Course Code: {course?.code || 'N/A'}
             </p>
           </div>
@@ -223,51 +221,51 @@ export default function CourseDetailsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+          <h2 className="text-sm font-semibold text-primary-text mb-4">Basic Information</h2>
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">Department</p>
-              <p className="font-medium">
+              <p className="text-sm text-secondary-text">Department</p>
+              <p className="font-medium text-primary-text">
                 {course.department
                   ? `${course.department.name} (${course.department.code})`
                   : 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Credit Hours</p>
-              <p className="font-medium">{course.creditHours || 0}</p>
+              <p className="text-sm text-secondary-text">Credit Hours</p>
+              <p className="font-medium text-primary-text">{course.creditHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Theory Hours</p>
-              <p className="font-medium">{course.theoryHours || 0}</p>
+              <p className="text-sm text-secondary-text">Theory Hours</p>
+              <p className="font-medium text-primary-text">{course.theoryHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Lab Hours</p>
-              <p className="font-medium">{course.labHours || 0}</p>
+              <p className="text-sm text-secondary-text">Lab Hours</p>
+              <p className="font-medium text-primary-text">{course.labHours || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Type</p>
+              <p className="text-sm text-secondary-text">Type</p>
               <div className="mt-1">{getTypeBadge(course.type)}</div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-secondary-text">Status</p>
               <div className="mt-1">{getStatusBadge(course.status)}</div>
             </div>
           </div>
         </Card>
 
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
-          <h2 className="text-xl font-semibold mb-4">Course Details</h2>
+          <h2 className="text-sm font-semibold text-primary-text mb-4">Course Details</h2>
           <div className="space-y-4">
             {course.description && (
               <div>
-                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="text-sm text-secondary-text">Description</p>
                 <p className="mt-1">{course.description}</p>
               </div>
             )}
             {course.prerequisites && course.prerequisites.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Prerequisites</p>
+                <p className="text-sm text-secondary-text">Prerequisites</p>
                 <ul className="mt-1 list-disc list-inside">
                   {course.prerequisites.map((prereq) => (
                     <li key={prereq.prerequisite?.id}>
@@ -279,7 +277,7 @@ export default function CourseDetailsPage() {
             )}
             {course.corequisites && course.corequisites.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Co-requisites</p>
+                <p className="text-sm text-secondary-text">Co-requisites</p>
                 <ul className="mt-1 list-disc list-inside">
                   {course.corequisites.map((coreq) => (
                     <li key={coreq.corequisite?.id}>
@@ -294,16 +292,18 @@ export default function CourseDetailsPage() {
 
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-sm font-semibold text-primary-text">
               Course Learning Outcomes
             </h2>
             {course.clos && course.clos.length > 0 && (
-              <Button
-                variant="outline"
+              <button
+                type="button"
                 onClick={() => router.push(`/faculty/courses/${courseId}/clos`)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                style={{ backgroundColor: iconBgColor, color: primaryColor }}
               >
                 View All CLOs
-              </Button>
+              </button>
             )}
           </div>
           <div className="space-y-4">
@@ -311,18 +311,18 @@ export default function CourseDetailsPage() {
               <>
                 {course.clos.slice(0, 3).map((clo) => (
                   <div key={clo.id}>
-                    <p className="font-medium">{clo.code}</p>
-                    <p className="text-muted-foreground">{clo.description}</p>
+                    <p className="font-medium text-primary-text">{clo.code}</p>
+                    <p className="text-secondary-text">{clo.description}</p>
                   </div>
                 ))}
                 {course.clos.length > 3 && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-secondary-text">
                     +{course.clos.length - 3} more CLOs
                   </p>
                 )}
               </>
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-secondary-text">
                 No learning outcomes defined
               </p>
             )}
@@ -330,39 +330,39 @@ export default function CourseDetailsPage() {
         </Card>
 
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
-          <h2 className="text-xl font-semibold mb-4">Assigned Faculty</h2>
+          <h2 className="text-sm font-semibold text-primary-text mb-4">Assigned Faculty</h2>
           <div className="space-y-4">
             {course.faculty && course.faculty.length > 0 ? (
               course.faculty.map((facultyMember, index) => (
                 <div
                   key={facultyMember.faculty?.id || index}
                 >
-                  <p className="font-medium">
+                  <p className="font-medium text-primary-text">
                     {facultyMember.faculty?.name}
                   </p>
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     {facultyMember.faculty?.email}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">No faculty assigned</p>
+              <p className="text-secondary-text">No faculty assigned</p>
             )}
           </div>
         </Card>
 
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6 md:col-span-2">
-          <h2 className="text-xl font-semibold mb-4">
+          <h2 className="text-sm font-semibold text-primary-text mb-4">
             Programs Offering This Course
           </h2>
           <div className="space-y-4">
             {course.programs && course.programs.length > 0 ? (
               course.programs.map((program) => (
                 <div key={program.program?.id}>
-                  <p className="font-medium">
+                  <p className="font-medium text-primary-text">
                     {program.program?.name} ({program.program?.code})
                   </p>
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     Semester {program.semester} •{' '}
                     {program.isCore ? 'Core' : 'Elective'} •{' '}
                     {program.creditHours} Credit Hours
@@ -370,7 +370,7 @@ export default function CourseDetailsPage() {
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-secondary-text">
                 No programs offering this course
               </p>
             )}
@@ -382,30 +382,30 @@ export default function CourseDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Course Offerings</h2>
-            <Button
-              variant="outline"
-              onClick={() =>
-                router.push(`/faculty/courses/${courseId}/offerings`)
-              }
+            <h2 className="text-sm font-semibold text-primary-text">Course Offerings</h2>
+            <button
+              type="button"
+              onClick={() => router.push(`/faculty/courses/${courseId}/offerings`)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
             >
               View All Offerings
-            </Button>
+            </button>
           </div>
           <CourseOfferingsPreview courseId={courseId as string} />
         </Card>
 
         <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Course Analytics</h2>
-            <Button
-              variant="outline"
-              onClick={() =>
-                router.push(`/faculty/courses/${courseId}/analytics`)
-              }
+            <h2 className="text-sm font-semibold text-primary-text">Course Analytics</h2>
+            <button
+              type="button"
+              onClick={() => router.push(`/faculty/courses/${courseId}/analytics`)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
             >
               View Analytics
-            </Button>
+            </button>
           </div>
           <CourseAnalyticsPreview courseId={courseId as string} />
         </Card>
@@ -441,12 +441,12 @@ function CourseOfferingsPreview({ courseId }: { courseId: string }) {
   }, [courseId]);
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-secondary-text">Loading...</p>;
   }
 
   if (offerings.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-secondary-text">
         No course offerings found
       </p>
     );
@@ -460,14 +460,14 @@ function CourseOfferingsPreview({ courseId }: { courseId: string }) {
           className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
         >
           <p className="font-medium text-sm">{offering.semester.name}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-secondary-text mt-1">
             {offering.sections.length} section(s) •{' '}
             {offering.totalAssessments} assessment(s)
           </p>
         </div>
       ))}
       {offerings.length >= 3 && (
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-secondary-text text-center">
           + More offerings available
         </p>
       )}
@@ -502,12 +502,12 @@ function CourseAnalyticsPreview({ courseId }: { courseId: string }) {
   }, [courseId]);
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-secondary-text">Loading...</p>;
   }
 
   if (!analytics) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-secondary-text">
         No analytics data available
       </p>
     );
@@ -520,20 +520,20 @@ function CourseAnalyticsPreview({ courseId }: { courseId: string }) {
         <p className="text-2xl font-bold mt-1">
           {analytics.overallPerformance.averageCLOAttainment.toFixed(1)}%
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-secondary-text mt-1">
           {analytics.overallPerformance.attainedCLOs} /{' '}
           {analytics.overallPerformance.totalCLOs} CLOs attained
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div>
-          <p className="text-muted-foreground">Total Students</p>
+          <p className="text-secondary-text">Total Students</p>
           <p className="font-medium">
             {analytics.overallPerformance.totalStudents}
           </p>
         </div>
         <div>
-          <p className="text-muted-foreground">Assessments</p>
+          <p className="text-secondary-text">Assessments</p>
           <p className="font-medium">
             {analytics.overallPerformance.totalAssessments}
           </p>

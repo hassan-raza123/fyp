@@ -138,7 +138,7 @@ export default function FacultyNotificationsPage() {
       case 'result': return 'bg-[var(--orange)]';
       case 'course': return 'bg-[var(--orange)]';
       case 'alert': return 'bg-[var(--error)]';
-      default: return 'bg-[var(--gray-500)]';
+      default: return primaryColor === 'var(--orange)' ? 'bg-[var(--orange)]' : 'bg-[var(--blue)]';
     }
   };
 

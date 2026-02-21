@@ -324,11 +324,11 @@ export default function SectionDetailsPage() {
       case 'active':
         return 'bg-green-500';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
       case 'suspended':
         return 'bg-yellow-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
     }
   };
 
@@ -413,7 +413,7 @@ export default function SectionDetailsPage() {
                                     {student.user.first_name}{' '}
                                     {student.user.last_name}
                                   </span>
-                                  <span className='text-sm text-gray-500'>
+                                  <span className='text-sm text-secondary-text'>
                                     Roll No: {student.rollNumber} | Email:{' '}
                                     {student.user.email}
                                   </span>
@@ -451,19 +451,19 @@ export default function SectionDetailsPage() {
           <CardContent>
             <div className='grid grid-cols-2 gap-4'>
               <div>
-                <p className='text-sm text-gray-500'>Course</p>
+                <p className='text-sm text-secondary-text'>Course</p>
                 <p className='font-medium'>
                   {section.courseOffering.course.name}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Semester</p>
+                <p className='text-sm text-secondary-text'>Semester</p>
                 <p className='font-medium'>
                   {section.courseOffering.semester.name}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Faculty</p>
+                <p className='text-sm text-secondary-text'>Faculty</p>
                 <p className='font-medium'>
                   {section.faculty
                     ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
@@ -471,17 +471,17 @@ export default function SectionDetailsPage() {
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Batch</p>
+                <p className='text-sm text-secondary-text'>Batch</p>
                 <p className='font-medium'>{section.batch.name}</p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Students</p>
+                <p className='text-sm text-secondary-text'>Students</p>
                 <p className='font-medium'>
                   {section._count.studentsections} / {section.maxStudents}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Status</p>
+                <p className='text-sm text-secondary-text'>Status</p>
                 <Badge
                   variant={
                     section.status === 'active' ? 'default' : 'secondary'
@@ -567,7 +567,7 @@ export default function SectionDetailsPage() {
                       <TableRow>
                         <TableCell
                           colSpan={5}
-                          className='text-center text-gray-500'
+                          className='text-center text-secondary-text'
                         >
                           No students enrolled
                         </TableCell>
@@ -588,7 +588,7 @@ export default function SectionDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Avg Performance</p>
+                          <p className="text-sm text-secondary-text">Avg Performance</p>
                           <p className="text-2xl font-bold">
                             {analytics.averagePerformance.toFixed(1)}%
                           </p>
@@ -601,7 +601,7 @@ export default function SectionDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Total Students</p>
+                          <p className="text-sm text-secondary-text">Total Students</p>
                           <p className="text-2xl font-bold">
                             {analytics.section.totalStudents}
                           </p>
@@ -614,7 +614,7 @@ export default function SectionDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Assessments</p>
+                          <p className="text-sm text-secondary-text">Assessments</p>
                           <p className="text-2xl font-bold">
                             {analytics.totalAssessments}
                           </p>
@@ -627,7 +627,7 @@ export default function SectionDetailsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">CLOs Attained</p>
+                          <p className="text-sm text-secondary-text">CLOs Attained</p>
                           <p className="text-2xl font-bold">
                             {analytics.cloAttainmentSummary.filter(c => c.status === 'attained').length} / {analytics.cloAttainmentSummary.length}
                           </p>
@@ -738,7 +738,7 @@ export default function SectionDetailsPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="w-24 bg-[var(--hover-bg)] rounded-full h-2">
                                   <div
                                     className="bg-blue-600 h-2 rounded-full"
                                     style={{
@@ -762,7 +762,7 @@ export default function SectionDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading performance data...</p>
+                  <p className="text-secondary-text">Loading performance data...</p>
                 </CardContent>
               </Card>
             )}
@@ -781,7 +781,7 @@ export default function SectionDetailsPage() {
                       {analytics.performanceDistribution.map((range) => (
                         <div key={range.range} className="flex items-center gap-4">
                           <div className="w-24 text-sm font-medium">{range.range}</div>
-                          <div className="flex-1 bg-gray-200 rounded-full h-4">
+                          <div className="flex-1 bg-[var(--hover-bg)] rounded-full h-4">
                             <div
                               className="bg-purple-600 h-4 rounded-full"
                               style={{
@@ -834,7 +834,7 @@ export default function SectionDetailsPage() {
                         </TableBody>
                       </Table>
                     ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">
+                      <p className="text-sm text-secondary-text text-center py-4">
                         No CLO attainment data available
                       </p>
                     )}
@@ -845,7 +845,7 @@ export default function SectionDetailsPage() {
               <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading analytics...</p>
+                  <p className="text-secondary-text">Loading analytics...</p>
                 </CardContent>
               </Card>
             )}
