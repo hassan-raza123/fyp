@@ -20,13 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -520,49 +513,43 @@ const CLOAttainmentsPage = () => {
         <TabsContent value="details" className="space-y-4">
           {cloDetails ? (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{cloDetails.clo.code}</CardTitle>
-                  <CardDescription>{cloDetails.clo.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-4">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">{cloDetails.clo.code}</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">{cloDetails.clo.description}</p>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-secondary-text">Course</p>
-                      <p className="font-semibold">
+                      <p className="text-xs text-secondary-text">Course</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {cloDetails.clo.course.code} - {cloDetails.clo.course.name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-secondary-text">Bloom's Level</p>
-                      <p className="font-semibold">{cloDetails.clo.bloomLevel}</p>
+                      <p className="text-xs text-secondary-text">Bloom's Level</p>
+                      <p className="text-sm font-semibold text-primary-text">{cloDetails.clo.bloomLevel}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-secondary-text">
-                        Latest Attainment
-                      </p>
-                      <p className="font-semibold">
-                        {cloDetails.attainments[0]?.attainmentPercent.toFixed(1) ||
-                          'N/A'}
-                        %
+                      <p className="text-xs text-secondary-text">Latest Attainment</p>
+                      <p className="text-sm font-semibold text-primary-text">
+                        {cloDetails.attainments[0]?.attainmentPercent.toFixed(1) || 'N/A'}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-secondary-text">Status</p>
-                      {getStatusBadge(
-                        cloDetails.attainments[0]?.status || 'not_calculated'
-                      )}
+                      <p className="text-xs text-secondary-text">Status</p>
+                      <div className="mt-1">{getStatusBadge(cloDetails.attainments[0]?.status || 'not_calculated')}</div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Attainments History */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Attainment History</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Attainment History</h3>
+                </div>
+                <div className="p-4 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -605,15 +592,15 @@ const CLOAttainmentsPage = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Assessment Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assessment-wise Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Assessment-wise Breakdown</h3>
+                </div>
+                <div className="p-4 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -642,15 +629,15 @@ const CLOAttainmentsPage = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Student Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Student-wise Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Student-wise Breakdown</h3>
+                </div>
+                <div className="p-4">
                   <div className="max-h-96 overflow-y-auto">
                     <Table>
                       <TableHeader>
@@ -692,8 +679,8 @@ const CLOAttainmentsPage = () => {
                       </TableBody>
                     </Table>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
@@ -705,29 +692,25 @@ const CLOAttainmentsPage = () => {
         <TabsContent value="analysis" className="space-y-4">
           {selectedCourseData && (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Trend Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-secondary-text">
-                    Historical trend analysis coming soon...
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Trend Analysis</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs text-secondary-text">Historical trend analysis coming soon...</p>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Section Comparison</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-secondary-text">
-                    Section-wise comparison coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-        </div>
-      )}
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Section Comparison</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs text-secondary-text">Section-wise comparison coming soon...</p>
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="plo-mappings" className="space-y-4">
@@ -748,22 +731,23 @@ const CLOAttainmentsPage = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Course Offering</Label>
+              <Label className="text-xs text-secondary-text">Course Offering</Label>
               <Select
                 value={selectedCourseOffering?.toString() || ''}
                 onValueChange={(value) =>
                   setSelectedCourseOffering(parseInt(value))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course offering" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courses.flatMap((course) =>
                     course.courseOfferings.map((co) => (
                       <SelectItem
                         key={co.id}
                         value={co.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {course.course.code} - {co.semester.name}
                       </SelectItem>
@@ -773,14 +757,15 @@ const CLOAttainmentsPage = () => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="threshold">Threshold (%)</Label>
+              <Label htmlFor="threshold" className="text-xs text-secondary-text">Threshold (%)</Label>
               <Input
                 id="threshold"
                 type="number"
-                min="0"
-                max="100"
+                min={0}
+                max={100}
                 value={threshold}
                 onChange={(e) => setThreshold(parseFloat(e.target.value) || 60)}
+                className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
               />
               <p className="text-xs text-secondary-text mt-1">
                 Minimum percentage required for CLO attainment (default: 60%)
@@ -846,60 +831,50 @@ function CLOPLOMappingsView({ courseId }: { courseId: number }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>CLO-PLO Mappings</CardTitle>
-        <CardDescription>
-          View how CLOs map to Program Learning Outcomes
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+      <div className="p-4 border-b border-card-border">
+        <h3 className="text-sm font-semibold text-primary-text">CLO-PLO Mappings</h3>
+        <p className="text-xs text-secondary-text mt-0.5">View how CLOs map to Program Learning Outcomes</p>
+      </div>
+      <div className="p-4">
         {mappings.length === 0 ? (
-          <p className="text-secondary-text text-center py-8">
-            No CLO-PLO mappings found
-          </p>
+          <p className="text-xs text-secondary-text text-center py-8">No CLO-PLO mappings found</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>CLO Code</TableHead>
-                <TableHead>CLO Description</TableHead>
-                <TableHead>Mapped PLOs</TableHead>
-                <TableHead>Total Weight</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mappings.map((mapping) => (
-                <TableRow key={mapping.clo.id}>
-                  <TableCell className="font-medium">
-                    {mapping.clo.code}
-                  </TableCell>
-                  <TableCell className="max-w-md truncate">
-                    {mapping.clo.description}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {mapping.plos.map((plo: any) => (
-                        <Badge key={plo.ploId} variant="outline">
-                          {plo.ploCode} ({plo.weight}%)
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {mapping.plos.reduce(
-                      (sum: number, plo: any) => sum + plo.weight,
-                      0
-                    )}
-                    %
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO Description</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Mapped PLOs</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Total Weight</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {mappings.map((mapping) => (
+                  <TableRow key={mapping.clo.id} className="hover:bg-[var(--hover-bg)]">
+                    <TableCell className="font-medium text-xs text-primary-text">{mapping.clo.code}</TableCell>
+                    <TableCell className="max-w-md truncate text-xs text-primary-text">{mapping.clo.description}</TableCell>
+                    <TableCell className="text-xs text-primary-text">
+                      <div className="flex flex-wrap gap-1">
+                        {mapping.plos.map((plo: any) => (
+                          <Badge key={plo.ploId} variant="outline" className="text-[10px] border-card-border text-secondary-text">
+                            {plo.ploCode} ({plo.weight}%)
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-primary-text">
+                      {mapping.plos.reduce((sum: number, plo: any) => sum + plo.weight, 0)}%
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

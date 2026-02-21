@@ -70,7 +70,7 @@ const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: Sta
                 )}
                 {change}%
               </span>
-              <span className="text-xs text-muted-text ml-2">vs last month</span>
+              <span className="text-xs text-secondary-text ml-2">vs last month</span>
             </div>
           )}
         </div>
@@ -119,7 +119,7 @@ const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: Activit
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-primary-text">{summary}</p>
         <p className="text-[10px] text-secondary-text">By {user}</p>
-        <p className="text-[10px] text-muted-text mt-1">{time}</p>
+        <p className="text-[10px] text-secondary-text mt-1">{time}</p>
       </div>
     </div>
   );
@@ -392,7 +392,7 @@ export default function FacultyOverview() {
             <div className="p-4">
               {data.upcomingAssessments.length === 0 &&
               data.overdueAssessments.length === 0 ? (
-                <p className="text-xs text-muted-text text-center py-4">
+                <p className="text-xs text-secondary-text text-center py-4">
                   No upcoming assessments
                 </p>
               ) : (
@@ -414,7 +414,7 @@ export default function FacultyOverview() {
                           <p className="text-secondary-text mt-1">
                             {assessment.course.code} - {assessment.course.name}
                           </p>
-                          <p className="text-muted-text mt-1">
+                          <p className="text-secondary-text mt-1">
                             Due: {assessment.dueDate ? new Date(assessment.dueDate).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
@@ -438,7 +438,7 @@ export default function FacultyOverview() {
                           <p className="text-xs text-secondary-text mt-1">
                             {assessment.course.code} - {assessment.course.name}
                           </p>
-                          <p className="text-xs text-muted-text mt-1">
+                          <p className="text-xs text-secondary-text mt-1">
                             Due: {assessment.dueDate ? new Date(assessment.dueDate).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
@@ -561,7 +561,7 @@ export default function FacultyOverview() {
                         <p className="font-medium text-primary-text">
                           {course.courseCode} - {course.cloCode}
                         </p>
-                        <p className="text-muted-text">
+                        <p className="text-secondary-text">
                           {course.attainment.toFixed(1)}% (Threshold: {course.threshold}%)
                         </p>
                       </div>
@@ -622,7 +622,7 @@ export default function FacultyOverview() {
                         <p className="font-medium text-primary-text">
                           {student.studentName} ({student.rollNumber})
                         </p>
-                        <p className="text-muted-text">
+                        <p className="text-secondary-text">
                           {student.course.code} - {student.assessment}: {student.percentage.toFixed(1)}%
                         </p>
                       </div>
@@ -645,7 +645,7 @@ export default function FacultyOverview() {
                         <p className="font-medium text-primary-text">
                           {student.studentName} ({student.rollNumber})
                         </p>
-                        <p className="text-muted-text">
+                        <p className="text-secondary-text">
                           {student.course.code} - {student.assessment}: {student.percentage.toFixed(1)}%
                         </p>
                       </div>
@@ -675,7 +675,7 @@ export default function FacultyOverview() {
           </div>
           <div className="p-4">
             {data.recentGradingActivity.length === 0 ? (
-              <p className="text-xs text-muted-text text-center py-4">
+              <p className="text-xs text-secondary-text text-center py-4">
                 No recent grading activity
               </p>
             ) : (
@@ -695,7 +695,7 @@ export default function FacultyOverview() {
                           {activity.course.code} - {activity.course.name}
                         </p>
                         {activity.evaluatedAt && (
-                          <p className="text-xs text-muted-text mt-1">
+                          <p className="text-xs text-secondary-text mt-1">
                             Evaluated: {new Date(activity.evaluatedAt).toLocaleString()}
                           </p>
                         )}
@@ -836,7 +836,7 @@ export default function FacultyOverview() {
             </div>
             <div className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
               {data.recentActivities.length === 0 ? (
-                <div className="p-4 text-center text-xs text-muted-text">
+                <div className="p-4 text-center text-xs text-secondary-text">
                   No recent activity.
                 </div>
               ) : (
