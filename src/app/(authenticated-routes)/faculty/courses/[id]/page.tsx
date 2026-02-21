@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -64,11 +65,19 @@ interface Course {
 export default function CourseDetailsPage() {
   const router = useRouter();
   const params = useParams();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const courseId = params?.id;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     if (!courseId) {
       setError('Course ID is missing');
@@ -213,7 +222,7 @@ export default function CourseDetailsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
           <div className="space-y-4">
             <div>
@@ -247,7 +256,7 @@ export default function CourseDetailsPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-xl font-semibold mb-4">Course Details</h2>
           <div className="space-y-4">
             {course.description && (
@@ -283,7 +292,7 @@ export default function CourseDetailsPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">
               Course Learning Outcomes
@@ -320,7 +329,7 @@ export default function CourseDetailsPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <h2 className="text-xl font-semibold mb-4">Assigned Faculty</h2>
           <div className="space-y-4">
             {course.faculty && course.faculty.length > 0 ? (
@@ -342,7 +351,7 @@ export default function CourseDetailsPage() {
           </div>
         </Card>
 
-        <Card className="p-6 md:col-span-2">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6 md:col-span-2">
           <h2 className="text-xl font-semibold mb-4">
             Programs Offering This Course
           </h2>
@@ -371,7 +380,7 @@ export default function CourseDetailsPage() {
 
       {/* Course Offerings & Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Course Offerings</h2>
             <Button
@@ -386,7 +395,7 @@ export default function CourseDetailsPage() {
           <CourseOfferingsPreview courseId={courseId as string} />
         </Card>
 
-        <Card className="p-6">
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Course Analytics</h2>
             <Button

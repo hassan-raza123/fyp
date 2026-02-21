@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -163,6 +164,11 @@ export default function SectionDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const queryClient = useQueryClient();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [section, setSection] = useState<Section | null>(null);
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -194,6 +200,9 @@ export default function SectionDetailsPage() {
     }
   };
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     fetchSection();
     fetchAnalytics();
@@ -284,19 +293,28 @@ export default function SectionDetailsPage() {
     },
   });
 
-  if (section === null) {
+  if (!mounted || section === null) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin' />
+      <div className='flex items-center justify-center min-h-[50vh] bg-page'>
+        <div className='flex flex-col items-center gap-3'>
+          <Loader2 className='w-8 h-8 animate-spin text-primary-text' style={{ color: primaryColor }} />
+          <p className='text-xs text-secondary-text'>Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!section) {
     return (
-      <div className='flex flex-col items-center justify-center min-h-screen'>
-        <h1 className='text-2xl font-bold mb-4'>Section not found</h1>
-        <Button onClick={() => window.history.back()}>Go Back</Button>
+      <div className='flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4'>
+        <h1 className='text-lg font-bold text-primary-text'>Section not found</h1>
+        <button
+          type='button'
+          onClick={() => window.history.back()}
+          className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]'
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -315,25 +333,48 @@ export default function SectionDetailsPage() {
   };
 
   return (
-    <div className='container mx-auto py-8'>
-      <div className='flex justify-between items-center mb-8'>
-        <div>
-          <h1 className='text-3xl font-bold mb-2'>{section.name}</h1>
-          <p className='text-gray-500'>
-            {section.courseOffering.course.name} -{' '}
-            {section.courseOffering.semester.name}
-          </p>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between flex-wrap gap-3'>
+        <div className='flex items-center gap-3'>
+          <button
+            type='button'
+            onClick={() => router.back()}
+            className='p-2 rounded-lg hover:bg-[var(--hover-bg)] transition-colors'
+            style={{ color: primaryColor }}
+          >
+            <ArrowLeft className='h-4 w-4' />
+          </button>
+          <div
+            className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg'
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className='h-5 w-5' style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className='text-lg font-bold text-primary-text'>{section.name}</h1>
+            <p className='text-xs text-secondary-text mt-0.5'>
+              {section.courseOffering.course.name} - {section.courseOffering.semester.name}
+            </p>
+          </div>
         </div>
-        <div className='flex gap-4'>
-          <Button variant='outline' onClick={() => router.back()}>
+        <div className='flex gap-2'>
+          <button
+            type='button'
+            onClick={() => router.back()}
+            className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]'
+          >
             Back
-          </Button>
+          </button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className='w-4 h-4 mr-2' />
+              <button
+                type='button'
+                className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2'
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Plus className='w-3.5 h-3.5' />
                 Add Student
-              </Button>
+              </button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -403,9 +444,9 @@ export default function SectionDetailsPage() {
       </div>
 
       <div className='grid gap-6'>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader>
-            <CardTitle>Section Details</CardTitle>
+            <CardTitle className="text-sm font-semibold text-primary-text">Section Details</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='grid grid-cols-2 gap-4'>
@@ -461,9 +502,9 @@ export default function SectionDetailsPage() {
           </TabsList>
 
           <TabsContent value="students" className="space-y-4">
-            <Card>
+            <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
               <CardHeader>
-                <CardTitle>Enrolled Students</CardTitle>
+                <CardTitle className="text-sm font-semibold text-primary-text">Enrolled Students</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -543,7 +584,7 @@ export default function SectionDetailsPage() {
               <>
                 {/* Performance Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -556,7 +597,7 @@ export default function SectionDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -569,7 +610,7 @@ export default function SectionDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -582,7 +623,7 @@ export default function SectionDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -598,9 +639,9 @@ export default function SectionDetailsPage() {
                 </div>
 
                 {/* Student Performance Table */}
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>Student Performance</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">Student Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -659,9 +700,9 @@ export default function SectionDetailsPage() {
                 </Card>
 
                 {/* Assessment Completion Rates */}
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>Assessment Completion Rates</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">Assessment Completion Rates</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -718,7 +759,7 @@ export default function SectionDetailsPage() {
                 </Card>
               </>
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading performance data...</p>
@@ -731,9 +772,9 @@ export default function SectionDetailsPage() {
             {analytics ? (
               <>
                 {/* Performance Distribution */}
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>Performance Distribution</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">Performance Distribution</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -756,9 +797,9 @@ export default function SectionDetailsPage() {
                 </Card>
 
                 {/* CLO Attainment Summary */}
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>CLO Attainment Summary</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">CLO Attainment Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {analytics.cloAttainmentSummary.length > 0 ? (
@@ -801,7 +842,7 @@ export default function SectionDetailsPage() {
                 </Card>
               </>
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading analytics...</p>

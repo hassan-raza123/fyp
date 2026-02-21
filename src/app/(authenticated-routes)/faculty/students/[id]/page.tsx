@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -212,6 +213,11 @@ export default function StudentDetailsPage() {
   const id = params.id as string;
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -239,6 +245,9 @@ export default function StudentDetailsPage() {
     resolver: zodResolver(formSchema),
   });
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     fetchStudent();
     fetchBatches();
@@ -421,17 +430,18 @@ export default function StudentDetailsPage() {
 
   // Fetch available sections for the student's batch
   const { data: sections } = useQuery({
-    queryKey: ['sections', student?.batch.id],
+    queryKey: ['sections', student?.batch?.id],
     queryFn: async () => {
-      if (!student?.batch.id) return [];
-      const response = await fetch(`/api/sections?batchId=${student.batch.id}`);
+      const batchId = student?.batch?.id;
+      if (!batchId) return [];
+      const response = await fetch(`/api/sections?batchId=${batchId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch sections');
       }
       const data = await response.json();
       return data.data;
     },
-    enabled: !!student?.batch.id,
+    enabled: !!student?.batch?.id,
   });
 
   const addSection = useMutation({
@@ -470,11 +480,12 @@ export default function StudentDetailsPage() {
     addSection.mutate(values);
   }
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-[50vh]'>
-          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      <div className='flex items-center justify-center min-h-[50vh] bg-page'>
+        <div className='flex flex-col items-center gap-3'>
+          <Loader2 className='h-8 w-8 animate-spin text-primary-text' style={{ color: primaryColor }} />
+          <p className='text-xs text-secondary-text'>Loading...</p>
         </div>
       </div>
     );
@@ -482,10 +493,15 @@ export default function StudentDetailsPage() {
 
   if (!student) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center h-[50vh]'>
-          <p className='text-muted-foreground'>Student not found</p>
-        </div>
+      <div className='flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4'>
+        <p className='text-sm text-secondary-text'>Student not found</p>
+        <button
+          type='button'
+          onClick={() => router.push('/faculty/students')}
+          className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]'
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -504,56 +520,61 @@ export default function StudentDetailsPage() {
   };
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button
-          variant='ghost'
-          size='icon'
+    <div className='space-y-4'>
+      <div className='flex items-center gap-3'>
+        <button
+          type='button'
           onClick={() => router.push('/faculty/students')}
+          className='p-2 rounded-lg hover:bg-[var(--hover-bg)] transition-colors'
+          style={{ color: primaryColor }}
         >
           <ArrowLeft className='h-4 w-4' />
-        </Button>
+        </button>
+        <div
+          className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg'
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Users className='h-5 w-5' style={{ color: primaryColor }} />
+        </div>
         <div>
-          <h1 className='text-3xl font-bold'>
+          <h1 className='text-lg font-bold text-primary-text'>
             {student.user.firstName} {student.user.lastName}
           </h1>
-          <p className='text-muted-foreground'>
-            Roll Number: {student.rollNumber}
-          </p>
+          <p className='text-xs text-secondary-text mt-0.5'>Roll Number: {student.rollNumber}</p>
         </div>
       </div>
 
-      <div className='grid gap-6'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between'>
-            <CardTitle>Student Information</CardTitle>
+      <div className='grid gap-4'>
+        <div className='rounded-lg border border-card-border bg-card overflow-hidden'>
+          <div className='p-4 border-b border-card-border flex flex-row items-center justify-between flex-wrap gap-2'>
+            <h2 className='text-sm font-semibold text-primary-text'>Student Information</h2>
             <div className='flex gap-2'>
-              <Button
-                variant='outline'
-                size='sm'
+              <button
+                type='button'
                 onClick={() => setEditing(!editing)}
                 disabled={saving}
+                className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50'
               >
-                <Pencil className='h-4 w-4 mr-2' />
+                <Pencil className='h-3.5 w-3.5' />
                 {editing ? 'Cancel' : 'Edit'}
-              </Button>
-              <Button
-                variant='destructive'
-                size='sm'
+              </button>
+              <button
+                type='button'
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={editing || saving}
+                className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-[var(--error)]/50 text-[var(--error)] hover:bg-[var(--error-opacity-05)] disabled:opacity-50'
               >
-                <Trash2 className='h-4 w-4 mr-2' />
+                <Trash2 className='h-3.5 w-3.5' />
                 Delete
-              </Button>
+              </button>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className='p-4'>
             {editing ? (
               <form onSubmit={handleSubmit} className='space-y-6'>
                 <div className='grid grid-cols-2 gap-6'>
                   <div className='space-y-2'>
-                    <Label htmlFor='firstName'>First Name</Label>
+                    <Label htmlFor='firstName' className='text-xs text-secondary-text'>First Name</Label>
                     <Input
                       id='firstName'
                       value={formData.firstName}
@@ -690,25 +711,30 @@ export default function StudentDetailsPage() {
                   </div>
                 </div>
 
-                <div className='flex justify-end gap-4'>
-                  <Button
+                <div className='flex justify-end gap-2'>
+                  <button
                     type='button'
-                    variant='outline'
                     onClick={() => setEditing(false)}
                     disabled={saving}
+                    className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50'
                   >
                     Cancel
-                  </Button>
-                  <Button type='submit' disabled={saving}>
+                  </button>
+                  <button
+                    type='submit'
+                    disabled={saving}
+                    className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50'
+                    style={{ backgroundColor: primaryColor, color: '#fff' }}
+                  >
                     {saving ? (
                       <>
-                        <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                        <Loader2 className='h-3.5 w-3.5 animate-spin' />
                         Saving...
                       </>
                     ) : (
                       'Save Changes'
                     )}
-                  </Button>
+                  </button>
                 </div>
               </form>
             ) : (
@@ -776,23 +802,23 @@ export default function StudentDetailsPage() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="clo-attainments">CLO Attainments</TabsTrigger>
-            <TabsTrigger value="assessments">Assessments</TabsTrigger>
-            <TabsTrigger value="enrollment">Enrollment</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-card border border-card-border p-1 rounded-lg">
+            <TabsTrigger value="profile" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Profile</TabsTrigger>
+            <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Performance</TabsTrigger>
+            <TabsTrigger value="clo-attainments" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Attainments</TabsTrigger>
+            <TabsTrigger value="assessments" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Assessments</TabsTrigger>
+            <TabsTrigger value="enrollment" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Enrollment</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
-            <Card>
+            <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
               <CardHeader>
                 <div className='flex items-center justify-between'>
-                  <CardTitle>Enrolled Sections</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-primary-text">Enrolled Sections</CardTitle>
                   <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
                       <Button>
@@ -930,7 +956,7 @@ export default function StudentDetailsPage() {
               <>
                 {/* Performance Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -943,7 +969,7 @@ export default function StudentDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -956,7 +982,7 @@ export default function StudentDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -969,7 +995,7 @@ export default function StudentDetailsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -988,9 +1014,9 @@ export default function StudentDetailsPage() {
 
                 {/* Performance Trends */}
                 {analytics.performanceTrends.length > 0 && (
-                  <Card>
+                  <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                     <CardHeader>
-                      <CardTitle>Performance Trends by Semester</CardTitle>
+                      <CardTitle className="text-sm font-semibold text-primary-text">Performance Trends by Semester</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <Table>
@@ -1028,9 +1054,9 @@ export default function StudentDetailsPage() {
                 )}
 
                 {/* Course Performance with Class Comparison */}
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>Course Performance vs Class Average</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">Course Performance vs Class Average</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -1094,7 +1120,7 @@ export default function StudentDetailsPage() {
                 </Card>
               </>
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading performance data...</p>
@@ -1109,7 +1135,7 @@ export default function StudentDetailsPage() {
                 analytics.cloAttainmentSummary.map((course) => (
                   <Card key={course.courseId}>
                     <CardHeader>
-                      <CardTitle>
+                      <CardTitle className="text-sm font-semibold text-primary-text">
                         {course.courseCode} - {course.courseName}
                       </CardTitle>
                     </CardHeader>
@@ -1154,7 +1180,7 @@ export default function StudentDetailsPage() {
                   </Card>
                 ))
               ) : (
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
                     <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-muted-foreground">No CLO attainment data available</p>
@@ -1162,7 +1188,7 @@ export default function StudentDetailsPage() {
                 </Card>
               )
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading CLO attainments...</p>
@@ -1174,10 +1200,10 @@ export default function StudentDetailsPage() {
           <TabsContent value="assessments" className="space-y-4">
             {analytics ? (
               analytics.assessmentResults.length > 0 ? (
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle>Assessment Results</CardTitle>
+                      <CardTitle className="text-sm font-semibold text-primary-text">Assessment Results</CardTitle>
                       <Button
                         variant="outline"
                         size="sm"
@@ -1276,7 +1302,7 @@ export default function StudentDetailsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
                     <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-muted-foreground">No assessment results available</p>
@@ -1284,7 +1310,7 @@ export default function StudentDetailsPage() {
                 </Card>
               )
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading assessment results...</p>
@@ -1296,9 +1322,9 @@ export default function StudentDetailsPage() {
           <TabsContent value="enrollment" className="space-y-4">
             {analytics ? (
               analytics.enrollmentHistory.length > 0 ? (
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardHeader>
-                    <CardTitle>Enrollment History</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-primary-text">Enrollment History</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -1340,7 +1366,7 @@ export default function StudentDetailsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
+                <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                   <CardContent className="py-8 text-center">
                     <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-muted-foreground">No enrollment history available</p>
@@ -1348,7 +1374,7 @@ export default function StudentDetailsPage() {
                 </Card>
               )
             ) : (
-              <Card>
+              <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <CardContent className="py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading enrollment history...</p>

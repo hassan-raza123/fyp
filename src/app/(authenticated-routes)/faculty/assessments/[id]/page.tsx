@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -164,7 +165,7 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-4 gap-4">
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               Total Students
@@ -176,7 +177,7 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Average Marks</CardTitle>
           </CardHeader>
@@ -187,7 +188,7 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Average %</CardTitle>
           </CardHeader>
@@ -197,7 +198,7 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
           </CardHeader>
@@ -287,6 +288,11 @@ interface Assessment {
 export default function AssessmentDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('info');
@@ -295,6 +301,9 @@ export default function AssessmentDetailsPage() {
   const [reminderMessage, setReminderMessage] = useState('');
   const [showReminderDialog, setShowReminderDialog] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     fetchAssessment();
   }, [params.id]);
@@ -473,7 +482,7 @@ export default function AssessmentDetailsPage() {
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">
-          <Card>
+          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
               <CardTitle>Assessment Information</CardTitle>
             </CardHeader>
@@ -544,7 +553,7 @@ export default function AssessmentDetailsPage() {
         </TabsContent>
 
         <TabsContent value="items" className="space-y-4">
-          <Card>
+          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Assessment Items</CardTitle>
               <Button asChild>
@@ -597,7 +606,7 @@ export default function AssessmentDetailsPage() {
         </TabsContent>
 
         <TabsContent value="submissions" className="space-y-4">
-          <Card>
+          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
               <CardTitle>Student Submissions</CardTitle>
             </CardHeader>
@@ -608,7 +617,7 @@ export default function AssessmentDetailsPage() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-4">
-          <Card>
+          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
               <CardTitle>Results Overview</CardTitle>
             </CardHeader>
@@ -619,7 +628,7 @@ export default function AssessmentDetailsPage() {
         </TabsContent>
 
         <TabsContent value="clo-coverage" className="space-y-4">
-          <Card>
+          <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
             <CardHeader>
               <CardTitle>CLO Coverage Analysis</CardTitle>
             </CardHeader>
