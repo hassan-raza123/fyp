@@ -277,20 +277,20 @@ export default function AssessmentDetailsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="information">
+        <TabsList className="grid w-full grid-cols-4 bg-card border border-card-border">
+          <TabsTrigger value="information" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <FileText className="w-4 h-4 mr-2" />
             Information
           </TabsTrigger>
-          <TabsTrigger value="items">
+          <TabsTrigger value="items" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <List className="w-4 h-4 mr-2" />
             Items
           </TabsTrigger>
-          <TabsTrigger value="result">
+          <TabsTrigger value="result" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Award className="w-4 h-4 mr-2" />
             My Result
           </TabsTrigger>
-          <TabsTrigger value="clo-coverage">
+          <TabsTrigger value="clo-coverage" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Target className="w-4 h-4 mr-2" />
             CLO Coverage
           </TabsTrigger>

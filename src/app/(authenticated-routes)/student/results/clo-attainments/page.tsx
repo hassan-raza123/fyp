@@ -375,32 +375,32 @@ const CLOAttainmentsPage = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Assessment</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Marks</TableHead>
-                                <TableHead>Percentage</TableHead>
-                                <TableHead>Contribution</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Assessment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {attainment.assessmentBreakdown.map((assessment) => (
-                                <TableRow key={assessment.assessmentId}>
-                                  <TableCell className="font-medium">
+                                <TableRow key={assessment.assessmentId} className="hover:bg-hover-bg transition-colors">
+                                  <TableCell className="text-xs font-medium text-primary-text">
                                     {assessment.assessmentTitle}
                                   </TableCell>
                                   <TableCell>
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">
                                       {assessment.assessmentType.replace(/_/g, ' ')}
                                     </Badge>
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className="text-xs text-primary-text">
                                     {assessment.obtainedMarks.toFixed(1)} /{' '}
                                     {assessment.totalMarks.toFixed(1)}
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className="text-xs text-primary-text">
                                     {assessment.percentage.toFixed(1)}%
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className="text-xs text-primary-text">
                                     {(
                                       (assessment.totalMarks /
                                         attainment.studentAttainment.totalMarks) *

@@ -253,20 +253,20 @@ export default function CourseDetailsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="information">
+        <TabsList className="grid w-full grid-cols-4 bg-card border border-card-border">
+          <TabsTrigger value="information" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <BookOpen className="w-4 h-4 mr-2" />
             Information
           </TabsTrigger>
-          <TabsTrigger value="clos">
+          <TabsTrigger value="clos" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Target className="w-4 h-4 mr-2" />
             CLOs
           </TabsTrigger>
-          <TabsTrigger value="analytics">
+          <TabsTrigger value="analytics" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="offerings">
+          <TabsTrigger value="offerings" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Calendar className="w-4 h-4 mr-2" />
             Offerings
           </TabsTrigger>
