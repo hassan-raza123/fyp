@@ -201,7 +201,7 @@ export default function ResultsPage() {
 
   const getGradeBadgeColor = (grade: string) => {
     if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-white';
-    if (['B+', 'B'].includes(grade)) return 'bg-[var(--blue)] text-white';
+    if (['B+', 'B'].includes(grade)) return 'bg-[var(--blue)] text-white dark:bg-[var(--orange)] dark:text-white';
     if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
     return 'bg-[var(--error)] text-white';
   };

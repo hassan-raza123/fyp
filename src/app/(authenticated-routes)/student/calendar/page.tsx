@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -598,10 +597,17 @@ const CalendarPage = () => {
                   <div className="pt-4 border-t border-card-border">
                     <Link
                       href={`/student/assessments/${selectedEvent.assessmentId}`}
+                      className="block w-full"
                     >
-                      <Button variant="outline" className="w-full border-card-border text-primary-text hover:bg-hover-bg">
+                      <button
+                        type="button"
+                        className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent transition-colors"
+                        style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
                         View Assessment Details
-                      </Button>
+                      </button>
                     </Link>
                   </div>
                 )}

@@ -237,9 +237,19 @@ const AnalyticsPage = () => {
   if (error) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
-          <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
+              <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis</p>
+            </div>
+          </div>
         </div>
         <div className="rounded-lg border border-card-border bg-card p-4">
           <p className="text-sm text-primary-text">{error}</p>

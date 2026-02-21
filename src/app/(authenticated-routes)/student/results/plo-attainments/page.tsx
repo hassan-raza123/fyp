@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { GraduationCap, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react';
 import {
@@ -297,7 +296,7 @@ const PLOAttainmentsPage = () => {
       {/* Program and Semester Selection */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
         <div>
-          <Label htmlFor="program-select">Select Program</Label>
+          <Label htmlFor="program-select" className="text-xs font-medium text-primary-text">Select Program</Label>
           <Select
             value={selectedProgram?.toString() || ''}
             onValueChange={(value) => setSelectedProgram(parseInt(value))}
@@ -317,7 +316,7 @@ const PLOAttainmentsPage = () => {
         </div>
 
         <div>
-          <Label htmlFor="semester-select">Select Semester (Optional)</Label>
+          <Label htmlFor="semester-select" className="text-xs font-medium text-primary-text">Select Semester (Optional)</Label>
           <Select
             value={selectedSemester}
             onValueChange={setSelectedSemester}

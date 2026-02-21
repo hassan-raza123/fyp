@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BarChart3, Target, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';

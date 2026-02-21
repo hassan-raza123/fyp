@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Download, Printer, GraduationCap, Award, Target } from 'lucide-react';
@@ -158,9 +157,19 @@ const TranscriptPage = () => {
   if (error) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
-          <p className="text-xs text-secondary-text mt-0.5">Your academic record</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
+              <p className="text-xs text-secondary-text mt-0.5">Your academic record</p>
+            </div>
+          </div>
         </div>
         <div className="rounded-lg border border-card-border bg-card p-4">
           <p className="text-sm text-primary-text">{error}</p>

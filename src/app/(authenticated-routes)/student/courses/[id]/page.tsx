@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen, Target, BarChart3, Calendar } from 'lucide-react';
@@ -185,21 +184,37 @@ export default function CourseDetailsPage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <p className="text-xs text-[var(--error)]">{error}</p>
-        <button
-          onClick={() => router.push('/student/courses')}
-          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-          style={{ backgroundColor: iconBgColor, color: primaryColor }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = iconBgColor;
-          }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Courses
-        </button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-primary-text">Course</h1>
+              <p className="text-xs text-secondary-text mt-0.5">{error}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push('/student/courses')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Courses
+          </button>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">{error}</p>
+        </div>
       </div>
     );
   }
@@ -208,21 +223,37 @@ export default function CourseDetailsPage() {
   if (!course) {
     return (
       <div className="space-y-4">
-        <p className="text-xs text-secondary-text">Course not found</p>
-        <button
-          onClick={() => router.push('/student/courses')}
-          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-          style={{ backgroundColor: iconBgColor, color: primaryColor }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = iconBgColor;
-          }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Courses
-        </button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-primary-text">Course</h1>
+              <p className="text-xs text-secondary-text mt-0.5">Course not found</p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push('/student/courses')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Courses
+          </button>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">Course not found</p>
+        </div>
       </div>
     );
   }
