@@ -328,7 +328,8 @@ const CLOAttainmentsPage = () => {
           <button
             type="button"
             onClick={fetchCourses}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:opacity-90"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
