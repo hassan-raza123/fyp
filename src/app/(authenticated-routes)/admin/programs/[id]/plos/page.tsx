@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import {
   Table,
   TableBody,
@@ -11,10 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, GraduationCap, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -53,10 +52,20 @@ interface Program {
 export default function PLOsPage() {
   const router = useRouter();
   const params = useParams();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const programId = params.id as string;
   const [plos, setPLOs] = useState<PLO[]>([]);
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -218,264 +227,306 @@ export default function PLOsPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
+  if (!mounted) return null;
+
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex justify-between items-center mb-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>
-            Program Learning Outcomes - {program?.name}
-          </h1>
-          <p className='text-gray-500'>Manage PLOs for {program?.code}</p>
+    <div className="space-y-4">
+      {/* Header - CLO style with icon box */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/admin/programs')}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">
+              Program Learning Outcomes - {program?.name}
+            </h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Manage PLOs for {program?.code}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className='w-4 h-4 mr-2' />
+        <button
+          type="button"
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <Plus className="w-3.5 h-3.5" />
           Add PLO
-        </Button>
+        </button>
       </div>
 
-      <Card>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Bloom's Level</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Bloom&apos;s Level</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {plos.map((plo) => (
-              <TableRow key={plo.id}>
-                <TableCell>{plo.code}</TableCell>
-                <TableCell>{plo.description}</TableCell>
-                <TableCell>{plo.bloomLevel || '-'}</TableCell>
+              <TableRow key={plo.id} className="hover:bg-[var(--hover-bg)] transition-colors">
+                <TableCell className="text-xs font-medium text-primary-text">{plo.code}</TableCell>
+                <TableCell className="text-xs text-secondary-text max-w-md truncate">{plo.description}</TableCell>
+                <TableCell className="text-xs text-secondary-text">{plo.bloomLevel || '-'}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={
-                      plo.status === 'active'
-                        ? 'default'
-                        : plo.status === 'inactive'
-                        ? 'secondary'
-                        : 'destructive'
-                    }
+                    className={`text-[10px] ${plo.status === 'active' ? 'bg-[var(--success-green)]' : plo.status === 'inactive' ? 'bg-[var(--gray-500)]' : ''}`}
+                    variant={plo.status === 'archived' ? 'destructive' : 'secondary'}
                   >
                     {plo.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className='flex space-x-2'>
-                    <Button
-                      variant='outline'
-                      size='sm'
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
                       onClick={() => handleEditClick(plo)}
+                      className="p-2 rounded-lg transition-colors"
+                      style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = iconBgColor;
+                      }}
                     >
-                      <Edit className='w-4 h-4' />
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      size='sm'
+                      <Edit className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleDeleteClick(plo)}
+                      className="p-2 rounded-lg transition-colors text-[var(--error)] hover:bg-[var(--error)]/10"
                     >
-                      <Trash2 className='w-4 h-4' />
-                    </Button>
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Create PLO Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Create PLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Create PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Add a new Program Learning Outcome
             </DialogDescription>
           </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='code'>PLO Code</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="code" className="text-xs text-primary-text">PLO Code</Label>
               <Input
-                id='code'
+                id="code"
                 value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                placeholder='e.g., PLO1'
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                placeholder="e.g., PLO1"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='description'>Description</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="description" className="text-xs text-primary-text">Description</Label>
               <Textarea
-                id='description'
+                id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Enter PLO description'
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter PLO description"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='bloomLevel'>Bloom's Taxonomy Level</Label>
-              <Select
-                value={formData.bloomLevel}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
-                }
-              >
-                <SelectTrigger>
+            <div className="grid gap-2">
+              <Label htmlFor="bloomLevel" className="text-xs text-primary-text">Bloom&apos;s Taxonomy Level</Label>
+              <Select value={formData.bloomLevel} onValueChange={(value) => setFormData({ ...formData, bloomLevel: value })}>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {bloomLevels.map((level) => (
-                    <SelectItem key={level} value={level}>
+                    <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='status'>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: 'active' | 'inactive' | 'archived') =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select status' />
+            <div className="grid gap-2">
+              <Label htmlFor="status" className="text-xs text-primary-text">Status</Label>
+              <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'archived') => setFormData({ ...formData, status: value })}>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='active'>Active</SelectItem>
-                  <SelectItem value='inactive'>Inactive</SelectItem>
-                  <SelectItem value='archived'>Archived</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  <SelectItem value="archived" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
+          <DialogFooter className="mt-4">
+            <button
+              type="button"
               onClick={() => setIsCreateDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCreatePLO}>Create PLO</Button>
+            </button>
+            <button
+              type="button"
+              onClick={handleCreatePLO}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 text-white"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Create PLO
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit PLO Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Edit PLO</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">Edit PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Update Program Learning Outcome details
             </DialogDescription>
           </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-code'>PLO Code</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-code" className="text-xs text-primary-text">PLO Code</Label>
               <Input
-                id='edit-code'
+                id="edit-code"
                 value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                placeholder='e.g., PLO1'
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                placeholder="e.g., PLO1"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-description'>Description</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description" className="text-xs text-primary-text">Description</Label>
               <Textarea
-                id='edit-description'
+                id="edit-description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Enter PLO description'
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter PLO description"
+                className="bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-bloomLevel'>Bloom's Taxonomy Level</Label>
-              <Select
-                value={formData.bloomLevel}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, bloomLevel: value })
-                }
-              >
-                <SelectTrigger>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-bloomLevel" className="text-xs text-primary-text">Bloom&apos;s Taxonomy Level</Label>
+              <Select value={formData.bloomLevel} onValueChange={(value) => setFormData({ ...formData, bloomLevel: value })}>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {bloomLevels.map((level) => (
-                    <SelectItem key={level} value={level}>
+                    <SelectItem key={level} value={level} className="text-primary-text hover:bg-card/50">
                       {level}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-status'>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: 'active' | 'inactive' | 'archived') =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select status' />
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status" className="text-xs text-primary-text">Status</Label>
+              <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'archived') => setFormData({ ...formData, status: value })}>
+                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='active'>Active</SelectItem>
-                  <SelectItem value='inactive'>Inactive</SelectItem>
-                  <SelectItem value='archived'>Archived</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="active" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+                  <SelectItem value="inactive" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+                  <SelectItem value="archived" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
+          <DialogFooter className="mt-4">
+            <button
+              type="button"
               onClick={() => setIsEditDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleUpdatePLO}>Update PLO</Button>
+            </button>
+            <button
+              type="button"
+              onClick={handleUpdatePLO}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 text-white"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Update PLO
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete PLO Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Delete PLO</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this PLO? This action cannot be
-              undone.
+            <DialogTitle className="text-sm font-bold text-primary-text">Delete PLO</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
+              Are you sure you want to delete this PLO? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
+          <DialogFooter className="mt-4">
+            <button
+              type="button"
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
             >
               Cancel
-            </Button>
-            <Button variant='destructive' onClick={handleDeletePLO}>
+            </button>
+            <button
+              type="button"
+              onClick={handleDeletePLO}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 text-white bg-[var(--error)] hover:opacity-90"
+            >
               Delete
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
