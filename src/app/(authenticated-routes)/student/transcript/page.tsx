@@ -146,19 +146,28 @@ const TranscriptPage = () => {
   if (!data) return null;
 
   return (
-    <div className="p-6 space-y-6 print:p-4">
+    <div className="space-y-4 print:p-4">
       {/* Header Actions - Hidden in print */}
-      <div className="flex justify-between items-center print:hidden">
-        <h1 className="text-3xl font-bold">Academic Transcript</h1>
+      <div className="flex items-center justify-between print:hidden">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Academic Transcript</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Your official academic record</p>
+        </div>
         <div className="flex gap-2">
-          <Button onClick={handleDownloadPDF} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
+          <button
+            onClick={handleDownloadPDF}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <Download className="h-3.5 w-3.5" />
             Download PDF
-          </Button>
-          <Button onClick={handlePrint} variant="outline">
-            <Printer className="h-4 w-4 mr-2" />
+          </button>
+          <button
+            onClick={handlePrint}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <Printer className="h-3.5 w-3.5" />
             Print
-          </Button>
+          </button>
         </div>
       </div>
 

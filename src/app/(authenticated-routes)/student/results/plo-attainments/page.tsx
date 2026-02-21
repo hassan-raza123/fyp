@@ -243,19 +243,25 @@ const PLOAttainmentsPage = () => {
     })) || [];
 
   return (
-    <div className='p-6'>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className='text-2xl font-bold'>My PLO Attainments</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My PLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View Program Learning Outcomes achievement</p>
+        </div>
         {data && data.ploAttainments.length > 0 && (
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className='h-4 w-4 mr-2' />
+          <button
+            onClick={exportToCSV}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <Download className="h-3.5 w-3.5" />
             Export to CSV
-          </Button>
+          </button>
         )}
       </div>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
       )}
 
       {/* Program and Semester Selection */}

@@ -262,19 +262,20 @@ const AnalyticsPage = () => {
   }));
 
   return (
-    <div className='p-6 space-y-6'>
+    <div className="space-y-4">
       {/* Header */}
-      <div className='flex justify-between items-center'>
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className='text-2xl font-bold'>My Analytics</h1>
-          <p className='text-muted-foreground'>
-            Comprehensive performance analysis and insights
-          </p>
+          <h1 className="text-lg font-bold text-primary-text">My Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Comprehensive performance analysis and insights</p>
         </div>
-        <Button onClick={exportToCSV} variant='outline'>
-          <Download className='h-4 w-4 mr-2' />
+        <button
+          onClick={exportToCSV}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+        >
+          <Download className="h-3.5 w-3.5" />
           Export to CSV
-        </Button>
+        </button>
       </div>
 
       {/* Overall Performance Cards */}

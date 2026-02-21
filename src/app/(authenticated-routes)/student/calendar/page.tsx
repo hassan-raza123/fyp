@@ -373,20 +373,21 @@ const CalendarPage = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Academic Calendar</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-bold text-primary-text">Academic Calendar</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             View your assessments, exams, and important dates
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={goToToday} variant="outline">
-            Today
-          </Button>
-        </div>
+        <button
+          onClick={goToToday}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+        >
+          Today
+        </button>
       </div>
 
       {/* Summary Cards */}

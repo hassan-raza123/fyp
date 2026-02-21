@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import {
   GraduationCap,
   Target,
@@ -10,7 +11,6 @@ import {
   Download,
   Eye,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -20,7 +20,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -35,6 +34,7 @@ interface Grade {
   id: number;
   courseOffering: {
     course: {
+      id: number;
       code: string;
       name: string;
       creditHours: number;
@@ -54,6 +54,9 @@ interface Grade {
 
 export default function ResultsPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSemester, setSelectedSemester] = useState<string>('all');
@@ -63,6 +66,10 @@ export default function ResultsPage() {
 
   useEffect(() => {
     fetchSemesters();
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -193,10 +200,10 @@ export default function ResultsPage() {
   };
 
   const getGradeBadgeColor = (grade: string) => {
-    if (['A+', 'A'].includes(grade)) return 'bg-green-100 text-green-800';
-    if (['B+', 'B'].includes(grade)) return 'bg-blue-100 text-blue-800';
-    if (['C+', 'C'].includes(grade)) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-white';
+    if (['B+', 'B'].includes(grade)) return 'bg-[var(--blue)] text-white';
+    if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
+    return 'bg-[var(--error)] text-white';
   };
 
   // Get unique semesters from grades for display
@@ -204,191 +211,151 @@ export default function ResultsPage() {
     new Set(grades.map((g) => g.courseOffering.semester.name))
   );
 
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   return (
-    <div className='p-6'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold'>My Results</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Results</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View grades and attainments</p>
+        </div>
         {grades.length > 0 && (
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className='h-4 w-4 mr-2' />
+          <button
+            onClick={exportToCSV}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <Download className="h-3.5 w-3.5" />
             Export to CSV
-          </Button>
+          </button>
         )}
       </div>
 
       {/* CGPA and Semester GPAs Summary */}
       {grades.length > 0 && (
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Overall CGPA
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='text-3xl font-bold'>{cgpa.toFixed(2)}</div>
-              <p className='text-xs text-muted-foreground mt-1'>
-                Cumulative Grade Point Average
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-card border border-card-border rounded-lg p-4">
+            <p className="text-xs font-medium text-secondary-text">Overall CGPA</p>
+            <div className="text-lg font-bold mt-1 text-primary-text">{cgpa.toFixed(2)}</div>
+            <p className="text-[10px] text-muted-text mt-1">Cumulative Grade Point Average</p>
+          </div>
           {uniqueSemesters.slice(0, 3).map((semester) => {
             const semesterGPA = semesterGPAs.get(semester) || 0;
             return (
-              <Card key={semester}>
-                <CardHeader>
-                  <CardTitle className='text-sm font-medium text-muted-foreground'>
-                    {semester} GPA
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-3xl font-bold'>{semesterGPA.toFixed(2)}</div>
-                  <p className='text-xs text-muted-foreground mt-1'>
-                    Semester Grade Point Average
-                  </p>
-                </CardContent>
-              </Card>
+              <div key={semester} className="bg-card border border-card-border rounded-lg p-4">
+                <p className="text-xs font-medium text-secondary-text">{semester} GPA</p>
+                <div className="text-lg font-bold mt-1 text-primary-text">{semesterGPA.toFixed(2)}</div>
+                <p className="text-[10px] text-muted-text mt-1">Semester Grade Point Average</p>
+              </div>
             );
           })}
         </div>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-6'>
-        <Link href='/student/results/clo-attainments'>
-          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Target className='h-5 w-5' />
-                My CLO Attainments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-gray-500'>
-                View my Course Learning Outcomes achievement
-              </p>
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link href="/student/results/clo-attainments">
+          <div className="bg-card border border-card-border rounded-lg p-4 hover:bg-hover-bg transition-colors cursor-pointer h-full">
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="h-4 w-4 text-primary-text" />
+              <span className="text-sm font-semibold text-primary-text">My CLO Attainments</span>
+            </div>
+            <p className="text-xs text-secondary-text">View my Course Learning Outcomes achievement</p>
+          </div>
         </Link>
-
-        <Link href='/student/results/plo-attainments'>
-          <Card className='hover:bg-gray-50 transition-colors cursor-pointer'>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <GraduationCap className='h-5 w-5' />
-                My PLO Attainments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-gray-500'>
-                View my Program Learning Outcomes achievement
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/student/results/plo-attainments">
+          <div className="bg-card border border-card-border rounded-lg p-4 hover:bg-hover-bg transition-colors cursor-pointer h-full">
+            <div className="flex items-center gap-2 mb-2">
+              <GraduationCap className="h-4 w-4 text-primary-text" />
+              <span className="text-sm font-semibold text-primary-text">My PLO Attainments</span>
+            </div>
+            <p className="text-xs text-secondary-text">View my Program Learning Outcomes achievement</p>
+          </div>
         </Link>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Award className='h-5 w-5' />
-              My Grades
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-gray-500'>
-              View all your course grades and GPA
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-card border border-card-border rounded-lg p-4 h-full">
+          <div className="flex items-center gap-2 mb-2">
+            <Award className="h-4 w-4 text-primary-text" />
+            <span className="text-sm font-semibold text-primary-text">My Grades</span>
+          </div>
+          <p className="text-xs text-secondary-text">View all your course grades and GPA</p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className='flex justify-between items-center'>
-            <CardTitle>Course Grades</CardTitle>
-            <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-              <SelectTrigger className='w-[200px]'>
-                <SelectValue placeholder='Filter by semester' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Semesters</SelectItem>
-                {semesters.map((semester) => (
-                  <SelectItem key={semester.id} value={semester.id.toString()}>
-                    {semester.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-primary-text">Course Grades</h2>
+          <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+            <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Filter by semester" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-card-border">
+              <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Semesters</SelectItem>
+              {semesters.map((semester) => (
+                <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
+                  {semester.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="p-4">
           {loading ? (
-            <div className='text-center py-4'>Loading grades...</div>
+            <div className="flex items-center justify-center py-8">
+              <div
+                className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+              />
+              <span className="text-xs text-secondary-text ml-2">Loading grades...</span>
+            </div>
           ) : grades.length === 0 ? (
-            <div className='text-center py-4 text-gray-500'>
-              No grades available yet
-            </div>
+            <div className="text-center py-8 text-xs text-secondary-text">No grades available yet</div>
           ) : (
-            <div className='rounded-md border'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Course Code</TableHead>
-                    <TableHead>Course Name</TableHead>
-                    <TableHead>Semester</TableHead>
-                    <TableHead>Credit Hours</TableHead>
-                    <TableHead>Marks</TableHead>
-                    <TableHead>Percentage</TableHead>
-                    <TableHead>Grade</TableHead>
-                    <TableHead>GPA Points</TableHead>
-                    <TableHead>Quality Points</TableHead>
-                    <TableHead>Actions</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-semibold text-primary-text">Course Code</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Course Name</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Credit Hours</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">GPA Points</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Quality Points</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {grades.map((grade) => (
+                  <TableRow key={grade.id} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">{grade.courseOffering.course.code}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.courseOffering.course.name}</TableCell>
+                    <TableCell className="text-xs text-secondary-text">{grade.courseOffering.semester.name}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.creditHours}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.obtainedMarks.toFixed(1)} / {grade.totalMarks.toFixed(1)}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.percentage.toFixed(1)}%</TableCell>
+                    <TableCell>
+                      <Badge className={`${getGradeBadgeColor(grade.grade)} text-[10px] px-1.5 py-0.5`}>{grade.grade}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.gpaPoints.toFixed(2)}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{grade.qualityPoints.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => router.push(`/student/courses/${grade.courseOffering.course.id}`)}
+                        className="px-2 py-1 rounded-md text-xs font-medium h-7 flex items-center gap-1"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                      >
+                        <Eye className="h-3 w-3" />
+                        Details
+                      </button>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {grades.map((grade) => (
-                    <TableRow key={grade.id}>
-                      <TableCell className='font-medium'>
-                        {grade.courseOffering.course.code}
-                      </TableCell>
-                      <TableCell>{grade.courseOffering.course.name}</TableCell>
-                      <TableCell>{grade.courseOffering.semester.name}</TableCell>
-                      <TableCell>{grade.creditHours}</TableCell>
-                      <TableCell>
-                        {grade.obtainedMarks.toFixed(1)} /{' '}
-                        {grade.totalMarks.toFixed(1)}
-                      </TableCell>
-                      <TableCell>{grade.percentage.toFixed(1)}%</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={getGradeBadgeColor(grade.grade)}
-                        >
-                          {grade.grade}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{grade.gpaPoints.toFixed(2)}</TableCell>
-                      <TableCell>{grade.qualityPoints.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/student/courses/${grade.courseOffering.course.id}`
-                            )
-                          }
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -252,17 +252,23 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Student Settings</h1>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-lg font-bold text-primary-text">Student Settings</h1>
+        <p className="text-xs text-secondary-text mt-0.5">Manage your profile and preferences</p>
+      </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />

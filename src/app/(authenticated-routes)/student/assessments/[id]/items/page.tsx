@@ -87,14 +87,17 @@ export default function AssessmentItemsPage() {
   }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button variant='ghost' size='icon' onClick={() => router.back()}>
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <div>
-          <h1 className='text-3xl font-bold'>{assessmentTitle}</h1>
-          <p className='text-gray-500'>Assessment Items</p>
+          <h1 className="text-lg font-bold text-primary-text">{assessmentTitle}</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Assessment Items</p>
         </div>
       </div>
       <Card>

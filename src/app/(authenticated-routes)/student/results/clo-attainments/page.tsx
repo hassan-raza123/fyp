@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -168,7 +167,7 @@ const CLOAttainmentsPage = () => {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     return (
-      <Badge variant={status === 'attained' ? 'success' : 'destructive'}>
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {status === 'attained' ? 'Attained' : 'Not Attained'}
       </Badge>
     );
@@ -196,26 +195,28 @@ const CLOAttainmentsPage = () => {
     })) || [];
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>My CLO Attainments</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My CLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes achievement by section</p>
+        </div>
+      </div>
 
       {/* Section Selection */}
-      <div className='mb-6'>
-        <Label htmlFor="section-select" className="block mb-2">
-          Select Section
-        </Label>
+      <div>
+        <Label htmlFor="section-select" className="text-xs text-primary-text block mb-1.5">Select Section</Label>
         <Select
           value={selectedSection?.toString() || ''}
           onValueChange={(value) => setSelectedSection(parseInt(value))}
         >
-          <SelectTrigger id="section-select" className="w-full max-w-md">
-            <SelectValue placeholder='Select a section' />
+          <SelectTrigger id="section-select" className="w-full max-w-md h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectValue placeholder="Select a section" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-card border-card-border">
             {sections.map((section) => (
-              <SelectItem key={section.id} value={section.id.toString()}>
-                {section.courseOffering.course.code} - {section.name} (
-                {section.courseOffering.semester.name})
+              <SelectItem key={section.id} value={section.id.toString()} className="text-primary-text hover:bg-card/50">
+                {section.courseOffering.course.code} - {section.name} ({section.courseOffering.semester.name})
               </SelectItem>
             ))}
           </SelectContent>
@@ -223,175 +224,131 @@ const CLOAttainmentsPage = () => {
       </div>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading CLO attainments...</div>
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <span className="text-xs text-secondary-text ml-2">Loading CLO attainments...</span>
+        </div>
       ) : data && data.cloAttainments.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Section Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {data.section.course.code} - {data.section.course.name}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Section: {data.section.name} • Semester: {data.section.semester.name}
-              </p>
-            </CardHeader>
-          </Card>
+          <div className="bg-card border border-card-border rounded-lg p-4">
+            <p className="text-sm font-semibold text-primary-text">{data.section.course.code} - {data.section.course.name}</p>
+            <p className="text-xs text-secondary-text mt-0.5">Section: {data.section.name} • Semester: {data.section.semester.name}</p>
+          </div>
 
           {/* Overall Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Overall CLO Attainment Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total CLOs</p>
-                  <p className="text-2xl font-bold">{data.cloAttainments.length}</p>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Attained CLOs</p>
-                  <p className="text-2xl font-bold">
-                    {
-                      data.cloAttainments.filter(
-                        (a) => a.studentAttainment.status === 'attained'
-                      ).length
-                    }
-                  </p>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Average Attainment</p>
-                  <p className="text-2xl font-bold">
-                    {(
-                      data.cloAttainments.reduce(
-                        (sum, a) => sum + a.studentAttainment.percentage,
-                        0
-                      ) / data.cloAttainments.length
-                    ).toFixed(1)}%
-                  </p>
-                </div>
+          <div className="bg-card border border-card-border rounded-lg p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">Overall CLO Attainment Summary</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 rounded-lg bg-card border border-card-border">
+                <p className="text-[10px] text-muted-text">Total CLOs</p>
+                <p className="text-lg font-bold text-primary-text mt-0.5">{data.cloAttainments.length}</p>
               </div>
+              <div className="text-center p-3 rounded-lg bg-card border border-card-border">
+                <p className="text-[10px] text-muted-text">Attained CLOs</p>
+                <p className="text-lg font-bold text-primary-text mt-0.5">
+                  {data.cloAttainments.filter((a) => a.studentAttainment.status === 'attained').length}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-card border border-card-border">
+                <p className="text-[10px] text-muted-text">Average Attainment</p>
+                <p className="text-lg font-bold text-primary-text mt-0.5">
+                  {(data.cloAttainments.reduce((sum, a) => sum + a.studentAttainment.percentage, 0) / data.cloAttainments.length).toFixed(1)}%
+                </p>
+              </div>
+            </div>
 
-              {/* Chart */}
-              <div className="h-[400px] mt-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="cloCode" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="student" name="Your Attainment" fill="#4f46e5" />
-                    <Bar dataKey="class" name="Class Average" fill="#10b981" />
-                    <Bar dataKey="threshold" name="Threshold" fill="#ef4444" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Chart */}
+            <div className="h-[400px] mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="cloCode" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="student" name="Your Attainment" fill="#4f46e5" />
+                  <Bar dataKey="class" name="Class Average" fill="#10b981" />
+                  <Bar dataKey="threshold" name="Threshold" fill="#ef4444" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
           {/* CLO Details */}
           <div className="space-y-4">
             {data.cloAttainments.map((attainment) => (
-              <Card key={attainment.clo.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Target className="h-5 w-5" />
-                        {attainment.clo.code}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {attainment.clo.description}
-                      </p>
-                      {attainment.clo.bloomLevel && (
-                        <Badge variant="outline" className="mt-2">
-                          {attainment.clo.bloomLevel}
-                        </Badge>
-                      )}
+              <div key={attainment.clo.id} className="bg-card border border-card-border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary-text" />
+                      <span className="text-sm font-semibold text-primary-text">{attainment.clo.code}</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">
-                        {attainment.studentAttainment.percentage.toFixed(1)}%
-                      </div>
-                      <div className="mt-1">
-                        {getStatusBadge(attainment.studentAttainment.status)}
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Your Marks</p>
-                      <p className="text-lg font-semibold">
-                        {attainment.studentAttainment.obtainedMarks.toFixed(1)} /{' '}
-                        {attainment.studentAttainment.totalMarks.toFixed(1)}
-                      </p>
-                    </div>
-                    {attainment.classAttainment && (
-                      <>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Class Average
-                          </p>
-                          <p className="text-lg font-semibold">
-                            {attainment.classAttainment.percentage.toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Comparison
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {getComparisonIcon(
-                              attainment.studentAttainment.percentage,
-                              attainment.classAttainment.percentage
-                            )}
-                            <span className="text-sm">
-                              {attainment.studentAttainment.percentage >
-                              attainment.classAttainment.percentage
-                                ? 'Above Average'
-                                : attainment.studentAttainment.percentage <
-                                  attainment.classAttainment.percentage
-                                ? 'Below Average'
-                                : 'At Average'}
-                            </span>
-                          </div>
-                        </div>
-                      </>
+                    <p className="text-xs text-secondary-text mt-1">{attainment.clo.description}</p>
+                    {attainment.clo.bloomLevel && (
+                      <Badge className="mt-2 text-[10px] px-1.5 py-0.5 border border-card-border bg-transparent text-primary-text">
+                        {attainment.clo.bloomLevel}
+                      </Badge>
                     )}
                   </div>
-
-                  {attainment.classAttainment && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded">
-                      <p className="text-sm text-muted-foreground">
-                        Threshold: {attainment.classAttainment.threshold}% • Last
-                        Calculated:{' '}
-                        {new Date(
-                          attainment.classAttainment.calculatedAt
-                        ).toLocaleDateString()}
-                      </p>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-primary-text">
+                      {attainment.studentAttainment.percentage.toFixed(1)}%
                     </div>
+                    <div className="mt-1">{getStatusBadge(attainment.studentAttainment.status)}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <p className="text-[10px] text-muted-text">Your Marks</p>
+                    <p className="text-sm font-semibold text-primary-text">
+                        {attainment.studentAttainment.obtainedMarks.toFixed(1)} / {attainment.studentAttainment.totalMarks.toFixed(1)}
+                    </p>
+                  </div>
+                  {attainment.classAttainment && (
+                    <>
+                      <div>
+                        <p className="text-[10px] text-muted-text">Class Average</p>
+                        <p className="text-sm font-semibold text-primary-text">{attainment.classAttainment.percentage.toFixed(1)}%</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-text">Comparison</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {getComparisonIcon(attainment.studentAttainment.percentage, attainment.classAttainment.percentage)}
+                          <span className="text-xs text-primary-text">
+                            {attainment.studentAttainment.percentage > attainment.classAttainment.percentage
+                              ? 'Above Average'
+                              : attainment.studentAttainment.percentage < attainment.classAttainment.percentage
+                              ? 'Below Average'
+                              : 'At Average'}
+                          </span>
+                        </div>
+                      </div>
+                    </>
                   )}
+                </div>
 
-                  {/* Assessment Breakdown */}
-                  {attainment.assessmentBreakdown.length > 0 && (
-                    <div>
-                      <button
-                        onClick={() =>
-                          setExpandedCLO(
-                            expandedCLO === attainment.clo.id
-                              ? null
-                              : attainment.clo.id
-                          )
-                        }
-                        className="text-sm text-primary hover:underline mb-2"
-                      >
+                {attainment.classAttainment && (
+                  <div className="mb-4 p-3 rounded-lg bg-card border border-card-border">
+                    <p className="text-xs text-secondary-text">
+                      Threshold: {attainment.classAttainment.threshold}% • Last Calculated:{' '}
+                      {new Date(attainment.classAttainment.calculatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+
+                {/* Assessment Breakdown */}
+                {attainment.assessmentBreakdown.length > 0 && (
+                  <div>
+                    <button
+                      onClick={() => setExpandedCLO(expandedCLO === attainment.clo.id ? null : attainment.clo.id)}
+                      className="text-xs text-primary-text hover:underline mb-2"
+                    >
                         {expandedCLO === attainment.clo.id
                           ? 'Hide'
                           : 'Show'}{' '}
@@ -443,19 +400,15 @@ const CLOAttainmentsPage = () => {
                       )}
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       ) : selectedSection ? (
-        <div className='text-center text-gray-500 py-4'>
-          No CLO attainments data available for this section
-        </div>
+        <div className="text-center text-xs text-secondary-text py-8">No CLO attainments data available for this section</div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a section to view CLO attainments
-        </div>
+        <div className="text-center text-xs text-secondary-text py-8">Select a section to view CLO attainments</div>
       )}
     </div>
   );

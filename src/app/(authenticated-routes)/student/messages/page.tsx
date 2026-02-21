@@ -213,20 +213,23 @@ const MessagesPage = () => {
   if (!data) return null;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Messages & Announcements</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-bold text-primary-text">Messages & Announcements</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             View messages from faculty, course announcements, and system updates
           </p>
         </div>
         {data.summary.unread > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead}>
-            <CheckCheck className="w-4 h-4 mr-2" />
+          <button
+            onClick={handleMarkAllAsRead}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <CheckCheck className="h-3.5 w-3.5" />
             Mark All as Read ({data.summary.unread})
-          </Button>
+          </button>
         )}
       </div>
 

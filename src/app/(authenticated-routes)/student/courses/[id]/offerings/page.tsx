@@ -129,19 +129,18 @@ export default function CourseOfferingsPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => router.push(`/student/courses/${courseId}`)}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </button>
           <div>
-            <h1 className="text-3xl font-bold">Course Offerings</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-lg font-bold text-primary-text">Course Offerings</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
               {data.course.code} - {data.course.name}
             </p>
           </div>

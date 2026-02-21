@@ -152,12 +152,10 @@ export default function CourseDetailsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading course details...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <p className="text-xs text-secondary-text">Loading course details...</p>
         </div>
       </div>
     );
@@ -166,17 +164,15 @@ export default function CourseDetailsPage() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/student/courses')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
-          </Button>
-        </div>
+      <div className="space-y-4">
+        <p className="text-xs text-[var(--error)]">{error}</p>
+        <button
+          onClick={() => router.push('/student/courses')}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg flex items-center gap-1.5"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Courses
+        </button>
       </div>
     );
   }
@@ -184,40 +180,33 @@ export default function CourseDetailsPage() {
   // Not found state
   if (!course) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Course not found</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/student/courses')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
-          </Button>
-        </div>
+      <div className="space-y-4">
+        <p className="text-xs text-secondary-text">Course not found</p>
+        <button
+          onClick={() => router.push('/student/courses')}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg flex items-center gap-1.5"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Courses
+        </button>
       </div>
     );
   }
 
   // Main content
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => router.push('/student/courses')}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-hover-bg transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </button>
           <div>
-            <h1 className="text-3xl font-bold">
-              {course?.name || 'Untitled Course'}
-            </h1>
-            <p className="text-muted-foreground">
-              Course Code: {course?.code || 'N/A'}
-            </p>
+            <h1 className="text-lg font-bold text-primary-text">{course?.name || 'Untitled Course'}</h1>
+            <p className="text-xs text-secondary-text mt-0.5">Course Code: {course?.code || 'N/A'}</p>
           </div>
         </div>
       </div>

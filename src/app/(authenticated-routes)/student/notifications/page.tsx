@@ -206,73 +206,53 @@ export default function StudentNotificationsPage() {
 
   if (loading && notifications.length === 0) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="text-center">Loading notifications...</div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-primary" />
+          <p className="text-xs text-secondary-text">Loading notifications...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-bold text-primary-text">Notifications</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Stay updated with assessment, grade, and system notifications
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead}>
-            <CheckCheck className="w-4 h-4 mr-2" />
+          <button
+            onClick={handleMarkAllAsRead}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg"
+          >
+            <CheckCheck className="h-3.5 w-3.5" />
             Mark All as Read ({unreadCount})
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalNotifications}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Unread
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {unreadCount}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Assessments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{assessmentNotifications}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Grades
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{gradeNotifications}</div>
-          </CardContent>
-        </Card>
+        <div className="bg-card border border-card-border rounded-lg p-4">
+          <p className="text-xs font-medium text-secondary-text">Total Notifications</p>
+          <div className="text-lg font-bold text-primary-text mt-0.5">{totalNotifications}</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4">
+          <p className="text-xs font-medium text-secondary-text">Unread</p>
+          <div className="text-lg font-bold text-primary-text mt-0.5">{unreadCount}</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4">
+          <p className="text-xs font-medium text-secondary-text">Assessments</p>
+          <div className="text-lg font-bold text-primary-text mt-0.5">{assessmentNotifications}</div>
+        </div>
+        <div className="bg-card border border-card-border rounded-lg p-4">
+          <p className="text-xs font-medium text-secondary-text">Grades</p>
+          <div className="text-lg font-bold text-primary-text mt-0.5">{gradeNotifications}</div>
+        </div>
       </div>
 
       {/* Filters */}
