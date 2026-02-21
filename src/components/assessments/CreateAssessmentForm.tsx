@@ -122,10 +122,10 @@ export function CreateAssessmentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
       {!sectionId && (
-        <div className="grid gap-2">
-          <Label htmlFor="courseOfferingId" className="text-xs text-primary-text">
+        <div className="grid gap-1.5">
+          <Label htmlFor="courseOfferingId" className="text-xs text-secondary-text">
             Course Offering *
           </Label>
           <Select
@@ -135,7 +135,7 @@ export function CreateAssessmentForm({
             }
             disabled={loadingOfferings}
           >
-            <SelectTrigger className="bg-card border-card-border text-primary-text">
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select course offering" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -143,7 +143,7 @@ export function CreateAssessmentForm({
                 <SelectItem
                   key={offering.id}
                   value={offering.id.toString()}
-                  className="text-primary-text hover:bg-card/50"
+                  className="text-primary-text hover:bg-card/50 text-xs"
                 >
                   {offering.course.code} - {offering.course.name} (
                   {offering.semester.name})
@@ -154,8 +154,8 @@ export function CreateAssessmentForm({
         </div>
       )}
 
-      <div className="grid gap-2">
-        <Label htmlFor="title" className="text-xs text-primary-text">
+      <div className="grid gap-1.5">
+        <Label htmlFor="title" className="text-xs text-secondary-text">
           Assessment Title *
         </Label>
         <Input
@@ -164,12 +164,12 @@ export function CreateAssessmentForm({
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           placeholder="Enter assessment title"
           required
-          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+          className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="description" className="text-xs text-primary-text">
+      <div className="grid gap-1.5">
+        <Label htmlFor="description" className="text-xs text-secondary-text">
           Description *
         </Label>
         <Textarea
@@ -180,20 +180,20 @@ export function CreateAssessmentForm({
           }
           placeholder="Enter assessment description"
           required
-          rows={3}
-          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+          rows={2}
+          className="text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary resize-none"
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="type" className="text-xs text-primary-text">
+      <div className="grid gap-1.5">
+        <Label htmlFor="type" className="text-xs text-secondary-text">
           Assessment Type *
         </Label>
         <Select
           value={formData.type}
           onValueChange={(value) => setFormData({ ...formData, type: value })}
         >
-          <SelectTrigger className="bg-card border-card-border text-primary-text">
+          <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Select assessment type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -201,7 +201,7 @@ export function CreateAssessmentForm({
               <SelectItem
                 key={type}
                 value={type}
-                className="text-primary-text hover:bg-card/50"
+                className="text-primary-text hover:bg-card/50 text-xs"
               >
                 {type
                   .replace(/_/g, ' ')
@@ -213,59 +213,64 @@ export function CreateAssessmentForm({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="totalMarks" className="text-xs text-primary-text">
+        <div className="grid gap-1.5">
+          <Label htmlFor="totalMarks" className="text-xs text-secondary-text">
             Total Marks *
           </Label>
           <Input
             id="totalMarks"
             type="number"
-            value={formData.totalMarks}
+            min={0}
+            value={formData.totalMarks || ''}
             onChange={(e) =>
-              setFormData({ ...formData, totalMarks: Number(e.target.value) })
+              setFormData({ ...formData, totalMarks: Number(e.target.value) || 0 })
             }
             required
-            className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            placeholder="0"
+            className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
           />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="weightage" className="text-xs text-primary-text">
+        <div className="grid gap-1.5">
+          <Label htmlFor="weightage" className="text-xs text-secondary-text">
             Weightage (%) *
           </Label>
           <Input
             id="weightage"
             type="number"
-            value={formData.weightage}
+            min={0}
+            max={100}
+            value={formData.weightage || ''}
             onChange={(e) =>
-              setFormData({ ...formData, weightage: Number(e.target.value) })
+              setFormData({ ...formData, weightage: Number(e.target.value) || 0 })
             }
             required
-            className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+            placeholder="0"
+            className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
           />
         </div>
       </div>
 
-      <div className="grid gap-2">
-        <Label className="text-xs text-primary-text">Due Date *</Label>
+      <div className="grid gap-1.5">
+        <Label className="text-xs text-secondary-text">Due Date *</Label>
         <Popover>
           <PopoverTrigger asChild>
             <button
               type="button"
               className={cn(
-                'w-full h-9 px-3 rounded-md border text-xs text-left flex items-center gap-2 transition-colors',
+                'w-full h-8 px-3 rounded-md border text-xs text-left flex items-center gap-2 transition-colors',
                 'bg-card border-card-border text-primary-text',
                 !formData.dueDate && 'text-secondary-text'
               )}
             >
-              <CalendarIcon className="h-3.5 w-3.5 text-secondary-text" />
+              <CalendarIcon className="h-3.5 w-3.5 text-muted-text" />
               {formData.dueDate ? (
                 format(formData.dueDate, 'PPP')
               ) : (
-                <span className="text-secondary-text">Pick a date</span>
+                <span className="text-muted-text">Pick a date</span>
               )}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-card border-card-border">
+          <PopoverContent className="w-auto p-0 bg-card border-card-border" align="start">
             <Calendar
               mode="single"
               selected={formData.dueDate}
@@ -278,8 +283,8 @@ export function CreateAssessmentForm({
         </Popover>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="instructions" className="text-xs text-primary-text">
+      <div className="grid gap-1.5">
+        <Label htmlFor="instructions" className="text-xs text-secondary-text">
           Instructions *
         </Label>
         <Textarea
@@ -290,25 +295,19 @@ export function CreateAssessmentForm({
           }
           placeholder="Enter assessment instructions"
           required
-          rows={3}
-          className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
+          rows={2}
+          className="text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary resize-none"
         />
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex justify-end gap-2 pt-4 border-t border-card-border">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-            style={{
-              color: isDarkMode ? '#ffffff' : '#111827',
-              borderColor: isDarkMode ? '#404040' : '#e5e7eb',
-            }}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text"
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode
-                ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.05)';
+              e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
@@ -320,7 +319,7 @@ export function CreateAssessmentForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50"
           style={{ backgroundColor: primaryColor, color: '#ffffff' }}
           onMouseEnter={(e) => {
             if (!isLoading)

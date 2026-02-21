@@ -73,6 +73,7 @@ export function AssessmentList() {
   const [courseOfferingFilter, setCourseOfferingFilter] = useState<string>('all');
   const [courseOfferings, setCourseOfferings] = useState<any[]>([]);
   const [isStudentRoute, setIsStudentRoute] = useState(false);
+  const [isFacultyRoute, setIsFacultyRoute] = useState(false);
 
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -108,7 +109,9 @@ export function AssessmentList() {
 
   useEffect(() => {
     const studentRoute = window.location.pathname.startsWith('/student');
+    const facultyRoute = window.location.pathname.startsWith('/faculty');
     setIsStudentRoute(studentRoute);
+    setIsFacultyRoute(facultyRoute);
     fetchAssessments();
     if (!studentRoute) fetchCourseOfferings();
   }, []);
@@ -197,10 +200,10 @@ export function AssessmentList() {
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
         <div className="flex flex-col items-center space-y-3">
           <div
-            className="w-8 h-8 border-2 rounded-full animate-spin"
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
             style={{
               borderTopColor: primaryColor,
               borderBottomColor: primaryColor,
@@ -214,11 +217,13 @@ export function AssessmentList() {
     );
   }
 
+  const assessmentsBasePath = isFacultyRoute ? '/faculty/assessments' : '/admin/assessments';
+
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
+      {/* Filters - inline row like My Courses */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px]">
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
@@ -327,7 +332,11 @@ export function AssessmentList() {
               filteredAssessments.map((assessment) => (
                 <TableRow
                   key={assessment.id}
-                  className="hover:bg-hover-bg transition-colors"
+                  className="hover:bg-[var(--hover-bg)] transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedAssessment(assessment);
+                    setIsViewDialogOpen(true);
+                  }}
                 >
                   <TableCell className="text-xs text-primary-text">
                     {assessment.id}
@@ -366,14 +375,14 @@ export function AssessmentList() {
                   <TableCell className="text-xs text-secondary-text">
                     {format(new Date(assessment.dueDate), 'dd MMM yyyy')}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => {
                           setSelectedAssessment(assessment);
                           setIsViewDialogOpen(true);
                         }}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
                         style={{
                           backgroundColor: iconBgColor,
                           color: primaryColor,
@@ -388,17 +397,18 @@ export function AssessmentList() {
                         }}
                         title="View Details"
                       >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3.5 h-3.5" />
+                        View
                       </button>
                       {!isStudentRoute && (
                         <>
                           <button
                             onClick={() =>
                               router.push(
-                                `/admin/assessments/${assessment.id}/items`
+                                `${assessmentsBasePath}/${assessment.id}/items`
                               )
                             }
-                            className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                            className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
                             style={{
                               backgroundColor: iconBgColor,
                               color: primaryColor,
@@ -412,29 +422,17 @@ export function AssessmentList() {
                               e.currentTarget.style.backgroundColor =
                                 iconBgColor;
                             }}
-                            title="View Items"
+                            title="Items"
                           >
-                            <FileText className="w-3 h-3" />
+                            <FileText className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(assessment)}
                             disabled={deletingId === assessment.id}
-                            className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                            style={{
-                              backgroundColor: 'var(--error-opacity-10)',
-                              color: 'var(--error)',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                'var(--error-opacity-20)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                'var(--error-opacity-10)';
-                            }}
+                            className="p-1.5 rounded-md transition-colors hover:bg-[var(--error)]/10 text-[var(--error)] disabled:opacity-50"
                             title="Delete"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </>
                       )}
