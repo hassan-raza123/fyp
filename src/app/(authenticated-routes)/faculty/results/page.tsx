@@ -21,11 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function ResultsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
+  const cardHoverBg = isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
 
   useEffect(() => {
     setMounted(true);
@@ -100,8 +102,18 @@ export default function ResultsPage() {
       {/* Main cards - Admin CLO theme with icon boxes + ChevronRight */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map(({ href, icon: Icon, title, description }) => (
-          <Link key={href} href={href}>
-            <Card className="rounded-lg border border-card-border bg-card overflow-hidden transition-all cursor-pointer hover:bg-[var(--hover-bg)]">
+          <Link
+            key={href}
+            href={href}
+            onMouseEnter={() => setHoveredCard(href)}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
+            <Card
+              className="rounded-lg border border-card-border bg-card overflow-hidden transition-all cursor-pointer"
+              style={{
+                backgroundColor: hoveredCard === href ? cardHoverBg : undefined,
+              }}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-3 text-primary-text">
                   <span
