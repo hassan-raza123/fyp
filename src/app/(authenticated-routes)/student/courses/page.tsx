@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Course {
@@ -186,9 +186,17 @@ export default function CoursesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">My Courses</h1>
-          <p className="text-xs text-secondary-text mt-0.5">View enrolled courses and details</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <BookOpen className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">My Courses</h1>
+            <p className="text-xs text-secondary-text mt-0.5">View enrolled courses and details</p>
+          </div>
         </div>
       </div>
 

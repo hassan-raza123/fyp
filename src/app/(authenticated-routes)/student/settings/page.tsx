@@ -282,9 +282,17 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-lg font-bold text-primary-text">Student Settings</h1>
-        <p className="text-xs text-secondary-text mt-0.5">Manage your profile and preferences</p>
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Settings className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Student Settings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Manage your profile and preferences</p>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

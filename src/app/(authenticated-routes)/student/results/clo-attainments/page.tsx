@@ -209,9 +209,17 @@ const CLOAttainmentsPage = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-primary-text">My CLO Attainments</h1>
-          <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes achievement by section</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Target className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">My CLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">View Course Learning Outcomes achievement by section</p>
+          </div>
         </div>
       </div>
 
