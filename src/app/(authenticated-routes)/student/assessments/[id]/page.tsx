@@ -252,11 +252,12 @@ export default function AssessmentDetailsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Header - admin CLO style with icon box + back */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/student/assessments')}
-            className="p-2 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors shrink-0"
             style={{ backgroundColor: iconBgColor, color: primaryColor }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
@@ -267,6 +268,12 @@ export default function AssessmentDetailsPage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
             <h1 className="text-lg font-bold text-primary-text">{assessment.title}</h1>
             <p className="text-xs text-secondary-text mt-0.5">
