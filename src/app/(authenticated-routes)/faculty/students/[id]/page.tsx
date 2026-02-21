@@ -828,9 +828,9 @@ export default function StudentDetailsPage() {
                         Add Section
                       </button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="bg-card border-card-border text-primary-text">
                       <DialogHeader>
-                        <DialogTitle>Add Student to Section</DialogTitle>
+                        <DialogTitle className="text-lg font-bold text-primary-text">Add Student to Section</DialogTitle>
                       </DialogHeader>
                       <Form {...form}>
                         <form
@@ -1389,10 +1389,10 @@ export default function StudentDetailsPage() {
       </div>
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Delete Student</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Delete Student</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Are you sure you want to delete this student? This action cannot
               be undone.
               {student.sections.length > 0 && (

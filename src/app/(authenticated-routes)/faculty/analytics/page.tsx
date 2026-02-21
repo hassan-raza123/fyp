@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -758,9 +757,8 @@ const AnalyticsPage = () => {
             </div>
           </div>
           <div className="mt-4 flex gap-2">
-            <Button
-              variant="outline"
-              className="text-xs h-8 border-card-border"
+            <button
+              type="button"
               onClick={() =>
                 setFilters({
                   courseId: '',
@@ -769,19 +767,20 @@ const AnalyticsPage = () => {
                   endDate: '',
                 })
               }
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Clear Filters
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
       <Tabs defaultValue="performance" className="w-full">
         <TabsList className="bg-card border border-card-border p-1 rounded-lg">
-          <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Performance</TabsTrigger>
-          <TabsTrigger value="clo" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">CLO Analytics</TabsTrigger>
-          <TabsTrigger value="student" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Student Analytics</TabsTrigger>
-          <TabsTrigger value="assessment" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Assessment Analytics</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Performance</TabsTrigger>
+          <TabsTrigger value="clo" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Analytics</TabsTrigger>
+          <TabsTrigger value="student" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Student Analytics</TabsTrigger>
+          <TabsTrigger value="assessment" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Assessment Analytics</TabsTrigger>
         </TabsList>
 
         {/* Performance Analytics */}

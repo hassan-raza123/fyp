@@ -31,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ContactForm from '@/components/forms/ContactForm';
 
@@ -499,20 +498,17 @@ export default function FacultyOverview() {
                 </p>
               </div>
               {data.pendingWork.totalPending > 0 && (
-                <Button
-                  className="w-full text-xs h-8"
-                  style={{ backgroundColor: primaryColor, color: 'white' }}
+                <button
+                  type="button"
                   onClick={() => router.push('/faculty/results/marks-entry')}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = primaryColorDark;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = primaryColor;
-                  }}
+                  className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center justify-center gap-1.5 text-white"
+                  style={{ backgroundColor: primaryColor }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
                 >
-                  <FileText className="w-3.5 h-3.5 mr-1.5" />
+                  <FileText className="w-3.5 h-3.5" />
                   Go to Marks Entry
-                </Button>
+                </button>
               )}
             </div>
           </div>
@@ -569,14 +565,14 @@ export default function FacultyOverview() {
                   </div>
                 </div>
               )}
-              <Button
-                variant="outline"
-                className="w-full text-xs h-8 border-card-border"
+              <button
+                type="button"
                 onClick={() => router.push('/faculty/results/clo-attainments')}
+                className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center justify-center gap-1.5"
               >
-                <Target className="w-3.5 h-3.5 mr-1.5" />
+                <Target className="w-3.5 h-3.5" />
                 View All CLO Attainments
-              </Button>
+              </button>
             </div>
           </div>
 
@@ -653,14 +649,14 @@ export default function FacultyOverview() {
                   </div>
                 </div>
               )}
-              <Button
-                variant="outline"
-                className="w-full text-xs h-8 border-card-border"
+              <button
+                type="button"
                 onClick={() => router.push('/faculty/students')}
+                className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center justify-center gap-1.5"
               >
-                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                <Eye className="w-3.5 h-3.5" />
                 View All Students
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -712,14 +708,14 @@ export default function FacultyOverview() {
               </div>
             )}
             {data.pendingWork.pendingEvaluations > 0 && (
-              <Button
-                variant="outline"
-                className="w-full mt-4 text-xs h-8 border-card-border"
+              <button
+                type="button"
                 onClick={() => router.push('/faculty/results/result-evaluation')}
+                className="w-full mt-4 px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center justify-center gap-1.5"
               >
-                <FileText className="w-3.5 h-3.5 mr-1.5" />
+                <FileText className="w-3.5 h-3.5" />
                 View Pending Evaluations ({data.pendingWork.pendingEvaluations})
-              </Button>
+              </button>
             )}
           </div>
         </div>
@@ -862,9 +858,9 @@ export default function FacultyOverview() {
 
       {/* Contact Support Dialog - same as admin */}
       <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold" style={{ color: primaryColor }}>
+            <DialogTitle className="text-lg font-bold text-primary-text">
               Contact Support
             </DialogTitle>
             <DialogDescription className="text-xs text-secondary-text">

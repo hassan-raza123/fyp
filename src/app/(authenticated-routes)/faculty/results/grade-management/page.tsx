@@ -585,9 +585,9 @@ const GradeManagementPage = () => {
 
       <Tabs defaultValue="review" className="w-full">
         <TabsList className="bg-card border border-card-border p-1 rounded-lg">
-          <TabsTrigger value="review" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Grade Review</TabsTrigger>
-          <TabsTrigger value="statistics" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Statistics</TabsTrigger>
-          <TabsTrigger value="reports" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-white">Grade Reports</TabsTrigger>
+          <TabsTrigger value="review" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Grade Review</TabsTrigger>
+          <TabsTrigger value="statistics" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Statistics</TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Grade Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="review" className="space-y-4">

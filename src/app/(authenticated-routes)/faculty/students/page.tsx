@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -482,36 +481,34 @@ export default function StudentsPage() {
       {totalPages > 1 && (
         <div className="flex justify-center">
           <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 border-card-border"
+            <button
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Previous
-            </Button>
+            </button>
             <span className="text-xs text-secondary-text">
               Page {page} of {totalPages}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 border-card-border"
+            <button
+              type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Next
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Delete Student</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Delete Student</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Are you sure you want to delete this student? This action cannot
               be undone.
               {selectedStudent && selectedStudent.currentStudents > 0 && (
@@ -523,60 +520,57 @@ export default function StudentsPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowDeleteDialog(false)}
               disabled={deleting}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button
-              variant='destructive'
+            </button>
+            <button
+              type="button"
               onClick={handleDelete}
               disabled={deleting || (selectedStudent?.currentStudents ?? 0) > 0}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-white hover:opacity-90"
             >
               {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Bulk Grade Entry Dialog */}
       <Dialog open={showBulkGradeDialog} onOpenChange={setShowBulkGradeDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Bulk Grade Entry</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Bulk Grade Entry</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Upload a CSV file with student marks. Download template for format.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>CSV File</Label>
+              <Label className="text-xs text-secondary-text">CSV File</Label>
               <div className="mt-2 flex items-center gap-4">
                 <Input
                   type="file"
                   accept=".csv"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      setBulkGradeFile(file);
-                    }
+                    if (file) setBulkGradeFile(file);
                   }}
+                  className="h-8 text-xs bg-card border-card-border text-primary-text"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => {
-                    // Generate template CSV
                     const template = [
                       ['studentId', 'assessmentId', 'itemId1', 'marks1', 'itemId2', 'marks2', 'itemId3', 'marks3'],
                       ['1', '1', '1', '10', '2', '15', '3', '20'],
                       ['2', '1', '1', '8', '2', '12', '3', '18'],
-                    ]
-                      .map((row) => row.join(','))
-                      .join('\n');
+                    ].map((row) => row.join(',')).join('\n');
                     const blob = new Blob([template], { type: 'text/csv' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -585,17 +579,18 @@ export default function StudentsPage() {
                     a.click();
                     toast.success('Template downloaded');
                   }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] inline-flex items-center gap-1.5"
                 >
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
                   Download Template
-                </Button>
+                </button>
               </div>
               <p className="text-xs text-secondary-text mt-2">
                 CSV format: studentId, assessmentId, itemId1, marks1, itemId2, marks2, ...
               </p>
             </div>
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">Instructions:</p>
+            <div className="rounded-lg border border-card-border bg-card p-4">
+              <p className="text-sm font-medium text-primary-text mb-2">Instructions:</p>
               <ul className="text-xs text-secondary-text space-y-1 list-disc list-inside">
                 <li>First row should contain headers: studentId, assessmentId, itemId1, marks1, etc.</li>
                 <li>Each row represents one student's marks for one assessment</li>
@@ -604,23 +599,24 @@ export default function StudentsPage() {
               </ul>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => {
                 setShowBulkGradeDialog(false);
                 setBulkGradeFile(null);
               }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={async () => {
                 if (!bulkGradeFile) {
                   toast.error('Please select a CSV file');
                   return;
                 }
-
                 setUploading(true);
                 try {
                   const text = await bulkGradeFile.text();
@@ -726,9 +722,11 @@ export default function StudentsPage() {
                 }
               }}
               disabled={!bulkGradeFile || uploading}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
             >
               {uploading ? 'Uploading...' : 'Upload & Process'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -738,71 +736,62 @@ export default function StudentsPage() {
         open={showNotificationDialog}
         onOpenChange={setShowNotificationDialog}
       >
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Send Notification to Students</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Send Notification to Students</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Send a notification message to selected students
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Subject</Label>
+              <Label className="text-xs text-secondary-text">Subject</Label>
               <Input
                 value={notificationSubject}
                 onChange={(e) => setNotificationSubject(e.target.value)}
                 placeholder="Notification subject"
-                className="mt-1"
+                className="mt-1 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
             <div>
-              <Label>Message</Label>
+              <Label className="text-xs text-secondary-text">Message</Label>
               <Textarea
                 value={notificationMessage}
                 onChange={(e) => setNotificationMessage(e.target.value)}
                 placeholder="Enter notification message..."
-                className="mt-1"
+                className="mt-1 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                 rows={5}
               />
             </div>
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-secondary-text">
+            <div className="rounded-lg border border-card-border bg-card p-3">
+              <p className="text-xs text-secondary-text">
                 Recipients: {selectedStudentsForNotification.length} student(s)
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => {
                 setShowNotificationDialog(false);
                 setNotificationMessage('');
                 setNotificationSubject('');
                 setSelectedStudentsForNotification([]);
               }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={async () => {
                 if (!notificationSubject || !notificationMessage) {
                   toast.error('Please fill in both subject and message');
                   return;
                 }
-
                 setSending(true);
                 try {
-                  // In a real implementation, this would send emails/notifications
-                  // For now, we'll just show a success message
-                  // You can integrate with email service or notification system here
-
-                  const selectedStudentsData = students.filter((s) =>
-                    selectedStudentsForNotification.includes(s.id)
-                  );
-
-                  // Simulate sending (replace with actual notification API call)
                   await new Promise((resolve) => setTimeout(resolve, 1000));
-
                   toast.success(
                     `Notification sent to ${selectedStudentsForNotification.length} student(s)`
                   );
@@ -818,9 +807,11 @@ export default function StudentsPage() {
                 }
               }}
               disabled={sending || !notificationSubject || !notificationMessage}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
             >
               {sending ? 'Sending...' : 'Send Notification'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

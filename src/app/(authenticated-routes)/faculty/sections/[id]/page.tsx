@@ -374,9 +374,9 @@ export default function SectionDetailsPage() {
                 Add Student
               </button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card border-card-border text-primary-text">
               <DialogHeader>
-                <DialogTitle>Add Student to Section</DialogTitle>
+                <DialogTitle className="text-lg font-bold text-primary-text">Add Student to Section</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form
@@ -390,21 +390,22 @@ export default function SectionDetailsPage() {
                     name='studentId'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Select Student</FormLabel>
+                        <FormLabel className="text-xs text-secondary-text">Select Student</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                               <SelectValue placeholder='Select a student' />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="bg-card border-card-border">
                             {students?.map((student) => (
                               <SelectItem
                                 key={student.id}
                                 value={student.id.toString()}
+                                className="text-primary-text hover:bg-card/50"
                               >
                                 <div className='flex flex-col'>
                                   <span className='font-medium'>
@@ -495,10 +496,10 @@ export default function SectionDetailsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="students">Students</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-card border border-card-border p-1 rounded-lg">
+            <TabsTrigger value="students" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Students</TabsTrigger>
+            <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Performance</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="space-y-4">

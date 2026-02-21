@@ -339,9 +339,9 @@ const CLOAttainmentsPage = () => {
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="bg-card border border-card-border p-1 rounded-lg">
           <TabsTrigger value="dashboard" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Dashboard</TabsTrigger>
-          <TabsTrigger value="details" disabled={!selectedCLO} className="text-xs rounded-md">CLO Details</TabsTrigger>
-          <TabsTrigger value="analysis" disabled={!selectedCourse} className="text-xs rounded-md">Analysis</TabsTrigger>
-          <TabsTrigger value="plo-mappings" disabled={!selectedCourse} className="text-xs rounded-md">CLO-PLO Mappings</TabsTrigger>
+          <TabsTrigger value="details" disabled={!selectedCLO} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">CLO Details</TabsTrigger>
+          <TabsTrigger value="analysis" disabled={!selectedCourse} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">Analysis</TabsTrigger>
+          <TabsTrigger value="plo-mappings" disabled={!selectedCourse} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">CLO-PLO Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
@@ -722,10 +722,10 @@ const CLOAttainmentsPage = () => {
 
       {/* Calculate Dialog */}
       <Dialog open={showCalculateDialog} onOpenChange={setShowCalculateDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text max-w-md">
           <DialogHeader>
-            <DialogTitle>Calculate CLO Attainments</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Calculate CLO Attainments</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Calculate CLO attainments for a course offering
             </DialogDescription>
           </DialogHeader>
@@ -772,7 +772,7 @@ const CLOAttainmentsPage = () => {
               </p>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
             <button
               type="button"
               onClick={() => setShowCalculateDialog(false)}
