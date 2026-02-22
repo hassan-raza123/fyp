@@ -82,6 +82,12 @@ interface ActionPlan {
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   createdAt: string;
   cloId: number | null;
+  // CQI loop closure
+  actualOutcome: string | null;
+  implementedAt: string | null;
+  followUpAttainmentValue: number | null;
+  isLoopClosed: boolean;
+  nextReviewDate: string | null;
   plo: { id: number; code: string; description: string };
   clo: { id: number; code: string; description: string } | null;
   semester: { id: number; name: string };
@@ -103,7 +109,7 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelled',
 };
 
-const THRESHOLD = 60;
+const THRESHOLD = 50;
 
 export default function ActionPlansPage() {
   const { resolvedTheme } = useTheme();
@@ -152,6 +158,12 @@ export default function ActionPlansPage() {
     expectedOutcome: '',
     targetDate: '',
     status: 'pending' as ActionPlan['status'],
+    // CQI loop closure
+    actualOutcome: '',
+    implementedAt: '',
+    followUpAttainmentValue: '',
+    isLoopClosed: false,
+    nextReviewDate: '',
   });
 
   useEffect(() => { setMounted(true); }, []);
@@ -294,6 +306,11 @@ export default function ActionPlansPage() {
       expectedOutcome: plan.expectedOutcome ?? '',
       targetDate: plan.targetDate ? plan.targetDate.split('T')[0] : '',
       status: plan.status,
+      actualOutcome: plan.actualOutcome ?? '',
+      implementedAt: plan.implementedAt ? plan.implementedAt.split('T')[0] : '',
+      followUpAttainmentValue: plan.followUpAttainmentValue !== null ? String(plan.followUpAttainmentValue) : '',
+      isLoopClosed: plan.isLoopClosed,
+      nextReviewDate: plan.nextReviewDate ? plan.nextReviewDate.split('T')[0] : '',
     });
     setEditOpen(true);
   };
@@ -312,6 +329,11 @@ export default function ActionPlansPage() {
           expectedOutcome: editForm.expectedOutcome || null,
           targetDate: editForm.targetDate || null,
           status: editForm.status,
+          actualOutcome: editForm.actualOutcome || null,
+          implementedAt: editForm.implementedAt || null,
+          followUpAttainmentValue: editForm.followUpAttainmentValue !== '' ? parseFloat(editForm.followUpAttainmentValue) : null,
+          isLoopClosed: editForm.isLoopClosed,
+          nextReviewDate: editForm.nextReviewDate || null,
         }),
       });
       const data = await res.json();
@@ -547,6 +569,7 @@ export default function ActionPlansPage() {
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Attainment</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Threshold</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Status</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-secondary-text">CQI Loop</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Target Date</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Action</th>
                 </tr>
@@ -583,6 +606,20 @@ export default function ActionPlansPage() {
                       <Badge className={`text-[10px] h-4 px-1.5 border ${STATUS_BADGE[plan.status]}`}>
                         {STATUS_LABELS[plan.status]}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {plan.isLoopClosed ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                          <CheckCircle2 className="h-3 w-3" /> Closed
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-secondary-text">Open</span>
+                      )}
+                      {plan.followUpAttainmentValue !== null && (
+                        <p className="text-[9px] text-secondary-text mt-0.5">
+                          Follow-up: {plan.followUpAttainmentValue.toFixed(1)}%
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-secondary-text">
                       {plan.targetDate ? new Date(plan.targetDate).toLocaleDateString() : '—'}
@@ -834,6 +871,63 @@ export default function ActionPlansPage() {
                   className="text-xs bg-card border-card-border text-primary-text resize-none"
                 />
               </div>
+
+              {/* ── CQI Loop Closure Section ── */}
+              <div className="border-t border-card-border pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-primary-text">CQI Loop Closure</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isLoopClosed}
+                      onChange={(e) => setEditForm((f) => ({ ...f, isLoopClosed: e.target.checked }))}
+                      className="h-3.5 w-3.5 rounded accent-current"
+                    />
+                    <span className="text-xs text-secondary-text">Mark loop as closed</span>
+                  </label>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-secondary-text">Actual Outcome <span className="font-normal">(what actually happened after action)</span></Label>
+                  <Textarea
+                    value={editForm.actualOutcome}
+                    onChange={(e) => setEditForm((f) => ({ ...f, actualOutcome: e.target.value }))}
+                    placeholder="Describe what actually happened after the corrective action was implemented..."
+                    rows={3}
+                    className="text-xs bg-card border-card-border text-primary-text resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">Implemented On</Label>
+                    <Input
+                      type="date"
+                      value={editForm.implementedAt}
+                      onChange={(e) => setEditForm((f) => ({ ...f, implementedAt: e.target.value }))}
+                      className="h-8 text-xs bg-card border-card-border text-primary-text"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">Follow-up PLO Attainment (%)</Label>
+                    <Input
+                      type="number" min={0} max={100} step={0.1}
+                      value={editForm.followUpAttainmentValue}
+                      onChange={(e) => setEditForm((f) => ({ ...f, followUpAttainmentValue: e.target.value }))}
+                      placeholder="e.g. 65.0"
+                      className="h-8 text-xs bg-card border-card-border text-primary-text"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">Next Review Date</Label>
+                    <Input
+                      type="date"
+                      value={editForm.nextReviewDate}
+                      onChange={(e) => setEditForm((f) => ({ ...f, nextReviewDate: e.target.value }))}
+                      className="h-8 text-xs bg-card border-card-border text-primary-text"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <Button size="sm" variant="outline" onClick={() => setEditOpen(false)} className="h-8 text-xs border-card-border text-primary-text">
                   Cancel

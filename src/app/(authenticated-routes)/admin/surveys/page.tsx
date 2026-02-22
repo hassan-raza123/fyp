@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Plus,
   Trash2,
-  Eye,
   PlayCircle,
   StopCircle,
   BarChart2,
@@ -57,10 +56,27 @@ interface Question {
   ploId: string;
 }
 
+type SurveyType = 'course_exit' | 'program_exit' | 'alumni' | 'employer';
+
+const SURVEY_TYPE_LABELS: Record<SurveyType, string> = {
+  course_exit: 'Course Exit',
+  program_exit: 'Program Exit',
+  alumni: 'Alumni',
+  employer: 'Employer',
+};
+
+const SURVEY_TYPE_COLORS: Record<SurveyType, string> = {
+  course_exit: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  program_exit: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  alumni: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+  employer: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+};
+
 interface Survey {
   id: number;
   title: string;
   description: string | null;
+  type: SurveyType;
   status: 'draft' | 'active' | 'closed';
   dueDate: string | null;
   courseOffering: CourseOffering | null;
@@ -108,7 +124,7 @@ export default function AdminSurveysPage() {
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
   const [surveyScope, setSurveyScope] = useState<'course' | 'program'>('course');
-  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
+  const [form, setForm] = useState({ title: '', description: '', type: 'course_exit' as SurveyType, courseOfferingId: '', programId: '', dueDate: '' });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQ, setNewQ] = useState<Question>({ question: '', questionType: 'rating', ploId: '' });
   const [saving, setSaving] = useState(false);
@@ -185,6 +201,7 @@ export default function AdminSurveysPage() {
       const payload = {
         title: form.title,
         description: form.description,
+        type: form.type,
         dueDate: form.dueDate,
         courseOfferingId: surveyScope === 'course' ? form.courseOfferingId : undefined,
         programId: surveyScope === 'program' ? form.programId : undefined,
@@ -216,7 +233,7 @@ export default function AdminSurveysPage() {
 
       toast.success('Survey created successfully');
       setCreateOpen(false);
-      setForm({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
+      setForm({ title: '', description: '', type: 'course_exit', courseOfferingId: '', programId: '', dueDate: '' });
       setQuestions([]);
       setSurveyScope('course');
       // Refresh
@@ -331,6 +348,9 @@ export default function AdminSurveysPage() {
                   <Badge className={`text-[10px] h-4 px-1.5 border ${STATUS_COLORS[survey.status]}`}>
                     {survey.status}
                   </Badge>
+                  <Badge className={`text-[10px] h-4 px-1.5 border ${SURVEY_TYPE_COLORS[survey.type ?? 'course_exit']}`}>
+                    {SURVEY_TYPE_LABELS[survey.type ?? 'course_exit']}
+                  </Badge>
                 </div>
                 <p className="text-xs text-secondary-text mt-0.5">
                   {survey.courseOffering
@@ -390,6 +410,20 @@ export default function AdminSurveysPage() {
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Optional description" rows={2}
                 className="text-xs bg-card border-card-border text-primary-text resize-none" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">Survey Type * <span className="font-normal text-secondary-text">(HEC indirect assessment category)</span></Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as SurveyType })}>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="course_exit" className="text-xs text-primary-text">Course Exit Survey — per course, per semester</SelectItem>
+                  <SelectItem value="program_exit" className="text-xs text-primary-text">Program Exit Survey — graduating students</SelectItem>
+                  <SelectItem value="alumni" className="text-xs text-primary-text">Alumni Survey — 1–3 years post-graduation</SelectItem>
+                  <SelectItem value="employer" className="text-xs text-primary-text">Employer Survey — employer feedback on graduates</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-1.5">
               <Label className="text-xs text-secondary-text">Survey Scope *</Label>

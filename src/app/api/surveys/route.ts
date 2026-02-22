@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, courseOfferingId, programId, dueDate } = body;
+    const { title, description, type, courseOfferingId, programId, dueDate } = body;
 
     if (!title || (!courseOfferingId && !programId)) {
       return NextResponse.json(
@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description: description ?? null,
+        type: type ?? 'course_exit',
         courseOfferingId: courseOfferingId ? parseInt(courseOfferingId) : null,
         programId: programId ? parseInt(programId) : null,
         createdBy: user!.userId,

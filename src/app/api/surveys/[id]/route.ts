@@ -73,13 +73,14 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, description, dueDate, status } = body;
+    const { title, description, type, dueDate, status } = body;
 
     const survey = await prisma.surveys.update({
       where: { id: parseInt(params.id) },
       data: {
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
+        ...(type !== undefined && { type }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(status !== undefined && { status }),
       },

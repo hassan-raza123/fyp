@@ -369,7 +369,7 @@ model closattainments {
   courseOfferingId  Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent Float
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
@@ -405,7 +405,7 @@ model llosattainments {
   courseOfferingId  Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent Float
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
@@ -961,6 +961,7 @@ model surveys {
   id               Int              @id @default(autoincrement())
   title            String
   description      String?
+  type             survey_type      @default(course_exit)
   courseOfferingId Int?
   programId        Int?
   createdBy        Int
@@ -997,13 +998,15 @@ model survey_questions {
 }
 
 model survey_responses {
-  id          Int              @id @default(autoincrement())
-  surveyId    Int
-  studentId   Int
-  submittedAt DateTime         @default(now())
-  survey      surveys          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  student     students         @relation(fields: [studentId], references: [id])
-  answers     survey_answers[]
+  id              Int              @id @default(autoincrement())
+  surveyId        Int
+  studentId       Int?
+  respondentName  String?
+  respondentEmail String?
+  submittedAt     DateTime         @default(now())
+  survey          surveys          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  student         students?        @relation(fields: [studentId], references: [id])
+  answers         survey_answers[]
 
   @@unique([surveyId, studentId])
   @@index([surveyId])
@@ -1028,6 +1031,13 @@ enum survey_status {
   draft
   active
   closed
+}
+
+enum survey_type {
+  course_exit
+  program_exit
+  alumni
+  employer
 }
 
 enum survey_question_type {
@@ -1077,12 +1087,18 @@ model action_plans {
   lloId            Int?
   semesterId       Int
   attainmentValue  Float
-  threshold        Float              @default(60)
-  rootCause        String?            @db.Text
-  actionTaken      String?            @db.Text
-  expectedOutcome  String?            @db.Text
-  targetDate       DateTime?
-  status           action_plan_status @default(pending)
+  threshold        Float              @default(50)
+  rootCause               String?            @db.Text
+  actionTaken             String?            @db.Text
+  expectedOutcome         String?            @db.Text
+  targetDate              DateTime?
+  status                  action_plan_status @default(pending)
+  // CQI Loop Closure fields
+  actualOutcome           String?            @db.Text
+  implementedAt           DateTime?
+  followUpAttainmentValue Float?
+  isLoopClosed            Boolean            @default(false)
+  nextReviewDate          DateTime?
   createdBy        Int
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -1107,10 +1123,10 @@ model graduation_criteria {
   id                      Int      @id @default(autoincrement())
   programId               Int      @unique
   minCGPA                 Float    @default(2.0)
-  minPloAttainmentPercent Float    @default(60)
+  minPloAttainmentPercent Float    @default(50)
   requireAllCourses       Boolean  @default(true)
-  directWeight            Float    @default(0.7)
-  indirectWeight          Float    @default(0.3)
+  directWeight            Float    @default(0.8)
+  indirectWeight          Float    @default(0.2)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   program                 programs @relation(fields: [programId], references: [id])

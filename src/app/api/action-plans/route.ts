@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       cloId: cloId ? parseInt(cloId) : null,
       semesterId: parseInt(semesterId),
       attainmentValue: parseFloat(attainmentValue),
-      threshold: parseFloat(threshold ?? '60'),
+      threshold: parseFloat(threshold ?? '50'),
       rootCause: rootCause ?? null,
       actionTaken: actionTaken ?? null,
       expectedOutcome: expectedOutcome ?? null,

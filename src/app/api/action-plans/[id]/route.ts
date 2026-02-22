@@ -30,7 +30,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const body = await request.json();
-  const { rootCause, actionTaken, expectedOutcome, targetDate, status } = body;
+  const {
+    rootCause,
+    actionTaken,
+    expectedOutcome,
+    targetDate,
+    status,
+    actualOutcome,
+    implementedAt,
+    followUpAttainmentValue,
+    isLoopClosed,
+    nextReviewDate,
+  } = body;
 
   const plan = await prisma.action_plans.update({
     where: { id: parseInt(params.id) },
@@ -40,6 +51,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       ...(expectedOutcome !== undefined && { expectedOutcome }),
       ...(targetDate !== undefined && { targetDate: targetDate ? new Date(targetDate) : null }),
       ...(status !== undefined && { status }),
+      // CQI loop closure
+      ...(actualOutcome !== undefined && { actualOutcome }),
+      ...(implementedAt !== undefined && { implementedAt: implementedAt ? new Date(implementedAt) : null }),
+      ...(followUpAttainmentValue !== undefined && { followUpAttainmentValue: followUpAttainmentValue !== null ? parseFloat(followUpAttainmentValue) : null }),
+      ...(isLoopClosed !== undefined && { isLoopClosed }),
+      ...(nextReviewDate !== undefined && { nextReviewDate: nextReviewDate ? new Date(nextReviewDate) : null }),
     },
   });
 
