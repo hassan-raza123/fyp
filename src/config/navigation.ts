@@ -166,6 +166,12 @@ const adminNavigation = [
         href: '/admin/courses',
       },
       {
+        id: 'curriculum',
+        label: 'Program Curriculum',
+        icon: BookMarked,
+        href: '/admin/curriculum',
+      },
+      {
         id: 'course-offerings',
         label: 'Course Offerings',
         icon: BookCheck,
@@ -263,6 +269,12 @@ const adminNavigation = [
         label: 'Action Plans',
         icon: TrendingUp,
         href: '/admin/action-plans',
+      },
+      {
+        id: 'graduation',
+        label: 'Graduation Tracker',
+        icon: GraduationCap,
+        href: '/admin/results/graduation',
       },
     ],
   },

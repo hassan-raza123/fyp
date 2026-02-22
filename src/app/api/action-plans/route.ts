@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     where,
     include: {
       plo: { select: { id: true, code: true, description: true } },
+      clo: { select: { id: true, code: true, description: true } },
       semester: { select: { id: true, name: true } },
       courseOffering: {
         include: {
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
   const {
     courseOfferingId,
     ploId,
+    cloId,
     semesterId,
     attainmentValue,
     threshold,
@@ -71,6 +73,7 @@ export async function POST(request: NextRequest) {
     data: {
       courseOfferingId: parseInt(courseOfferingId),
       ploId: parseInt(ploId),
+      cloId: cloId ? parseInt(cloId) : null,
       semesterId: parseInt(semesterId),
       attainmentValue: parseFloat(attainmentValue),
       threshold: parseFloat(threshold ?? '60'),
@@ -83,6 +86,7 @@ export async function POST(request: NextRequest) {
     },
     include: {
       plo: { select: { code: true, description: true } },
+      clo: { select: { code: true, description: true } },
       semester: { select: { name: true } },
       courseOffering: { include: { course: { select: { code: true, name: true } } } },
     },

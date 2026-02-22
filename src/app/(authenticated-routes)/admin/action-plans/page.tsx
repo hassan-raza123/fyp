@@ -53,6 +53,12 @@ interface Plo {
   description: string;
 }
 
+interface Clo {
+  id: number;
+  code: string;
+  description: string;
+}
+
 interface PLOAttainment {
   ploId: number;
   ploCode: string;
@@ -75,7 +81,9 @@ interface ActionPlan {
   targetDate: string | null;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   createdAt: string;
+  cloId: number | null;
   plo: { id: number; code: string; description: string };
+  clo: { id: number; code: string; description: string } | null;
   semester: { id: number; name: string };
   courseOffering: { id: number; course: { id: number; code: string; name: string } };
   creator: { first_name: string; last_name: string };
@@ -108,6 +116,7 @@ export default function ActionPlansPage() {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [programPlos, setProgramPlos] = useState<Plo[]>([]);
+  const [offeringClos, setOfferingClos] = useState<Clo[]>([]);
 
   const [selectedProgram, setSelectedProgram] = useState('');
   const [selectedSemester, setSelectedSemester] = useState('');
@@ -127,6 +136,7 @@ export default function ActionPlansPage() {
   const [createForm, setCreateForm] = useState({
     courseOfferingId: '',
     ploId: '',
+    cloId: '',
     semesterId: '',
     attainmentValue: '',
     threshold: String(THRESHOLD),
@@ -167,6 +177,17 @@ export default function ActionPlansPage() {
       .then((d) => setProgramPlos(d.data ?? d ?? []))
       .catch(() => setProgramPlos([]));
   }, [selectedProgram]);
+
+  // Load CLOs for the selected course offering
+  useEffect(() => {
+    if (!createForm.courseOfferingId) { setOfferingClos([]); return; }
+    const offering = courseOfferings.find((co) => String(co.id) === createForm.courseOfferingId);
+    if (!offering) { setOfferingClos([]); return; }
+    fetch(`/api/courses/${offering.course.id}/clos`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setOfferingClos(d.data ?? d ?? []))
+      .catch(() => setOfferingClos([]));
+  }, [createForm.courseOfferingId, courseOfferings]);
 
   // Load PLO attainments when program+semester selected
   const loadPloAttainments = useCallback(async () => {
@@ -213,9 +234,11 @@ export default function ActionPlansPage() {
   useEffect(() => { loadPlans(); }, [loadPlans]);
 
   const openCreateFromPlo = (plo: PLOAttainment) => {
+    setOfferingClos([]);
     setCreateForm({
       courseOfferingId: '',
       ploId: String(plo.ploId),
+      cloId: '',
       semesterId: selectedSemester,
       attainmentValue: plo.attainment.toFixed(1),
       threshold: String(THRESHOLD),
@@ -241,6 +264,7 @@ export default function ActionPlansPage() {
         body: JSON.stringify({
           courseOfferingId: parseInt(createForm.courseOfferingId),
           ploId: parseInt(createForm.ploId),
+          cloId: createForm.cloId ? parseInt(createForm.cloId) : null,
           semesterId: parseInt(createForm.semesterId),
           attainmentValue: parseFloat(createForm.attainmentValue || '0'),
           threshold: parseFloat(createForm.threshold || '60'),
@@ -334,9 +358,11 @@ export default function ActionPlansPage() {
           style={{ backgroundColor: iconBgColor, color: primaryColor }}
           variant="ghost"
           onClick={() => {
+            setOfferingClos([]);
             setCreateForm({
               courseOfferingId: '',
               ploId: '',
+              cloId: '',
               semesterId: selectedSemester,
               attainmentValue: '',
               threshold: String(THRESHOLD),
@@ -515,6 +541,7 @@ export default function ActionPlansPage() {
               <thead className="bg-muted/50 border-b border-card-border">
                 <tr>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">PLO</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-secondary-text">CLO</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Course</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Semester</th>
                   <th className="text-left px-4 py-2.5 font-medium text-secondary-text">Attainment</th>
@@ -530,6 +557,16 @@ export default function ActionPlansPage() {
                     <td className="px-4 py-3">
                       <div className="font-semibold text-primary-text">{plan.plo.code}</div>
                       <div className="text-secondary-text text-[10px] mt-0.5 max-w-[160px] truncate">{plan.plo.description}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {plan.clo ? (
+                        <>
+                          <div className="font-semibold text-primary-text">{plan.clo.code}</div>
+                          <div className="text-secondary-text text-[10px] mt-0.5 max-w-[140px] truncate">{plan.clo.description}</div>
+                        </>
+                      ) : (
+                        <span className="text-secondary-text text-[10px]">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-primary-text">{plan.courseOffering.course.code}</div>
@@ -593,7 +630,10 @@ export default function ActionPlansPage() {
               </div>
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">Course Offering *</Label>
-                <Select value={createForm.courseOfferingId} onValueChange={(v) => setCreateForm((f) => ({ ...f, courseOfferingId: v }))}>
+                <Select
+                  value={createForm.courseOfferingId}
+                  onValueChange={(v) => setCreateForm((f) => ({ ...f, courseOfferingId: v, cloId: '' }))}
+                >
                   <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select course offering" />
                   </SelectTrigger>
@@ -606,6 +646,29 @@ export default function ActionPlansPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            {/* CLO selector — populated once a course offering is chosen */}
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">
+                Specific CLO <span className="text-secondary-text font-normal">(optional — narrow down to a CLO within the PLO)</span>
+              </Label>
+              <Select
+                value={createForm.cloId}
+                onValueChange={(v) => setCreateForm((f) => ({ ...f, cloId: v }))}
+                disabled={offeringClos.length === 0}
+              >
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder={offeringClos.length === 0 ? 'Select a course offering first' : 'Select CLO (optional)'} />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="" className="text-xs text-secondary-text italic">None (PLO-level plan)</SelectItem>
+                  {offeringClos.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)} className="text-xs text-primary-text">
+                      {c.code} — {c.description.length > 60 ? c.description.slice(0, 60) + '…' : c.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-1.5">

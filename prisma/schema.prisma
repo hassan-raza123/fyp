@@ -107,6 +107,7 @@ model programs {
   department       departments      @relation(fields: [departmentId], references: [id])
   students         students[]
   courses          courses[]        @relation("programtocourse")
+  curriculum       program_curriculum[]
 
   @@index([departmentId])
 }
@@ -132,6 +133,7 @@ model courses {
   courses_B       courses[]         @relation("courseprerequisites")
   faculties       faculties[]       @relation("facultycourses")
   programs        programs[]        @relation("programtocourse")
+  curriculum      program_curriculum[]
 
   @@index([departmentId])
 }
@@ -320,6 +322,7 @@ model clos {
   ploMappings     cloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   closAttainments closattainments[]
+  actionPlans     action_plans[]
 
   @@unique([code, courseId])
   @@index([courseId])
@@ -1036,10 +1039,38 @@ enum action_plan_status {
   cancelled
 }
 
+// ─── Program Curriculum ───────────────────────────────────────────────────────
+
+model program_curriculum {
+  id              Int                 @id @default(autoincrement())
+  programId       Int
+  courseId        Int
+  semesterSlot    Int                 // 1 = Semester 1, 2 = Semester 2, etc.
+  courseCategory  curriculum_category @default(core)
+  isRequired      Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  program         programs            @relation(fields: [programId], references: [id])
+  course          courses             @relation(fields: [courseId], references: [id])
+
+  @@unique([programId, courseId])
+  @@index([programId])
+  @@index([courseId])
+}
+
+enum curriculum_category {
+  core
+  elective
+  lab
+  project
+  thesis
+}
+
 model action_plans {
   id               Int                @id @default(autoincrement())
   courseOfferingId Int
   ploId            Int
+  cloId            Int?
   semesterId       Int
   attainmentValue  Float
   threshold        Float              @default(60)
@@ -1053,11 +1084,13 @@ model action_plans {
   updatedAt        DateTime           @updatedAt
   courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
   plo              plos               @relation(fields: [ploId], references: [id])
+  clo              clos?              @relation(fields: [cloId], references: [id])
   semester         semesters          @relation(fields: [semesterId], references: [id])
   creator          users              @relation("ActionPlanCreator", fields: [createdBy], references: [id])
 
   @@index([courseOfferingId])
   @@index([ploId])
+  @@index([cloId])
   @@index([semesterId])
   @@index([createdBy])
 }
