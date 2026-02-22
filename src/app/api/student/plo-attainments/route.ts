@@ -33,6 +33,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Read PLO attainment threshold from program's graduation criteria (fallback: 60)
+    const graduationCriteria = await prisma.graduation_criteria.findUnique({
+      where: { programId: targetProgramId },
+      select: { minPloAttainmentPercent: true },
+    });
+    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 60;
+
     // Fetch PLOs with both CLO and LLO mappings
     const plos = await prisma.plos.findMany({
       where: { programId: targetProgramId, status: plo_status.active },
@@ -167,10 +174,8 @@ export async function GET(request: NextRequest) {
         status: { in: ['active', 'completed'] },
       },
       include: {
-        // lloId on assessmentitems requires prisma generate after schema update.
-        // Using `as any` here until that is done.
         assessmentItems: {
-          include: { llo: { select: { id: true } } } as any,
+          include: { llo: { select: { id: true } } },
         },
       },
     });
@@ -265,7 +270,7 @@ export async function GET(request: NextRequest) {
           ? allContributions.reduce((s, c) => s + c.classAtt * c.weight, 0) / totalWeight
           : 0;
 
-      const threshold = 60;
+      const threshold = ploThreshold;
 
       return {
         ploId: plo.id,
@@ -302,6 +307,10 @@ export async function GET(request: NextRequest) {
         semester: semesterId
           ? studentSections[0]?.section.courseOffering.semester.name || null
           : null,
+        // Student view shows direct (assessment-based) attainment only.
+        // The official PLO attainment (admin view) additionally includes
+        // 30% indirect weight from survey responses.
+        isDirectOnly: true,
         overallProgress: {
           totalPLOs,
           attainedPLOs,

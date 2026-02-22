@@ -23,13 +23,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify course offering belongs to faculty
+    // Fetch ALL active sections for this course offering
     const courseOffering = await prisma.courseofferings.findUnique({
       where: { id: courseOfferingId },
       include: {
         sections: {
           where: {
-            facultyId: facultyId,
             status: 'active',
             ...(sectionId && { id: sectionId }),
           },
@@ -42,7 +41,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!courseOffering || courseOffering.sections.length === 0) {
+    // Authorization: faculty must teach at least one section in this offering
+    const isAssigned = courseOffering?.sections.some(
+      (s) => s.facultyId === facultyId
+    );
+    if (!courseOffering || !isAssigned) {
       return NextResponse.json(
         { success: false, error: 'Course offering not found or unauthorized' },
         { status: 404 }
@@ -56,6 +59,7 @@ export async function POST(req: NextRequest) {
     });
     const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
 
+    // Use ALL sections for student collection (course-offering-wide attainment)
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
     // Get students in these sections
@@ -90,11 +94,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get assessments for this course offering
+    // Get ALL assessments for this course offering (not filtered by faculty).
+    // CLO attainment is course-offering-wide: all faculty assessments contribute
+    // so that multi-section courses produce a single consistent attainment record.
     const assessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        conductedBy: facultyId,
         status: {
           in: ['active', 'completed'],
         },
@@ -236,12 +241,6 @@ async function calculateCLOAttainment(
       },
     },
   });
-
-  // Calculate total possible marks for this CLO
-  const totalPossibleMarks = cloItems.reduce(
-    (sum, item) => sum + item.marks,
-    0
-  );
 
   // Group by student and calculate their CLO performance
   const studentCLOPerformance = new Map<

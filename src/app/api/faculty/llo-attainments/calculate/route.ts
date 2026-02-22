@@ -26,13 +26,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify the faculty teaches this course offering
+    // Fetch ALL active sections for this course offering
     const courseOffering = await prisma.courseofferings.findUnique({
       where: { id: courseOfferingId },
       include: {
         sections: {
           where: {
-            facultyId: facultyId,
             status: 'active',
             ...(sectionId && { id: sectionId }),
           },
@@ -43,7 +42,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!courseOffering || courseOffering.sections.length === 0) {
+    // Authorization: faculty must teach at least one section in this offering
+    const isAssigned = courseOffering?.sections.some(
+      (s) => s.facultyId === facultyId
+    );
+    if (!courseOffering || !isAssigned) {
       return NextResponse.json(
         { success: false, error: 'Course offering not found or you are not assigned to it' },
         { status: 404 }
@@ -98,11 +101,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch only lab-type assessments conducted by this faculty for this offering
+    // Fetch ALL lab-type assessments for this offering (not filtered by faculty).
+    // LLO attainment is course-offering-wide so multi-section courses produce
+    // a single consistent attainment record regardless of who triggers the calc.
     const labAssessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        conductedBy: facultyId,
         type: { in: LAB_ASSESSMENT_TYPES as any },
         status: { in: ['active', 'completed'] },
       },
@@ -178,7 +182,7 @@ async function calculateLLOAttainment(
     where: {
       assessmentId: { in: labAssessmentIds },
       lloId: llo.id,
-    } as any,
+    },
     select: { id: true, marks: true },
   });
 

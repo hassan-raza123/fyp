@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
 
 interface ContributingCLO {
@@ -27,7 +28,7 @@ interface PLOAttainment {
   contributingLlos: ContributingLLO[];
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
@@ -226,5 +227,202 @@ export async function GET(request: Request) {
       { error: 'Failed to fetch PLO attainments' },
       { status: 500 }
     );
+  }
+}
+
+// POST - Persist PLO attainments to the ploattainments table for historical tracking
+export async function POST(request: NextRequest) {
+  try {
+    const auth = await requireAuth(request);
+    if (!auth.success || !auth.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!['admin', 'faculty', 'super_admin'].includes(auth.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { programId, semesterId } = body;
+
+    if (!programId || !semesterId) {
+      return NextResponse.json(
+        { error: 'programId and semesterId are required' },
+        { status: 400 }
+      );
+    }
+
+    // ── Fetch PLOs with CLO + LLO attainments (same as GET) ───────────────────
+    const plos = await prisma.plos.findMany({
+      where: { programId: Number(programId), status: plo_status.active },
+      include: {
+        cloMappings: {
+          include: {
+            clo: {
+              include: {
+                closAttainments: {
+                  where: { courseOffering: { semesterId: Number(semesterId) } },
+                  orderBy: { calculatedAt: 'desc' },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+        lloMappings: {
+          include: {
+            llo: {
+              include: {
+                llosAttainments: {
+                  where: { courseOffering: { semesterId: Number(semesterId) } },
+                  orderBy: { calculatedAt: 'desc' },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // ── Direct attainment (weighted avg of CLO + LLO) ─────────────────────────
+    const directByPlo = new Map<number, number>();
+    for (const plo of plos) {
+      const contributions = [
+        ...plo.cloMappings.map((m) => ({
+          attainment: m.clo.closAttainments[0]?.attainmentPercent ?? 0,
+          weight: m.weight,
+        })),
+        ...plo.lloMappings.map((m) => ({
+          attainment: m.llo.llosAttainments[0]?.attainmentPercent ?? 0,
+          weight: m.weight,
+        })),
+      ];
+      const totalWeight = contributions.reduce((s, c) => s + c.weight, 0);
+      const weightedSum = contributions.reduce((s, c) => s + c.attainment * c.weight, 0);
+      directByPlo.set(plo.id, totalWeight > 0 ? weightedSum / totalWeight : 0);
+    }
+
+    // ── Indirect attainment (closed surveys) ──────────────────────────────────
+    const courseOfferings = await prisma.courseofferings.findMany({
+      where: {
+        semesterId: Number(semesterId),
+        course: { programs: { some: { id: Number(programId) } } },
+      },
+      select: { id: true },
+    });
+    const offeringIds = courseOfferings.map((co) => co.id);
+    const indirectByPlo = new Map<number, { sumRating: number; count: number }>();
+
+    if (offeringIds.length > 0) {
+      const surveys = await prisma.surveys.findMany({
+        where: { courseOfferingId: { in: offeringIds }, status: 'closed' },
+        include: {
+          questions: {
+            where: { ploId: { not: null } },
+            include: { answers: { select: { ratingValue: true } } },
+          },
+          _count: { select: { responses: true } },
+        },
+      });
+      for (const survey of surveys) {
+        const responseCount = survey._count.responses;
+        if (responseCount === 0) continue;
+        for (const q of survey.questions) {
+          if (!q.ploId) continue;
+          const ratings = q.answers
+            .filter((a) => a.ratingValue !== null)
+            .map((a) => a.ratingValue as number);
+          if (ratings.length === 0) continue;
+          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+          const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
+          indirectByPlo.set(q.ploId, {
+            sumRating: existing.sumRating + avg * responseCount,
+            count: existing.count + responseCount,
+          });
+        }
+      }
+    }
+
+    // ── Graduation criteria weights + PLO threshold ────────────────────────────
+    const graduationCriteria = await prisma.graduation_criteria.findUnique({
+      where: { programId: Number(programId) },
+      select: { directWeight: true, indirectWeight: true, minPloAttainmentPercent: true },
+    });
+    const directWeight = graduationCriteria?.directWeight ?? 0.7;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
+    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 60;
+
+    // ── Count total students enrolled in this program/semester ────────────────
+    const enrolledStudentSections = await prisma.studentsections.findMany({
+      where: {
+        status: 'active',
+        student: { programId: Number(programId) },
+        section: { courseOffering: { semesterId: Number(semesterId) } },
+      },
+      select: { studentId: true },
+    });
+    const totalStudents = new Set(enrolledStudentSections.map((ss) => ss.studentId)).size;
+
+    // ── Upsert each PLO attainment record ─────────────────────────────────────
+    const saved = await Promise.all(
+      plos.map((plo) => {
+        const directAttainment = directByPlo.get(plo.id) ?? 0;
+        const indirectRaw = indirectByPlo.get(plo.id);
+        const indirectAttainment =
+          indirectRaw && indirectRaw.count > 0
+            ? Math.round((indirectRaw.sumRating / indirectRaw.count / 5) * 100 * 10) / 10
+            : null;
+
+        const attainmentPercent =
+          indirectAttainment !== null
+            ? directWeight * directAttainment + indirectWeight * indirectAttainment
+            : directAttainment;
+
+        const studentsAchieved =
+          totalStudents > 0 ? Math.round((attainmentPercent / 100) * totalStudents) : 0;
+
+        return prisma.ploattainments.upsert({
+          where: {
+            ploId_programId_semesterId: {
+              ploId: plo.id,
+              programId: Number(programId),
+              semesterId: Number(semesterId),
+            },
+          },
+          update: {
+            attainmentPercent,
+            directAttainment,
+            indirectAttainment,
+            totalStudents,
+            studentsAchieved,
+            threshold: ploThreshold,
+            calculatedAt: new Date(),
+            calculatedBy: auth.user!.userId,
+            status: 'active',
+          },
+          create: {
+            ploId: plo.id,
+            programId: Number(programId),
+            semesterId: Number(semesterId),
+            attainmentPercent,
+            directAttainment,
+            indirectAttainment,
+            totalStudents,
+            studentsAchieved,
+            threshold: ploThreshold,
+            calculatedBy: auth.user!.userId,
+          },
+        });
+      })
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: `PLO attainments saved for ${saved.length} PLO(s)`,
+      data: saved,
+    });
+  } catch (error) {
+    console.error('Error saving PLO attainments:', error);
+    return NextResponse.json({ error: 'Failed to save PLO attainments' }, { status: 500 });
   }
 }
