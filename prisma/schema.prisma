@@ -342,6 +342,7 @@ model llos {
   course          courses           @relation(fields: [courseId], references: [id])
   llosAttainments llosattainments[]
   assessmentItems assessmentitems[]
+  actionPlans     action_plans[]
 
   @@unique([code, courseId])
   @@index([courseId])
@@ -570,9 +571,10 @@ model gradescales {
 }
 
 model studentgrades {
-  id               Int             @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   studentId        Int
   courseOfferingId Int
+  component        grade_component  @default(combined)
   totalMarks       Float
   obtainedMarks    Float
   percentage       Float
@@ -580,18 +582,18 @@ model studentgrades {
   gpaPoints        Float
   creditHours      Int
   qualityPoints    Float
-  isRepeat         Boolean         @default(false)
-  attemptNumber    Int             @default(1)
-  status           grade_status    @default(active)
-  calculatedAt     DateTime        @default(now())
+  isRepeat         Boolean          @default(false)
+  attemptNumber    Int              @default(1)
+  status           grade_status     @default(active)
+  calculatedAt     DateTime         @default(now())
   calculatedBy     Int?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  calculator       faculties?      @relation("GradeCalculator", fields: [calculatedBy], references: [id])
-  courseOffering   courseofferings @relation(fields: [courseOfferingId], references: [id])
-  student          students        @relation(fields: [studentId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  calculator       faculties?       @relation("GradeCalculator", fields: [calculatedBy], references: [id])
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  student          students         @relation(fields: [studentId], references: [id])
 
-  @@unique([studentId, courseOfferingId, attemptNumber])
+  @@unique([studentId, courseOfferingId, component, attemptNumber])
   @@index([studentId])
   @@index([courseOfferingId])
   @@index([calculatedBy])
@@ -823,6 +825,7 @@ enum studentsection_status {
 enum course_type {
   THEORY
   LAB
+  THEORY_LAB
   PROJECT
   THESIS
 }
@@ -893,6 +896,12 @@ enum grade_status {
   active
   superseded
   final
+}
+
+enum grade_component {
+  theory
+  lab
+  combined
 }
 
 enum gpa_status {
@@ -1063,6 +1072,7 @@ model action_plans {
   courseOfferingId Int
   ploId            Int
   cloId            Int?
+  lloId            Int?
   semesterId       Int
   attainmentValue  Float
   threshold        Float              @default(60)
@@ -1077,12 +1087,14 @@ model action_plans {
   courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
   plo              plos               @relation(fields: [ploId], references: [id])
   clo              clos?              @relation(fields: [cloId], references: [id])
+  llo              llos?              @relation(fields: [lloId], references: [id])
   semester         semesters          @relation(fields: [semesterId], references: [id])
   creator          users              @relation("ActionPlanCreator", fields: [createdBy], references: [id])
 
   @@index([courseOfferingId])
   @@index([ploId])
   @@index([cloId])
+  @@index([lloId])
   @@index([semesterId])
   @@index([createdBy])
 }

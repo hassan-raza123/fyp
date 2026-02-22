@@ -25,6 +25,7 @@ import {
   BookMarked,
   FileSpreadsheet,
   UserPlus,
+  FlaskConical,
   GraduationCap as FacultyIcon,
   Eye,
   Edit,
@@ -430,6 +431,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'CLO Attainments',
           icon: Target,
           href: '/faculty/results/clo-attainments',
+        },
+        {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/faculty/results/llo-attainments',
         },
         {
           id: 'plo-attainments',
