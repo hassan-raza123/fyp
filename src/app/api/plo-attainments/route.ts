@@ -2,6 +2,20 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { plo_status } from '@prisma/client';
 
+interface ContributingCLO {
+  cloId: number;
+  cloCode: string;
+  attainment: number;
+  weight: number;
+}
+
+interface ContributingLLO {
+  lloId: number;
+  lloCode: string;
+  attainment: number;
+  weight: number;
+}
+
 interface PLOAttainment {
   ploId: number;
   ploCode: string;
@@ -9,12 +23,8 @@ interface PLOAttainment {
   attainment: number;
   directAttainment: number;
   indirectAttainment: number | null;
-  contributingClos: {
-    cloId: number;
-    cloCode: string;
-    attainment: number;
-    weight: number;
-  }[];
+  contributingClos: ContributingCLO[];
+  contributingLlos: ContributingLLO[];
 }
 
 export async function GET(request: Request) {
@@ -30,7 +40,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch PLOs for the program with CLO mappings and attainments
+    // Fetch PLOs with BOTH CLO and LLO mappings + their attainments for the semester
     const plos = await prisma.plos.findMany({
       where: {
         programId: Number(programId),
@@ -47,6 +57,25 @@ export async function GET(request: Request) {
                       semesterId: Number(semesterId),
                     },
                   },
+                  orderBy: { calculatedAt: 'desc' },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+        lloMappings: {
+          include: {
+            llo: {
+              include: {
+                llosAttainments: {
+                  where: {
+                    courseOffering: {
+                      semesterId: Number(semesterId),
+                    },
+                  },
+                  orderBy: { calculatedAt: 'desc' },
+                  take: 1,
                 },
               },
             },
@@ -55,22 +84,46 @@ export async function GET(request: Request) {
       },
     });
 
-    // --- DIRECT ATTAINMENT: weighted average of CLO attainments ---
-    const directAttainmentByPlo = new Map<number, { attainment: number; contributingClos: PLOAttainment['contributingClos'] }>();
+    // --- DIRECT ATTAINMENT: weighted average of CLO + LLO attainments ---
+    const directAttainmentByPlo = new Map<
+      number,
+      {
+        attainment: number;
+        contributingClos: ContributingCLO[];
+        contributingLlos: ContributingLLO[];
+      }
+    >();
 
     for (const plo of plos) {
-      const contributingClos = plo.cloMappings.map((mapping) => ({
+      const contributingClos: ContributingCLO[] = plo.cloMappings.map((mapping) => ({
         cloId: mapping.clo.id,
         cloCode: mapping.clo.code,
-        attainment: mapping.clo.closAttainments[0]?.attainmentPercent || 0,
+        attainment: mapping.clo.closAttainments[0]?.attainmentPercent ?? 0,
         weight: mapping.weight,
       }));
 
-      const totalWeight = contributingClos.reduce((sum, clo) => sum + clo.weight, 0);
-      const weightedSum = contributingClos.reduce((sum, clo) => sum + clo.attainment * clo.weight, 0);
+      const contributingLlos: ContributingLLO[] = plo.lloMappings.map((mapping) => ({
+        lloId: mapping.llo.id,
+        lloCode: mapping.llo.code,
+        attainment: mapping.llo.llosAttainments[0]?.attainmentPercent ?? 0,
+        weight: mapping.weight,
+      }));
+
+      // Combine CLO + LLO contributions with their respective weights
+      const allContributions = [
+        ...contributingClos.map((c) => ({ attainment: c.attainment, weight: c.weight })),
+        ...contributingLlos.map((l) => ({ attainment: l.attainment, weight: l.weight })),
+      ];
+
+      const totalWeight = allContributions.reduce((sum, c) => sum + c.weight, 0);
+      const weightedSum = allContributions.reduce((sum, c) => sum + c.attainment * c.weight, 0);
       const directAttainment = totalWeight > 0 ? weightedSum / totalWeight : 0;
 
-      directAttainmentByPlo.set(plo.id, { attainment: directAttainment, contributingClos });
+      directAttainmentByPlo.set(plo.id, {
+        attainment: directAttainment,
+        contributingClos,
+        contributingLlos,
+      });
     }
 
     // --- INDIRECT ATTAINMENT: from closed surveys in this program's course offerings ---
@@ -132,16 +185,26 @@ export async function GET(request: Request) {
       indirectAttainmentByPloId.set(ploId, Math.round((avgRating / 5) * 100 * 10) / 10);
     }
 
-    // --- COMBINE: 70% direct + 30% indirect (if indirect data exists) ---
+    // --- Fetch program-level direct/indirect weights from graduation criteria ---
+    // Falls back to the standard OBE 70/30 split if not configured.
+    const graduationCriteria = await prisma.graduation_criteria.findUnique({
+      where: { programId: Number(programId) },
+      select: { directWeight: true, indirectWeight: true },
+    });
+    const directWeight = graduationCriteria?.directWeight ?? 0.7;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
+
+    // --- COMBINE: directWeight% direct (CLO + LLO) + indirectWeight% indirect ---
     const ploAttainments: PLOAttainment[] = plos.map((plo) => {
       const direct = directAttainmentByPlo.get(plo.id);
       const directAttainment = direct?.attainment ?? 0;
       const contributingClos = direct?.contributingClos ?? [];
+      const contributingLlos = direct?.contributingLlos ?? [];
       const indirectAttainment = indirectAttainmentByPloId.get(plo.id) ?? null;
 
       const attainment =
         indirectAttainment !== null
-          ? 0.7 * directAttainment + 0.3 * indirectAttainment
+          ? directWeight * directAttainment + indirectWeight * indirectAttainment
           : directAttainment;
 
       return {
@@ -152,6 +215,7 @@ export async function GET(request: Request) {
         indirectAttainment,
         attainment,
         contributingClos,
+        contributingLlos,
       };
     });
 

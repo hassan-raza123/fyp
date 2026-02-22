@@ -52,6 +52,12 @@ interface PLOAttainment {
     attainment: number;
     weight: number;
   }[];
+  contributingLlos: {
+    lloId: number;
+    lloCode: string;
+    attainment: number;
+    weight: number;
+  }[];
 }
 
 interface PLOAttainmentsProps {
@@ -308,6 +314,26 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                         <span>{clo.cloCode}</span>
                         <span className='font-medium text-secondary-text'>
                           {clo.attainment.toFixed(2)}% (W: {clo.weight})
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {plo.contributingLlos?.length > 0 && (
+                <div>
+                  <p className='text-[10px] text-secondary-text mb-2'>
+                    Contributing LLOs (Lab)
+                  </p>
+                  <div className='space-y-1.5'>
+                    {plo.contributingLlos.map((llo) => (
+                      <div
+                        key={llo.lloId}
+                        className='flex justify-between items-center text-xs text-primary-text'
+                      >
+                        <span>{llo.lloCode}</span>
+                        <span className='font-medium text-secondary-text'>
+                          {llo.attainment.toFixed(2)}% (W: {llo.weight})
                         </span>
                       </div>
                     ))}

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/auth';
+import { getStudentFromRequest } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
+
+const LAB_TYPES = ['lab_exam', 'lab_report'];
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,19 +20,12 @@ export async function GET(request: NextRequest) {
     const programId = searchParams.get('programId');
     const semesterId = searchParams.get('semesterId');
 
-    // Use student's program if not specified
-    const targetProgramId = programId
-      ? parseInt(programId)
-      : student.program?.id || null;
+    const targetProgramId = programId ? parseInt(programId) : student.program?.id || null;
 
     if (!targetProgramId) {
-      return NextResponse.json(
-        { success: false, error: 'Program not found' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Program not found' }, { status: 400 });
     }
 
-    // Verify student is in this program
     if (student.program?.id !== targetProgramId) {
       return NextResponse.json(
         { success: false, error: 'Not enrolled in this program' },
@@ -38,42 +33,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all PLOs for the program
+    // Fetch PLOs with both CLO and LLO mappings
     const plos = await prisma.plos.findMany({
-      where: {
-        programId: targetProgramId,
-        status: plo_status.active,
-      },
+      where: { programId: targetProgramId, status: plo_status.active },
       include: {
         cloMappings: {
           include: {
             clo: {
-              select: {
-                id: true,
-                code: true,
-                description: true,
-                courseId: true,
-              },
+              select: { id: true, code: true, description: true, courseId: true },
+            },
+          },
+        },
+        lloMappings: {
+          include: {
+            llo: {
+              select: { id: true, code: true, description: true, courseId: true },
             },
           },
         },
       },
-      orderBy: {
-        code: 'asc',
-      },
+      orderBy: { code: 'asc' },
     });
 
-    // Get student's enrolled sections
+    // Get student's enrolled sections (filtered by semester if provided)
     const studentSections = await prisma.studentsections.findMany({
       where: {
         studentId: studentId,
         status: 'active',
         ...(semesterId && {
-          section: {
-            courseOffering: {
-              semesterId: parseInt(semesterId),
-            },
-          },
+          section: { courseOffering: { semesterId: parseInt(semesterId) } },
         }),
       },
       include: {
@@ -81,19 +69,8 @@ export async function GET(request: NextRequest) {
           include: {
             courseOffering: {
               include: {
-                course: {
-                  select: {
-                    id: true,
-                    code: true,
-                    name: true,
-                  },
-                },
-                semester: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
+                course: { select: { id: true, code: true, name: true } },
+                semester: { select: { id: true, name: true } },
               },
             },
           },
@@ -101,183 +78,194 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const courseOfferingIds = studentSections.map(
-      (ss) => ss.section.courseOfferingId
-    );
-    const sectionIds = studentSections.map((ss) => ss.sectionId);
+    const courseOfferingIds = studentSections.map((ss) => ss.section.courseOfferingId);
 
-    // Get student's CLO attainments
-    const studentCLOAttainments = await prisma.closattainments.findMany({
-      where: {
-        courseOfferingId: {
-          in: courseOfferingIds,
-        },
-        sectionId: {
-          in: sectionIds,
-        },
-        status: 'active',
-      },
-      include: {
-        clo: {
-          select: {
-            id: true,
-            code: true,
-            description: true,
-          },
-        },
-      },
-      orderBy: {
-        calculatedAt: 'desc',
-      },
+    // ── CLASS CLO ATTAINMENTS ──────────────────────────────────────────────────
+    // closattainments has no sectionId — filter by courseOfferingId only.
+    const classCLOAttainmentRecords = await prisma.closattainments.findMany({
+      where: { courseOfferingId: { in: courseOfferingIds }, status: 'active' },
+      orderBy: { calculatedAt: 'desc' },
     });
-
-    // Get latest CLO attainment per CLO
-    const latestCLOAttainments = new Map();
-    studentCLOAttainments.forEach((attainment) => {
-      const cloId = attainment.cloId;
-      if (!latestCLOAttainments.has(cloId)) {
-        latestCLOAttainments.set(cloId, attainment);
+    const latestCLOAttainments = new Map<number, number>();
+    classCLOAttainmentRecords.forEach((att) => {
+      if (!latestCLOAttainments.has(att.cloId)) {
+        latestCLOAttainments.set(att.cloId, att.attainmentPercent);
       }
     });
 
-    // Get all assessments for student's courses
-    const assessments = await prisma.assessments.findMany({
+    // ── CLASS LLO ATTAINMENTS ──────────────────────────────────────────────────
+    const classLLOAttainmentRecords = await prisma.llosattainments.findMany({
+      where: { courseOfferingId: { in: courseOfferingIds }, status: 'active' },
+      orderBy: { calculatedAt: 'desc' },
+    });
+    const latestLLOAttainments = new Map<number, number>();
+    classLLOAttainmentRecords.forEach((att) => {
+      if (!latestLLOAttainments.has(att.lloId)) {
+        latestLLOAttainments.set(att.lloId, att.attainmentPercent);
+      }
+    });
+
+    // ── THEORY ASSESSMENTS → STUDENT PERSONAL CLO ATTAINMENTS ─────────────────
+    const theoryAssessments = await prisma.assessments.findMany({
       where: {
-        courseOfferingId: {
-          in: courseOfferingIds,
-        },
-        status: {
-          in: ['active', 'published'],
-        },
+        courseOfferingId: { in: courseOfferingIds },
+        type: { notIn: LAB_TYPES as any },
+        status: { in: ['active', 'completed'] },
       },
       include: {
         assessmentItems: {
-          include: {
-            clo: {
-              select: {
-                id: true,
-              },
-            },
-          },
+          include: { clo: { select: { id: true } } },
         },
       },
     });
 
-    // Get student's assessment results
-    const assessmentIds = assessments.map((a) => a.id);
-    const studentResults = await prisma.studentassessmentresults.findMany({
+    const theoryAssessmentIds = theoryAssessments.map((a) => a.id);
+    const studentTheoryResults = await prisma.studentassessmentresults.findMany({
       where: {
-        studentId: studentId,
-        assessmentId: {
-          in: assessmentIds,
-        },
-        status: {
-          in: ['evaluated', 'published'],
-        },
+        studentId,
+        assessmentId: { in: theoryAssessmentIds },
+        status: { in: ['evaluated', 'published'] },
       },
       include: {
         itemResults: {
-          include: {
-            assessmentItem: {
-              include: {
-                clo: {
-                  select: {
-                    id: true,
-                    code: true,
-                  },
-                },
-              },
-            },
-          },
+          include: { assessmentItem: { select: { id: true } } },
         },
       },
     });
 
-    // Calculate student's personal CLO attainments
-    const studentPersonalCLOAttainments = new Map<number, number>();
-
-    // Group CLO items by CLO
+    // Map cloId → list of item ids + marks
     const cloItemsMap = new Map<number, Array<{ itemId: number; marks: number }>>();
-    assessments.forEach((assessment) => {
+    theoryAssessments.forEach((assessment) => {
       assessment.assessmentItems.forEach((item) => {
         if (item.clo) {
-          const cloId = item.clo.id;
-          if (!cloItemsMap.has(cloId)) {
-            cloItemsMap.set(cloId, []);
-          }
-          cloItemsMap.get(cloId)!.push({
-            itemId: item.id,
-            marks: item.marks,
-          });
+          if (!cloItemsMap.has(item.clo.id)) cloItemsMap.set(item.clo.id, []);
+          cloItemsMap.get(item.clo.id)!.push({ itemId: item.id, marks: item.marks });
         }
       });
     });
 
-    // Calculate student's attainment for each CLO
-    cloItemsMap.forEach((items, cloId) => {
-      let totalPossibleMarks = 0;
-      let studentObtainedMarks = 0;
-
-      items.forEach((item) => {
-        totalPossibleMarks += item.marks;
-
-        // Find student's result for this item
-        studentResults.forEach((result) => {
-          const itemResult = result.itemResults.find(
-            (ir) => ir.assessmentItem.id === item.itemId
-          );
-          if (itemResult) {
-            studentObtainedMarks += itemResult.obtainedMarks;
-          }
-        });
+    // Build a flat map of itemId → obtainedMarks for quick lookup
+    const studentItemMarks = new Map<number, number>();
+    studentTheoryResults.forEach((result) => {
+      result.itemResults.forEach((ir) => {
+        studentItemMarks.set(ir.assessmentItem.id, ir.obtainedMarks);
       });
-
-      if (totalPossibleMarks > 0) {
-        const percentage = (studentObtainedMarks / totalPossibleMarks) * 100;
-        studentPersonalCLOAttainments.set(cloId, percentage);
-      }
     });
 
-    // Calculate PLO attainments
-    const ploAttainments = plos.map((plo) => {
-      // Get CLOs that contribute to this PLO
-      const contributingClos = plo.cloMappings.map((mapping) => {
-        const cloId = mapping.clo.id;
-        const studentAttainment = studentPersonalCLOAttainments.get(cloId) || 0;
-        const classAttainment = latestCLOAttainments.get(cloId)?.attainmentPercent || 0;
+    const studentPersonalCLOAttainments = new Map<number, number>();
+    cloItemsMap.forEach((items, cloId) => {
+      const total = items.reduce((s, i) => s + i.marks, 0);
+      const obtained = items.reduce((s, i) => s + (studentItemMarks.get(i.itemId) ?? 0), 0);
+      if (total > 0) studentPersonalCLOAttainments.set(cloId, (obtained / total) * 100);
+    });
 
-        return {
-          cloId: cloId,
-          cloCode: mapping.clo.code,
-          cloDescription: mapping.clo.description,
-          weight: mapping.weight,
-          studentAttainment: parseFloat(studentAttainment.toFixed(2)),
-          classAttainment: parseFloat(classAttainment.toFixed(2)),
-        };
+    // ── LAB ASSESSMENTS → STUDENT PERSONAL LLO ATTAINMENTS ────────────────────
+    const labAssessments = await prisma.assessments.findMany({
+      where: {
+        courseOfferingId: { in: courseOfferingIds },
+        type: { in: LAB_TYPES as any },
+        status: { in: ['active', 'completed'] },
+      },
+      include: {
+        // lloId on assessmentitems requires prisma generate after schema update.
+        // Using `as any` here until that is done.
+        assessmentItems: {
+          include: { llo: { select: { id: true } } } as any,
+        },
+      },
+    });
+
+    const labAssessmentIds = labAssessments.map((a) => a.id);
+    const studentLabResults = await prisma.studentassessmentresults.findMany({
+      where: {
+        studentId,
+        assessmentId: { in: labAssessmentIds },
+        status: { in: ['evaluated', 'published'] },
+      },
+      include: {
+        itemResults: {
+          include: { assessmentItem: { select: { id: true } } },
+        },
+      },
+    });
+
+    const lloItemsMap = new Map<number, Array<{ itemId: number; marks: number }>>();
+    labAssessments.forEach((assessment) => {
+      assessment.assessmentItems.forEach((item: any) => {
+        if (item.llo) {
+          if (!lloItemsMap.has(item.llo.id)) lloItemsMap.set(item.llo.id, []);
+          lloItemsMap.get(item.llo.id)!.push({ itemId: item.id, marks: item.marks });
+        }
       });
+    });
 
-      // Calculate weighted average for student
-      const totalWeight = contributingClos.reduce(
-        (sum, clo) => sum + clo.weight,
-        0
-      );
-      const studentWeightedSum = contributingClos.reduce(
-        (sum, clo) => sum + clo.studentAttainment * clo.weight,
-        0
-      );
+    const studentLabItemMarks = new Map<number, number>();
+    studentLabResults.forEach((result) => {
+      result.itemResults.forEach((ir) => {
+        studentLabItemMarks.set(ir.assessmentItem.id, ir.obtainedMarks);
+      });
+    });
+
+    const studentPersonalLLOAttainments = new Map<number, number>();
+    lloItemsMap.forEach((items, lloId) => {
+      const total = items.reduce((s, i) => s + i.marks, 0);
+      const obtained = items.reduce((s, i) => s + (studentLabItemMarks.get(i.itemId) ?? 0), 0);
+      if (total > 0) studentPersonalLLOAttainments.set(lloId, (obtained / total) * 100);
+    });
+
+    // ── BUILD PLO ATTAINMENTS ──────────────────────────────────────────────────
+    const ploAttainments = plos.map((plo) => {
+      const contributingClos = plo.cloMappings.map((mapping) => ({
+        cloId: mapping.clo.id,
+        cloCode: mapping.clo.code,
+        cloDescription: mapping.clo.description,
+        weight: mapping.weight,
+        studentAttainment: parseFloat(
+          (studentPersonalCLOAttainments.get(mapping.clo.id) ?? 0).toFixed(2)
+        ),
+        classAttainment: parseFloat(
+          (latestCLOAttainments.get(mapping.clo.id) ?? 0).toFixed(2)
+        ),
+      }));
+
+      const contributingLlos = (plo.lloMappings as any[]).map((mapping: any) => ({
+        lloId: mapping.llo.id,
+        lloCode: mapping.llo.code,
+        lloDescription: mapping.llo.description,
+        weight: mapping.weight,
+        studentAttainment: parseFloat(
+          (studentPersonalLLOAttainments.get(mapping.llo.id) ?? 0).toFixed(2)
+        ),
+        classAttainment: parseFloat(
+          (latestLLOAttainments.get(mapping.llo.id) ?? 0).toFixed(2)
+        ),
+      }));
+
+      // Weighted average across all outcomes (CLOs + LLOs) for student and class
+      const allContributions = [
+        ...contributingClos.map((c) => ({
+          studentAtt: c.studentAttainment,
+          classAtt: c.classAttainment,
+          weight: c.weight,
+        })),
+        ...contributingLlos.map((l) => ({
+          studentAtt: l.studentAttainment,
+          classAtt: l.classAttainment,
+          weight: l.weight,
+        })),
+      ];
+
+      const totalWeight = allContributions.reduce((s, c) => s + c.weight, 0);
       const studentPLOAttainment =
-        totalWeight > 0 ? studentWeightedSum / totalWeight : 0;
-
-      // Calculate weighted average for class
-      const classWeightedSum = contributingClos.reduce(
-        (sum, clo) => sum + clo.classAttainment * clo.weight,
-        0
-      );
+        totalWeight > 0
+          ? allContributions.reduce((s, c) => s + c.studentAtt * c.weight, 0) / totalWeight
+          : 0;
       const classPLOAttainment =
-        totalWeight > 0 ? classWeightedSum / totalWeight : 0;
+        totalWeight > 0
+          ? allContributions.reduce((s, c) => s + c.classAtt * c.weight, 0) / totalWeight
+          : 0;
 
-      // Get threshold (use default 60 or from CLO attainments)
-      const threshold = 60; // Default threshold
+      const threshold = 60;
 
       return {
         ploId: plo.id,
@@ -291,12 +279,12 @@ export async function GET(request: NextRequest) {
           percentage: parseFloat(classPLOAttainment.toFixed(2)),
           status: classPLOAttainment >= threshold ? 'attained' : 'not_attained',
         },
-        threshold: threshold,
-        contributingClos: contributingClos,
+        threshold,
+        contributingClos,
+        contributingLlos,
       };
     });
 
-    // Calculate overall program progress
     const totalPLOs = ploAttainments.length;
     const attainedPLOs = ploAttainments.filter(
       (plo) => plo.studentAttainment.status === 'attained'
@@ -331,4 +319,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

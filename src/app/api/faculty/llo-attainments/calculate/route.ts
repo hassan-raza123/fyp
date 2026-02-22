@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { courseOfferingId, lloId, sectionId, threshold = 60 } = body;
+    const { courseOfferingId, lloId, sectionId, threshold } = body;
 
     if (!courseOfferingId) {
       return NextResponse.json(
@@ -56,6 +56,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Resolve threshold: use request value → pass/fail criteria minPassPercent → default 60
+    const criteria = await prisma.passfailcriteria.findUnique({
+      where: { courseOfferingId: courseOfferingId },
+      select: { minPassPercent: true },
+    });
+    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
 
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
@@ -116,8 +123,11 @@ export async function POST(req: NextRequest) {
 
     const labAssessmentIds = labAssessments.map((a) => a.id);
 
-    // Calculate attainment per LLO
-    const calculatedAttainments = await prisma.$transaction(
+    // Calculate attainment per LLO.
+    // Promise.all is used here (not prisma.$transaction) because calculateLLOAttainment
+    // is an async function that makes multiple internal Prisma calls and returns a
+    // regular Promise, not a PrismaPromise required by $transaction.
+    const calculatedAttainments = await Promise.all(
       llos.map((llo) =>
         calculateLLOAttainment(
           llo,
@@ -125,7 +135,7 @@ export async function POST(req: NextRequest) {
           labAssessmentIds,
           studentIds,
           totalStudents,
-          threshold,
+          effectiveThreshold,
           facultyId
         )
       )
@@ -161,12 +171,14 @@ async function calculateLLOAttainment(
   threshold: number,
   facultyId: number
 ) {
-  // Get assessment items mapped to this LLO from lab assessments
+  // Get assessment items mapped to this LLO from lab assessments.
+  // Cast where to `any` to handle the lloId field until `prisma generate` is run
+  // after the schema update that added lloId to assessmentitems.
   const lloItems = await prisma.assessmentitems.findMany({
     where: {
-      lloId: llo.id,
       assessmentId: { in: labAssessmentIds },
-    },
+      lloId: llo.id,
+    } as any,
     select: { id: true, marks: true },
   });
 
@@ -177,17 +189,19 @@ async function calculateLLOAttainment(
 
   const lloItemIds = lloItems.map((i) => i.id);
 
-  // Get student item results for these LLO-mapped items (evaluated or published only)
+  // Get student item results for these LLO-mapped items (evaluated or published only).
+  // The correct Prisma relation name on studentassessmentitemresults is `studentResult`
+  // (not `studentAssessmentResult`).
   const itemResults = await prisma.studentassessmentitemresults.findMany({
     where: {
       assessmentItemId: { in: lloItemIds },
-      studentAssessmentResult: {
+      studentResult: {
         studentId: { in: studentIds },
         status: { in: ['evaluated', 'published'] },
       },
     },
     include: {
-      studentAssessmentResult: { select: { studentId: true } },
+      studentResult: { select: { studentId: true } },
       assessmentItem: { select: { marks: true } },
     },
   });
@@ -195,7 +209,7 @@ async function calculateLLOAttainment(
   // Aggregate per-student performance across all items for this LLO
   const studentPerformance = new Map<number, { obtained: number; total: number }>();
   itemResults.forEach((result) => {
-    const studentId = result.studentAssessmentResult.studentId;
+    const studentId = result.studentResult.studentId;
     if (!studentPerformance.has(studentId)) {
       studentPerformance.set(studentId, { obtained: 0, total: 0 });
     }

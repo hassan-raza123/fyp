@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { courseOfferingId, cloId, sectionId, threshold = 60 } = body;
+    const { courseOfferingId, cloId, sectionId, threshold } = body;
 
     if (!courseOfferingId) {
       return NextResponse.json(
@@ -48,6 +48,13 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Resolve threshold: use request value → pass/fail criteria minPassPercent → default 60
+    const criteria = await prisma.passfailcriteria.findUnique({
+      where: { courseOfferingId: courseOfferingId },
+      select: { minPassPercent: true },
+    });
+    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
 
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
@@ -89,7 +96,7 @@ export async function POST(req: NextRequest) {
         courseOfferingId: courseOfferingId,
         conductedBy: facultyId,
         status: {
-          in: ['active', 'evaluated', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -112,8 +119,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate CLO attainments
-    const calculatedAttainments = await prisma.$transaction(
+    // Calculate CLO attainments.
+    // Promise.all is used here (not prisma.$transaction) because calculateCLOAttainment
+    // is an async function that makes multiple internal Prisma calls and returns a
+    // regular Promise, not a PrismaPromise required by $transaction.
+    const calculatedAttainments = await Promise.all(
       clos.map((clo) =>
         calculateCLOAttainment(
           clo,
@@ -121,7 +131,7 @@ export async function POST(req: NextRequest) {
           assessments,
           studentIds,
           totalStudents,
-          threshold,
+          effectiveThreshold,
           facultyId
         )
       )
@@ -200,7 +210,7 @@ async function calculateCLOAttainment(
       assessmentItemId: {
         in: cloItems.map((i) => i.itemId),
       },
-      studentAssessmentResult: {
+      studentResult: {
         studentId: {
           in: studentIds,
         },
@@ -213,7 +223,7 @@ async function calculateCLOAttainment(
       },
     },
     include: {
-      studentAssessmentResult: {
+      studentResult: {
         select: {
           studentId: true,
         },
@@ -240,7 +250,7 @@ async function calculateCLOAttainment(
   >();
 
   itemResults.forEach((itemResult) => {
-    const studentId = itemResult.studentAssessmentResult.studentId;
+    const studentId = itemResult.studentResult.studentId;
     if (!studentCLOPerformance.has(studentId)) {
       studentCLOPerformance.set(studentId, { obtained: 0, total: 0 });
     }
