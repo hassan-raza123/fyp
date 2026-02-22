@@ -397,6 +397,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: UserCheck,
           href: '/faculty/sections',
         },
+        {
+          id: 'llos',
+          label: 'Lesson Outcomes (LLOs)',
+          icon: FileText,
+          href: '/admin/llos',
+        },
       ],
     },
     {

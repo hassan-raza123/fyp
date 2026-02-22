@@ -17,17 +17,21 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const courseOfferingId = searchParams.get('courseOfferingId');
+    const programId = searchParams.get('programId');
 
     const where: any = {};
     if (courseOfferingId) {
       where.courseOfferingId = parseInt(courseOfferingId);
+    }
+    if (programId) {
+      where.programId = parseInt(programId);
     }
 
     // Students only see active surveys for courses they are enrolled in
     if (user?.role === 'student') {
       const student = await prisma.students.findFirst({
         where: { userId: user.userId },
-        select: { id: true },
+        select: { id: true, programId: true },
       });
       if (!student) {
         return NextResponse.json({ success: true, data: [] });
@@ -39,8 +43,11 @@ export async function GET(request: NextRequest) {
       const offeringIds = [
         ...new Set(enrolledSectionIds.map((e) => e.section.courseOfferingId)),
       ];
-      where.courseOfferingId = { in: offeringIds };
       where.status = 'active';
+      where.OR = [
+        { courseOfferingId: { in: offeringIds } },
+        { programId: student.programId },
+      ];
     }
 
     const surveys = await prisma.surveys.findMany({
@@ -52,6 +59,7 @@ export async function GET(request: NextRequest) {
             semester: { select: { name: true } },
           },
         },
+        program: { select: { id: true, name: true, code: true } },
         creator: { select: { first_name: true, last_name: true } },
         _count: { select: { questions: true, responses: true } },
       },
@@ -87,11 +95,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, courseOfferingId, dueDate } = body;
+    const { title, description, courseOfferingId, programId, dueDate } = body;
 
-    if (!title || !courseOfferingId) {
+    if (!title || (!courseOfferingId && !programId)) {
       return NextResponse.json(
-        { success: false, error: 'title and courseOfferingId are required.' },
+        { success: false, error: 'title and either courseOfferingId or programId are required.' },
         { status: 400 }
       );
     }
@@ -100,7 +108,8 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description: description ?? null,
-        courseOfferingId: parseInt(courseOfferingId),
+        courseOfferingId: courseOfferingId ? parseInt(courseOfferingId) : null,
+        programId: programId ? parseInt(programId) : null,
         createdBy: user!.userId,
         dueDate: dueDate ? new Date(dueDate) : null,
         status: 'draft',
@@ -112,6 +121,7 @@ export async function POST(request: NextRequest) {
             semester: { select: { name: true } },
           },
         },
+        program: { select: { id: true, name: true, code: true } },
       },
     });
 

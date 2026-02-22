@@ -39,6 +39,12 @@ interface CourseOffering {
   semester: { name: string };
 }
 
+interface Program {
+  id: number;
+  name: string;
+  code: string;
+}
+
 interface Plo {
   id: number;
   code: string;
@@ -57,7 +63,8 @@ interface Survey {
   description: string | null;
   status: 'draft' | 'active' | 'closed';
   dueDate: string | null;
-  courseOffering: CourseOffering;
+  courseOffering: CourseOffering | null;
+  program: Program | null;
   creator: { first_name: string; last_name: string };
   _count: { questions: number; responses: number };
 }
@@ -94,12 +101,14 @@ export default function AdminSurveysPage() {
 
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [plos, setPlos] = useState<Plo[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+  const [surveyScope, setSurveyScope] = useState<'course' | 'program'>('course');
+  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQ, setNewQ] = useState<Question>({ question: '', questionType: 'rating', ploId: '' });
   const [saving, setSaving] = useState(false);
@@ -115,9 +124,10 @@ export default function AdminSurveysPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [sRes, coRes] = await Promise.all([
+        const [sRes, coRes, progRes] = await Promise.all([
           fetch('/api/surveys', { credentials: 'include' }),
           fetch('/api/course-offerings', { credentials: 'include' }),
+          fetch('/api/programs', { credentials: 'include' }),
         ]);
         if (sRes.ok) {
           const d = await sRes.json();
@@ -126,6 +136,10 @@ export default function AdminSurveysPage() {
         if (coRes.ok) {
           const d = await coRes.json();
           setCourseOfferings(d.data ?? []);
+        }
+        if (progRes.ok) {
+          const d = await progRes.json();
+          setPrograms(d.data ?? d ?? []);
         }
       } catch {
         toast.error('Failed to load surveys');
@@ -136,30 +150,50 @@ export default function AdminSurveysPage() {
     load();
   }, []);
 
-  // Load PLOs when course offering is selected
+  // Load PLOs when course offering or program is selected
   useEffect(() => {
-    if (!form.courseOfferingId) { setPlos([]); return; }
-    const co = courseOfferings.find((c) => c.id.toString() === form.courseOfferingId);
-    if (!co) return;
-    // We'll fetch PLOs for the program via course → program
-    fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
-      .catch(() => setPlos([]));
-  }, [form.courseOfferingId, courseOfferings]);
+    if (surveyScope === 'course') {
+      if (!form.courseOfferingId) { setPlos([]); return; }
+      fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    } else {
+      if (!form.programId) { setPlos([]); return; }
+      fetch(`/api/programs/${form.programId}/plos`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    }
+  }, [form.courseOfferingId, form.programId, surveyScope]);
 
   const handleCreate = async () => {
-    if (!form.title || !form.courseOfferingId) {
-      toast.error('Title and course offering are required');
+    if (!form.title) {
+      toast.error('Survey title is required');
+      return;
+    }
+    if (surveyScope === 'course' && !form.courseOfferingId) {
+      toast.error('Please select a course offering');
+      return;
+    }
+    if (surveyScope === 'program' && !form.programId) {
+      toast.error('Please select a program');
       return;
     }
     setSaving(true);
     try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        dueDate: form.dueDate,
+        courseOfferingId: surveyScope === 'course' ? form.courseOfferingId : undefined,
+        programId: surveyScope === 'program' ? form.programId : undefined,
+      };
       const res = await fetch('/api/surveys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ...form }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error); return; }
@@ -182,8 +216,9 @@ export default function AdminSurveysPage() {
 
       toast.success('Survey created successfully');
       setCreateOpen(false);
-      setForm({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+      setForm({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
       setQuestions([]);
+      setSurveyScope('course');
       // Refresh
       const sRes = await fetch('/api/surveys', { credentials: 'include' });
       const sData = await sRes.json();
@@ -298,8 +333,12 @@ export default function AdminSurveysPage() {
                   </Badge>
                 </div>
                 <p className="text-xs text-secondary-text mt-0.5">
-                  {survey.courseOffering.course.code} · {survey.courseOffering.semester.name} ·{' '}
-                  {survey._count.questions} questions · {survey._count.responses} responses
+                  {survey.courseOffering
+                    ? `${survey.courseOffering.course.code} · ${survey.courseOffering.semester.name}`
+                    : survey.program
+                    ? `Program: ${survey.program.code} — ${survey.program.name}`
+                    : 'General Survey'}{' '}
+                  · {survey._count.questions} questions · {survey._count.responses} responses
                 </p>
                 {survey.dueDate && (
                   <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -352,21 +391,62 @@ export default function AdminSurveysPage() {
                 placeholder="Optional description" rows={2}
                 className="text-xs bg-card border-card-border text-primary-text resize-none" />
             </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">Survey Scope *</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('course')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'course' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'course' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Course-Level
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('program')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'program' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'program' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Program Exit Survey
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Course Offering *</Label>
-                <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select course" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-card-border">
-                    {courseOfferings.map((co) => (
-                      <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
-                        {co.course.code} ({co.semester.name})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {surveyScope === 'course' ? (
+                  <>
+                    <Label className="text-xs text-secondary-text">Course Offering *</Label>
+                    <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select course" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {courseOfferings.map((co) => (
+                          <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
+                            {co.course.code} ({co.semester.name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <Label className="text-xs text-secondary-text">Program *</Label>
+                    <Select value={form.programId} onValueChange={(v) => setForm({ ...form, programId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select program" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {programs.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()} className="text-primary-text text-xs">
+                            {p.code} — {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">Due Date</Label>

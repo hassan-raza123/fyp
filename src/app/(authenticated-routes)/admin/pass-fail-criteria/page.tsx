@@ -32,6 +32,7 @@ interface Criterion {
   id: number;
   courseOfferingId: number;
   minPassPercent: number;
+  minCloAttainmentPercent: number | null;
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
@@ -55,9 +56,11 @@ export default function PassFailCriteriaPage() {
   const [createForm, setCreateForm] = useState({
     courseOfferingId: '',
     minPassPercent: '50',
+    minCloAttainmentPercent: '',
   });
   const [editForm, setEditForm] = useState({
     minPassPercent: '50',
+    minCloAttainmentPercent: '',
     status: 'active' as 'active' | 'inactive',
   });
 
@@ -104,6 +107,9 @@ export default function PassFailCriteriaPage() {
         body: JSON.stringify({
           courseOfferingId: createForm.courseOfferingId,
           minPassPercent: pct,
+          minCloAttainmentPercent: createForm.minCloAttainmentPercent
+            ? parseFloat(createForm.minCloAttainmentPercent)
+            : null,
         }),
       });
       const data = await res.json();
@@ -117,7 +123,7 @@ export default function PassFailCriteriaPage() {
       }
       toast.success('Pass/Fail criteria set successfully');
       setCreateOpen(false);
-      setCreateForm({ courseOfferingId: '', minPassPercent: '50' });
+      setCreateForm({ courseOfferingId: '', minPassPercent: '50', minCloAttainmentPercent: '' });
       loadData();
     } catch {
       toast.error('Failed to create criteria');
@@ -139,7 +145,13 @@ export default function PassFailCriteriaPage() {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ minPassPercent: pct, status: editForm.status }),
+        body: JSON.stringify({
+          minPassPercent: pct,
+          minCloAttainmentPercent: editForm.minCloAttainmentPercent
+            ? parseFloat(editForm.minCloAttainmentPercent)
+            : null,
+          status: editForm.status,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -159,7 +171,11 @@ export default function PassFailCriteriaPage() {
 
   const openEdit = (criterion: Criterion) => {
     setEditTarget(criterion);
-    setEditForm({ minPassPercent: String(criterion.minPassPercent), status: criterion.status });
+    setEditForm({
+      minPassPercent: String(criterion.minPassPercent),
+      minCloAttainmentPercent: criterion.minCloAttainmentPercent != null ? String(criterion.minCloAttainmentPercent) : '',
+      status: criterion.status,
+    });
     setEditOpen(true);
   };
 
@@ -214,6 +230,7 @@ export default function PassFailCriteriaPage() {
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Course</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Semester</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Min Pass %</th>
+                <th className="text-left px-4 py-3 font-medium text-secondary-text">Min CLO %</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Set On</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Actions</th>
@@ -231,6 +248,15 @@ export default function PassFailCriteriaPage() {
                     <span className="font-semibold text-lg" style={{ color: primaryColor }}>
                       {c.minPassPercent}%
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.minCloAttainmentPercent != null ? (
+                      <span className="font-semibold" style={{ color: primaryColor }}>
+                        {c.minCloAttainmentPercent}%
+                      </span>
+                    ) : (
+                      <span className="text-xs text-secondary-text">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <Badge
@@ -293,7 +319,7 @@ export default function PassFailCriteriaPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label>Minimum Pass Percentage (%)</Label>
+              <Label>Minimum Overall Pass Percentage (%)</Label>
               <Input
                 type="number"
                 min={0}
@@ -304,7 +330,22 @@ export default function PassFailCriteriaPage() {
                 placeholder="50"
               />
               <p className="text-xs text-secondary-text">
-                Students scoring below this percentage will be considered as not attaining the CLO/PLO.
+                Students scoring below this in the overall course will fail.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Minimum CLO Attainment % (optional)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step={0.5}
+                value={createForm.minCloAttainmentPercent}
+                onChange={(e) => setCreateForm((f) => ({ ...f, minCloAttainmentPercent: e.target.value }))}
+                placeholder="e.g. 40 — leave blank to skip CLO-level check"
+              />
+              <p className="text-xs text-secondary-text">
+                If set, students must achieve at least this percentage in each individual CLO to pass.
               </p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -339,7 +380,7 @@ export default function PassFailCriteriaPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Minimum Pass Percentage (%)</Label>
+                <Label>Minimum Overall Pass Percentage (%)</Label>
                 <Input
                   type="number"
                   min={0}
@@ -347,6 +388,18 @@ export default function PassFailCriteriaPage() {
                   step={0.5}
                   value={editForm.minPassPercent}
                   onChange={(e) => setEditForm((f) => ({ ...f, minPassPercent: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Minimum CLO Attainment % (optional)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={editForm.minCloAttainmentPercent}
+                  onChange={(e) => setEditForm((f) => ({ ...f, minCloAttainmentPercent: e.target.value }))}
+                  placeholder="Leave blank to skip CLO-level check"
                 />
               </div>
               <div className="space-y-1.5">

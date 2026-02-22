@@ -106,8 +106,10 @@ model programs {
   plos             plos[]
   department       departments      @relation(fields: [departmentId], references: [id])
   students         students[]
-  courses          courses[]        @relation("programtocourse")
-  curriculum       program_curriculum[]
+  courses            courses[]              @relation("programtocourse")
+  curriculum         program_curriculum[]
+  surveys            surveys[]              @relation("ProgramSurveys")
+  graduationCriteria graduation_criteria?
 
   @@index([departmentId])
 }
@@ -254,7 +256,6 @@ model students {
   programId         Int
   batchId           String?
   cumulativeGPA     cumulativegpa?
-  detailedResults   detailedresults[]
   ploScores         ploscores[]
   semesterGPA       semestergpa[]
   assessmentResults studentassessmentresults[]
@@ -293,7 +294,7 @@ model plos {
   code           String
   description    String           @db.Text
   programId      Int
-  bloomLevel     String?
+  bloomLevel     bloom_level?
   status         plo_status       @default(active)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -314,7 +315,7 @@ model clos {
   code            String
   description     String            @db.Text
   courseId        Int
-  bloomLevel      String?
+  bloomLevel      bloom_level?
   status          clo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -333,7 +334,7 @@ model llos {
   code            String
   description     String            @db.Text
   courseId        Int
-  bloomLevel      String?
+  bloomLevel      bloom_level?
   status          llo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -480,7 +481,6 @@ model assessments {
   assessmentItems  assessmentitems[]
   faculty          faculties                  @relation(fields: [conductedBy], references: [id])
   courseOffering   courseofferings            @relation(fields: [courseOfferingId], references: [id])
-  detailedResults  detailedresults[]
   studentResults   studentassessmentresults[]
 
   @@index([courseOfferingId])
@@ -547,31 +547,6 @@ model studentassessmentitemresults {
   @@index([assessmentItemId])
 }
 
-model detailedresults {
-  id                 Int         @id @default(autoincrement())
-  studentId          Int
-  assessmentId       Int
-  quiz1Marks         Float?
-  quiz2Marks         Float?
-  midtermMarks       Float?
-  finalMarks         Float?
-  assignmentMarks    Float?
-  presentationMarks  Float?
-  classParticipation Float?
-  totalObtained      Float
-  totalPossible      Float
-  percentage         Float
-  grade              String
-  isPassed           Boolean     @default(false)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  assessment         assessments @relation(fields: [assessmentId], references: [id])
-  student            students    @relation(fields: [studentId], references: [id])
-
-  @@unique([studentId, assessmentId])
-  @@index([studentId])
-  @@index([assessmentId])
-}
 
 model gradescales {
   id          Int          @id @default(autoincrement())
@@ -737,8 +712,9 @@ model passwordresets {
 model passfailcriteria {
   id               Int                     @id @default(autoincrement())
   courseOfferingId Int                     @unique(map: "passFailCriteria_courseOfferingId_key")
-  minPassPercent   Float                   @default(50)
-  status           passfailcriteria_status @default(active)
+  minPassPercent          Float                   @default(50)
+  minCloAttainmentPercent Float?
+  status                  passfailcriteria_status @default(active)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime
   courseofferings  courseofferings         @relation(fields: [courseOfferingId], references: [id], map: "passFailCriteria_courseOfferingId_fkey")
@@ -894,6 +870,15 @@ enum llo_status {
   archived
 }
 
+enum bloom_level {
+  Remember
+  Understand
+  Apply
+  Analyze
+  Evaluate
+  Create
+}
+
 enum attainment_status {
   active
   archived
@@ -961,18 +946,21 @@ model surveys {
   id               Int              @id @default(autoincrement())
   title            String
   description      String?
-  courseOfferingId Int
+  courseOfferingId Int?
+  programId        Int?
   createdBy        Int
   status           survey_status    @default(draft)
   dueDate          DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  courseOffering   courseofferings? @relation(fields: [courseOfferingId], references: [id])
+  program          programs?        @relation("ProgramSurveys", fields: [programId], references: [id])
   creator          users            @relation("SurveyCreator", fields: [createdBy], references: [id])
   questions        survey_questions[]
   responses        survey_responses[]
 
   @@index([courseOfferingId])
+  @@index([programId])
   @@index([createdBy])
 }
 
@@ -1093,4 +1081,21 @@ model action_plans {
   @@index([cloId])
   @@index([semesterId])
   @@index([createdBy])
+}
+
+// ─── Graduation Criteria ──────────────────────────────────────────────────────
+
+model graduation_criteria {
+  id                      Int      @id @default(autoincrement())
+  programId               Int      @unique
+  minCGPA                 Float    @default(2.0)
+  minPloAttainmentPercent Float    @default(60)
+  requireAllCourses       Boolean  @default(true)
+  directWeight            Float    @default(0.8)
+  indirectWeight          Float    @default(0.2)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  program                 programs @relation(fields: [programId], references: [id])
+
+  @@index([programId])
 }

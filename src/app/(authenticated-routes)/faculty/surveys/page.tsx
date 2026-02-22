@@ -38,6 +38,12 @@ interface CourseOffering {
   semester: { name: string };
 }
 
+interface Program {
+  id: number;
+  name: string;
+  code: string;
+}
+
 interface Plo {
   id: number;
   code: string;
@@ -56,7 +62,8 @@ interface Survey {
   description: string | null;
   status: 'draft' | 'active' | 'closed';
   dueDate: string | null;
-  courseOffering: CourseOffering;
+  courseOffering: CourseOffering | null;
+  program: Program | null;
   creator: { first_name: string; last_name: string };
   _count: { questions: number; responses: number };
 }
@@ -93,11 +100,13 @@ export default function FacultySurveysPage() {
 
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [plos, setPlos] = useState<Plo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+  const [surveyScope, setSurveyScope] = useState<'course' | 'program'>('course');
+  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQ, setNewQ] = useState<Question>({ question: '', questionType: 'rating', ploId: '' });
   const [saving, setSaving] = useState(false);
@@ -119,9 +128,10 @@ export default function FacultySurveysPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [sRes, coRes] = await Promise.all([
+        const [sRes, coRes, progRes] = await Promise.all([
           fetch('/api/surveys', { credentials: 'include' }),
           fetch('/api/course-offerings', { credentials: 'include' }),
+          fetch('/api/programs', { credentials: 'include' }),
         ]);
         if (sRes.ok) {
           const d = await sRes.json();
@@ -130,6 +140,10 @@ export default function FacultySurveysPage() {
         if (coRes.ok) {
           const d = await coRes.json();
           setCourseOfferings(d.data ?? []);
+        }
+        if (progRes.ok) {
+          const d = await progRes.json();
+          setPrograms(d.data ?? d ?? []);
         }
       } catch {
         toast.error('Failed to load surveys');
@@ -141,25 +155,48 @@ export default function FacultySurveysPage() {
   }, []);
 
   useEffect(() => {
-    if (!form.courseOfferingId) { setPlos([]); return; }
-    fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
-      .catch(() => setPlos([]));
-  }, [form.courseOfferingId]);
+    if (surveyScope === 'course') {
+      if (!form.courseOfferingId) { setPlos([]); return; }
+      fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    } else {
+      if (!form.programId) { setPlos([]); return; }
+      fetch(`/api/programs/${form.programId}/plos`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    }
+  }, [form.courseOfferingId, form.programId, surveyScope]);
 
   const handleCreate = async () => {
-    if (!form.title || !form.courseOfferingId) {
-      toast.error('Title and course offering are required');
+    if (!form.title) {
+      toast.error('Survey title is required');
+      return;
+    }
+    if (surveyScope === 'course' && !form.courseOfferingId) {
+      toast.error('Please select a course offering');
+      return;
+    }
+    if (surveyScope === 'program' && !form.programId) {
+      toast.error('Please select a program');
       return;
     }
     setSaving(true);
     try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        dueDate: form.dueDate,
+        courseOfferingId: surveyScope === 'course' ? form.courseOfferingId : undefined,
+        programId: surveyScope === 'program' ? form.programId : undefined,
+      };
       const res = await fetch('/api/surveys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ...form }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error ?? 'Failed to create survey'); return; }
@@ -176,8 +213,9 @@ export default function FacultySurveysPage() {
 
       toast.success('Survey created successfully');
       setCreateOpen(false);
-      setForm({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+      setForm({ title: '', description: '', courseOfferingId: '', programId: '', dueDate: '' });
       setQuestions([]);
+      setSurveyScope('course');
       await loadSurveys();
     } catch {
       toast.error('Failed to create survey');
@@ -294,8 +332,12 @@ export default function FacultySurveysPage() {
                   </Badge>
                 </div>
                 <p className="text-xs text-secondary-text mt-0.5">
-                  {survey.courseOffering.course.code} · {survey.courseOffering.semester.name} ·{' '}
-                  {survey._count.questions} questions · {survey._count.responses} responses
+                  {survey.courseOffering
+                    ? `${survey.courseOffering.course.code} · ${survey.courseOffering.semester.name}`
+                    : survey.program
+                    ? `Program: ${survey.program.code} — ${survey.program.name}`
+                    : 'General Survey'}{' '}
+                  · {survey._count.questions} questions · {survey._count.responses} responses
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Created by: {survey.creator.first_name} {survey.creator.last_name}

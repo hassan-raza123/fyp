@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseOfferingId, minPassPercent } = body;
+  const { courseOfferingId, minPassPercent, minCloAttainmentPercent } = body;
 
   if (!courseOfferingId) {
     return NextResponse.json({ error: 'courseOfferingId is required' }, { status: 400 });
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     data: {
       courseOfferingId: parseInt(courseOfferingId),
       minPassPercent: parseFloat(minPassPercent ?? '50'),
+      minCloAttainmentPercent: minCloAttainmentPercent != null ? parseFloat(minCloAttainmentPercent) : null,
       updatedAt: new Date(),
     },
   });
