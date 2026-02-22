@@ -513,6 +513,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/student/results/clo-attainments',
         },
         {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/student/results/llo-attainments',
+        },
+        {
           id: 'plo-attainments',
           label: 'PLO Attainments',
           icon: TrendingUp,

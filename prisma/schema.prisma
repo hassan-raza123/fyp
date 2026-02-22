@@ -720,6 +720,7 @@ model passfailcriteria {
   courseOfferingId Int                     @unique(map: "passFailCriteria_courseOfferingId_key")
   minPassPercent          Float                   @default(50)
   minCloAttainmentPercent Float?
+  minLloAttainmentPercent Float?
   status                  passfailcriteria_status @default(active)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime
@@ -928,6 +929,7 @@ enum notification_type {
 
 enum obe_report_type {
   clo_attainment
+  llo_attainment
   plo_attainment
   program_assessment
   semester_summary
@@ -1107,8 +1109,8 @@ model graduation_criteria {
   minCGPA                 Float    @default(2.0)
   minPloAttainmentPercent Float    @default(60)
   requireAllCourses       Boolean  @default(true)
-  directWeight            Float    @default(0.8)
-  indirectWeight          Float    @default(0.2)
+  directWeight            Float    @default(0.7)
+  indirectWeight          Float    @default(0.3)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   program                 programs @relation(fields: [programId], references: [id])

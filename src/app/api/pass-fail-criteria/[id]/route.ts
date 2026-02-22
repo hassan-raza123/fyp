@@ -30,7 +30,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const body = await request.json();
-  const { minPassPercent, minCloAttainmentPercent, status } = body;
+  const { minPassPercent, minCloAttainmentPercent, minLloAttainmentPercent, status } = body;
 
   const criterion = await prisma.passfailcriteria.update({
     where: { id: parseInt(params.id) },
@@ -38,6 +38,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       ...(minPassPercent !== undefined && { minPassPercent: parseFloat(minPassPercent) }),
       ...(minCloAttainmentPercent !== undefined && {
         minCloAttainmentPercent: minCloAttainmentPercent === null ? null : parseFloat(minCloAttainmentPercent),
+      }),
+      ...(minLloAttainmentPercent !== undefined && {
+        minLloAttainmentPercent: minLloAttainmentPercent === null ? null : parseFloat(minLloAttainmentPercent),
       }),
       ...(status !== undefined && { status }),
       updatedAt: new Date(),
