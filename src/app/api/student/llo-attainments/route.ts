@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
     // Build student LLO attainment per LLO
     const lloAttainments = llos.map((llo) => {
       const classAtt = latestClassAttainment.get(llo.id) ?? null;
-      const threshold = classAtt?.threshold ?? 60;
+      const threshold = classAtt?.threshold ?? 50;
 
       let studentObtained = 0;
       let studentTotal = 0;
@@ -151,23 +151,25 @@ export async function GET(request: NextRequest) {
         percentage: number;
       }> = [];
 
-      labAssessments.forEach((assessment) => {
-        const lloItems = assessment.assessmentItems.filter(
-          (item) => item.lloId === llo.id
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (labAssessments as any[]).forEach((assessment: any) => {
+        const lloItems: any[] = assessment.assessmentItems.filter(
+          (item: any) => item.lloId === llo.id
         );
         if (lloItems.length === 0) return;
 
-        const assessmentTotal = lloItems.reduce((s, i) => s + i.marks, 0);
+        const assessmentTotal = lloItems.reduce((s: number, i: any) => s + i.marks, 0);
         studentTotal += assessmentTotal;
 
-        const result = studentResults.find(
-          (r) => r.assessmentId === assessment.id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result: any = (studentResults as any[]).find(
+          (r: any) => r.assessmentId === assessment.id
         );
         let obtained = 0;
         if (result) {
           obtained = result.itemResults
-            .filter((ir) => lloItems.some((i) => i.id === ir.assessmentItem.id))
-            .reduce((s, ir) => s + ir.obtainedMarks, 0);
+            .filter((ir: any) => lloItems.some((i: any) => i.id === ir.assessmentItem.id))
+            .reduce((s: number, ir: any) => s + ir.obtainedMarks, 0);
           studentObtained += obtained;
         }
 

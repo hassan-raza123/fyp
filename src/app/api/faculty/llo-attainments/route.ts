@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
               description: llo.description,
               bloomLevel: llo.bloomLevel,
               attainmentPercent: latestAttainment?.attainmentPercent ?? null,
-              threshold: latestAttainment?.threshold ?? 60,
+              threshold: latestAttainment?.threshold ?? 50,
               status:
                 latestAttainment &&
                 latestAttainment.attainmentPercent >= latestAttainment.threshold

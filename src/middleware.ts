@@ -45,6 +45,11 @@ export async function middleware(request: NextRequest) {
   // Always allow public routes and Next.js internals
   if (isPublic(pathname)) return NextResponse.next();
 
+  // Allow external survey response endpoint (alumni/employer — no login needed)
+  if (/^\/api\/surveys\/\d+\/external-respond$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // Verify the JWT stored in the 'token' cookie
   const token = request.cookies.get('token')?.value;
 

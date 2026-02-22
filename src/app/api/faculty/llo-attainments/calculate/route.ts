@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       where: { courseOfferingId: courseOfferingId },
       select: { minPassPercent: true },
     });
-    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
+    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 50;
 
     const sectionIds = courseOffering.sections.map((s) => s.id);
 

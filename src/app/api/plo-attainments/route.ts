@@ -192,8 +192,8 @@ export async function GET(request: NextRequest) {
       where: { programId: Number(programId) },
       select: { directWeight: true, indirectWeight: true },
     });
-    const directWeight = graduationCriteria?.directWeight ?? 0.7;
-    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
+    const directWeight = graduationCriteria?.directWeight ?? 0.8;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.2;
 
     // --- COMBINE: directWeight% direct (CLO + LLO) + indirectWeight% indirect ---
     const ploAttainments: PLOAttainment[] = plos.map((plo) => {
@@ -348,9 +348,9 @@ export async function POST(request: NextRequest) {
       where: { programId: Number(programId) },
       select: { directWeight: true, indirectWeight: true, minPloAttainmentPercent: true },
     });
-    const directWeight = graduationCriteria?.directWeight ?? 0.7;
-    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
-    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 60;
+    const directWeight = graduationCriteria?.directWeight ?? 0.8;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.2;
+    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
 
     // ── Count total students enrolled in this program/semester ────────────────
     const enrolledStudentSections = await prisma.studentsections.findMany({

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       where: { programId: targetProgramId },
       select: { minPloAttainmentPercent: true },
     });
-    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 60;
+    const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
 
     // Fetch PLOs with both CLO and LLO mappings
     const plos = await prisma.plos.findMany({
