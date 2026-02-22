@@ -45,6 +45,12 @@ export async function GET(request: NextRequest) {
               sms: false,
             },
           },
+          obe: {
+            directWeight: 0.8,
+            indirectWeight: 0.2,
+            attainmentThreshold: 60,
+            minGraduationCGPA: 2.0,
+          },
         },
       });
     }

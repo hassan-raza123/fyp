@@ -389,21 +389,62 @@ export default function FacultySurveysPage() {
                 placeholder="Optional description" rows={2}
                 className="text-xs bg-card border-card-border text-primary-text resize-none" />
             </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">Survey Scope *</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('course')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'course' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'course' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Course-Level
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('program')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'program' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'program' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Program Exit Survey
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Course Offering *</Label>
-                <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select course" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-card-border">
-                    {courseOfferings.map((co) => (
-                      <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
-                        {co.course.code} ({co.semester.name})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {surveyScope === 'course' ? (
+                  <>
+                    <Label className="text-xs text-secondary-text">Course Offering *</Label>
+                    <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select course" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {courseOfferings.map((co) => (
+                          <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
+                            {co.course.code} ({co.semester.name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <Label className="text-xs text-secondary-text">Program *</Label>
+                    <Select value={form.programId} onValueChange={(v) => setForm({ ...form, programId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select program" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {programs.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()} className="text-primary-text text-xs">
+                            {p.code} — {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">Due Date</Label>
