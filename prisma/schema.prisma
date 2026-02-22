@@ -341,6 +341,7 @@ model llos {
   ploMappings     lloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   llosAttainments llosattainments[]
+  assessmentItems assessmentitems[]
 
   @@unique([code, courseId])
   @@index([courseId])
@@ -493,16 +494,19 @@ model assessmentitems {
   questionNo         String
   description        String?
   marks              Float
-  cloId              Int
+  cloId              Int?
+  lloId              Int?
   createdAt          DateTime                       @default(now())
   updatedAt          DateTime                       @updatedAt
   assessment         assessments                    @relation(fields: [assessmentId], references: [id])
-  clo                clos                           @relation(fields: [cloId], references: [id])
+  clo                clos?                          @relation(fields: [cloId], references: [id])
+  llo                llos?                          @relation(fields: [lloId], references: [id])
   studentItemResults studentassessmentitemresults[]
 
   @@unique([assessmentId, questionNo])
   @@index([assessmentId])
   @@index([cloId])
+  @@index([lloId])
 }
 
 model studentassessmentresults {

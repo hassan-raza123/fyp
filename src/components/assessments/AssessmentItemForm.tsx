@@ -14,6 +14,8 @@ import {
 interface AssessmentItemFormProps {
   assessmentId: number;
   clos: Array<{ id: number; code?: string; description: string }>;
+  llos?: Array<{ id: number; code?: string; description: string }>;
+  isLabAssessment?: boolean;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
   initialData?: any;
@@ -22,6 +24,8 @@ interface AssessmentItemFormProps {
 export function AssessmentItemForm({
   assessmentId,
   clos,
+  llos = [],
+  isLabAssessment = false,
   onSubmit,
   isLoading = false,
   initialData,
@@ -31,16 +35,26 @@ export function AssessmentItemForm({
     description: initialData?.description || '',
     marks: initialData?.marks || 0,
     cloId: initialData?.cloId?.toString() || '',
+    lloId: initialData?.lloId?.toString() || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
+
+    const payload: any = {
       assessmentId,
+      questionNo: formData.questionNo,
+      description: formData.description,
       marks: Number(formData.marks),
-      cloId: Number(formData.cloId),
-    });
+    };
+
+    if (isLabAssessment) {
+      payload.lloId = formData.lloId ? Number(formData.lloId) : null;
+    } else {
+      payload.cloId = formData.cloId ? Number(formData.cloId) : null;
+    }
+
+    onSubmit(payload);
   };
 
   return (
@@ -84,27 +98,57 @@ export function AssessmentItemForm({
             required
           />
         </div>
-        <div className="space-y-2 col-span-2">
-          <Label htmlFor="cloId">CLO</Label>
-          <Select
-            value={formData.cloId}
-            onValueChange={(value) =>
-              setFormData({ ...formData, cloId: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select CLO" />
-            </SelectTrigger>
-            <SelectContent>
-              {clos.map((clo) => (
-                <SelectItem key={clo.id} value={clo.id.toString()}>
-                  {clo.code ? `${clo.code}: ` : ''}
-                  {clo.description}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
+        {isLabAssessment ? (
+          <div className="space-y-2 col-span-2">
+            <Label htmlFor="lloId">
+              Lab Learning Outcome (LLO)
+              <span className="ml-1 text-xs text-secondary-text">(Lab assessment)</span>
+            </Label>
+            <Select
+              value={formData.lloId}
+              onValueChange={(value) =>
+                setFormData({ ...formData, lloId: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select LLO" />
+              </SelectTrigger>
+              <SelectContent>
+                {llos.map((llo) => (
+                  <SelectItem key={llo.id} value={llo.id.toString()}>
+                    {llo.code ? `${llo.code}: ` : ''}
+                    {llo.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="space-y-2 col-span-2">
+            <Label htmlFor="cloId">
+              Course Learning Outcome (CLO)
+            </Label>
+            <Select
+              value={formData.cloId}
+              onValueChange={(value) =>
+                setFormData({ ...formData, cloId: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select CLO" />
+              </SelectTrigger>
+              <SelectContent>
+                {clos.map((clo) => (
+                  <SelectItem key={clo.id} value={clo.id.toString()}>
+                    {clo.code ? `${clo.code}: ` : ''}
+                    {clo.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

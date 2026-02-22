@@ -3,7 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
 
-// POST - Calculate LLO attainments for a course offering or specific LLO
+// Lab assessment types — only these contribute to LLO attainments
+const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
+
+// POST - Calculate LLO attainments for a course offering (or a specific LLO)
 export async function POST(req: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(req);
@@ -38,15 +41,10 @@ export async function POST(req: NextRequest) {
       where: { id: courseOfferingId },
       include: {
         sections: {
-          where: {
-            status: 'active',
-          },
+          where: { status: 'active' },
         },
         course: {
-          select: {
-            id: true,
-            departmentId: true,
-          },
+          select: { id: true, departmentId: true },
         },
       },
     });
@@ -67,21 +65,14 @@ export async function POST(req: NextRequest) {
 
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
-    // Get students in these sections
+    // Get unique students enrolled in the sections
     const studentSections = await prisma.studentsections.findMany({
-      where: {
-        sectionId: {
-          in: sectionIds,
-        },
-        status: 'active',
-      },
-      select: {
-        studentId: true,
-      },
+      where: { sectionId: { in: sectionIds }, status: 'active' },
+      select: { studentId: true },
     });
 
-    const studentIds = studentSections.map((ss) => ss.studentId);
-    const totalStudents = new Set(studentIds).size;
+    const studentIds = [...new Set(studentSections.map((ss) => ss.studentId))];
+    const totalStudents = studentIds.length;
 
     if (totalStudents === 0) {
       return NextResponse.json(
@@ -90,7 +81,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get LLOs to calculate
+    // Get LLOs to calculate (all active, or a specific one)
     const llos = await prisma.llos.findMany({
       where: {
         courseId: courseOffering.course.id,
@@ -101,68 +92,101 @@ export async function POST(req: NextRequest) {
 
     if (llos.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'No LLOs found for this course' },
+        { success: false, error: 'No Lab Learning Outcomes (LLOs) found for this course' },
         { status: 404 }
       );
     }
 
-    // Get assessments for this course offering
-    // Note: LLOs are typically assessed through lab assessments
-    // For now, we'll use the same assessment structure as CLOs
-    const assessments = await prisma.assessments.findMany({
+    // Fetch only lab-type assessments for this offering that have been evaluated/published
+    const labAssessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        status: 'active',
+        type: { in: LAB_ASSESSMENT_TYPES as any },
+        status: { in: ['active', 'completed'] },
       },
-      include: {
-        assessmentItems: {
-          where: {},
-        },
-      },
+      select: { id: true },
     });
 
-    // Calculate LLO attainments
+    if (labAssessments.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'No lab assessments (lab_exam or lab_report) found for this course offering. ' +
+            'Create lab assessments with items mapped to LLOs before calculating LLO attainments.',
+        },
+        { status: 404 }
+      );
+    }
+
+    const labAssessmentIds = labAssessments.map((a) => a.id);
+
+    // Get the faculty from the first section (for calculatedBy audit)
+    const firstSection = courseOffering.sections[0];
+    const calculatedBy = firstSection?.facultyId ?? null;
+
+    if (!calculatedBy) {
+      return NextResponse.json(
+        { success: false, error: 'No faculty assigned to sections in this course offering' },
+        { status: 400 }
+      );
+    }
+
+    // Calculate LLO attainment per LLO using lloId-mapped assessment items
     const calculatedAttainments = await Promise.all(
       llos.map(async (llo) => {
-        // For LLOs, we need to calculate based on lab assessments
-        // Since assessment items don't have lloId, we'll use a simplified calculation
-        // In a full implementation, assessment items would be mapped to LLOs
-
-        // Get all assessment results for students in this course offering
-        const assessmentResults = await prisma.studentassessmentresults.findMany({
+        // Get assessment items that are explicitly mapped to this LLO
+        const lloItems = await prisma.assessmentitems.findMany({
           where: {
-            assessmentId: {
-              in: assessments.map((a) => a.id),
-            },
-            studentId: {
-              in: studentIds,
-            },
-            status: {
-              in: ['evaluated', 'published'],
+            lloId: llo.id,
+            assessmentId: { in: labAssessmentIds },
+          },
+          select: { id: true, marks: true },
+        });
+
+        if (lloItems.length === 0) {
+          // No items mapped to this LLO — skip and return null
+          return null;
+        }
+
+        const lloItemIds = lloItems.map((i) => i.id);
+
+        // Get student item results for these LLO-mapped items (evaluated or published)
+        const itemResults = await prisma.studentassessmentitemresults.findMany({
+          where: {
+            assessmentItemId: { in: lloItemIds },
+            studentAssessmentResult: {
+              studentId: { in: studentIds },
+              status: { in: ['evaluated', 'published'] },
             },
           },
           include: {
-            assessment: {
-              select: {
-                totalMarks: true,
-              },
+            studentAssessmentResult: {
+              select: { studentId: true },
+            },
+            assessmentItem: {
+              select: { marks: true },
             },
           },
         });
 
-        // Calculate attainment for this LLO
-        // Simplified: use overall assessment performance
-        // In full implementation, would filter by LLO-mapped items
-        let studentsAchieved = 0;
-        const studentPerformance = new Map<number, number>();
+        // Aggregate per-student performance across all items for this LLO
+        const studentPerformance = new Map<number, { obtained: number; total: number }>();
 
-        assessmentResults.forEach((result) => {
-          const percentage = result.percentage || 0;
-          const current = studentPerformance.get(result.studentId) || 0;
-          studentPerformance.set(result.studentId, Math.max(current, percentage));
+        itemResults.forEach((result) => {
+          const studentId = result.studentAssessmentResult.studentId;
+          if (!studentPerformance.has(studentId)) {
+            studentPerformance.set(studentId, { obtained: 0, total: 0 });
+          }
+          const perf = studentPerformance.get(studentId)!;
+          perf.obtained += result.obtainedMarks;
+          perf.total += result.assessmentItem.marks;
         });
 
-        studentPerformance.forEach((percentage) => {
+        // Count students who reached the attainment threshold
+        let studentsAchieved = 0;
+        studentPerformance.forEach((perf) => {
+          const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
           if (percentage >= threshold) {
             studentsAchieved++;
           }
@@ -171,12 +195,8 @@ export async function POST(req: NextRequest) {
         const attainmentPercent =
           totalStudents > 0 ? (studentsAchieved / totalStudents) * 100 : 0;
 
-        // Get or create faculty for calculation (use first faculty from sections)
-        const firstSection = courseOffering.sections[0];
-        const calculatedBy = firstSection?.facultyId || 1; // Fallback to admin user
-
-        // Upsert LLO attainment
-        const attainment = await prisma.llosattainments.upsert({
+        // Upsert LLO attainment record
+        return prisma.llosattainments.upsert({
           where: {
             lloId_courseOfferingId: {
               lloId: llo.id,
@@ -203,15 +223,22 @@ export async function POST(req: NextRequest) {
             status: 'active',
           },
         });
-
-        return attainment;
       })
     );
 
+    // Filter out nulls (LLOs with no mapped items)
+    const saved = calculatedAttainments.filter(Boolean);
+
+    const skipped = llos.length - saved.length;
+
     return NextResponse.json({
       success: true,
-      message: `Successfully calculated LLO attainments for ${calculatedAttainments.length} LLO(s)`,
-      data: calculatedAttainments,
+      message:
+        `Successfully calculated LLO attainments for ${saved.length} LLO(s)` +
+        (skipped > 0
+          ? `. ${skipped} LLO(s) skipped — no lab assessment items mapped to them yet.`
+          : '.'),
+      data: saved,
     });
   } catch (error) {
     console.error('Error calculating LLO attainments:', error);
@@ -221,4 +248,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

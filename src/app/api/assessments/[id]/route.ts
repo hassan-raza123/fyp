@@ -138,6 +138,13 @@ export async function GET(
                 description: true,
               },
             },
+            llo: {
+              select: {
+                id: true,
+                code: true,
+                description: true,
+              },
+            },
           },
           orderBy: {
             questionNo: 'asc',
@@ -147,6 +154,7 @@ export async function GET(
           include: {
             course: {
               select: {
+                id: true,
                 code: true,
                 name: true,
               },

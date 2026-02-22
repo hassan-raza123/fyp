@@ -7,14 +7,36 @@ export async function POST(
 ) {
   try {
     const data = await req.json();
-    console.log('Received data:', data);
-    const { questionNo, description, marks, cloId } = data;
+    const { questionNo, description, marks, cloId, lloId } = data;
 
-    // CLO ID is optional
-    if (cloId && isNaN(Number(cloId))) {
-      console.log('Validation failed: cloId must be a valid number');
+    // Validate: must have either cloId (theory) or lloId (lab), not both, not neither
+    const hasClo = cloId !== undefined && cloId !== null && cloId !== '';
+    const hasLlo = lloId !== undefined && lloId !== null && lloId !== '';
+
+    if (!hasClo && !hasLlo) {
+      return NextResponse.json(
+        { error: 'Assessment item must be mapped to either a CLO (theory) or an LLO (lab)' },
+        { status: 400 }
+      );
+    }
+
+    if (hasClo && hasLlo) {
+      return NextResponse.json(
+        { error: 'Assessment item can only be mapped to one outcome: either a CLO or an LLO, not both' },
+        { status: 400 }
+      );
+    }
+
+    if (hasClo && isNaN(Number(cloId))) {
       return NextResponse.json(
         { error: 'cloId must be a valid number' },
+        { status: 400 }
+      );
+    }
+
+    if (hasLlo && isNaN(Number(lloId))) {
+      return NextResponse.json(
+        { error: 'lloId must be a valid number' },
         { status: 400 }
       );
     }
@@ -24,14 +46,17 @@ export async function POST(
       questionNo,
       description,
       marks,
-      ...(cloId && { cloId: Number(cloId) }),
+      ...(hasClo && { cloId: Number(cloId) }),
+      ...(hasLlo && { lloId: Number(lloId) }),
     };
 
-    console.log('Creating assessment item with data:', itemData);
     const assessmentItem = await prisma.assessmentitems.create({
       data: itemData,
+      include: {
+        clo: true,
+        llo: true,
+      },
     });
-    console.log('Assessment item created:', assessmentItem);
 
     return NextResponse.json(assessmentItem);
   } catch (error) {
@@ -54,6 +79,7 @@ export async function GET(
       },
       include: {
         clo: true,
+        llo: true,
       },
       orderBy: {
         questionNo: 'asc',
@@ -69,4 +95,3 @@ export async function GET(
     );
   }
 }
-
