@@ -30,6 +30,11 @@ interface PLOAttainment {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.success || !auth.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
     const semesterId = searchParams.get('semesterId');
@@ -187,7 +192,7 @@ export async function GET(request: NextRequest) {
     }
 
     // --- Fetch program-level direct/indirect weights from graduation criteria ---
-    // Falls back to the standard OBE 70/30 split if not configured.
+    // Falls back to 80% direct / 20% indirect if not configured per program.
     const graduationCriteria = await prisma.graduation_criteria.findUnique({
       where: { programId: Number(programId) },
       select: { directWeight: true, indirectWeight: true },

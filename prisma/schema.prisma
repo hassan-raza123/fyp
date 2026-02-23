@@ -104,6 +104,7 @@ model programs {
   obeReports       obereports[]
   ploAttainments   ploattainments[]
   plos             plos[]
+  peos             peos[]
   department       departments      @relation(fields: [departmentId], references: [id])
   students         students[]
   courses            courses[]              @relation("programtocourse")
@@ -197,6 +198,7 @@ model courseofferings {
   studentGrades    studentgrades[]
   surveys          surveys[]
   actionPlans      action_plans[]
+  rubrics          rubrics[]
 
   @@unique([courseId, semesterId])
   @@index([courseId])
@@ -295,11 +297,13 @@ model plos {
   description    String           @db.Text
   programId      Int
   bloomLevel     bloom_level?
+  bloomDomain    bloom_domain     @default(Cognitive)
   status         plo_status       @default(active)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   cloMappings      cloplomappings[]
   lloMappings      lloplomappings[]
+  peoMappings      peoplomappings[]
   ploAttainments   ploattainments[]
   program          programs           @relation(fields: [programId], references: [id])
   ploScores        ploscores[]
@@ -316,6 +320,7 @@ model clos {
   description     String            @db.Text
   courseId        Int
   bloomLevel      bloom_level?
+  bloomDomain     bloom_domain      @default(Cognitive)
   status          clo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -323,6 +328,7 @@ model clos {
   ploMappings     cloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   closAttainments closattainments[]
+  rubrics         rubrics[]
   actionPlans     action_plans[]
 
   @@unique([code, courseId])
@@ -335,6 +341,7 @@ model llos {
   description     String            @db.Text
   courseId        Int
   bloomLevel      bloom_level?
+  bloomDomain     bloom_domain      @default(Psychomotor)
   status          llo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -342,6 +349,7 @@ model llos {
   course          courses           @relation(fields: [courseId], references: [id])
   llosAttainments llosattainments[]
   assessmentItems assessmentitems[]
+  rubrics         rubrics[]
   actionPlans     action_plans[]
 
   @@unique([code, courseId])
@@ -427,7 +435,7 @@ model ploattainments {
   semesterId        Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent  Float
   directAttainment   Float?
   indirectAttainment Float?
@@ -967,6 +975,7 @@ model surveys {
   createdBy        Int
   status           survey_status    @default(draft)
   dueDate          DateTime?
+  publicToken      String?          @unique
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   courseOffering   courseofferings? @relation(fields: [courseOfferingId], references: [id])
@@ -1132,4 +1141,85 @@ model graduation_criteria {
   program                 programs @relation(fields: [programId], references: [id])
 
   @@index([programId])
+}
+
+// ─── Program Educational Objectives (PEOs) ────────────────────────────────────
+
+model peos {
+  id          Int            @id @default(autoincrement())
+  code        String
+  description String         @db.Text
+  programId   Int
+  status      peo_status     @default(active)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  program     programs       @relation(fields: [programId], references: [id])
+  ploMappings peoplomappings[]
+
+  @@unique([code, programId])
+  @@index([programId])
+}
+
+model peoplomappings {
+  id        Int      @id @default(autoincrement())
+  peoId     Int
+  ploId     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  peo       peos     @relation(fields: [peoId], references: [id], onDelete: Cascade)
+  plo       plos     @relation(fields: [ploId], references: [id], onDelete: Cascade)
+
+  @@unique([peoId, ploId])
+  @@index([peoId])
+  @@index([ploId])
+}
+
+enum peo_status {
+  active
+  inactive
+  archived
+}
+
+// ─── Assessment Rubrics ───────────────────────────────────────────────────────
+
+model rubrics {
+  id               Int              @id @default(autoincrement())
+  title            String
+  courseOfferingId Int
+  cloId            Int?
+  lloId            Int?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  clo              clos?            @relation(fields: [cloId], references: [id])
+  llo              llos?            @relation(fields: [lloId], references: [id])
+  criteria         rubric_criteria[]
+
+  @@index([courseOfferingId])
+  @@index([cloId])
+  @@index([lloId])
+}
+
+model rubric_criteria {
+  id             Int      @id @default(autoincrement())
+  rubricId       Int
+  description    String
+  excellent      String   @db.Text
+  good           String   @db.Text
+  satisfactory   String   @db.Text
+  unsatisfactory String   @db.Text
+  weight         Float    @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  rubric         rubrics  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@index([rubricId])
+}
+
+// ─── Bloom's Domain ───────────────────────────────────────────────────────────
+
+enum bloom_domain {
+  Cognitive
+  Affective
+  Psychomotor
 }

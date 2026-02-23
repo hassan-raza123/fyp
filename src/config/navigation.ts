@@ -113,6 +113,9 @@ import {
   MessageCircle as MessageCircleIcon,
   MessageSquare as MessageSquareIcon,
   Send as SendIcon,
+  Grid,
+  Compass,
+  Trophy,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -213,6 +216,12 @@ const adminNavigation = [
     title: 'LEARNING OUTCOMES',
     items: [
       {
+        id: 'peos',
+        label: 'PEOs',
+        icon: Trophy,
+        href: '/admin/peos',
+      },
+      {
         id: 'plos',
         label: 'PLOs',
         icon: Target,
@@ -229,6 +238,12 @@ const adminNavigation = [
         label: 'LLOs',
         icon: FileText,
         href: '/admin/llos',
+      },
+      {
+        id: 'peo-plo-mappings',
+        label: 'PEO-PLO Mappings',
+        icon: Compass,
+        href: '/admin/peo-plo-mappings',
       },
       {
         id: 'clo-plo-mappings',
@@ -276,6 +291,12 @@ const adminNavigation = [
         label: 'Graduation Tracker',
         icon: GraduationCap,
         href: '/admin/results/graduation',
+      },
+      {
+        id: 'plo-coverage-matrix',
+        label: 'CLO-PLO Coverage Matrix',
+        icon: Grid,
+        href: '/admin/results/plo-coverage-matrix',
       },
     ],
   },
