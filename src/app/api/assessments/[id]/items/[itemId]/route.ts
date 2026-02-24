@@ -7,11 +7,29 @@ export async function PUT(
 ) {
   try {
     const data = await req.json();
-    const { questionNo, description, marks, cloId } = data;
+    const { questionNo, description, marks, cloId, lloId } = data;
 
     const itemId = parseInt(params.itemId);
     if (isNaN(itemId)) {
       return NextResponse.json({ error: 'Invalid item ID' }, { status: 400 });
+    }
+
+    // Validate CLO/LLO mapping: must have one or the other, never both, never neither
+    const hasClo = cloId !== undefined && cloId !== null && cloId !== '';
+    const hasLlo = lloId !== undefined && lloId !== null && lloId !== '';
+
+    if (!hasClo && !hasLlo) {
+      return NextResponse.json(
+        { error: 'Assessment item must be mapped to either a CLO (theory) or an LLO (lab)' },
+        { status: 400 }
+      );
+    }
+
+    if (hasClo && hasLlo) {
+      return NextResponse.json(
+        { error: 'Assessment item can only be mapped to one outcome: either a CLO or an LLO, not both' },
+        { status: 400 }
+      );
     }
 
     const updatedItem = await prisma.assessmentitems.update({
@@ -20,7 +38,13 @@ export async function PUT(
         questionNo,
         description,
         marks,
-        ...(cloId && { cloId: Number(cloId) }),
+        // Set the active mapping and explicitly clear the other
+        cloId: hasClo ? Number(cloId) : null,
+        lloId: hasLlo ? Number(lloId) : null,
+      },
+      include: {
+        clo: true,
+        llo: true,
       },
     });
 
