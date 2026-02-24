@@ -1134,8 +1134,9 @@ model graduation_criteria {
   minCGPA                 Float    @default(2.0)
   minPloAttainmentPercent Float    @default(50)
   requireAllCourses       Boolean  @default(true)
-  directWeight            Float    @default(0.8)
-  indirectWeight          Float    @default(0.2)
+  directWeight            Float    @default(0.7)
+  indirectWeight          Float    @default(0.3)
+  minSurveyResponseRate   Float    @default(0.0)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   program                 programs @relation(fields: [programId], references: [id])

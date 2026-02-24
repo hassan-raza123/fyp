@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
-const THRESHOLD = 60; // PLO attainment threshold %
-
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
@@ -29,6 +27,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 
+  // Fetch program's graduation criteria for the threshold
+  const graduationCriteria = await prisma.graduation_criteria.findUnique({
+    where: { programId: student.programId },
+    select: { minPloAttainmentPercent: true, minCGPA: true },
+  });
+  const threshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
+  const minCGPA = graduationCriteria?.minCGPA ?? 2.0;
+
   // Get all active PLOs for this program
   const plos = await prisma.plos.findMany({
     where: { programId: student.programId, status: 'active' },
@@ -37,7 +43,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   });
 
   // Get all PLO scores for this student across all course offerings
-  // ploscores has: studentId, ploId, percentage, courseOfferingId, semesterName
   const ploScores = await prisma.ploscores.findMany({
     where: { studentId },
     include: {
@@ -53,7 +58,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   });
 
   // Group scores by PLO — pick the best score per PLO across all offerings
-  const ploScoreMap = new Map<number, { bestScore: number; attempts: { courseCode: string; semesterName: string; percentage: number }[] }>();
+  const ploScoreMap = new Map<
+    number,
+    { bestScore: number; attempts: { courseCode: string; semesterName: string; percentage: number }[] }
+  >();
 
   for (const score of ploScores) {
     const existing = ploScoreMap.get(score.ploId);
@@ -72,11 +80,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
   }
 
-  // Build PLO completion status
+  // Build PLO completion status using the program-specific threshold
   const ploStatus = plos.map((plo) => {
     const scoreData = ploScoreMap.get(plo.id);
     const bestScore = scoreData?.bestScore ?? null;
-    const attained = bestScore !== null && bestScore >= THRESHOLD;
+    const attained = bestScore !== null && bestScore >= threshold;
 
     return {
       ploId: plo.id,
@@ -85,7 +93,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       bloomLevel: plo.bloomLevel,
       bestScore,
       attained,
-      threshold: THRESHOLD,
+      threshold,
       attempts: scoreData?.attempts ?? [],
     };
   });
@@ -94,7 +102,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const attainedPlos = ploStatus.filter((p) => p.attained).length;
   const notAssessedPlos = ploStatus.filter((p) => p.bestScore === null).length;
   const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
-  const isEligible = totalPlos > 0 && attainedPlos === totalPlos;
+  const cgpa = student.cumulativeGPA?.cumulativeGPA ?? null;
+  const isEligible =
+    totalPlos > 0 &&
+    attainedPlos === totalPlos &&
+    (cgpa === null || cgpa >= minCGPA);
 
   // Count completed courses
   const completedGrades = await prisma.studentgrades.count({
@@ -111,7 +123,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         email: student.user.email,
         program: student.program,
         batch: student.batch,
-        cumulativeGPA: student.cumulativeGPA?.cumulativeGPA ?? null,
+        cumulativeGPA: cgpa,
         completedCourses: completedGrades,
       },
       summary: {
@@ -120,7 +132,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         notAssessedPlos,
         completionPercent,
         isEligible,
-        threshold: THRESHOLD,
+        threshold,
+        minCGPA,
       },
       ploStatus,
     },

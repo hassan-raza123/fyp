@@ -28,6 +28,33 @@ interface PLOAttainment {
   contributingLlos: ContributingLLO[];
 }
 
+// ── Shared helper: accumulate indirect ratings from a list of surveys ────────
+function accumulateSurveyRatings(
+  surveys: Array<{
+    questions: Array<{ ploId: number | null; answers: Array<{ ratingValue: number | null }> }>;
+    _count: { responses: number };
+  }>,
+  indirectByPlo: Map<number, { sumRating: number; count: number }>
+) {
+  for (const survey of surveys) {
+    const responseCount = survey._count.responses;
+    if (responseCount === 0) continue;
+    for (const q of survey.questions) {
+      if (!q.ploId) continue;
+      const ratings = q.answers
+        .filter((a) => a.ratingValue !== null)
+        .map((a) => a.ratingValue as number);
+      if (ratings.length === 0) continue;
+      const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+      const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
+      indirectByPlo.set(q.ploId, {
+        sumRating: existing.sumRating + avg * responseCount,
+        count: existing.count + responseCount,
+      });
+    }
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
@@ -115,7 +142,6 @@ export async function GET(request: NextRequest) {
         weight: mapping.weight,
       }));
 
-      // Combine CLO + LLO contributions with their respective weights
       const allContributions = [
         ...contributingClos.map((c) => ({ attainment: c.attainment, weight: c.weight })),
         ...contributingLlos.map((l) => ({ attainment: l.attainment, weight: l.weight })),
@@ -132,7 +158,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // --- INDIRECT ATTAINMENT: from closed surveys in this program's course offerings ---
+    // --- INDIRECT ATTAINMENT: course-exit surveys + program-level surveys ---
     const courseOfferings = await prisma.courseofferings.findMany({
       where: {
         semesterId: Number(semesterId),
@@ -147,7 +173,7 @@ export async function GET(request: NextRequest) {
     const indirectByPlo = new Map<number, { sumRating: number; count: number }>();
 
     if (offeringIds.length > 0) {
-      const surveys = await prisma.surveys.findMany({
+      const courseExitSurveys = await prisma.surveys.findMany({
         where: {
           courseOfferingId: { in: offeringIds },
           status: 'closed',
@@ -155,34 +181,30 @@ export async function GET(request: NextRequest) {
         include: {
           questions: {
             where: { ploId: { not: null } },
-            include: {
-              answers: { select: { ratingValue: true } },
-            },
+            include: { answers: { select: { ratingValue: true } } },
           },
           _count: { select: { responses: true } },
         },
       });
-
-      for (const survey of surveys) {
-        const responseCount = survey._count.responses;
-        if (responseCount === 0) continue;
-
-        for (const q of survey.questions) {
-          if (!q.ploId) continue;
-          const ratings = q.answers
-            .filter((a) => a.ratingValue !== null)
-            .map((a) => a.ratingValue as number);
-          if (ratings.length === 0) continue;
-
-          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
-          const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
-          indirectByPlo.set(q.ploId, {
-            sumRating: existing.sumRating + avg * responseCount,
-            count: existing.count + responseCount,
-          });
-        }
-      }
+      accumulateSurveyRatings(courseExitSurveys, indirectByPlo);
     }
+
+    // Program-level surveys: program_exit, alumni, employer
+    const programLevelSurveys = await prisma.surveys.findMany({
+      where: {
+        programId: Number(programId),
+        status: 'closed',
+        type: { in: ['program_exit', 'alumni', 'employer'] },
+      },
+      include: {
+        questions: {
+          where: { ploId: { not: null } },
+          include: { answers: { select: { ratingValue: true } } },
+        },
+        _count: { select: { responses: true } },
+      },
+    });
+    accumulateSurveyRatings(programLevelSurveys, indirectByPlo);
 
     // Convert indirect Map to percentage (rating/5 * 100)
     const indirectAttainmentByPloId = new Map<number, number>();
@@ -191,16 +213,15 @@ export async function GET(request: NextRequest) {
       indirectAttainmentByPloId.set(ploId, Math.round((avgRating / 5) * 100 * 10) / 10);
     }
 
-    // --- Fetch program-level direct/indirect weights from graduation criteria ---
-    // Falls back to 80% direct / 20% indirect if not configured per program.
+    // --- Fetch program-level direct/indirect weights ---
     const graduationCriteria = await prisma.graduation_criteria.findUnique({
       where: { programId: Number(programId) },
       select: { directWeight: true, indirectWeight: true },
     });
-    const directWeight = graduationCriteria?.directWeight ?? 0.8;
-    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.2;
+    const directWeight = graduationCriteria?.directWeight ?? 0.7;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
 
-    // --- COMBINE: directWeight% direct (CLO + LLO) + indirectWeight% indirect ---
+    // --- COMBINE ---
     const ploAttainments: PLOAttainment[] = plos.map((plo) => {
       const direct = directAttainmentByPlo.get(plo.id);
       const directAttainment = direct?.attainment ?? 0;
@@ -235,7 +256,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Persist PLO attainments to the ploattainments table for historical tracking
+// POST - Persist PLO attainments + calculate individual student PLO scores (ploscores)
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
@@ -256,7 +277,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Fetch PLOs with CLO + LLO attainments (same as GET) ───────────────────
+    // ── Fetch PLOs with CLO + LLO attainments ─────────────────────────────────
     const plos = await prisma.plos.findMany({
       where: { programId: Number(programId), status: plo_status.active },
       include: {
@@ -289,7 +310,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // ── Direct attainment (weighted avg of CLO + LLO) ─────────────────────────
+    // ── Direct attainment ─────────────────────────────────────────────────────
     const directByPlo = new Map<number, number>();
     for (const plo of plos) {
       const contributions = [
@@ -307,7 +328,7 @@ export async function POST(request: NextRequest) {
       directByPlo.set(plo.id, totalWeight > 0 ? weightedSum / totalWeight : 0);
     }
 
-    // ── Indirect attainment (closed surveys) ──────────────────────────────────
+    // ── Indirect attainment: course-exit + program-level surveys ──────────────
     const courseOfferings = await prisma.courseofferings.findMany({
       where: {
         semesterId: Number(semesterId),
@@ -319,7 +340,7 @@ export async function POST(request: NextRequest) {
     const indirectByPlo = new Map<number, { sumRating: number; count: number }>();
 
     if (offeringIds.length > 0) {
-      const surveys = await prisma.surveys.findMany({
+      const courseExitSurveys = await prisma.surveys.findMany({
         where: { courseOfferingId: { in: offeringIds }, status: 'closed' },
         include: {
           questions: {
@@ -329,35 +350,35 @@ export async function POST(request: NextRequest) {
           _count: { select: { responses: true } },
         },
       });
-      for (const survey of surveys) {
-        const responseCount = survey._count.responses;
-        if (responseCount === 0) continue;
-        for (const q of survey.questions) {
-          if (!q.ploId) continue;
-          const ratings = q.answers
-            .filter((a) => a.ratingValue !== null)
-            .map((a) => a.ratingValue as number);
-          if (ratings.length === 0) continue;
-          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
-          const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
-          indirectByPlo.set(q.ploId, {
-            sumRating: existing.sumRating + avg * responseCount,
-            count: existing.count + responseCount,
-          });
-        }
-      }
+      accumulateSurveyRatings(courseExitSurveys, indirectByPlo);
     }
+
+    const programLevelSurveys = await prisma.surveys.findMany({
+      where: {
+        programId: Number(programId),
+        status: 'closed',
+        type: { in: ['program_exit', 'alumni', 'employer'] },
+      },
+      include: {
+        questions: {
+          where: { ploId: { not: null } },
+          include: { answers: { select: { ratingValue: true } } },
+        },
+        _count: { select: { responses: true } },
+      },
+    });
+    accumulateSurveyRatings(programLevelSurveys, indirectByPlo);
 
     // ── Graduation criteria weights + PLO threshold ────────────────────────────
     const graduationCriteria = await prisma.graduation_criteria.findUnique({
       where: { programId: Number(programId) },
       select: { directWeight: true, indirectWeight: true, minPloAttainmentPercent: true },
     });
-    const directWeight = graduationCriteria?.directWeight ?? 0.8;
-    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.2;
+    const directWeight = graduationCriteria?.directWeight ?? 0.7;
+    const indirectWeight = graduationCriteria?.indirectWeight ?? 0.3;
     const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
 
-    // ── Count total students enrolled in this program/semester ────────────────
+    // ── Count total enrolled students ─────────────────────────────────────────
     const enrolledStudentSections = await prisma.studentsections.findMany({
       where: {
         status: 'active',
@@ -368,7 +389,7 @@ export async function POST(request: NextRequest) {
     });
     const totalStudents = new Set(enrolledStudentSections.map((ss) => ss.studentId)).size;
 
-    // ── Upsert each PLO attainment record ─────────────────────────────────────
+    // ── Upsert aggregate PLO attainment records ────────────────────────────────
     const saved = await Promise.all(
       plos.map((plo) => {
         const directAttainment = directByPlo.get(plo.id) ?? 0;
@@ -421,9 +442,175 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    // ── Calculate and save individual student PLO scores (ploscores) ──────────
+    // The graduation tracker reads ploscores to determine per-student eligibility.
+    let ploScoresSaved = 0;
+    try {
+      const semesterRecord = await prisma.semesters.findUnique({
+        where: { id: Number(semesterId) },
+        select: { name: true },
+      });
+      const semesterName = semesterRecord?.name ?? '';
+
+      const allOfferings = await prisma.courseofferings.findMany({
+        where: {
+          semesterId: Number(semesterId),
+          course: { programs: { some: { id: Number(programId) } } },
+        },
+        include: {
+          course: {
+            select: {
+              id: true,
+              clos: {
+                where: { status: 'active' },
+                include: { ploMappings: { select: { ploId: true } } },
+              },
+              llos: {
+                where: { status: 'active' },
+                include: { ploMappings: { select: { ploId: true } } },
+              },
+            },
+          },
+          sections: {
+            where: { status: 'active' },
+            include: {
+              studentsections: {
+                where: { status: 'active' },
+                select: { studentId: true },
+              },
+            },
+          },
+          assessments: {
+            where: { status: { in: ['active', 'completed'] } },
+            select: {
+              id: true,
+              assessmentItems: {
+                select: { id: true, marks: true, cloId: true, lloId: true },
+              },
+            },
+          },
+        },
+      });
+
+      for (const offering of allOfferings) {
+        const cloToPlos = new Map<number, number[]>();
+        for (const clo of offering.course.clos) {
+          cloToPlos.set(clo.id, clo.ploMappings.map((m) => m.ploId));
+        }
+        const lloToPlos = new Map<number, number[]>();
+        for (const llo of offering.course.llos) {
+          lloToPlos.set(llo.id, llo.ploMappings.map((m) => m.ploId));
+        }
+
+        const itemToPlos = new Map<number, number[]>();
+        const itemMarksMap = new Map<number, number>();
+        for (const assessment of offering.assessments) {
+          for (const item of assessment.assessmentItems) {
+            itemMarksMap.set(item.id, item.marks);
+            const ploIds: number[] = [];
+            if (item.cloId !== null) ploIds.push(...(cloToPlos.get(item.cloId) ?? []));
+            if (item.lloId !== null) ploIds.push(...(lloToPlos.get(item.lloId) ?? []));
+            if (ploIds.length > 0) itemToPlos.set(item.id, ploIds);
+          }
+        }
+
+        if (itemToPlos.size === 0) continue;
+
+        const studentIdSet = new Set<number>();
+        for (const section of offering.sections) {
+          for (const ss of section.studentsections) {
+            studentIdSet.add(ss.studentId);
+          }
+        }
+        if (studentIdSet.size === 0) continue;
+
+        const offeringStudentIds = Array.from(studentIdSet);
+        const allItemIds = Array.from(itemToPlos.keys());
+
+        const itemResults = await prisma.studentassessmentitemresults.findMany({
+          where: {
+            assessmentItemId: { in: allItemIds },
+            studentResult: {
+              studentId: { in: offeringStudentIds },
+              status: { in: ['evaluated', 'published'] },
+            },
+          },
+          select: {
+            assessmentItemId: true,
+            obtainedMarks: true,
+            studentResult: { select: { studentId: true } },
+          },
+        });
+
+        // Seed score map with total marks per student × PLO
+        const scoreMap = new Map<string, { obtained: number; total: number }>();
+        for (const studentId of offeringStudentIds) {
+          for (const [itemId, ploIds] of itemToPlos.entries()) {
+            const marks = itemMarksMap.get(itemId) ?? 0;
+            for (const ploId of ploIds) {
+              const key = `${studentId}_${ploId}`;
+              const existing = scoreMap.get(key) ?? { obtained: 0, total: 0 };
+              existing.total += marks;
+              scoreMap.set(key, existing);
+            }
+          }
+        }
+
+        // Add obtained marks from actual results
+        for (const result of itemResults) {
+          const studentId = result.studentResult.studentId;
+          for (const ploId of itemToPlos.get(result.assessmentItemId) ?? []) {
+            const existing = scoreMap.get(`${studentId}_${ploId}`);
+            if (existing) existing.obtained += result.obtainedMarks;
+          }
+        }
+
+        // Upsert ploscores
+        const upsertOps: Promise<unknown>[] = [];
+        for (const [key, score] of scoreMap.entries()) {
+          if (score.total === 0) continue;
+          const [studentIdStr, ploIdStr] = key.split('_');
+          const sId = Number(studentIdStr);
+          const pId = Number(ploIdStr);
+          const pct = Math.round((score.obtained / score.total) * 1000) / 10;
+          upsertOps.push(
+            prisma.ploscores.upsert({
+              where: {
+                studentId_courseOfferingId_ploId: {
+                  studentId: sId,
+                  courseOfferingId: offering.id,
+                  ploId: pId,
+                },
+              },
+              update: {
+                obtainedMarks: score.obtained,
+                totalMarks: score.total,
+                percentage: pct,
+                semesterName,
+                calculatedAt: new Date(),
+              },
+              create: {
+                studentId: sId,
+                courseOfferingId: offering.id,
+                ploId: pId,
+                obtainedMarks: score.obtained,
+                totalMarks: score.total,
+                percentage: pct,
+                semesterName,
+              },
+            })
+          );
+        }
+        await Promise.all(upsertOps);
+        ploScoresSaved += upsertOps.length;
+      }
+    } catch (scoreError) {
+      console.error('[POST_PLO_ATTAINMENTS] ploscores calculation failed:', scoreError);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `PLO attainments saved for ${saved.length} PLO(s)`,
+      message: `PLO attainments saved for ${saved.length} PLO(s). Student PLO scores saved: ${ploScoresSaved} record(s).`,
       data: saved,
     });
   } catch (error) {
