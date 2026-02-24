@@ -11,6 +11,7 @@ import {
   BarChart2,
   X,
   CheckCircle2,
+  Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -133,6 +134,14 @@ export default function AdminSurveysPage() {
   const [resultsOpen, setResultsOpen] = useState(false);
   const [resultData, setResultData] = useState<SurveyResult | null>(null);
   const [resultsLoading, setResultsLoading] = useState(false);
+
+  // Send invitations dialog
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteSurvey, setInviteSurvey] = useState<Survey | null>(null);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ sent: number; failed: string[] } | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -295,6 +304,39 @@ export default function AdminSurveysPage() {
     }
   };
 
+  const handleSendInvitations = async () => {
+    if (!inviteSurvey) return;
+    const rawEmails = inviteEmails
+      .split(/[\n,]+/)
+      .map((e) => e.trim())
+      .filter(Boolean);
+    if (rawEmails.length === 0) {
+      toast.error('Enter at least one email address');
+      return;
+    }
+    setInviteSending(true);
+    setInviteResult(null);
+    try {
+      const res = await fetch(`/api/surveys/${inviteSurvey.id}/send-invitations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ emails: rawEmails, customMessage: inviteMessage || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setInviteResult({ sent: data.data.sent, failed: data.data.failed });
+        toast.success(`${data.data.sent} invitation${data.data.sent !== 1 ? 's' : ''} sent`);
+      } else {
+        toast.error(data.error || 'Failed to send invitations');
+      }
+    } catch {
+      toast.error('Failed to send invitations');
+    } finally {
+      setInviteSending(false);
+    }
+  };
+
   const addQuestion = () => {
     if (!newQ.question.trim()) { toast.error('Enter a question'); return; }
     setQuestions((prev) => [...prev, { ...newQ }]);
@@ -377,6 +419,19 @@ export default function AdminSurveysPage() {
                   <Button size="sm" variant="ghost" className="h-7 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => handleStatusChange(survey.id, 'closed')}>
                     <StopCircle className="h-3.5 w-3.5 mr-1" /> Close
+                  </Button>
+                )}
+                {survey.status === 'active' && (survey.type === 'alumni' || survey.type === 'employer') && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs hover:bg-hover-bg"
+                    style={{ color: primaryColor }}
+                    onClick={() => {
+                      setInviteSurvey(survey);
+                      setInviteEmails('');
+                      setInviteMessage('');
+                      setInviteResult(null);
+                      setInviteOpen(true);
+                    }}>
+                    <Send className="h-3.5 w-3.5 mr-1" /> Invite
                   </Button>
                 )}
                 <Button size="sm" variant="ghost" className="h-7 text-xs text-primary-text hover:bg-hover-bg"
@@ -556,6 +611,84 @@ export default function AdminSurveysPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── SEND INVITATIONS DIALOG ── */}
+      <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) setInviteResult(null); }}>
+        <DialogContent className="max-w-lg bg-card border-card-border text-primary-text p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-primary-text flex items-center gap-2">
+              <Send className="h-4 w-4" style={{ color: primaryColor }} />
+              Send Survey Invitations
+            </DialogTitle>
+          </DialogHeader>
+          {inviteSurvey && (
+            <div className="space-y-4 mt-2">
+              <div className="rounded-lg bg-hover-bg p-3">
+                <p className="text-xs font-medium text-primary-text">{inviteSurvey.title}</p>
+                <p className="text-[10px] text-secondary-text mt-0.5 capitalize">{inviteSurvey.type.replace('_', ' ')} survey</p>
+              </div>
+
+              {inviteResult ? (
+                <div className="space-y-3">
+                  <div className="rounded-lg p-3 bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-sm font-semibold text-emerald-600">{inviteResult.sent} invitation{inviteResult.sent !== 1 ? 's' : ''} sent successfully</p>
+                  </div>
+                  {inviteResult.failed.length > 0 && (
+                    <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/20">
+                      <p className="text-xs font-medium text-red-600 mb-1">{inviteResult.failed.length} failed to send:</p>
+                      <p className="text-xs text-red-500">{inviteResult.failed.join(', ')}</p>
+                    </div>
+                  )}
+                  <Button size="sm" variant="outline" onClick={() => { setInviteResult(null); setInviteEmails(''); }}
+                    className="h-8 text-xs border-card-border text-primary-text">
+                    Send to More
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">
+                      Email Addresses * <span className="font-normal">(one per line or comma-separated, max 200)</span>
+                    </Label>
+                    <textarea
+                      value={inviteEmails}
+                      onChange={(e) => setInviteEmails(e.target.value)}
+                      placeholder="alumni@example.com&#10;employer@company.com&#10;..."
+                      rows={5}
+                      className="w-full rounded-md border border-card-border bg-card text-primary-text text-xs p-2 resize-none placeholder:text-secondary-text focus:outline-none focus:ring-1"
+                      style={{ ['--tw-ring-color' as string]: primaryColor }}
+                    />
+                    <p className="text-[10px] text-secondary-text">
+                      {inviteEmails.split(/[\n,]+/).filter((e) => e.trim()).length} email(s) entered
+                    </p>
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">Custom Message (optional)</Label>
+                    <textarea
+                      value={inviteMessage}
+                      onChange={(e) => setInviteMessage(e.target.value)}
+                      placeholder="Add a personal message to include in the invitation email..."
+                      rows={2}
+                      className="w-full rounded-md border border-card-border bg-card text-primary-text text-xs p-2 resize-none placeholder:text-secondary-text focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button size="sm" variant="outline" onClick={() => setInviteOpen(false)}
+                      className="h-8 text-xs border-card-border text-primary-text">
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={handleSendInvitations} disabled={inviteSending}
+                      className="h-8 text-xs text-white disabled:opacity-50"
+                      style={{ backgroundColor: primaryColor }}>
+                      {inviteSending ? 'Sending...' : `Send Invitations`}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

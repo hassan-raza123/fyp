@@ -243,6 +243,98 @@ export async function sendPasswordResetEmail(
 }
 
 // ============================================================================
+// Survey Invitation Email Functions
+// ============================================================================
+
+interface SurveyInvitationData {
+  to: string;
+  surveyTitle: string;
+  surveyDescription?: string;
+  surveyUrl: string;
+  dueDate?: string;
+  customMessage?: string;
+  senderName?: string;
+}
+
+/**
+ * Send a survey invitation email with a unique survey link.
+ * Used for alumni, employer, and external stakeholder surveys.
+ */
+export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<void> {
+  const {
+    to,
+    surveyTitle,
+    surveyDescription,
+    surveyUrl,
+    dueDate,
+    customMessage,
+    senderName,
+  } = data;
+
+  const mailOptions = {
+    from: {
+      name: APPLICATION_NAME,
+      address: process.env.GMAIL_USER!,
+    },
+    to,
+    subject: `Survey Invitation: ${surveyTitle} — ${APPLICATION_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <p style="color: #4B5563; margin: 5px 0;">Survey Invitation</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="color: #111827; margin: 0 0 15px 0;">Dear Participant,</p>
+
+          ${customMessage ? `<p style="color: #4B5563; line-height: 1.6; margin: 0 0 15px 0;">${customMessage}</p>` : ''}
+
+          <p style="color: #4B5563; line-height: 1.6; margin: 0 0 15px 0;">
+            ${senderName ? `<strong>${senderName}</strong> has invited you` : 'You have been invited'} to participate in the following survey:
+          </p>
+
+          <div style="background: #FFFFFF; border: 2px solid #E5E7EB; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h2 style="color: #111827; margin: 0 0 10px 0; font-size: 18px;">${surveyTitle}</h2>
+            ${surveyDescription ? `<p style="color: #6B7280; margin: 0 0 10px 0; line-height: 1.5;">${surveyDescription}</p>` : ''}
+            ${dueDate ? `<p style="color: #F59E0B; margin: 0; font-size: 13px;"><strong>Due Date:</strong> ${dueDate}</p>` : ''}
+          </div>
+
+          <p style="color: #4B5563; line-height: 1.6; margin: 0 0 20px 0;">
+            Your feedback is valuable and helps us improve our program quality. The survey is anonymous and should take only a few minutes to complete.
+          </p>
+
+          <div style="margin: 25px 0; text-align: center;">
+            <a href="${surveyUrl}" style="display: inline-block; background: #6B46C1; color: #FFFFFF; text-decoration: none; padding: 14px 35px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+              Take Survey
+            </a>
+          </div>
+
+          <p style="color: #9CA3AF; font-size: 12px; line-height: 1.5; margin: 0;">
+            Or copy and paste this link into your browser:<br/>
+            <span style="word-break: break-all; color: #6B7280;">${surveyUrl}</span>
+          </p>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 12px;">
+          <p style="margin: 5px 0;">This survey link is unique to your invitation. Please do not share it.</p>
+          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">${APPLICATION_NAME}</p>
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} All rights reserved</p>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Survey invitation email sent successfully to ${to}`);
+  } catch (error) {
+    console.error(`Error sending survey invitation to ${to}:`, error);
+    throw error;
+  }
+}
+
+// ============================================================================
 // Contact Form Email Functions
 // ============================================================================
 

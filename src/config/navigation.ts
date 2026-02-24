@@ -293,6 +293,24 @@ const adminNavigation = [
         href: '/admin/results/graduation',
       },
       {
+        id: 'graduation-criteria',
+        label: 'Graduation Criteria',
+        icon: ShieldCheck,
+        href: '/admin/results/graduation-criteria',
+      },
+      {
+        id: 'peo-attainments',
+        label: 'PEO Attainments',
+        icon: Trophy,
+        href: '/admin/results/peo-attainments',
+      },
+      {
+        id: 'bloom-analysis',
+        label: "Bloom's Analysis",
+        icon: PieChart,
+        href: '/admin/results/bloom-analysis',
+      },
+      {
         id: 'plo-coverage-matrix',
         label: 'CLO-PLO Coverage Matrix',
         icon: Grid,
