@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
             totalMarks: true,
           },
         },
-        items: {
+        itemResults: {
           include: {
             assessmentItem: {
               select: {
@@ -103,6 +103,13 @@ export async function POST(request: Request) {
     if (!sectionId || !marks || !Array.isArray(marks)) {
       return NextResponse.json(
         { error: 'Invalid request data' },
+        { status: 400 }
+      );
+    }
+
+    if (marks.length === 0) {
+      return NextResponse.json(
+        { error: 'No marks provided' },
         { status: 400 }
       );
     }

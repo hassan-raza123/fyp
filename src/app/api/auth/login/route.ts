@@ -89,7 +89,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
 }
 
 function generateOTP(): string {
-  return randomInt(100000, 999999).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
 

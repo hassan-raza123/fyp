@@ -111,9 +111,22 @@ export async function POST(request: NextRequest) {
         );
         const percentage = (obtainedMarks / totalMarks) * 100;
 
-        // Create the main assessment result
-        const result = await tx.studentassessmentresults.create({
-          data: {
+        // Upsert the main assessment result (update if student+assessment combo already exists)
+        const result = await tx.studentassessmentresults.upsert({
+          where: {
+            studentId_assessmentId: {
+              studentId: studentMark.studentId,
+              assessmentId: assessmentId,
+            },
+          },
+          update: {
+            totalMarks,
+            obtainedMarks,
+            percentage,
+            status: 'pending',
+            submittedAt: new Date(),
+          },
+          create: {
             studentId: studentMark.studentId,
             assessmentId: assessmentId,
             totalMarks,
@@ -123,6 +136,11 @@ export async function POST(request: NextRequest) {
             remarks: '',
             submittedAt: new Date(),
           },
+        });
+
+        // Delete existing item results before re-creating (to handle updated marks)
+        await tx.studentassessmentitemresults.deleteMany({
+          where: { studentAssessmentResultId: result.id },
         });
 
         // Create individual item results

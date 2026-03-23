@@ -31,7 +31,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all users with admin role
+    // Get admin's department for scoping (admins only see admins in their department)
+    let departmentId: number | null = null;
+    if (user?.role === 'admin') {
+      const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+      departmentId = await getDepartmentIdFromRequest(request);
+    }
+
+    // Get all users with admin role, scoped by department for admin role
     const adminUsers = await prisma.users.findMany({
       where: {
         userrole: {
@@ -39,6 +46,12 @@ export async function GET(request: NextRequest) {
             name: 'admin',
           },
         },
+        // If requesting user is admin (not super_admin), scope to their department
+        ...(departmentId && {
+          faculty: {
+            departmentId,
+          },
+        }),
       },
       include: {
         userrole: {

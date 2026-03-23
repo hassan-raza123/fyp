@@ -100,16 +100,11 @@ export async function POST(
       );
     }
 
-    const learningOutcome = await prisma.$queryRaw<ProgramLearningOutcome[]>`
-      INSERT INTO program_learning_outcomes (programId, code, description, createdAt, updatedAt)
-      VALUES (${parseInt(params.id)}, ${code}, ${description}, NOW(), NOW())
-      RETURNING *
-    `;
-
-    return NextResponse.json({
-      success: true,
-      data: learningOutcome[0],
-    });
+    // Deprecated: Use /api/clos and /api/llos instead.
+    return NextResponse.json(
+      { error: 'This endpoint is deprecated. Use /api/clos and /api/llos instead.' },
+      { status: 501 }
+    );
   } catch (error) {
     console.error('Error creating program learning outcome:', error);
     return NextResponse.json(
@@ -161,19 +156,11 @@ export async function PUT(
       );
     }
 
-    const updatedLearningOutcome = await prisma.$queryRaw<
-      ProgramLearningOutcome[]
-    >`
-      UPDATE program_learning_outcomes
-      SET description = ${description}, updatedAt = NOW()
-      WHERE programId = ${parseInt(params.id)} AND code = ${code}
-      RETURNING *
-    `;
-
-    return NextResponse.json({
-      success: true,
-      data: updatedLearningOutcome[0],
-    });
+    // Deprecated: Use /api/clos and /api/llos instead.
+    return NextResponse.json(
+      { error: 'This endpoint is deprecated. Use /api/clos and /api/llos instead.' },
+      { status: 501 }
+    );
   } catch (error) {
     console.error('Error updating program learning outcome:', error);
     return NextResponse.json(

@@ -154,6 +154,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createOfferingSchema.parse(body);
 
@@ -263,6 +270,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 
@@ -400,6 +414,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 

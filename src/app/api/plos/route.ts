@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 // GET /api/plos
 export async function GET(request: NextRequest) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
 

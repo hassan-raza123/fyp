@@ -133,9 +133,9 @@ const MarksEntryPage = () => {
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to fetch sections');
-        const data = await response.json();
-        // Sections API returns array directly
-        setSections(Array.isArray(data) ? data : []);
+        const result = await response.json();
+        // Sections API returns { success, data, pagination }
+        setSections(Array.isArray(result) ? result : result.data || []);
       } catch (error) {
         toast.error('Failed to load sections');
         console.error(error);

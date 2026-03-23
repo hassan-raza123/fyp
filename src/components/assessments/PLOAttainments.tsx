@@ -110,9 +110,9 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
       const rows = attainments.map((plo) => [
         plo.ploCode,
         plo.description,
-        `${plo.attainment.toFixed(2)}%`,
+        `${(plo.attainment ?? 0).toFixed(2)}%`,
         plo.contributingClos
-          .map((clo) => `${clo.cloCode} (${clo.attainment.toFixed(2)}%)`)
+          .map((clo) => `${clo.cloCode} (${(clo.attainment ?? 0).toFixed(2)}%)`)
           .join(', '),
       ]);
 
@@ -185,7 +185,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
   // Prepare data for the chart
   const chartData = attainments.map((plo) => ({
     name: plo.ploCode,
-    attainment: Number(plo.attainment.toFixed(2)),
+    attainment: Number((plo.attainment ?? 0).toFixed(2)),
   }));
 
   return (
@@ -297,7 +297,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                   className='text-xl font-bold text-primary-text'
                   style={{ color: primaryColor }}
                 >
-                  {plo.attainment.toFixed(2)}%
+                  {(plo.attainment ?? 0).toFixed(2)}%
                 </p>
               </div>
               {plo.contributingClos?.length > 0 && (
@@ -313,7 +313,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                       >
                         <span>{clo.cloCode}</span>
                         <span className='font-medium text-secondary-text'>
-                          {clo.attainment.toFixed(2)}% (W: {clo.weight})
+                          {(clo.attainment ?? 0).toFixed(2)}% (W: {clo.weight})
                         </span>
                       </div>
                     ))}
@@ -333,7 +333,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                       >
                         <span>{llo.lloCode}</span>
                         <span className='font-medium text-secondary-text'>
-                          {llo.attainment.toFixed(2)}% (W: {llo.weight})
+                          {(llo.attainment ?? 0).toFixed(2)}% (W: {llo.weight})
                         </span>
                       </div>
                     ))}

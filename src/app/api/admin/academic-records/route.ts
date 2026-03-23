@@ -240,7 +240,7 @@ export async function GET(request: NextRequest) {
         orderBy: { name: 'asc' },
       }),
       prisma.batches.findMany({
-        where: { departmentId },
+        where: { program: { departmentId } },
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
       }),
