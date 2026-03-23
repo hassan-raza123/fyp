@@ -111,13 +111,13 @@ export async function GET(request: NextRequest) {
         search
           ? {
               OR: [
-                { rollNumber: { contains: search, mode: 'insensitive' } },
+                { rollNumber: { contains: search } },
                 {
                   user: {
                     OR: [
-                      { first_name: { contains: search, mode: 'insensitive' } },
-                      { last_name: { contains: search, mode: 'insensitive' } },
-                      { email: { contains: search, mode: 'insensitive' } },
+                      { first_name: { contains: search } },
+                      { last_name: { contains: search } },
+                      { email: { contains: search } },
                     ],
                   },
                 },

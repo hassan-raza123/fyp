@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 // GET /api/clos
 export async function GET(request: NextRequest) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) return NextResponse.json({ error }, { status: 401 });
+
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
@@ -38,6 +42,10 @@ export async function GET(request: NextRequest) {
 // POST /api/clos
 export async function POST(req: NextRequest) {
   try {
+    const { success, user, error } = await requireAuth(req as any);
+    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role))
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+
     const data = await req.json();
     const { code, description, courseId, bloomLevel, status } = data;
 
@@ -121,6 +129,10 @@ export async function POST(req: NextRequest) {
 // PUT /api/clos
 export async function PUT(request: Request) {
   try {
+    const { success, user, error } = await requireAuth(request as any);
+    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role))
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+
     const body = await request.json();
     const { id, code, description, courseId, bloomLevel, status } = body;
 

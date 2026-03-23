@@ -89,8 +89,29 @@ export async function GET(request: NextRequest) {
       where: { departmentId },
     });
 
-    // Get recent activities from audit logs
+    // Get user IDs belonging to admin's department (faculty + students)
+    const [deptFaculties, deptStudents] = await Promise.all([
+      prisma.faculties.findMany({
+        where: { departmentId },
+        select: { userId: true },
+      }),
+      prisma.students.findMany({
+        where: { departmentId },
+        select: { userId: true },
+      }),
+    ]);
+    const departmentUserIds = [
+      ...new Set([
+        ...deptFaculties.map((f) => f.userId),
+        ...deptStudents.map((s) => s.userId),
+      ]),
+    ];
+
+    // Get recent activities from audit logs — only for department users
     const recentActivities = await prisma.auditlogs.findMany({
+      where: {
+        userId: { in: departmentUserIds },
+      },
       take: 4,
       orderBy: {
         createdAt: 'desc',

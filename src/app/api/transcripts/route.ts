@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { transcript_type, transcript_status } from '@prisma/client';
 import { z } from 'zod';
 
@@ -21,12 +21,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get admin's department to scope results
+    const departmentId = await getDepartmentIdFromRequest(request);
+    if (!departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found for your account' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const studentId = searchParams.get('studentId');
     const semesterId = searchParams.get('semesterId');
     const status = searchParams.get('status');
 
-    const where: any = {};
+    const where: any = {
+      student: { departmentId },
+    };
     if (studentId) where.studentId = parseInt(studentId);
     if (semesterId) where.semesterId = parseInt(semesterId);
     if (status) where.status = status;
@@ -100,10 +111,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get admin's department to scope access
+    const departmentId = await getDepartmentIdFromRequest(request);
+    if (!departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found for your account' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createTranscriptSchema.parse(body);
 
-    // Validate student exists
+    // Validate student exists and belongs to admin's department
     const student = await prisma.students.findUnique({
       where: { id: validatedData.studentId },
       include: {
@@ -115,6 +135,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Student not found' },
         { status: 404 }
+      );
+    }
+
+    if (student.departmentId !== departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Student does not belong to your department' },
+        { status: 403 }
       );
     }
 

@@ -230,7 +230,7 @@ async function calculateStudentGrade(
 
   const finalPercentage = totalWeight > 0 ? totalWeightedMarks / totalWeight : 0;
 
-  // Calculate total marks and obtained marks
+  // Note: totalMarks and obtainedMarks are raw (unweighted) sums for display purposes. The 'percentage' field is the authoritative weighted grade.
   const totalMarks = assessments.reduce((sum, a) => sum + a.totalMarks, 0);
   const obtainedMarks = studentResults.reduce(
     (sum, r) => sum + r.obtainedMarks,
@@ -274,13 +274,14 @@ async function createOrUpdateGrade(
   qualityPoints: number,
   facultyId: number
 ) {
-  // Check if grade already exists
+  // Check if grade already exists — find latest attempt regardless of attemptNumber
   const existing = await prisma.studentgrades.findFirst({
     where: {
       studentId: studentId,
       courseOfferingId: courseOfferingId,
-      attemptNumber: 1, // Default to first attempt
+      component: 'combined',
     },
+    orderBy: { attemptNumber: 'desc' },
   });
 
   if (existing) {

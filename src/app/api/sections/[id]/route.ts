@@ -117,6 +117,13 @@ export async function PUT(
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
     const sectionId = parseInt(resolvedParams.id);
@@ -247,6 +254,13 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 

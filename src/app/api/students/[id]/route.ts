@@ -33,10 +33,17 @@ export async function PUT(
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
     const studentId = parseInt(resolvedParams.id);
-    
+
     if (isNaN(studentId) || studentId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid student ID' },
@@ -257,10 +264,17 @@ export async function DELETE(
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
     const studentId = parseInt(resolvedParams.id);
-    
+
     if (isNaN(studentId) || studentId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid student ID' },

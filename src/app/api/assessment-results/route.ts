@@ -89,6 +89,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json(
+        { error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { sectionId, marks } = body;
 
@@ -96,6 +104,28 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Invalid request data' },
         { status: 400 }
+      );
+    }
+
+    // Validate no negative marks
+    for (const studentMark of marks) {
+      if (studentMark.items.some((item: any) => item.marks < 0)) {
+        return NextResponse.json(
+          { error: 'Marks cannot be negative' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Check if results are locked for this course offering
+    const assessment = await prisma.assessments.findUnique({
+      where: { id: marks[0]?.assessmentId },
+      select: { courseOffering: { select: { isResultsLocked: true } } },
+    });
+    if (assessment?.courseOffering?.isResultsLocked) {
+      return NextResponse.json(
+        { error: 'Results are locked for this course offering' },
+        { status: 403 }
       );
     }
 

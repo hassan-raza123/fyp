@@ -68,6 +68,16 @@ export async function PATCH(
       );
     }
 
+    // Validate no negative marks
+    if (itemMarks && Array.isArray(itemMarks)) {
+      if (itemMarks.some((itemMark: any) => itemMark.marks < 0)) {
+        return NextResponse.json(
+          { success: false, error: 'Marks cannot be negative' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Update item results if provided
     if (itemMarks && Array.isArray(itemMarks)) {
       await prisma.$transaction(async (tx) => {

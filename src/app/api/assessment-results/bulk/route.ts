@@ -75,6 +75,11 @@ export async function POST(request: NextRequest) {
           );
           continue;
         }
+        if (item.marks < 0) {
+          validationErrors.push(
+            `Marks for item ${item.itemId} cannot be negative for student ${studentMark.studentId}`
+          );
+        }
         if (item.marks > assessmentItem.marks) {
           validationErrors.push(
             `Marks for item ${item.itemId} exceed maximum marks for student ${studentMark.studentId}`

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { randomInt } from 'crypto';
 const bcrypt = require('bcryptjs');
 import { sendOTPEmail } from '@/lib/email-utils';
 import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
   AdminRole,
@@ -13,8 +14,6 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
-
-const prisma = new PrismaClient();
 
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
@@ -90,7 +89,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
 }
 
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 999999).toString();
 }
 
 
@@ -401,7 +400,6 @@ export async function POST(request: NextRequest) {
         data: {
           user: userData,
           redirectTo: redirectTo,
-          token,
           userType,
           shouldRedirect: true,
         },
@@ -440,7 +438,6 @@ export async function POST(request: NextRequest) {
       data: {
         user: userData,
         redirectTo: redirectTo,
-        token,
         userType,
       },
     });
@@ -461,8 +458,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

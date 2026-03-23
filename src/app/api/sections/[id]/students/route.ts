@@ -20,6 +20,14 @@ export async function POST(
       );
     }
 
+    // Role check
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     console.log('Received body:', body); // Debug log
     const { studentId } = body;
@@ -109,11 +117,12 @@ export async function POST(
       );
     }
 
-    // Check if student is already enrolled in this section
+    // Check if student is already actively enrolled in this section (dropped students can re-enroll)
     const existingEnrollment = await prisma.studentsections.findFirst({
       where: {
         studentId: parseInt(studentId),
         sectionId: sectionId,
+        status: 'active',
       },
     });
     console.log(
@@ -274,6 +283,14 @@ export async function DELETE(
       );
     }
 
+    // Role check
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { studentId } = body;
     console.log('Received studentId:', studentId);
@@ -295,7 +312,7 @@ export async function DELETE(
     const sectionId = parseInt(resolvedParams.id);
     console.log('Section ID:', sectionId);
     if (isNaN(sectionId) || sectionId <= 0) {
-      console.log('Invalid sectionId:', id);
+      console.log('Invalid sectionId:', resolvedParams.id);
       return NextResponse.json(
         {
           success: false,
@@ -389,6 +406,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json(
+        { error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = params instanceof Promise ? await params : params;
     const sectionId = parseInt(resolvedParams.id);

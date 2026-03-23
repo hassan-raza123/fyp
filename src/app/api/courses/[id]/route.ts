@@ -10,7 +10,7 @@ const updateCourseSchema = z.object({
   creditHours: z.coerce.number().min(1, 'Credit hours must be at least 1'),
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
-  type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
+  type: z.enum(['THEORY', 'LAB', 'THEORY_LAB', 'PROJECT', 'THESIS'] as const),
   status: z.enum(['active', 'inactive', 'archived'] as const),
   prerequisites: z.array(z.number()).optional(),
   programIds: z.array(z.number()).optional(),

@@ -99,8 +99,8 @@ export default function GraduationTrackerPage() {
 
   const [programs, setPrograms] = useState<Program[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState('');
-  const [selectedBatch, setSelectedBatch] = useState('');
+  const [selectedProgram, setSelectedProgram] = useState('all');
+  const [selectedBatch, setSelectedBatch] = useState('all');
   const [search, setSearch] = useState('');
 
   const [students, setStudents] = useState<StudentRow[]>([]);
@@ -125,8 +125,8 @@ export default function GraduationTrackerPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedProgram) params.set('programId', selectedProgram);
-      if (selectedBatch) params.set('batchId', selectedBatch);
+      if (selectedProgram && selectedProgram !== 'all') params.set('programId', selectedProgram);
+      if (selectedBatch && selectedBatch !== 'all') params.set('batchId', selectedBatch);
       if (search) params.set('search', search);
 
       const res = await fetch(`/api/admin/graduation?${params}`, { credentials: 'include' });
@@ -141,7 +141,12 @@ export default function GraduationTrackerPage() {
     }
   }, [selectedProgram, selectedBatch, search]);
 
-  useEffect(() => { loadStudents(); }, [loadStudents]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadStudents();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [loadStudents]);
 
   const openDetail = async (studentId: number) => {
     setDetailOpen(true);
@@ -250,7 +255,7 @@ export default function GraduationTrackerPage() {
               <SelectValue placeholder="All programs" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
-              <SelectItem value="" className="text-xs text-primary-text">All Programs</SelectItem>
+              <SelectItem value="all" className="text-xs text-primary-text">All Programs</SelectItem>
               {programs.map((p) => (
                 <SelectItem key={p.id} value={String(p.id)} className="text-xs text-primary-text">
                   {p.code} — {p.name}
@@ -266,7 +271,7 @@ export default function GraduationTrackerPage() {
               <SelectValue placeholder="All batches" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
-              <SelectItem value="" className="text-xs text-primary-text">All Batches</SelectItem>
+              <SelectItem value="all" className="text-xs text-primary-text">All Batches</SelectItem>
               {batches.map((b) => (
                 <SelectItem key={b.id} value={b.id} className="text-xs text-primary-text">
                   {b.code} — {b.name}

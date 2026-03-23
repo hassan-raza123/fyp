@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 
 const BLOOM_ORDER = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'] as const;
 const HOT_LEVELS = new Set(['Analyze', 'Evaluate', 'Create']); // Higher Order Thinking
@@ -39,6 +39,11 @@ export async function GET(request: NextRequest) {
     const { success, user, error } = await requireAuth(request);
     if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
 
+    // Only admin, faculty, and super_admin can access bloom analysis
+    if (!user || !['admin', 'faculty', 'super_admin'].includes(user.role)) {
+      return NextResponse.json({ success: false, error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
 
@@ -47,6 +52,18 @@ export async function GET(request: NextRequest) {
     }
 
     const pid = parseInt(programId);
+
+    // For admin: validate programId belongs to their department
+    if (user.role === 'admin') {
+      const departmentId = await getDepartmentIdFromRequest(request);
+      if (!departmentId) {
+        return NextResponse.json({ success: false, error: 'Department not found for your account' }, { status: 400 });
+      }
+      const program = await prisma.programs.findUnique({ where: { id: pid }, select: { departmentId: true } });
+      if (!program || program.departmentId !== departmentId) {
+        return NextResponse.json({ success: false, error: 'Program does not belong to your department' }, { status: 403 });
+      }
+    }
 
     // Get all courses in the program via curriculum mapping
     const curriculum = await prisma.program_curriculum.findMany({
