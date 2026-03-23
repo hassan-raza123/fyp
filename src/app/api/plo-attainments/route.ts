@@ -6,14 +6,14 @@ import { plo_status } from '@prisma/client';
 interface ContributingCLO {
   cloId: number;
   cloCode: string;
-  attainment: number;
+  attainment: number | null;
   weight: number;
 }
 
 interface ContributingLLO {
   lloId: number;
   lloCode: string;
-  attainment: number;
+  attainment: number | null;
   weight: number;
 }
 
@@ -124,20 +124,21 @@ export async function GET(request: NextRequest) {
       const contributingClos: ContributingCLO[] = plo.cloMappings.map((mapping) => ({
         cloId: mapping.clo.id,
         cloCode: mapping.clo.code,
-        attainment: mapping.clo.closAttainments[0]?.attainmentPercent ?? 0,
+        attainment: mapping.clo.closAttainments[0]?.attainmentPercent ?? null,
         weight: mapping.weight,
       }));
 
       const contributingLlos: ContributingLLO[] = plo.lloMappings.map((mapping) => ({
         lloId: mapping.llo.id,
         lloCode: mapping.llo.code,
-        attainment: mapping.llo.llosAttainments[0]?.attainmentPercent ?? 0,
+        attainment: mapping.llo.llosAttainments[0]?.attainmentPercent ?? null,
         weight: mapping.weight,
       }));
 
+      // Only include CLOs/LLOs that have actually been calculated (attainment !== null)
       const allContributions = [
-        ...contributingClos.map((c) => ({ attainment: c.attainment, weight: c.weight })),
-        ...contributingLlos.map((l) => ({ attainment: l.attainment, weight: l.weight })),
+        ...contributingClos.filter((c) => c.attainment !== null).map((c) => ({ attainment: c.attainment as number, weight: c.weight })),
+        ...contributingLlos.filter((l) => l.attainment !== null).map((l) => ({ attainment: l.attainment as number, weight: l.weight })),
       ];
 
       const totalWeight = allContributions.reduce((sum, c) => sum + c.weight, 0);
@@ -349,15 +350,20 @@ export async function POST(request: NextRequest) {
     // ── Direct attainment per PLO ──────────────────────────────────────────────
     const directByPlo = new Map<number, number>();
     for (const plo of plos) {
+      // Only include CLOs/LLOs that have actually been calculated
       const contributions = [
-        ...plo.cloMappings.map((m) => ({
-          attainment: m.clo.closAttainments[0]?.attainmentPercent ?? 0,
-          weight: m.weight,
-        })),
-        ...plo.lloMappings.map((m) => ({
-          attainment: m.llo.llosAttainments[0]?.attainmentPercent ?? 0,
-          weight: m.weight,
-        })),
+        ...plo.cloMappings
+          .filter((m) => m.clo.closAttainments.length > 0)
+          .map((m) => ({
+            attainment: m.clo.closAttainments[0].attainmentPercent,
+            weight: m.weight,
+          })),
+        ...plo.lloMappings
+          .filter((m) => m.llo.llosAttainments.length > 0)
+          .map((m) => ({
+            attainment: m.llo.llosAttainments[0].attainmentPercent,
+            weight: m.weight,
+          })),
       ];
       const totalWeight = contributions.reduce((s, c) => s + c.weight, 0);
       const weightedSum = contributions.reduce((s, c) => s + c.attainment * c.weight, 0);

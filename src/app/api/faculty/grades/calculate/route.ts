@@ -198,27 +198,32 @@ async function calculateStudentGrade(
     );
   }
 
-  // Calculate weighted average
+  // Calculate weighted average using ALL assessment weights (not just ones student took)
   let totalWeightedMarks = 0;
   let totalWeight = 0;
 
-  assessments.forEach((assessment) => {
-    const result = studentResults.find((r) => r.assessmentId === assessment.id);
-    if (result) {
-      const weight = assessment.weightage || 0;
-      totalWeightedMarks += result.percentage * weight;
-      totalWeight += weight;
-    }
-  });
+  // First, calculate total weight across ALL assessments (not just ones with results)
+  const allAssessmentsWeight = assessments.reduce((sum, a) => sum + (a.weightage || 0), 0);
 
-  // If no weightage is set, use equal weight
-  if (totalWeight === 0) {
+  if (allAssessmentsWeight > 0) {
+    // Use actual weightages — include 0 for missing assessments
+    assessments.forEach((assessment) => {
+      const result = studentResults.find((r) => r.assessmentId === assessment.id);
+      const weight = assessment.weightage || 0;
+      totalWeight += weight;
+      if (result) {
+        totalWeightedMarks += result.percentage * weight;
+      }
+      // Missing assessments contribute 0 to totalWeightedMarks but their weight is counted
+    });
+  } else {
+    // No weightage set on any assessment — use equal weight across ALL assessments
     const equalWeight = 100 / assessments.length;
     assessments.forEach((assessment) => {
       const result = studentResults.find((r) => r.assessmentId === assessment.id);
+      totalWeight += equalWeight;
       if (result) {
         totalWeightedMarks += result.percentage * equalWeight;
-        totalWeight += equalWeight;
       }
     });
   }

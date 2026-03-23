@@ -128,8 +128,8 @@ export async function GET(req: NextRequest) {
               code: clo.code,
               description: clo.description,
               bloomLevel: clo.bloomLevel,
-              attainmentPercent: latestAttainment?.attainmentPercent || null,
-              threshold: latestAttainment?.threshold || 60,
+              attainmentPercent: latestAttainment?.attainmentPercent ?? null,
+              threshold: latestAttainment?.threshold ?? 60,
               status:
                 latestAttainment &&
                 latestAttainment.attainmentPercent >= latestAttainment.threshold

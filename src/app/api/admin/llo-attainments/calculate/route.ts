@@ -155,13 +155,13 @@ export async function POST(req: NextRequest) {
         const itemResults = await prisma.studentassessmentitemresults.findMany({
           where: {
             assessmentItemId: { in: lloItemIds },
-            studentAssessmentResult: {
+            studentResult: {
               studentId: { in: studentIds },
               status: { in: ['evaluated', 'published'] },
             },
           },
           include: {
-            studentAssessmentResult: {
+            studentResult: {
               select: { studentId: true },
             },
             assessmentItem: {
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
         const studentPerformance = new Map<number, { obtained: number; total: number }>();
 
         itemResults.forEach((result) => {
-          const studentId = result.studentAssessmentResult.studentId;
+          const studentId = result.studentResult.studentId;
           if (!studentPerformance.has(studentId)) {
             studentPerformance.set(studentId, { obtained: 0, total: 0 });
           }

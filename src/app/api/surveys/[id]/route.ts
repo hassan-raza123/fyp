@@ -75,6 +75,37 @@ export async function PATCH(
     const body = await request.json();
     const { title, description, type, dueDate, status } = body;
 
+    // Validate status transition if status is being changed
+    if (status !== undefined) {
+      const validStatuses = ['draft', 'active', 'closed'];
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+          { status: 400 }
+        );
+      }
+
+      const currentSurvey = await prisma.surveys.findUnique({
+        where: { id: parseInt(params.id) },
+        select: { status: true },
+      });
+
+      if (currentSurvey) {
+        const allowedTransitions: Record<string, string[]> = {
+          draft: ['active'],
+          active: ['closed'],
+          closed: [], // closed surveys cannot be reopened
+        };
+        const allowed = allowedTransitions[currentSurvey.status] || [];
+        if (!allowed.includes(status)) {
+          return NextResponse.json(
+            { success: false, error: `Cannot transition from '${currentSurvey.status}' to '${status}'. Allowed transitions: ${allowed.length > 0 ? allowed.join(', ') : 'none'}` },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const survey = await prisma.surveys.update({
       where: { id: parseInt(params.id) },
       data: {

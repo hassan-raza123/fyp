@@ -106,7 +106,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const isEligible =
     totalPlos > 0 &&
     attainedPlos === totalPlos &&
-    (cgpa === null || cgpa >= minCGPA);
+    cgpa !== null &&
+    cgpa >= minCGPA;
 
   // Count completed courses
   const completedGrades = await prisma.studentgrades.count({

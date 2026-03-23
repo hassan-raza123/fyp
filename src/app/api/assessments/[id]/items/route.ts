@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { success, error } = await requireAuth(req as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await req.json();
     const { questionNo, description, marks, cloId, lloId } = data;
 
@@ -69,10 +75,15 @@ export async function POST(
 }
 
 export async function GET(
-  req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const assessmentItems = await prisma.assessmentitems.findMany({
       where: {
         assessmentId: parseInt(params.id),

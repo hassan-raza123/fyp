@@ -101,7 +101,8 @@ export async function GET(request: NextRequest) {
     const isEligible =
       totalPlos > 0 &&
       attainedPlos === totalPlos &&
-      (cgpa === null || cgpa >= minCGPA);
+      cgpa !== null &&
+      cgpa >= minCGPA;
 
     return {
       studentId: student.id,

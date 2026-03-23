@@ -580,13 +580,13 @@ const MarksEntryPage = () => {
 
   const statistics = calculateStatistics();
 
-  // Update outliers when statistics change
+  // Update outliers when marks data changes (not statistics — it's a new object every render)
   useEffect(() => {
-    if (statistics) {
+    if (Object.keys(marks).length > 0) {
       const detected = detectOutliers();
       setOutliers(detected);
     }
-  }, [marks, marksData, statistics]);
+  }, [marks, marksData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const detectedOutliers = outliers;
 
