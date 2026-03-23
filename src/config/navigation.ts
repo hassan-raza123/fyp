@@ -275,6 +275,12 @@ const adminNavigation = [
         href: '/admin/results',
       },
       {
+        id: 'academic-records',
+        label: 'Academic Records',
+        icon: FileSpreadsheet,
+        href: '/admin/results/academic-records',
+      },
+      {
         id: 'pass-fail-criteria',
         label: 'Pass/Fail Criteria',
         icon: ShieldCheck,
@@ -482,6 +488,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'PLO Attainments',
           icon: TrendingUp,
           href: '/faculty/results/plo-attainments',
+        },
+        {
+          id: 'academic-records',
+          label: 'Academic Records',
+          icon: FileSpreadsheet,
+          href: '/faculty/results/academic-records',
         },
         {
           id: 'surveys',
