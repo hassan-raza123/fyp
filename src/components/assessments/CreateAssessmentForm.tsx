@@ -55,9 +55,10 @@ const ASSESSMENT_TYPES = [
   'project',
   'presentation',
   'lab_report',
-  'lab_performance',
   'lab_exam',
   'viva',
+  'class_participation',
+  'case_study',
 ];
 
 export function CreateAssessmentForm({

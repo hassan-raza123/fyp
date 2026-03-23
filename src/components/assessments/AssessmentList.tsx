@@ -85,9 +85,10 @@ export function AssessmentList() {
     setMounted(true);
   }, []);
 
-  const fetchAssessments = async () => {
+  const fetchAssessments = async (studentRoute?: boolean) => {
     try {
-      const apiUrl = isStudentRoute ? '/api/student/assessments' : '/api/assessments';
+      const isStudent = studentRoute ?? isStudentRoute;
+      const apiUrl = isStudent ? '/api/student/assessments' : '/api/assessments';
       const response = await fetch(apiUrl, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch assessments');
       const data = await response.json();
@@ -113,7 +114,7 @@ export function AssessmentList() {
     const facultyRoute = window.location.pathname.startsWith('/faculty');
     setIsStudentRoute(studentRoute);
     setIsFacultyRoute(facultyRoute);
-    fetchAssessments();
+    fetchAssessments(studentRoute);
     if (!studentRoute) fetchCourseOfferings();
   }, []);
 

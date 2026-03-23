@@ -90,7 +90,7 @@ export const BulkMarksEntry: React.FC<BulkMarksEntryProps> = ({
         studentId: student.id,
         items: assessment.assessmentItems.map((item) => ({
           itemId: item.id,
-          marks: marks[student.id][item.id] || 0,
+          marks: marks[student.id]?.[item.id] || 0,
         })),
       }));
 
