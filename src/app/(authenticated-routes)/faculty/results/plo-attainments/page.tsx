@@ -45,44 +45,25 @@ const PLOAttainmentsPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchPrograms = async () => {
+    const fetchFilters = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/programs');
-        if (!response.ok) throw new Error('Failed to fetch programs');
+        const response = await fetch('/api/faculty/plo-attainments');
+        if (!response.ok) throw new Error('Failed to fetch filters');
         const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setPrograms(result.data);
-        } else if (Array.isArray(result)) {
-          setPrograms(result as Program[]);
+        if (result.success && result.data) {
+          setPrograms(result.data.programs ?? []);
+          setSemesters(result.data.semesters ?? []);
         } else {
-          setError('Invalid programs data format received from server');
+          setError('Failed to load programs and semesters');
         }
       } catch (err) {
-        setError('Failed to load programs');
+        setError('Failed to load filter options');
       } finally {
         setLoading(false);
       }
     };
-    fetchPrograms();
-  }, []);
-
-  useEffect(() => {
-    const fetchSemesters = async () => {
-      try {
-        const response = await fetch('/api/semesters');
-        if (!response.ok) throw new Error('Failed to fetch semesters');
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setSemesters(result.data);
-        } else if (Array.isArray(result)) {
-          setSemesters(result as Semester[]);
-        }
-      } catch (err) {
-        setError('Failed to load semesters');
-      }
-    };
-    fetchSemesters();
+    fetchFilters();
   }, []);
 
   if (!mounted) return null;
@@ -168,7 +149,7 @@ const PLOAttainmentsPage = () => {
         </div>
       ) : selectedProgram && selectedSemester ? (
         <div className="rounded-lg border border-card-border bg-card overflow-hidden">
-          <PLOAttainments programId={selectedProgram} semesterId={selectedSemester} />
+          <PLOAttainments programId={selectedProgram} semesterId={selectedSemester} apiUrl="/api/faculty/plo-attainments" />
         </div>
       ) : (
         <div className="rounded-lg border border-card-border bg-card p-8 text-center">

@@ -416,7 +416,6 @@ const CLOAttainmentsPage = () => {
                       )}
                     </div>
                   )}
-                </div>
               </div>
             ))}
           </div>

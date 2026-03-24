@@ -63,9 +63,10 @@ interface PLOAttainment {
 interface PLOAttainmentsProps {
   programId: number;
   semesterId: number;
+  apiUrl?: string;
 }
 
-export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
+export function PLOAttainments({ programId, semesterId, apiUrl = '/api/plo-attainments' }: PLOAttainmentsProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
@@ -81,7 +82,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
     const fetchAttainments = async () => {
       try {
         const response = await fetch(
-          `/api/plo-attainments?programId=${programId}&semesterId=${semesterId}`,
+          `${apiUrl}?programId=${programId}&semesterId=${semesterId}`,
           { credentials: 'include' }
         );
         if (!response.ok) throw new Error('Failed to fetch PLO attainments');

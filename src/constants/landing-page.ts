@@ -100,33 +100,5 @@ export const teamMembers = [
     linkedin: 'https://linkedin.com/in/member1',
     picture: '/team/hassan.jpg',
   },
-  {
-    name: 'Muhammad Talha',
-    role: 'Frontend Developer',
-    github: 'https://github.com/member2',
-    linkedin: 'https://linkedin.com/in/member2',
-    picture: '/team/talha.jpg',
-  },
-  {
-    name: 'Muhammad Ahmar',
-    role: 'Backend Developer',
-    github: 'https://github.com/member3',
-    linkedin: 'https://linkedin.com/in/member3',
-    picture: '/team/ahmar.jpg',
-  },
-  {
-    name: 'Mueez Ahmed',
-    role: 'UI/UX Designer',
-    github: 'https://github.com/member4',
-    linkedin: 'https://linkedin.com/in/member4',
-    picture: '/team/mueez.jpg',
-  },
-  {
-    name: 'Muhammad Zohaib Asgar',
-    role: 'Database Engineer',
-    github: 'https://github.com/member5',
-    linkedin: 'https://linkedin.com/in/member5',
-    picture: '/team/zohaib.jpg',
-  },
 ];
 
