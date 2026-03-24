@@ -24,13 +24,13 @@ export default function TeamSection() {
             className='inline-block px-4 py-2 rounded-full mb-4'
             style={{ backgroundColor: 'var(--brand-secondary-opacity-10)', color: 'var(--brand-secondary)' }}
           >
-            <span className='text-sm font-semibold uppercase tracking-wide'>Our Team</span>
+            <span className='text-sm font-semibold uppercase tracking-wide'>The Team</span>
           </div>
           <h2 className='text-4xl md:text-5xl font-bold mb-4' style={{ color: 'var(--text-heading)' }}>
-            Meet the Team
+            Behind the Project
           </h2>
-          <p className='text-lg max-w-3xl mx-auto leading-relaxed' style={{ color: 'var(--text-body)' }}>
-            Dedicated professionals building the future of education through technology
+          <p className='text-lg max-w-xl mx-auto leading-relaxed' style={{ color: 'var(--text-body)' }}>
+            A Final Year Project developed under expert supervision — built with passion and purpose
           </p>
         </div>
 
@@ -43,7 +43,7 @@ export default function TeamSection() {
               className='mb-4 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest'
               style={{ backgroundColor: 'var(--brand-secondary-opacity-10)', color: 'var(--brand-secondary)' }}
             >
-              Project Supervisor
+              Supervisor
             </div>
             <div className='relative mb-6'>
               <div className='w-72 h-96 rounded-[7rem] overflow-hidden bg-gray-100 shadow-2xl'>
