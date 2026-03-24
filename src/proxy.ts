@@ -1,0 +1,278 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
+import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
+
+// Use same secret resolution as auth.ts so sign and verify always match
+const getJwtSecret = () =>
+  new TextEncoder().encode(
+    process.env.JWT_SECRET || 'your-strong-secret-key-for-development-12345'
+  );
+
+// Auth routes that should redirect to dashboard if user is logged in
+const authRoutes = [
+  '/login',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-otp',
+];
+
+// Public web routes that don't require authentication
+const publicWebRoutes = ['/', '/features', '/about', '/contact'];
+
+// Public API routes that don't require authentication
+const publicApiRoutes = [
+  '/api/auth/login',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/auth/verify-otp',
+  '/api/auth/verify',
+  '/api/auth/resend-otp',
+  '/api/contact',
+];
+
+// Function to get user's dashboard based on role
+function getUserDashboard(role: string): string {
+  switch (role) {
+    case 'super_admin':
+      return '/super-admin';
+    case 'admin':
+      return '/admin';
+    case 'faculty':
+      return '/faculty';
+    case 'student':
+      return '/student';
+    default:
+      return '/login';
+  }
+}
+
+// Function to verify token and get user details
+async function verifyToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecret());
+
+    // Ensure userId is converted to string for header
+    const userId = payload.userId ? String(payload.userId) : '';
+
+    return {
+      isValid: true,
+      userRole: payload.role as string,
+      userId: userId,
+      email: payload.email as string,
+      userData: payload.userData,
+    };
+  } catch {
+    // Invalid/expired or wrong-secret token – caller will clear cookie
+    return {
+      isValid: false,
+      userRole: null,
+      userId: '',
+      email: '',
+      userData: null,
+    };
+  }
+}
+
+// Function to check if route is allowed for user role
+function isRouteAllowedForRole(path: string, userRole: string): boolean {
+  // Super admin routes - only for super_admin
+  if (path.startsWith('/super-admin')) {
+    return userRole === 'super_admin';
+  }
+
+  // Department admin routes - only for admin
+  if (path.startsWith('/admin')) {
+    return userRole === 'admin';
+  }
+
+  // Faculty routes - only for faculty
+  if (path.startsWith('/faculty')) {
+    return userRole === 'faculty';
+  }
+
+  // Student routes - only for student
+  if (path.startsWith('/student')) {
+    return userRole === 'student';
+  }
+
+  return false;
+}
+
+// Clear auth cookie (must use same path as when set, else browser keeps it)
+function clearAuthCookie(response: NextResponse) {
+  response.cookies.set(AUTH_TOKEN_COOKIE, '', {
+    path: COOKIE_OPTIONS.path,
+    maxAge: 0,
+    httpOnly: COOKIE_OPTIONS.httpOnly,
+    sameSite: COOKIE_OPTIONS.sameSite,
+    secure: COOKIE_OPTIONS.secure,
+  });
+}
+
+// Function to create redirect response with token cleanup
+function createLoginRedirect(request: NextRequest, reason: string) {
+  const response = NextResponse.redirect(new URL('/login', request.url));
+  clearAuthCookie(response);
+  return response;
+}
+
+export async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  // Allow static files and images
+  if (
+    path.startsWith('/_next/') ||
+    path.startsWith('/favicon.ico') ||
+    path.startsWith('/logo.png') ||
+    path.startsWith('/team/') ||
+    path.match(
+      /\.(jpg|jpeg|png|gif|svg|ico|webp|avif|css|js|woff|woff2|ttf|eot)$/i
+    )
+  ) {
+    return NextResponse.next();
+  }
+
+  // Allow public web routes
+  if (
+    publicWebRoutes.some(
+      (route) => path === route || (route !== '/' && path.startsWith(route))
+    )
+  ) {
+    return NextResponse.next();
+  }
+
+  // Get token from cookies
+  const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
+
+  // Handle API routes
+  if (path.startsWith('/api/')) {
+    // Allow public API routes
+    if (publicApiRoutes.includes(path)) {
+      return NextResponse.next();
+    }
+
+    // For protected API routes, token is required
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication token is required' },
+        { status: 401 }
+      );
+    }
+
+    // Verify token for API routes
+    const { isValid, userRole, userId, email, userData } = await verifyToken(
+      token
+    );
+
+    if (!isValid || !userRole) {
+      return NextResponse.json(
+        { error: 'Invalid or expired authentication token' },
+        { status: 401 }
+      );
+    }
+
+    // At this point, userRole is guaranteed to be a string (not null)
+    // Add user info to request headers for API routes
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id', userId);
+    requestHeaders.set('x-user-email', email);
+    requestHeaders.set('x-user-role', userRole);
+    requestHeaders.set('x-user-data', JSON.stringify(userData));
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  // Handle auth routes (login, forgot-password, etc.)
+  if (authRoutes.some((route) => path.startsWith(route))) {
+    if (token) {
+      // If user has token and trying to access auth routes, verify and redirect to dashboard
+      const { isValid, userRole } = await verifyToken(token);
+
+      if (isValid && userRole) {
+        const dashboard = getUserDashboard(userRole);
+
+        return NextResponse.redirect(new URL(dashboard, request.url));
+      } else {
+        // Invalid/expired token (e.g. wrong secret or old cookie) – clear it and show login
+        const response = NextResponse.next();
+        clearAuthCookie(response);
+        return response;
+      }
+    }
+
+    // No token, allow access to auth routes
+    return NextResponse.next();
+  }
+
+  // For all other routes (protected routes), authentication is required
+  if (!token) {
+    return createLoginRedirect(
+      request,
+      `No token found for protected route: ${path}`
+    );
+  }
+
+  // Verify token
+  const { isValid, userRole } = await verifyToken(token);
+
+  if (!isValid || !userRole) {
+    return createLoginRedirect(request, `Invalid token for route: ${path}`);
+  }
+
+  // At this point, userRole is guaranteed to be a string (not null)
+  // Store it in a const to help TypeScript understand the type narrowing
+  const verifiedUserRole: string = userRole;
+
+  // Check if the route is a role-specific protected route
+  const isProtectedRoute =
+    path.startsWith('/super-admin') ||
+    path.startsWith('/admin') ||
+    path.startsWith('/faculty') ||
+    path.startsWith('/student');
+
+  if (isProtectedRoute) {
+    // Check if user has permission for this route
+    if (!isRouteAllowedForRole(path, verifiedUserRole)) {
+      return createLoginRedirect(
+        request,
+        `Role ${verifiedUserRole} not allowed for route: ${path}`
+      );
+    }
+  }
+
+  // Add user info to request headers for protected routes
+  // At this point, we know userRole is valid (checked above)
+  const { userId, email, userData } = await verifyToken(token);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', userId);
+  requestHeaders.set('x-user-email', email);
+  requestHeaders.set('x-user-role', verifiedUserRole);
+  requestHeaders.set('x-user-data', JSON.stringify(userData));
+
+  // All checks passed, allow access
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+}
+
+// Configure which routes to run proxy on
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
+};
+

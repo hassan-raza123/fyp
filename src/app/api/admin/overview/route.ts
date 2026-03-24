@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
-import { getUserFromRequest } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 function getActivitySummary(activity: any) {
   // Try to parse details JSON
@@ -37,26 +37,81 @@ function getActivitySummary(activity: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-
-    if (!user || user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
     }
 
-    // Get total students count
-    const totalStudents = await prisma.students.count();
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
-    // Get total programs count
-    const totalPrograms = await prisma.programs.count();
+    // Get admin's user ID from token payload
+    const userId = user.userId;
+    
+    if (!userId || isNaN(Number(userId))) {
+      return NextResponse.json(
+        { error: 'User ID not found' },
+        { status: 400 }
+      );
+    }
 
-    // Get total courses count
-    const totalCourses = await prisma.courses.count();
+    // Get admin's assigned department from faculties table
+    const faculty = await prisma.faculties.findFirst({
+      where: { userId },
+      select: { departmentId: true },
+    });
 
-    // Get total departments count
-    const totalDepartments = await prisma.departments.count();
+    if (!faculty || !faculty.departmentId) {
+      return NextResponse.json(
+        {
+          error:
+            'No department assigned. Please contact super admin to assign a department to your account.',
+        },
+        { status: 400 }
+      );
+    }
 
-    // Get recent activities from audit logs
+    const departmentId = faculty.departmentId;
+
+    // Get total students count for current department
+    const totalStudents = await prisma.students.count({
+      where: { departmentId },
+    });
+
+    // Get total programs count for current department
+    const totalPrograms = await prisma.programs.count({
+      where: { departmentId },
+    });
+
+    // Get total courses count for current department
+    const totalCourses = await prisma.courses.count({
+      where: { departmentId },
+    });
+
+    // Get user IDs belonging to admin's department (faculty + students)
+    const [deptFaculties, deptStudents] = await Promise.all([
+      prisma.faculties.findMany({
+        where: { departmentId },
+        select: { userId: true },
+      }),
+      prisma.students.findMany({
+        where: { departmentId },
+        select: { userId: true },
+      }),
+    ]);
+    const departmentUserIds = [
+      ...new Set([
+        ...deptFaculties.map((f) => f.userId),
+        ...deptStudents.map((s) => s.userId),
+      ]),
+    ];
+
+    // Get recent activities from audit logs — only for department users
     const recentActivities = await prisma.auditlogs.findMany({
+      where: {
+        userId: { in: departmentUserIds },
+      },
       take: 4,
       orderBy: {
         createdAt: 'desc',
@@ -83,8 +138,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get program distribution
+    // Get program distribution for current department
     const programDistribution = await prisma.programs.findMany({
+      where: { departmentId },
       select: {
         name: true,
         _count: {
@@ -95,24 +151,81 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get GPA distribution from semester GPA
+    // Calculate enrollment trend (last 12 months) for current department
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      return { year: d.getFullYear(), month: d.getMonth() + 1 };
+    }).reverse();
+
+    const enrollmentTrend = await Promise.all(
+      months.map(async ({ year, month }) => {
+        const start = new Date(year, month - 1, 1);
+        const end = new Date(year, month, 1);
+        const count = await prisma.students.count({
+          where: {
+            departmentId,
+            createdAt: {
+              gte: start,
+              lt: end,
+            },
+          },
+        });
+        return {
+          month: `${start.toLocaleString('default', {
+            month: 'short',
+          })} ${year}`,
+          students: count,
+        };
+      })
+    );
+
+    // Get students in this department for GPA calculations
+    const departmentStudentIds = await prisma.students.findMany({
+      where: { departmentId },
+      select: { id: true },
+    });
+    const studentIds = departmentStudentIds.map((s) => s.id);
+
+    // Calculate average GPA for department students
+    const avgGPAResult = await prisma.semestergpa.aggregate({
+      where: {
+        studentId: { in: studentIds },
+      },
+      _avg: { semesterGPA: true },
+    });
+
+    // Calculate retention rate (students who completed at least 2 semesters)
+    const studentsWithMultipleSemesters = await prisma.semestergpa.groupBy({
+      by: ['studentId'],
+      where: {
+        studentId: { in: studentIds },
+      },
+      _count: {
+        studentId: true,
+      },
+    });
+    const retainedStudents = studentsWithMultipleSemesters.filter(
+      (s) => s._count.studentId >= 2
+    ).length;
+    const retentionRate =
+      totalStudents > 0 ? retainedStudents / totalStudents : 0;
+
+    // Get GPA distribution for department students
     const gpaDistribution = await prisma.semestergpa.groupBy({
       by: ['semesterGPA'],
+      where: {
+        studentId: { in: studentIds },
+      },
       _count: true,
     });
 
-    // Calculate enrollment trend (last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const enrollmentTrend = await prisma.students.groupBy({
-      by: ['createdAt'],
+    // Get program completion count for department
+    const programCompletion = await prisma.students.count({
       where: {
-        createdAt: {
-          gte: sixMonthsAgo,
-        },
+        departmentId,
+        status: 'graduated',
       },
-      _count: true,
     });
 
     return NextResponse.json({
@@ -120,7 +233,12 @@ export async function GET(request: NextRequest) {
         totalStudents,
         totalPrograms,
         totalCourses,
-        totalDepartments,
+        totalFaculty: await prisma.faculties.count({
+          where: { departmentId },
+        }),
+        averageGPA: avgGPAResult._avg.semesterGPA || 0,
+        retentionRate,
+        programCompletion,
       },
       recentActivities: recentActivities.map((activity) => ({
         id: activity.id,
@@ -134,17 +252,10 @@ export async function GET(request: NextRequest) {
         value: program._count.students,
       })),
       gpaDistribution: gpaDistribution.map((gpa) => ({
-        range: `${gpa.semesterGPA.toFixed(1)}-${(gpa.semesterGPA + 0.5).toFixed(
-          1
-        )}`,
+        gpa: gpa.semesterGPA,
         students: gpa._count,
       })),
-      enrollmentTrend: enrollmentTrend.map((trend) => ({
-        month: new Date(trend.createdAt).toLocaleString('default', {
-          month: 'short',
-        }),
-        students: trend._count,
-      })),
+      enrollmentTrend,
     });
   } catch (error) {
     console.error('Error fetching admin overview data:', error);

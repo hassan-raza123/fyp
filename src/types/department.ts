@@ -10,7 +10,7 @@ export interface Department {
     email: string;
   };
   totalPrograms: number;
-  totalTeachers: number;
+  totalFaculty: number;
   totalStudents: number;
 }
 

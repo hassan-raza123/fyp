@@ -2,8 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { PenLine, Lock, LockOpen } from 'lucide-react';
 import { BulkMarksEntry } from '@/components/assessments/BulkMarksEntry';
 import { ResultModeration } from '@/components/assessments/ResultModeration';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface CourseOffering {
   id: number;
@@ -26,7 +39,9 @@ interface Student {
   id: number;
   rollNumber: string;
   user: {
-    name: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
   };
 }
 
@@ -45,36 +60,44 @@ interface AssessmentItem {
   cloId: number;
 }
 
-interface Marks {
-  [studentId: number]: {
-    [itemId: number]: number;
-  };
-}
-
 const MarksEntryPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [selectedAssessment, setSelectedAssessment] = useState<number | null>(
-    null
-  );
-  const [marks, setMarks] = useState<Marks>({});
+  const [selectedAssessment, setSelectedAssessment] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isResultsLocked, setIsResultsLocked] = useState<boolean>(false);
+  const [lockLoading, setLockLoading] = useState(false);
 
   // Fetch sections on component mount
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        setSections(data);
+        if (data.success) {
+          setSections(data.data);
+        } else {
+          setSections(data);
+        }
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
+        toast.error('Failed to load sections');
       }
     };
     fetchSections();
@@ -82,10 +105,16 @@ const MarksEntryPage = () => {
 
   // Fetch students and assessments when section is selected
   useEffect(() => {
-    if (!selectedSection) return;
+    if (!selectedSection) {
+      setStudents([]);
+      setAssessments([]);
+      setSelectedAssessment('');
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch students in the section
         const studentsResponse = await fetch(
@@ -95,169 +124,259 @@ const MarksEntryPage = () => {
         const studentsData = await studentsResponse.json();
         setStudents(studentsData);
 
-        // Fetch assessments for the section
-        const assessmentsResponse = await fetch(
-          `/api/sections/${selectedSection}/assessments`
+        // Fetch assessments + lock status for the section's course offering
+        const section = sections.find(
+          (s) => s.id.toString() === selectedSection
         );
-        if (!assessmentsResponse.ok)
-          throw new Error('Failed to fetch assessments');
-        const assessmentsData = await assessmentsResponse.json();
-        setAssessments(assessmentsData);
-
-        // Initialize marks object
-        const initialMarks: Marks = {};
-        studentsData.forEach((student: Student) => {
-          initialMarks[student.id] = {};
-          assessmentsData.forEach((assessment: Assessment) => {
-            assessment.assessmentItems.forEach((item: AssessmentItem) => {
-              initialMarks[student.id][item.id] = 0;
-            });
-          });
-        });
-        setMarks(initialMarks);
+        if (section) {
+          const [assessmentsResponse, lockResponse] = await Promise.all([
+            fetch(`/api/assessments?courseOfferingId=${section.courseOffering.id}`),
+            fetch(`/api/course-offerings/${section.courseOffering.id}/lock`),
+          ]);
+          if (!assessmentsResponse.ok)
+            throw new Error('Failed to fetch assessments');
+          const assessmentsData = await assessmentsResponse.json();
+          // API now returns { assessments, usedWeightage, remainingWeightage } when filtered by courseOfferingId
+          setAssessments(
+            Array.isArray(assessmentsData)
+              ? assessmentsData
+              : assessmentsData.assessments ?? []
+          );
+          if (lockResponse.ok) {
+            const lockData = await lockResponse.json();
+            setIsResultsLocked(lockData.data?.isResultsLocked ?? false);
+          }
+        }
       } catch (err) {
         setError('Failed to load data');
         console.error(err);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedSection]);
+  }, [selectedSection, sections]);
 
-  const handleMarkChange = (
-    studentId: number,
-    itemId: number,
-    value: number
-  ) => {
-    setMarks((prev: Marks) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [itemId]: value,
-      },
-    }));
-  };
+  const selectedAssessmentData = assessments.find(
+    (a) => a.id.toString() === selectedAssessment
+  );
 
-  const handleSubmit = async () => {
-    if (!selectedSection || !selectedAssessment) return;
+  const selectedSectionData = sections.find(
+    (s) => s.id.toString() === selectedSection
+  );
 
-    setLoading(true);
+  const handleToggleLock = async () => {
+    if (!selectedSectionData) return;
+    setLockLoading(true);
     try {
-      const response = await fetch('/api/assessment-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sectionId: selectedSection,
-          marks: Object.entries(marks).map(([studentId, itemMarks]) => ({
-            studentId: parseInt(studentId),
-            assessmentId: selectedAssessment,
-            items: Object.entries(itemMarks).map(([itemId, mark]) => ({
-              itemId: parseInt(itemId),
-              marks: mark,
-              totalMarks:
-                assessments
-                  .find((a) => a.id === selectedAssessment)
-                  ?.assessmentItems.find((item) => item.id === parseInt(itemId))
-                  ?.marks || 0,
-            })),
-          })),
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to save marks');
-
-      alert('Marks saved successfully!');
-      router.refresh();
-    } catch (err) {
-      setError('Failed to save marks');
-      console.error(err);
+      const res = await fetch(
+        `/api/course-offerings/${selectedSectionData.courseOffering.id}/lock`,
+        { method: 'PATCH', credentials: 'include' }
+      );
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsResultsLocked(data.data.isResultsLocked);
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || 'Failed to toggle lock');
+      }
+    } catch {
+      toast.error('Failed to toggle lock');
     } finally {
-      setLoading(false);
+      setLockLoading(false);
     }
   };
 
-  const selectedAssessmentData = assessments.find(
-    (a) => a.id === selectedAssessment
-  );
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>Marks Entry</h1>
+    <div className="space-y-4">
+      {/* Header - CLO style */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <PenLine className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Marks Entry</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Enter student marks for assessments
+            </p>
+          </div>
+        </div>
 
-      {/* Section Selection */}
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>Select Section</label>
-        <select
-          className='w-full max-w-md p-2 border rounded'
-          value={selectedSection || ''}
-          onChange={(e) => setSelectedSection(Number(e.target.value))}
-        >
-          <option value=''>Select a section</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.courseOffering.course.code} - {section.name} (
-              {section.courseOffering.semester.name})
-            </option>
-          ))}
-        </select>
+        {selectedSection && (
+          <div className="flex items-center gap-2">
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium"
+              style={{
+                backgroundColor: isResultsLocked
+                  ? 'rgba(239,68,68,0.1)'
+                  : 'rgba(16,185,129,0.1)',
+                color: isResultsLocked ? '#ef4444' : '#10b981',
+              }}
+            >
+              {isResultsLocked ? (
+                <Lock className="h-3 w-3" />
+              ) : (
+                <LockOpen className="h-3 w-3" />
+              )}
+              {isResultsLocked ? 'Results Locked' : 'Results Open'}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleToggleLock}
+              disabled={lockLoading}
+              className="h-7 text-xs border-card-border text-primary-text hover:bg-hover-bg"
+            >
+              {lockLoading
+                ? 'Updating...'
+                : isResultsLocked
+                ? 'Unlock Results'
+                : 'Lock Results'}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Assessment Selection */}
-      {selectedSection && (
-        <div className='mb-6'>
-          <label className='block text-sm font-medium mb-2'>
-            Select Assessment
-          </label>
-          <select
-            className='w-full max-w-md p-2 border rounded'
-            value={selectedAssessment || ''}
-            onChange={(e) => setSelectedAssessment(Number(e.target.value))}
-          >
-            <option value=''>Select an assessment</option>
-            {assessments.map((assessment) => (
-              <option key={assessment.id} value={assessment.id}>
-                {assessment.title} ({assessment.type})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <Card className="rounded-lg border border-card-border bg-card p-6">
+        <CardHeader className="p-0 pb-4">
+          <CardTitle className="text-sm font-bold text-primary-text">Select Section and Assessment</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="section" className="text-xs text-primary-text">Section *</Label>
+              <Select
+                value={selectedSection}
+                onValueChange={setSelectedSection}
+              >
+                <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue placeholder="Select a section" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id.toString()} className="text-primary-text hover:bg-card/50">
+                      {section.courseOffering.course.code} - {section.name} (
+                      {section.courseOffering.semester.name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedSection && (
+              <div className="space-y-2">
+                <Label htmlFor="assessment" className="text-xs text-primary-text">Assessment *</Label>
+                <Select
+                  value={selectedAssessment}
+                  onValueChange={setSelectedAssessment}
+                  disabled={assessments.length === 0}
+                >
+                  <SelectTrigger id="assessment" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                    <SelectValue placeholder="Select an assessment" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-card-border">
+                    {assessments.map((assessment) => (
+                      <SelectItem
+                        key={assessment.id}
+                        value={assessment.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
+                      >
+                        {assessment.title} ({assessment.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {assessments.length === 0 && (
+                  <p className="text-xs text-secondary-text">
+                    No assessments found for this section
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderColor: 'var(--error-opacity-20)' }}>
+          <p className="text-xs" style={{ color: 'var(--error)' }}>{error}</p>
+        </div>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading...</div>
-      ) : selectedSection && selectedAssessment && selectedAssessmentData ? (
-        <div className='space-y-6'>
-          <BulkMarksEntry
-            sectionId={selectedSection}
-            assessmentId={selectedAssessment}
-            assessment={selectedAssessmentData}
-            students={students}
-            onSuccess={() => {
-              // Refresh data or show success message
-              router.refresh();
-            }}
+        <div className="rounded-lg border border-card-border bg-card p-8 flex flex-col items-center justify-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
           />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
+      ) : selectedSection && selectedAssessment && selectedAssessmentData ? (
+        <div className="space-y-6">
+          <Card className="rounded-lg border border-card-border bg-card">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-bold text-primary-text">Bulk Marks Entry</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <BulkMarksEntry
+                sectionId={parseInt(selectedSection)}
+                assessmentId={parseInt(selectedAssessment)}
+                assessment={selectedAssessmentData}
+                students={students.map((s) => ({
+                  ...s,
+                  user: {
+                    name:
+                      s.user.name || `${s.user.firstName} ${s.user.lastName}`,
+                  },
+                }))}
+                onSuccess={() => {
+                  toast.success('Marks saved successfully');
+                  router.refresh();
+                }}
+              />
+            </CardContent>
+          </Card>
 
-          <div className='mt-8'>
-            <h2 className='text-xl font-semibold mb-4'>Result Moderation</h2>
-            <ResultModeration
-              sectionId={selectedSection}
-              assessmentId={selectedAssessment}
-              students={students}
-            />
-          </div>
+          <Card className="rounded-lg border border-card-border bg-card">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-bold text-primary-text">Result Moderation</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <ResultModeration
+                sectionId={parseInt(selectedSection)}
+                assessmentId={parseInt(selectedAssessment)}
+                students={students.map((s) => ({
+                  ...s,
+                  user: {
+                    name:
+                      s.user.name || `${s.user.firstName} ${s.user.lastName}`,
+                  },
+                }))}
+              />
+            </CardContent>
+          </Card>
         </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a section and assessment to enter marks
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
+            {!selectedSection
+              ? 'Please select a section to enter marks'
+              : !selectedAssessment
+              ? 'Please select an assessment to enter marks'
+              : 'No data available'}
+          </div>
         </div>
       )}
     </div>

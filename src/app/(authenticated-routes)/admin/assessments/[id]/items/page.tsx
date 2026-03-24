@@ -13,32 +13,32 @@ export default function AssessmentItemsPage() {
   const router = useRouter();
   const [assessment, setAssessment] = useState<any>(null);
   const [clos, setClos] = useState<any[]>([]);
-  const [plos, setPlos] = useState<any[]>([]);
+  const [llos, setLlos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [assessmentRes, closRes, plosRes] = await Promise.all([
+        const [assessmentRes, closRes, llosRes] = await Promise.all([
           fetch(`/api/assessments/${params.id}`),
           fetch('/api/clos'),
-          fetch('/api/plos'),
+          fetch('/api/llos'),
         ]);
 
-        if (!assessmentRes.ok || !closRes.ok || !plosRes.ok) {
+        if (!assessmentRes.ok || !closRes.ok || !llosRes.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const [assessmentData, closData, plosData] = await Promise.all([
+        const [assessmentData, closData, llosData] = await Promise.all([
           assessmentRes.json(),
           closRes.json(),
-          plosRes.json(),
+          llosRes.json(),
         ]);
 
         setAssessment(assessmentData);
         setClos(Array.isArray(closData.data) ? closData.data : []);
-        setPlos(Array.isArray(plosData.data) ? plosData.data : []);
+        setLlos(Array.isArray(llosData.data) ? llosData.data : []);
       } catch (error) {
         toast.error('Failed to load data');
         console.error('Error fetching data:', error);
@@ -101,7 +101,8 @@ export default function AssessmentItemsPage() {
               : 0
           }
           clos={clos}
-          plos={plos}
+          llos={llos}
+          isLabAssessment={['lab_exam', 'lab_report'].includes(assessment?.type)}
           onSubmit={handleSubmit}
           isLoading={isSubmitting}
         />

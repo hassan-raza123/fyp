@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { createToken } from '@/lib/jwt';
+import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import {
   AdminRole,
@@ -13,8 +13,6 @@ import {
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient();
-
 const verifyOTPSchema = z.object({
   email: z
     .string({ required_error: 'Email is required' })
@@ -23,7 +21,7 @@ const verifyOTPSchema = z.object({
     .max(255, 'Email is too long')
     .trim()
     .toLowerCase(),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin', 'super_admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -34,44 +32,36 @@ const verifyOTPSchema = z.object({
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin'
-): AllRoles {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin' | 'super_admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
-    case 'teacher':
-      return 'teacher';
+    case 'faculty':
+      return 'faculty';
     case 'admin':
-      return 'super_admin'; // Default to super_admin for admin login
+      return 'admin';
+    case 'super_admin':
+      return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
 }
 
-// Check if a role is an admin role
+// Check if a role is an admin role (includes both admin and super_admin)
 function isAdminRole(role: string): boolean {
-  const adminRoles: string[] = [
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-  ];
-  return adminRoles.includes(role);
+  return role === 'admin' || role === 'super_admin';
 }
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
+    case 'super_admin':
+      return '/super-admin';
+    case 'admin':
+      return '/admin';
+    case 'faculty':
+      return '/faculty';
     case 'student':
       return '/student';
-    case 'teacher':
-      return '/faculty';
-    case 'super_admin':
-    case 'sub_admin':
-      return '/admin';
-    case 'department_admin':
-    case 'child_admin':
-      return '/department';
     default:
       return '/login';
   }
@@ -90,15 +80,24 @@ function createUserData(user: any, userType: AllRoles): UserData {
     return {
       ...baseData,
       rollNumber: user.student.rollNumber,
-      departmentId: user.student.departmentId || 0, // Handle null case
-      programId: user.student.programId || 0, // Handle null case
+      departmentId: user.student.departmentId || undefined,
+      programId: user.student.programId || undefined,
     };
   }
 
-  if (userType === 'teacher' && user.faculty) {
+  if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
-      departmentId: user.faculty.departmentId || 0, // Handle null case
+      departmentId: user.faculty.departmentId || undefined,
+      designation: user.faculty.designation,
+    };
+  }
+
+  // For admin users, get department from faculty record
+  if ((userType === 'admin' || userType === 'super_admin') && user.faculty) {
+    return {
+      ...baseData,
+      departmentId: user.faculty.departmentId || undefined,
       designation: user.faculty.designation,
     };
   }
@@ -108,7 +107,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<LoginResponse>> {
+): Promise<NextResponse> {
   try {
     const body = await request.json();
     const validationResult = verifyOTPSchema.safeParse(body);
@@ -174,11 +173,20 @@ export async function POST(
       );
     }
 
-    // For admin users, get their actual role
-    let actualRole: AllRoles;
-    if (userType === 'admin') {
-      const adminRole = userRoles.find(isAdminRole);
-      if (!adminRole) {
+    /**
+     * Admin flow:
+     * - Frontend par sirf ek "Admin" tab hai
+     * - Agar user ke paas `admin` ya `super_admin` me se koi bhi role ho to allow karna hai
+     * - Agar sirf `super_admin` ho to token me `super_admin` role set karna hai
+     */
+
+    let actualRole: AllRoles = userType as AllRoles;
+
+    if (userType === 'admin' || userType === 'super_admin') {
+      const hasAdminRole = userRoles.includes('admin');
+      const hasSuperAdminRole = userRoles.includes('super_admin');
+
+      if (!hasAdminRole && !hasSuperAdminRole) {
         return NextResponse.json(
           {
             success: false,
@@ -187,9 +195,22 @@ export async function POST(
           { status: 403 }
         );
       }
-      actualRole = adminRole as AllRoles;
+
+      // Super admin ko prefer karein, warna normal admin
+      actualRole = (hasSuperAdminRole ? 'super_admin' : 'admin') as AllRoles;
     } else {
-      actualRole = mapUserTypeToRole(userType);
+      // Non-admin routes ke liye purana strict role check
+      const dbRole = mapUserTypeToRole(userType);
+
+      if (!userRoles.includes(dbRole)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `User does not have ${userType} role`,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Verify OTP
@@ -247,6 +268,7 @@ export async function POST(
       email: user.email,
       role: actualRole,
       userData,
+      departmentId: userData.departmentId, // Include departmentId directly in token for quick access
     };
 
     const token = await createToken(tokenPayload);
@@ -267,7 +289,6 @@ export async function POST(
       data: {
         user: userData,
         redirectTo: redirectTo,
-        token,
         userType: actualRole,
       },
     });
@@ -285,7 +306,5 @@ export async function POST(
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

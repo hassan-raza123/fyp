@@ -3,110 +3,164 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sparkles } from 'lucide-react';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Features', href: '/features' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'How It Works', href: '/#how-it-works' },
+  { name: 'Features', href: '/#modules' },
+  { name: 'Team', href: '/#team' },
+  { name: 'Portal', href: '/#portal' },
 ];
 
 export default function NavbarClient() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState('');
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 20);
     };
 
+    const handleHashChange = () => {
+      setActiveHash(window.location.hash);
+    };
+
+    // Set initial hash from URL
+    setActiveHash(window.location.hash);
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
-      return pathname === href;
+      return pathname === '/' && !activeHash;
     }
-    return pathname.startsWith(href);
+    // Check if the hash part matches exactly with URL hash
+    return activeHash && href.includes(activeHash);
   };
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/80 backdrop-blur-md border-b border-gray-200'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex items-center justify-between h-16'>
-          <div className='flex-shrink-0'>
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'navbar-glass shadow-xl border-b border-slate-200'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='flex items-center justify-between h-20'>
+            {/* Logo Section - Enhanced */}
             <Link
               href='/'
-              className='flex items-center space-x-3 transition-all duration-300'
+              className='flex items-center space-x-3 group relative'
             >
-              <img
-                src='/logo.jpg'
-                alt='Smart Campus Logo'
-                className='w-12 h-12 rounded-full shadow-md object-cover'
-                onError={(e) => {
-                  console.error('Logo failed to load:', e);
-                }}
-              />
-              <span
-                className={`text-xl font-bold transition-colors duration-300 ${
-                  isScrolled ? 'text-purple-600' : 'text-white'
-                }`}
-              >
-                Smart Campus
-              </span>
+              {/* Logo Container */}
+              <div className='relative'>
+                {/* Orange Spot Behind Logo */}
+                <div 
+                  className='absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-300'
+                  style={{ 
+                    background: 'var(--brand-secondary)',
+                    transform: 'scale(1.3)'
+                  }}
+                ></div>
+                
+                {/* Logo */}
+                <div className='relative w-20 h-20 transform group-hover:scale-110 transition-all duration-300'>
+                  <img
+                    src="/logo's/logo.png"
+                    alt='EduTrack Logo'
+                    className='w-full h-full object-contain drop-shadow-lg'
+                  />
+                </div>
+              </div>
+              
+              {/* Brand Text */}
+              <div className='relative'>
+                <div className='flex items-center gap-2'>
+                  <span
+                    className={`text-2xl font-black tracking-tight transition-colors duration-300 ${
+                      isScrolled ? 'text-slate-900' : 'text-white'
+                    }`}
+                  >
+                    EduTrack
+                  </span>
+                </div>
+                <div 
+                  className='text-xs font-bold tracking-wide transition-colors duration-300'
+                  style={{ 
+                    color: isScrolled ? 'var(--brand-secondary)' : 'var(--white-opacity-80)'
+                  }}
+                >
+                  OBE Management System
+                </div>
+              </div>
             </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className='hidden md:block'>
-            <div className='ml-10 flex items-center space-x-4'>
+            {/* Desktop Navigation - Enhanced */}
+            <div className='hidden lg:flex items-center space-x-2'>
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold navbar-link ${
                     isScrolled
                       ? isActive(item.href)
-                        ? 'text-purple-600 font-semibold bg-purple-50'
-                        : 'text-gray-900 hover:text-purple-600'
+                        ? 'navbar-link-active'
+                        : 'text-slate-700 hover:bg-slate-100'
                       : isActive(item.href)
-                      ? 'text-white font-semibold bg-white/10 backdrop-blur-sm border border-white/20'
-                      : 'text-white hover:text-white/80 hover:bg-white/5'
+                      ? 'text-white bg-white/20 backdrop-blur-sm'
+                      : 'text-white/90 hover:bg-white/10'
                   }`}
                 >
                   {item.name}
                 </Link>
               ))}
+            </div>
+
+            {/* CTA Button - Enhanced */}
+            <div className='hidden lg:flex items-center space-x-4'>
               <Link
                 href='/login'
-                className={`ml-4 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  isScrolled
-                    ? 'bg-purple-600 text-white hover:bg-purple-700'
-                    : 'bg-white text-purple-600 hover:bg-white/90'
-                }`}
+                className='px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 shadow-lg'
+                style={{
+                  backgroundColor: 'var(--brand-secondary)',
+                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
+                }}
               >
-                Login
+                <span className='relative z-10 flex items-center gap-2'>
+                  Login
+                  <svg className='w-4 h-4 group-hover:translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
+                  </svg>
+                </span>
+                {/* Shine effect */}
+                <div 
+                  className='absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000'
+                  style={{
+                    background: `linear-gradient(to right, transparent, var(--white-opacity-20), transparent)`
+                  }}
+                ></div>
               </Link>
             </div>
-          </div>
 
-          {/* Mobile menu button */}
-          <div className='md:hidden'>
+            {/* Mobile menu button - Enhanced */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 ${
+              className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 ${
                 isScrolled
-                  ? 'text-gray-900 hover:text-purple-600'
-                  : 'text-white hover:text-white/80'
+                  ? 'text-slate-900 hover:bg-slate-100'
+                  : 'text-white hover:bg-white/10'
               }`}
             >
               {isMobileMenuOpen ? (
@@ -117,34 +171,51 @@ export default function NavbarClient() {
             </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation Menu - Enhanced */}
       {isMobileMenuOpen && (
-        <div className='md:hidden bg-white border-b border-gray-200'>
-          <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-            {navigation.map((item) => (
+        <div className='fixed inset-0 z-40 lg:hidden'>
+          {/* Backdrop */}
+          <div 
+            className='fixed inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in'
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          
+          {/* Menu Panel */}
+          <div className='fixed top-20 inset-x-4 bg-white rounded-2xl border border-slate-200 shadow-2xl animate-slide-down overflow-hidden'>
+            <div className='p-6 space-y-2'>
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-4 py-3 rounded-xl text-base font-semibold transition-all ${
+                    isActive(item.href)
+                      ? 'navbar-link-active'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              
+              {/* Mobile CTA */}
               <Link
-                key={item.name}
-                href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive(item.href)
-                    ? 'text-purple-600 font-semibold bg-purple-50'
-                    : 'text-gray-900 hover:text-purple-600'
-                }`}
+                href='/login'
+                onClick={() => setIsMobileMenuOpen(false)}
+                className='block px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4 shadow-lg'
+                style={{
+                  backgroundColor: 'var(--brand-secondary)',
+                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
+                }}
               >
-                {item.name}
+                Login to Portal
               </Link>
-            ))}
-            <Link
-              href='/login'
-              className='block px-3 py-2 rounded-md text-base font-medium text-purple-600 hover:text-purple-700'
-            >
-              Login
-            </Link>
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
 }

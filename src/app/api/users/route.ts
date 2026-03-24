@@ -1,39 +1,40 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 // GET /api/users - Get all users
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
     // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    if (user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Build the where clause based on user role
+    // Get admin's department for scoping
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+    const departmentId = await getDepartmentIdFromRequest(request);
+
+    // Build the where clause
     const whereClause: any = {
       NOT: {
         id: user.userId, // Exclude current user
       },
+      // Scope to admin's department: include users who are faculty or students in this department
+      ...(departmentId && {
+        OR: [
+          { faculty: { departmentId } },
+          { student: { departmentId } },
+        ],
+      }),
     };
-
-    // If user is sub_admin, exclude super_admin users
-    if (user.role === 'sub_admin') {
-      whereClause.userrole = {
-        role: {
-          NOT: {
-            name: 'super_admin',
-          },
-        },
-      };
-    }
 
     const users = await prisma.users.findMany({
       where: whereClause,
@@ -113,13 +114,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user: authUser, error } = requireAuth(request);
+    const { success, user: authUser, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
     // Check if user has admin role
-    if (authUser?.role !== 'super_admin' && authUser?.role !== 'sub_admin') {
+    if (authUser?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -148,9 +149,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password (use provided password or default)
-    const defaultPassword = '11223344';
-    const hashedPassword = await hash(password || defaultPassword, 12);
+    // Hash password (use provided password or role-based default)
+    // Note: If password is not provided, we use a generic default since role is assigned later
+    // The calling code should provide the appropriate role-based password
+    const defaultPassword = password || getDefaultPassword('admin'); // Default to admin since this route is admin-only
+    const hashedPassword = await hash(defaultPassword, 12);
 
     // Generate username from email
     const username = email.split('@')[0];

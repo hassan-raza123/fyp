@@ -1,22 +1,36 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // POST /api/users/[id]/roles - Assign roles and role-specific details to a user
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication and get user data
     const { success, user: authUser, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ error }, { status: 401 });
+    if (!success || !authUser) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (authUser?.role !== 'super_admin' && authUser?.role !== 'sub_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    // Check if user has admin role - only admins can assign roles
+    if (authUser.role !== 'admin' && authUser.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    }
+
+    // Handle async params (Next.js 15+)
+    const resolvedParams = await Promise.resolve(params);
+    const idParam = resolvedParams.id;
+
+    if (!idParam) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Parse user ID safely
+    const userId = parseInt(idParam, 10);
+    if (isNaN(userId) || userId <= 0) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
     // Parse and validate request body
@@ -48,12 +62,6 @@ export async function POST(
       );
     }
 
-    // Parse user ID safely
-    const userId = parseInt(params.id);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
-    }
-
     // Check if user exists
     const user = await prisma.users.findUnique({
       where: { id: userId },
@@ -71,24 +79,15 @@ export async function POST(
     }
 
     // Validate roles and role-specific details
-    const validRoles = ['sub_admin', 'department_admin', 'teacher', 'student'];
+    const validRoles = ['admin', 'faculty', 'student'];
     const hasStudentRole = roles.includes('student');
-    const hasFacultyRole =
-      roles.includes('teacher') || roles.includes('department_admin');
-    const hasSubAdminRole = roles.includes('sub_admin');
+    const hasFacultyRole = roles.includes('faculty') || roles.includes('admin');
 
     // Validate roles
     for (const role of roles) {
       if (!validRoles.includes(role)) {
         return NextResponse.json(
           { error: `Invalid role: ${role}` },
-          { status: 400 }
-        );
-      }
-
-      if (role === 'super_admin') {
-        return NextResponse.json(
-          { error: 'Super admin role cannot be assigned' },
           { status: 400 }
         );
       }
@@ -118,23 +117,56 @@ export async function POST(
       }
     }
 
+    // Prepare faculty details for admin/faculty roles
+    let processedFacultyDetails = facultyDetails || {};
+    
     if (hasFacultyRole) {
-      if (!facultyDetails) {
-        return NextResponse.json(
-          {
-            error:
-              'Faculty details are required for teacher/department admin role',
-          },
-          { status: 400 }
-        );
-      }
-      if (!facultyDetails.departmentId || !facultyDetails.designation) {
-        return NextResponse.json(
-          {
-            error: 'Faculty details must include departmentId and designation',
-          },
-          { status: 400 }
-        );
+      // For admin role, automatically get department from logged-in admin
+      // For faculty role, require departmentId and designation
+      if (roles.includes('admin')) {
+        // Admin role - automatically use logged-in admin's department
+        // Designation will be set to "Admin" automatically
+        // Get department ID from authenticated user (logged-in admin's department)
+        const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+        const departmentId = await getDepartmentIdFromRequest(request);
+        
+        if (!departmentId) {
+          return NextResponse.json(
+            {
+              error: 'Department not assigned. Please contact super admin to assign a department to your account.',
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Set departmentId and designation for admin
+        processedFacultyDetails = {
+          ...processedFacultyDetails,
+          departmentId: departmentId,
+          designation: 'Admin',
+        };
+      } else if (roles.includes('faculty')) {
+        // Faculty role - automatically get department from logged-in admin
+        // Designation will be set to "Faculty" automatically
+        // Get department ID from authenticated user (logged-in admin's department)
+        const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+        const departmentId = await getDepartmentIdFromRequest(request);
+        
+        if (!departmentId) {
+          return NextResponse.json(
+            {
+              error: 'Department not assigned. Please contact super admin to assign a department to your account.',
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Set departmentId and designation for faculty
+        processedFacultyDetails = {
+          ...(facultyDetails || {}),
+          departmentId: departmentId,
+          designation: 'Faculty', // Fixed designation for faculty
+        };
       }
     }
 
@@ -209,34 +241,47 @@ export async function POST(
             }
             break;
 
-          case 'teacher':
-          case 'department_admin':
-            if (facultyDetails) {
+          case 'faculty':
+          case 'admin':
+            if (processedFacultyDetails && Object.keys(processedFacultyDetails).length > 0) {
+              // Use processed faculty details (already validated above)
+              const departmentId = processedFacultyDetails.departmentId;
+              const designation = processedFacultyDetails.designation || (role === 'admin' ? 'Admin' : 'Faculty');
+              
+              if (!departmentId) {
+                throw new Error('Department ID is required');
+              }
+
               const faculty = await tx.faculties.create({
                 data: {
-                  departmentId: parseInt(facultyDetails.departmentId),
-                  designation: facultyDetails.designation,
+                  departmentId: departmentId,
+                  designation: designation,
                   status: 'active' as const,
                   updatedAt: new Date(),
                   userId,
                 },
               });
 
-              // If it's a department admin, update the department's adminId
-              if (role === 'department_admin') {
-                await tx.departments.update({
-                  where: { id: parseInt(facultyDetails.departmentId) },
-                  data: {
-                    adminId: userId,
-                    updatedAt: new Date(),
-                  },
+              // If it's an admin, update the department's adminId only if it's not already set
+              // This allows multiple admins to exist, but keeps the first one as department admin
+              if (role === 'admin') {
+                const department = await tx.departments.findUnique({
+                  where: { id: departmentId },
+                  select: { adminId: true },
                 });
+                
+                // Only update adminId if department doesn't have an admin yet
+                if (!department?.adminId) {
+                  await tx.departments.update({
+                    where: { id: departmentId },
+                    data: {
+                      adminId: userId,
+                      updatedAt: new Date(),
+                    },
+                  });
+                }
               }
             }
-            break;
-
-          case 'sub_admin':
-            // No additional details needed for sub_admin
             break;
         }
 

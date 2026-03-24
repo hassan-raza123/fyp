@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { programs_status } from '@prisma/client';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -18,8 +18,26 @@ export async function GET(
       );
     }
 
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Program ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const programId = parseInt(resolvedParams.id);
+    if (isNaN(programId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid program ID' },
+        { status: 400 }
+      );
+    }
+
     const program = await prisma.programs.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
       include: {
         department: true,
         _count: {
@@ -77,15 +95,40 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Program ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const programId = parseInt(resolvedParams.id);
+    if (isNaN(programId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid program ID' },
+        { status: 400 }
       );
     }
 
@@ -102,7 +145,7 @@ export async function PUT(
 
     // Check if program exists
     const existingProgram = await prisma.programs.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
     });
 
     if (!existingProgram) {
@@ -150,7 +193,7 @@ export async function PUT(
     }
 
     const program = await prisma.programs.update({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
       data: {
         name,
         code,
@@ -207,11 +250,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -219,9 +262,34 @@ export async function DELETE(
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Program ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const programId = parseInt(resolvedParams.id);
+    if (isNaN(programId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid program ID' },
+        { status: 400 }
+      );
+    }
+
     // Check if program exists
     const program = await prisma.programs.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
       include: {
         _count: {
           select: {
@@ -259,7 +327,7 @@ export async function DELETE(
 
     // Delete program
     await prisma.programs.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
     });
 
     return NextResponse.json({

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -17,8 +17,19 @@ export async function GET(
       );
     }
 
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const offeringId = parseInt(resolvedParams.id);
+
+    if (!resolvedParams?.id || isNaN(offeringId)) {
+      return NextResponse.json(
+        { success: false, error: 'Course offering ID is required or invalid' },
+        { status: 400 }
+      );
+    }
+
     const courseOffering = await prisma.courseofferings.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: offeringId },
       include: {
         course: {
           select: {

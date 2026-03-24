@@ -75,10 +75,12 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
   useEffect(() => {
     const fetchCLOs = async () => {
       try {
-        const response = await fetch(`/api/courses/${courseId}/clos`);
+        const response = await fetch(`/api/courses/${courseId}/clos`, {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch CLOs');
         const data = await response.json();
-        setCLOs(data);
+        setCLOs(Array.isArray(data) ? data : data?.data ?? []);
       } catch (err) {
         setError('Failed to load CLOs');
         console.error(err);
@@ -91,25 +93,35 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch assessment items
         const itemsResponse = await fetch(
-          `/api/sections/${sectionId}/assessment-items`
+          `/api/sections/${sectionId}/assessment-items`,
+          { credentials: 'include' }
         );
-        if (!itemsResponse.ok)
-          throw new Error('Failed to fetch assessment items');
-        const itemsData = await itemsResponse.json();
+        if (!itemsResponse.ok) {
+          const errBody = await itemsResponse.json().catch(() => ({}));
+          throw new Error(errBody?.error || 'Failed to fetch assessment items');
+        }
+        const itemsRaw = await itemsResponse.json();
+        const itemsData = Array.isArray(itemsRaw) ? itemsRaw : itemsRaw?.data ?? [];
         setAssessmentItems(itemsData);
 
         // Fetch assessment results
         const resultsResponse = await fetch(
-          `/api/sections/${sectionId}/assessment-results`
+          `/api/sections/${sectionId}/assessment-results`,
+          { credentials: 'include' }
         );
-        if (!resultsResponse.ok) throw new Error('Failed to fetch results');
-        const resultsData = await resultsResponse.json();
+        if (!resultsResponse.ok) {
+          const errBody = await resultsResponse.json().catch(() => ({}));
+          throw new Error(errBody?.error || 'Failed to fetch results');
+        }
+        const resultsRaw = await resultsResponse.json();
+        const resultsData = Array.isArray(resultsRaw) ? resultsRaw : resultsRaw?.data ?? [];
         setResults(resultsData);
       } catch (err) {
-        setError('Failed to load data');
+        setError(err instanceof Error ? err.message : 'Failed to load data');
         console.error(err);
       } finally {
         setLoading(false);

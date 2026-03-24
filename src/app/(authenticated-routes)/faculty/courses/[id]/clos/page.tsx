@@ -2,15 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useTheme } from 'next-themes';
 import {
   Table,
   TableBody,
@@ -19,13 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Target, TrendingUp, AlertCircle } from 'lucide-react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 
 interface CLO {
   id: number;
@@ -34,7 +28,6 @@ interface CLO {
   bloomLevel: string | null;
   status: 'active' | 'inactive' | 'archived';
   courseId: number;
-  course?: { id: number; name: string; code: string };
 }
 
 interface Course {
@@ -43,399 +36,368 @@ interface Course {
   code: string;
 }
 
+interface CLOAttainment {
+  clo: {
+    id: number;
+    code: string;
+    description: string;
+    bloomLevel: string | null;
+  };
+  latestAttainment: {
+    attainmentPercent: number;
+    threshold: number;
+    status: 'attained' | 'not_attained';
+    semester: string;
+    sectionName: string | null;
+  } | null;
+  averageAttainment: number | null;
+  sectionWiseBreakdown: Array<{
+    semester: string;
+    sectionName: string | null;
+    attainmentPercent: number;
+    threshold: number;
+    status: 'attained' | 'not_attained';
+    totalStudents: number;
+    studentsAchieved: number;
+    calculatedAt: string;
+  }>;
+}
+
+interface CLOPLOMapping {
+  clo: {
+    id: number;
+    code: string;
+    description: string;
+  };
+  ploMappings: Array<{
+    ploId: number;
+    ploCode: string;
+    ploDescription: string;
+    programName: string;
+    programCode: string;
+    weight: number;
+  }>;
+}
+
 export default function CourseCLOsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   const courseId = params.id as string;
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
+  const [attainments, setAttainments] = useState<CLOAttainment[]>([]);
+  const [ploMappings, setPLOMappings] = useState<CLOPLOMapping[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedCLO, setSelectedCLO] = useState<CLO | null>(null);
-  const [formData, setFormData] = useState({
-    code: '',
-    description: '',
-    bloomLevel: '',
-    status: 'active' as 'active' | 'inactive' | 'archived',
-  });
+  const [activeTab, setActiveTab] = useState('list');
 
-  const bloomLevels = [
-    'Remember',
-    'Understand',
-    'Apply',
-    'Analyze',
-    'Evaluate',
-    'Create',
-  ];
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [closRes, courseRes] = await Promise.all([
-        fetch(`/api/courses/${courseId}/clos`),
-        fetch(`/api/courses/${courseId}`),
-      ]);
-      const [closData, courseData] = await Promise.all([
-        closRes.json(),
-        courseRes.json(),
-      ]);
+      const [closRes, courseRes, attainmentsRes, mappingsRes] =
+        await Promise.all([
+          fetch(`/api/courses/${courseId}/clos`, { credentials: 'include' }),
+          fetch(`/api/courses/${courseId}`, { credentials: 'include' }),
+          fetch(`/api/courses/${courseId}/clos/attainments`, {
+            credentials: 'include',
+          }),
+          fetch(`/api/courses/${courseId}/clos/plo-mappings`, {
+            credentials: 'include',
+          }),
+        ]);
+
+      const [closData, courseData, attainmentsData, mappingsData] =
+        await Promise.all([
+          closRes.json(),
+          courseRes.json(),
+          attainmentsRes.json(),
+          mappingsRes.json(),
+        ]);
+
       if (!closData.success || !courseData.success) {
         throw new Error(
           closData.error || courseData.error || 'Failed to fetch data'
         );
       }
+
       setCLOs(closData.data);
       setCourse(courseData.data);
+
+      if (attainmentsData.success) {
+        setAttainments(attainmentsData.data);
+      }
+
+      if (mappingsData.success) {
+        setPLOMappings(mappingsData.data);
+      }
     } catch (error) {
       toast.error('Failed to fetch data');
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line
+    if (courseId) {
+      fetchData();
+    }
   }, [courseId]);
 
-  const handleCreateCLO = async () => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/clos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
-        toast.success('CLO created successfully');
-        setIsCreateDialogOpen(false);
-        setFormData({
-          code: '',
-          description: '',
-          bloomLevel: '',
-          status: 'active',
-        });
-        fetchData();
-      } else {
-        toast.error(data.error || 'Failed to create CLO');
-      }
-    } catch {
-      toast.error('Failed to create CLO');
+  const getStatusBadge = (status: 'attained' | 'not_attained') => {
+    if (status === 'attained') {
+      return <Badge className="bg-[var(--success-green)] text-white text-[10px]">Attained</Badge>;
     }
+    return <Badge variant="destructive" className="text-[10px]">Not Attained</Badge>;
   };
 
-  const handleUpdateCLO = async () => {
-    if (!selectedCLO) return;
-    try {
-      const response = await fetch(
-        `/api/courses/${courseId}/clos/${selectedCLO.id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        }
-      );
-      const data = await response.json();
-      if (data.success) {
-        toast.success('CLO updated successfully');
-        setIsEditDialogOpen(false);
-        setSelectedCLO(null);
-        setFormData({
-          code: '',
-          description: '',
-          bloomLevel: '',
-          status: 'active',
-        });
-        fetchData();
-      } else {
-        toast.error(data.error || 'Failed to update CLO');
-      }
-    } catch {
-      toast.error('Failed to update CLO');
-    }
-  };
-
-  const handleDeleteCLO = async () => {
-    if (!selectedCLO) return;
-    try {
-      const response = await fetch(
-        `/api/courses/${courseId}/clos/${selectedCLO.id}`,
-        {
-          method: 'DELETE',
-        }
-      );
-      const data = await response.json();
-      if (data.success) {
-        toast.success('CLO deleted successfully');
-        setIsDeleteDialogOpen(false);
-        setSelectedCLO(null);
-        fetchData();
-      } else {
-        toast.error(data.error || 'Failed to delete CLO');
-      }
-    } catch {
-      toast.error('Failed to delete CLO');
-    }
-  };
-
-  const handleEditClick = (clo: CLO) => {
-    setSelectedCLO(clo);
-    setFormData({
-      code: clo.code,
-      description: clo.description,
-      bloomLevel: clo.bloomLevel || '',
-      status: clo.status,
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (clo: CLO) => {
-    setSelectedCLO(clo);
-    setIsDeleteDialogOpen(true);
-  };
-
-  if (isLoading) return <div>Loading...</div>;
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading CLOs...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex justify-between items-center mb-6'>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.push(`/faculty/courses/${courseId}`)}
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Target className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
-          <h1 className='text-2xl font-bold'>
+          <h1 className="text-lg font-bold text-primary-text">
             CLOs for {course?.name} ({course?.code})
           </h1>
-          <p className='text-gray-500'>Manage CLOs for this course</p>
+          <p className="text-xs text-secondary-text mt-0.5">
+            View Course Learning Outcomes and their attainment status
+          </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className='w-4 h-4 mr-2' /> Add CLO
-        </Button>
       </div>
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Bloom's Level</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clos.map((clo) => (
-              <TableRow key={clo.id}>
-                <TableCell>{clo.code}</TableCell>
-                <TableCell>{clo.description}</TableCell>
-                <TableCell>{clo.bloomLevel || '-'}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      clo.status === 'active'
-                        ? 'default'
-                        : clo.status === 'inactive'
-                        ? 'secondary'
-                        : 'destructive'
-                    }
-                  >
-                    {clo.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className='flex space-x-2'>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() => handleEditClick(clo)}
-                    >
-                      <Edit className='w-4 h-4' />
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      size='sm'
-                      onClick={() => handleDeleteClick(clo)}
-                    >
-                      <Trash2 className='w-4 h-4' />
-                    </Button>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="list" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO List</TabsTrigger>
+          <TabsTrigger value="attainments" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Attainments</TabsTrigger>
+          <TabsTrigger value="plo-mappings" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO-PLO Mappings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list" className="space-y-4">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Course Learning Outcomes</h2>
+            </div>
+            <div className="p-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Bloom's Level</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clos.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-xs text-secondary-text py-8">
+                        No CLOs defined for this course
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    clos.map((clo) => (
+                      <TableRow key={clo.id} className="hover:bg-[var(--hover-bg)]">
+                        <TableCell className="font-medium text-xs text-primary-text">{clo.code}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{clo.description}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{clo.bloomLevel || '-'}</TableCell>
+                        <TableCell className="text-xs text-primary-text">
+                          <Badge variant={clo.status === 'active' ? 'default' : clo.status === 'inactive' ? 'secondary' : 'destructive'} className="text-[10px]">
+                            {clo.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="attainments" className="space-y-4">
+          {attainments.length === 0 ? (
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+              <Target className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+              <p className="text-xs text-secondary-text">No CLO attainments calculated yet</p>
+              <p className="text-xs text-secondary-text mt-1">Calculate CLO attainments from the Results section</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {attainments.map((item) => (
+                <div key={item.clo.id} className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
+                  <div className="flex items-start justify-between flex-wrap gap-2">
+                    <div>
+                      <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2">
+                        <Target className="w-4 h-4" style={{ color: primaryColor }} />
+                        {item.clo.code}
+                      </h3>
+                      <p className="text-xs text-secondary-text mt-0.5">{item.clo.description}</p>
+                    </div>
+                    {item.latestAttainment && (
+                      <div className="text-right">
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(item.latestAttainment.status)}
+                          <span className="text-lg font-bold text-primary-text">
+                            {item.latestAttainment.attainmentPercent.toFixed(1)}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-secondary-text mt-0.5">Threshold: {item.latestAttainment.threshold}%</p>
+                      </div>
+                    )}
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+                  {item.latestAttainment && (
+                    <div className="mb-4 p-4 rounded-lg mt-4 border border-card-border bg-card">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-primary-text">Latest Attainment</p>
+                          <p className="text-xs text-secondary-text mt-0.5">
+                            {item.latestAttainment.semester}
+                            {item.latestAttainment.sectionName && ` • ${item.latestAttainment.sectionName}`}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary-text">
+                            {item.latestAttainment.attainmentPercent.toFixed(1)}%
+                          </p>
+                          {item.averageAttainment && (
+                            <p className="text-xs text-secondary-text">Avg: {item.averageAttainment.toFixed(1)}%</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-      {/* Create CLO Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create CLO</DialogTitle>
-            <DialogDescription>Add a new CLO for this course</DialogDescription>
-          </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='code'>CLO Code</Label>
-              <Input
-                id='code'
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                placeholder='e.g., CLO1'
-              />
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='description'>Description</Label>
-              <Textarea
-                id='description'
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Enter CLO description'
-              />
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='bloomLevel'>Bloom's Taxonomy Level</Label>
-              <select
-                className='border rounded px-2 py-1'
-                value={formData.bloomLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, bloomLevel: e.target.value })
-                }
-              >
-                <option value=''>Select Bloom's level</option>
-                {bloomLevels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='status'>Status</Label>
-              <select
-                className='border rounded px-2 py-1'
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as any })
-                }
-              >
-                <option value='active'>Active</option>
-                <option value='inactive'>Inactive</option>
-                <option value='archived'>Archived</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setIsCreateDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleCreateCLO}>Create CLO</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                  {item.sectionWiseBreakdown.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-primary-text mb-3">Section-wise Breakdown</h4>
+                      <div className="rounded-lg border border-card-border overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Section</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Attainment</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Students</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {item.sectionWiseBreakdown.map((breakdown, idx) => (
+                              <TableRow key={idx} className="hover:bg-[var(--hover-bg)]">
+                                <TableCell className="text-xs text-primary-text">{breakdown.semester}</TableCell>
+                                <TableCell className="text-xs text-primary-text">{breakdown.sectionName || 'N/A'}</TableCell>
+                                <TableCell className="text-xs text-primary-text">
+                                  <span className="font-medium">{breakdown.attainmentPercent.toFixed(1)}%</span>
+                                  <span className="text-xs text-secondary-text"> / {breakdown.threshold}%</span>
+                                </TableCell>
+                                <TableCell className="text-xs text-primary-text">
+                                  {breakdown.studentsAchieved} / {breakdown.totalStudents}
+                                </TableCell>
+                                <TableCell className="text-xs text-primary-text">
+                                  {getStatusBadge(breakdown.status)}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  )}
 
-      {/* Edit CLO Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit CLO</DialogTitle>
-            <DialogDescription>Update CLO details</DialogDescription>
-          </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-code'>CLO Code</Label>
-              <Input
-                id='edit-code'
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                placeholder='e.g., CLO1'
-              />
+                    {item.sectionWiseBreakdown.length === 0 && (
+                      <p className="text-xs text-secondary-text text-center py-4">No section-wise data available</p>
+                    )}
+                </div>
+              ))}
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-description'>Description</Label>
-              <Textarea
-                id='edit-description'
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Enter CLO description'
-              />
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-bloomLevel'>Bloom's Taxonomy Level</Label>
-              <select
-                className='border rounded px-2 py-1'
-                value={formData.bloomLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, bloomLevel: e.target.value })
-                }
-              >
-                <option value=''>Select Bloom's level</option>
-                {bloomLevels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='edit-status'>Status</Label>
-              <select
-                className='border rounded px-2 py-1'
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as any })
-                }
-              >
-                <option value='active'>Active</option>
-                <option value='inactive'>Inactive</option>
-                <option value='archived'>Archived</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setIsEditDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateCLO}>Update CLO</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+        </TabsContent>
 
-      {/* Delete CLO Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete CLO</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this CLO? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant='destructive' onClick={handleDeleteCLO}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <TabsContent value="plo-mappings" className="space-y-4">
+          {ploMappings.length === 0 ? (
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+              <Target className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+              <p className="text-xs text-secondary-text">No CLO-PLO mappings found</p>
+              <p className="text-xs text-secondary-text mt-1">CLO-PLO mappings are managed by administrators</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {ploMappings.map((item) => (
+                <div key={item.clo.id} className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
+                  <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2">
+                    <Target className="w-4 h-4" style={{ color: primaryColor }} />
+                    {item.clo.code}
+                  </h3>
+                  <p className="text-xs text-secondary-text mt-0.5">{item.clo.description}</p>
+                  {item.ploMappings.length === 0 ? (
+                    <p className="text-xs text-secondary-text text-center py-4 mt-4">No PLO mappings for this CLO</p>
+                  ) : (
+                    <div className="mt-4 rounded-lg border border-card-border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-xs font-semibold text-primary-text">PLO Code</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">PLO Description</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {item.ploMappings.map((mapping) => (
+                            <TableRow key={mapping.ploId} className="hover:bg-[var(--hover-bg)]">
+                              <TableCell className="font-medium text-xs text-primary-text">{mapping.ploCode}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{mapping.ploDescription}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{mapping.programName} ({mapping.programCode})</TableCell>
+                              <TableCell className="text-xs text-primary-text">
+                                <Badge variant="outline" className="text-[10px]">{(mapping.weight * 100).toFixed(0)}%</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

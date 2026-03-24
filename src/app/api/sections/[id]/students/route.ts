@@ -1,22 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 // POST /api/sections/[id]/students - Add a student to a section
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     console.log('--- POST /api/sections/[id]/students called ---');
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     console.log('Auth result:', { success, user, error });
     if (!success) {
       console.log('Auth failed');
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Role check
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 
@@ -109,11 +117,12 @@ export async function POST(
       );
     }
 
-    // Check if student is already enrolled in this section
+    // Check if student is already actively enrolled in this section (dropped students can re-enroll)
     const existingEnrollment = await prisma.studentsections.findFirst({
       where: {
         studentId: parseInt(studentId),
         sectionId: sectionId,
+        status: 'active',
       },
     });
     console.log(
@@ -132,6 +141,78 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    // Check if student is already enrolled in another section of the same course offering
+    const sectionWithCourseOffering = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      select: {
+        courseOfferingId: true,
+      },
+    });
+
+    if (sectionWithCourseOffering) {
+      const existingCourseEnrollment = await prisma.studentsections.findFirst({
+        where: {
+          studentId: parseInt(studentId),
+          section: {
+            courseOfferingId: sectionWithCourseOffering.courseOfferingId,
+          },
+          status: 'active',
+        },
+        include: {
+          section: {
+            include: {
+              courseOffering: {
+                include: {
+                  course: {
+                    select: {
+                      code: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (existingCourseEnrollment) {
+        console.log('Student already enrolled in another section of the same course');
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Student is already enrolled in ${existingCourseEnrollment.section.courseOffering.course.code} (${existingCourseEnrollment.section.courseOffering.course.name}) - Section ${existingCourseEnrollment.section.name}. A student can only be enrolled in one section per course.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Get section with course offering and faculty for notification
+    const sectionWithDetails = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+        faculty: {
+          include: {
+            user: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     // Add student to section
     const studentSection = await prisma.studentsections.create({
@@ -156,6 +237,17 @@ export async function POST(
     });
     console.log('Student added to section:', studentSection);
 
+    // Send notification to faculty about enrollment change
+    if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
+      const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');
+      await notifyStudentEnrollmentChange(
+        sectionWithDetails.courseOffering.course.code,
+        'added',
+        1,
+        sectionWithDetails.facultyId ?? 0
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: studentSection,
@@ -176,12 +268,12 @@ export async function POST(
 // DELETE /api/sections/[id]/students - Remove a student from a section
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     console.log('--- DELETE /api/sections/[id]/students called ---');
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     console.log('Auth result:', { success, user, error });
     if (!success) {
       console.log('Auth failed');
@@ -191,8 +283,16 @@ export async function DELETE(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const studentId = searchParams.get('studentId');
+    // Role check
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { studentId } = body;
     console.log('Received studentId:', studentId);
 
     if (!studentId || isNaN(Number(studentId)) || Number(studentId) <= 0) {
@@ -207,12 +307,12 @@ export async function DELETE(
       );
     }
 
-    // Await params for Next.js 14+
-    const { id } = await context.params;
-    const sectionId = parseInt(id);
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const sectionId = parseInt(resolvedParams.id);
     console.log('Section ID:', sectionId);
     if (isNaN(sectionId) || sectionId <= 0) {
-      console.log('Invalid sectionId:', id);
+      console.log('Invalid sectionId:', resolvedParams.id);
       return NextResponse.json(
         {
           success: false,
@@ -240,9 +340,29 @@ export async function DELETE(
       );
     }
 
-    // First, delete all attendances for this studentSection
-    await prisma.attendances.deleteMany({
-      where: { studentSectionId: enrollment.id },
+    // Get section with course offering and faculty for notification
+    const sectionWithDetails = await prisma.sections.findUnique({
+      where: { id: sectionId },
+      include: {
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+        faculty: {
+          include: {
+            user: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // Remove student from section
@@ -252,6 +372,17 @@ export async function DELETE(
       },
     });
     console.log('Student removed from section:', enrollment.id);
+
+    // Send notification to faculty about enrollment change
+    if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
+      const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');
+      await notifyStudentEnrollmentChange(
+        sectionWithDetails.courseOffering.course.code,
+        'removed',
+        1,
+        sectionWithDetails.facultyId ?? 0
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -272,10 +403,20 @@ export async function DELETE(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const sectionId = parseInt(params.id);
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json(
+        { error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
     if (isNaN(sectionId)) {
       return NextResponse.json(
         { error: 'Invalid section ID' },

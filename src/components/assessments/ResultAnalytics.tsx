@@ -48,7 +48,7 @@ export const ResultAnalytics: React.FC<ResultAnalyticsProps> = ({
         );
         if (!response.ok) throw new Error('Failed to fetch analytics');
         const data = await response.json();
-        setGradeDistribution(data.gradeDistribution);
+        setGradeDistribution(data.gradeDistribution || []);
         setMetrics(data.metrics);
       } catch (error) {
         console.error('Error fetching analytics:', error);

@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string; cloId: string } }
+  { params }: { params: Promise<{ id: string; cloId: string }> }
 ) {
-  const courseId = Number(params.id);
-  const cloId = Number(params.cloId);
+  const { id, cloId: cloIdParam } = await params;
+  const courseId = Number(id);
+  const cloId = Number(cloIdParam);
   if (isNaN(courseId) || isNaN(cloId))
     return NextResponse.json(
       { success: false, error: 'Invalid id' },
@@ -24,11 +25,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string; cloId: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string; cloId: string }> }
 ) {
-  const courseId = Number(params.id);
-  const cloId = Number(params.cloId);
+  const { id, cloId: cloIdParam } = await params;
+  const courseId = Number(id);
+  const cloId = Number(cloIdParam);
   if (isNaN(courseId) || isNaN(cloId))
     return NextResponse.json(
       { success: false, error: 'Invalid id' },

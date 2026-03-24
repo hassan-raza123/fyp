@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PLOAttainments } from '@/components/assessments/PLOAttainments';
-import { Loading } from '@/components/ui/loading';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -12,6 +11,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { GraduationCap, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface Program {
   id: number;
@@ -24,93 +44,273 @@ interface Semester {
   name: string;
 }
 
+interface ContributingCLO {
+  cloId: number;
+  cloCode: string;
+  cloDescription: string;
+  weight: number;
+  studentAttainment: number;
+  classAttainment: number;
+}
+
+interface ContributingLLO {
+  lloId: number;
+  lloCode: string;
+  lloDescription: string;
+  weight: number;
+  studentAttainment: number;
+  classAttainment: number;
+}
+
+interface PLOAttainment {
+  ploId: number;
+  ploCode: string;
+  description: string;
+  studentAttainment: {
+    percentage: number;
+    status: 'attained' | 'not_attained';
+  };
+  classAttainment: {
+    percentage: number;
+    status: 'attained' | 'not_attained';
+  };
+  threshold: number;
+  contributingClos: ContributingCLO[];
+  contributingLlos: ContributingLLO[];
+}
+
+interface PLOAttainmentsData {
+  program: {
+    id: number;
+    code: string;
+    name: string;
+  };
+  semester: string | null;
+  overallProgress: {
+    totalPLOs: number;
+    attainedPLOs: number;
+    remainingPLOs: number;
+    progressPercentage: number;
+  };
+  ploAttainments: PLOAttainment[];
+}
+
 const PLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
-  const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<PLOAttainmentsData | null>(null);
+  const [expandedPLO, setExpandedPLO] = useState<number | null>(null);
+  const [expandedPLOLLO, setExpandedPLOLLO] = useState<number | null>(null);
 
-  // Fetch programs
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   useEffect(() => {
-    const fetchPrograms = async () => {
-      setLoading(true);
+    setMounted(true);
+  }, []);
+
+  // Fetch programs and semesters
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/programs');
-        if (!response.ok) throw new Error('Failed to fetch programs');
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setPrograms(result.data);
-        } else if (Array.isArray(result)) {
-          // Handle direct array response
-          setPrograms(result as Program[]);
-        } else {
-          console.error('Invalid programs data format:', result);
-          setError('Invalid programs data format received from server');
+        const [programsRes, semestersRes] = await Promise.all([
+          fetch('/api/programs', { credentials: 'include' }),
+          fetch('/api/semesters', { credentials: 'include' }),
+        ]);
+
+        if (programsRes.ok) {
+          const programsResult = await programsRes.json();
+          if (programsResult.success) {
+            setPrograms(programsResult.data);
+            // Auto-select student's program if available
+            if (programsResult.data.length > 0) {
+              setSelectedProgram(programsResult.data[0].id);
+            }
+          }
+        }
+
+        if (semestersRes.ok) {
+          const semestersResult = await semestersRes.json();
+          if (semestersResult.success) {
+            setSemesters(semestersResult.data);
+          }
         }
       } catch (err) {
-        console.error('Error fetching programs:', err);
-        setError('Failed to load programs');
+        console.error('Error fetching data:', err);
+        setError('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
-    fetchPrograms();
+
+    fetchData();
   }, []);
 
-  // Fetch semesters
+  // Fetch PLO attainments when program/semester changes
   useEffect(() => {
-    const fetchSemesters = async () => {
+    if (!selectedProgram) return;
+
+    const fetchPLOAttainments = async () => {
       try {
-        const response = await fetch('/api/semesters');
-        if (!response.ok) throw new Error('Failed to fetch semesters');
+        setLoading(true);
+        setError(null);
+        const params = new URLSearchParams({
+          programId: selectedProgram.toString(),
+        });
+        if (selectedSemester !== 'all') {
+          params.append('semesterId', selectedSemester);
+        }
+
+        const response = await fetch(
+          `/api/student/plo-attainments?${params.toString()}`,
+          {
+            credentials: 'include',
+          }
+        );
+        if (!response.ok) throw new Error('Failed to fetch PLO attainments');
         const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setSemesters(result.data);
-        } else if (Array.isArray(result)) {
-          // Handle direct array response
-          setSemesters(result as Semester[]);
+        if (result.success) {
+          setData(result.data);
         } else {
-          console.error('Invalid semesters data format:', result);
-          setError('Invalid semesters data format received from server');
+          throw new Error(result.error || 'Failed to fetch PLO attainments');
         }
       } catch (err) {
-        console.error('Error fetching semesters:', err);
-        setError('Failed to load semesters');
+        setError(
+          err instanceof Error ? err.message : 'Failed to load PLO attainments'
+        );
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchSemesters();
-  }, []);
+
+    fetchPLOAttainments();
+  }, [selectedProgram, selectedSemester]);
+
+  const getStatusBadge = (status: 'attained' | 'not_attained') => {
+    return (
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
+        {status === 'attained' ? 'Attained' : 'Not Attained'}
+      </Badge>
+    );
+  };
+
+  if (!mounted) return null;
+
+  const getComparisonIcon = (
+    studentPercent: number,
+    classPercent: number
+  ) => {
+    if (studentPercent > classPercent)
+      return <TrendingUp className="h-4 w-4 text-[var(--success-green)]" />;
+    if (studentPercent < classPercent)
+      return <TrendingDown className="h-4 w-4 text-[var(--error)]" />;
+    return <Minus className="h-4 w-4 text-muted-text" />;
+  };
+
+  const exportToCSV = () => {
+    if (!data || data.ploAttainments.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = [
+      'PLO Code',
+      'Description',
+      'Your Attainment %',
+      'Class Average %',
+      'Status',
+      'Threshold',
+    ];
+
+    const rows = data.ploAttainments.map((plo) => [
+      plo.ploCode,
+      plo.description,
+      plo.studentAttainment.percentage.toFixed(2),
+      plo.classAttainment.percentage.toFixed(2),
+      plo.studentAttainment.status === 'attained' ? 'Attained' : 'Not Attained',
+      plo.threshold.toString(),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `plo_attainments_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('PLO attainments exported successfully');
+  };
+
+  // Prepare chart data
+  const chartData =
+    data?.ploAttainments.map((plo) => ({
+      ploCode: plo.ploCode,
+      student: plo.studentAttainment.percentage,
+      class: plo.classAttainment.percentage,
+      threshold: plo.threshold,
+    })) || [];
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>PLO Attainments</h1>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My PLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View Program Learning Outcomes achievement</p>
+        </div>
+        {data && data.ploAttainments.length > 0 && (
+          <button
+            onClick={exportToCSV}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export to CSV
+          </button>
+        )}
+      </div>
 
       {error && (
-        <Alert variant='destructive' className='mb-4'>
-          <AlertCircle className='h-4 w-4' />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
       )}
 
       {/* Program and Semester Selection */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
         <div>
-          <label className='block text-sm font-medium mb-2'>
-            Select Program
-          </label>
+          <Label htmlFor="program-select" className="text-xs font-medium text-primary-text">Select Program</Label>
           <Select
             value={selectedProgram?.toString() || ''}
-            onValueChange={(value) => setSelectedProgram(Number(value))}
+            onValueChange={(value) => setSelectedProgram(parseInt(value))}
             disabled={loading || !programs.length}
           >
-            <SelectTrigger>
+            <SelectTrigger id="program-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder='Select a program' />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-card-border">
               {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id.toString()}>
+                <SelectItem key={program.id} value={program.id.toString()} className="text-primary-text hover:bg-card/50">
                   {program.code} - {program.name}
                 </SelectItem>
               ))}
@@ -119,20 +319,19 @@ const PLOAttainmentsPage = () => {
         </div>
 
         <div>
-          <label className='block text-sm font-medium mb-2'>
-            Select Semester
-          </label>
+          <Label htmlFor="semester-select" className="text-xs font-medium text-primary-text">Select Semester (Optional)</Label>
           <Select
-            value={selectedSemester?.toString() || ''}
-            onValueChange={(value) => setSelectedSemester(Number(value))}
+            value={selectedSemester}
+            onValueChange={setSelectedSemester}
             disabled={loading || !semesters.length}
           >
-            <SelectTrigger>
-              <SelectValue placeholder='Select a semester' />
+            <SelectTrigger id="semester-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder='All Semesters' />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-card-border">
+              <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Semesters</SelectItem>
               {semesters.map((semester) => (
-                <SelectItem key={semester.id} value={semester.id.toString()}>
+                <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                   {semester.name}
                 </SelectItem>
               ))}
@@ -141,16 +340,312 @@ const PLOAttainmentsPage = () => {
         </div>
       </div>
 
-      {loading ? (
-        <Loading message='Loading data...' />
-      ) : selectedProgram && selectedSemester ? (
-        <PLOAttainments
-          programId={selectedProgram}
-          semesterId={selectedSemester}
-        />
+      {loading && !data ? (
+        <div className="flex items-center justify-center min-h-[280px] bg-card border border-card-border rounded-lg">
+          <div className="flex flex-col items-center space-y-3">
+            <div
+              className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+              style={{
+                borderTopColor: primaryColor,
+                borderBottomColor: primaryColor,
+                borderRightColor: 'transparent',
+                borderLeftColor: 'transparent',
+              }}
+            />
+            <p className="text-xs text-secondary-text">Loading PLO attainments...</p>
+          </div>
+        </div>
+      ) : data && data.ploAttainments.length > 0 ? (
+        <div className="space-y-6">
+          {/* Program Info */}
+          <Card className="bg-card border border-card-border">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-primary-text">
+                {data.program.code} - {data.program.name}
+              </CardTitle>
+              {data.semester && (
+                <p className="text-xs text-secondary-text">
+                  Semester: {data.semester}
+                </p>
+              )}
+            </CardHeader>
+          </Card>
+
+          {/* Overall Progress Summary */}
+          <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+            <Card className="bg-card border border-card-border">
+              <CardHeader>
+                <CardTitle className='text-[10px] text-muted-text'>
+                  Total PLOs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-lg font-bold text-primary-text'>{data.overallProgress.totalPLOs}</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border border-card-border">
+              <CardHeader>
+                <CardTitle className='text-[10px] text-muted-text'>
+                  Attained PLOs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-lg font-bold text-[var(--success-green)]'>
+                  {data.overallProgress.attainedPLOs}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border border-card-border">
+              <CardHeader>
+                <CardTitle className='text-[10px] text-muted-text'>
+                  Remaining PLOs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-lg font-bold text-[var(--warning)]'>
+                  {data.overallProgress.remainingPLOs}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border border-card-border">
+              <CardHeader>
+                <CardTitle className='text-[10px] text-muted-text'>
+                  Overall Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-lg font-bold text-primary-text'>
+                  {data.overallProgress.progressPercentage.toFixed(1)}%
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Chart */}
+          <Card className="bg-card border border-card-border">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-primary-text">PLO Attainment Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="ploCode" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="student" name="Your Attainment" fill="#4f46e5" />
+                    <Bar dataKey="class" name="Class Average" fill="#10b981" />
+                    <Bar dataKey="threshold" name="Threshold" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* PLO Details */}
+          <div className="space-y-4">
+            {data.ploAttainments.map((plo) => (
+              <Card key={plo.ploId} className="bg-card border border-card-border">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-sm font-bold text-primary-text flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5" />
+                        {plo.ploCode}
+                      </CardTitle>
+                      <p className="text-xs text-secondary-text mt-1">
+                        {plo.description}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-primary-text">
+                        {plo.studentAttainment.percentage.toFixed(1)}%
+                      </div>
+                      <div className="mt-1">
+                        {getStatusBadge(plo.studentAttainment.status)}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-[10px] text-muted-text">Your Attainment</p>
+                      <p className="text-sm font-semibold text-primary-text">
+                        {plo.studentAttainment.percentage.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-text">Class Average</p>
+                      <p className="text-sm font-semibold text-primary-text">
+                        {plo.classAttainment.percentage.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-text">Comparison</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {getComparisonIcon(
+                          plo.studentAttainment.percentage,
+                          plo.classAttainment.percentage
+                        )}
+                        <span className="text-xs text-primary-text">
+                          {plo.studentAttainment.percentage >
+                          plo.classAttainment.percentage
+                            ? 'Above Average'
+                            : plo.studentAttainment.percentage <
+                              plo.classAttainment.percentage
+                            ? 'Below Average'
+                            : 'At Average'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 p-3 rounded border border-card-border bg-card">
+                    <p className="text-xs text-secondary-text">
+                      Threshold: {plo.threshold}%
+                    </p>
+                  </div>
+
+                  {/* Contributing CLOs */}
+                  {plo.contributingClos.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() =>
+                          setExpandedPLO(
+                            expandedPLO === plo.ploId ? null : plo.ploId
+                          )
+                        }
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
+                      >
+                        {expandedPLO === plo.ploId ? 'Hide' : 'Show'}{' '}
+                        Contributing CLOs ({plo.contributingClos.length})
+                      </button>
+
+                      {expandedPLO === plo.ploId && (
+                        <div className="mt-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {plo.contributingClos.map((clo) => {
+                                const totalWeight = plo.contributingClos.reduce((sum, c) => sum + c.weight, 0);
+                                const contribution =
+                                  totalWeight > 0
+                                    ? (clo.studentAttainment * clo.weight) / totalWeight
+                                    : 0;
+                                return (
+                                  <TableRow key={clo.cloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
+                                      {clo.cloCode}
+                                    </TableCell>
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
+                                      {clo.cloDescription}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">{clo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {clo.studentAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {clo.classAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {contribution.toFixed(2)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Contributing LLOs (Lab Learning Outcomes) */}
+                  {plo.contributingLlos?.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() =>
+                          setExpandedPLOLLO(
+                            expandedPLOLLO === plo.ploId ? null : plo.ploId
+                          )
+                        }
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
+                      >
+                        {expandedPLOLLO === plo.ploId ? 'Hide' : 'Show'}{' '}
+                        Contributing LLOs — Lab ({plo.contributingLlos.length})
+                      </button>
+
+                      {expandedPLOLLO === plo.ploId && (
+                        <div className="mt-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {plo.contributingLlos.map((llo) => {
+                                const totalWeight = plo.contributingLlos.reduce((sum, l) => sum + l.weight, 0);
+                                const contribution =
+                                  totalWeight > 0
+                                    ? (llo.studentAttainment * llo.weight) / totalWeight
+                                    : 0;
+                                return (
+                                  <TableRow key={llo.lloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
+                                      {llo.lloCode}
+                                    </TableCell>
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
+                                      {llo.lloDescription}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">{llo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.studentAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.classAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {contribution.toFixed(2)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : selectedProgram ? (
+        <div className='text-center text-xs text-secondary-text py-4'>
+          No PLO attainments data available
+        </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a program and semester to view PLO attainments
+        <div className='text-center text-xs text-secondary-text py-4'>
+          Select a program to view PLO attainments
         </div>
       )}
     </div>

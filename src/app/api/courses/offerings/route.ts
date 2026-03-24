@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_offering_status } from '@prisma/client';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 const createOfferingSchema = z.object({
   courseId: z.number(),
@@ -19,11 +20,20 @@ const updateOfferingSchema = createOfferingSchema.partial().extend({
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not assigned. Please contact super admin.' },
+        { status: 400 }
       );
     }
 
@@ -36,8 +46,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const page = parseInt(searchParams.get('page') || '1');
 
-    // Build query conditions
-    const where: any = {};
+    // Build query conditions - automatically filter by current department
+    const where: any = {
+      course: {
+        departmentId: currentDepartmentId,
+      },
+    };
 
     if (courseId) {
       where.courseId = parseInt(courseId);
@@ -53,8 +67,16 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { course: { name: { contains: search } } },
-        { course: { code: { contains: search } } },
+        {
+          course: {
+            name: { contains: search, departmentId: currentDepartmentId },
+          },
+        },
+        {
+          course: {
+            code: { contains: search, departmentId: currentDepartmentId },
+          },
+        },
         { semester: { name: { contains: search } } },
       ];
     }
@@ -124,11 +146,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 
@@ -236,11 +265,18 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 
@@ -259,12 +295,70 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Check if course exists (if being updated)
+    if (validatedData.courseId) {
+      const course = await prisma.courses.findUnique({
+        where: { id: validatedData.courseId },
+      });
+      if (!course) {
+        return NextResponse.json(
+          { success: false, error: 'Course not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if semester exists (if being updated)
+    if (validatedData.semesterId) {
+      const semester = await prisma.semesters.findUnique({
+        where: { id: validatedData.semesterId },
+      });
+      if (!semester) {
+        return NextResponse.json(
+          { success: false, error: 'Semester not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if offering with new courseId and semesterId already exists (if being updated)
+    if (validatedData.courseId && validatedData.semesterId) {
+      const duplicateOffering = await prisma.courseofferings.findUnique({
+        where: {
+          courseId_semesterId: {
+            courseId: validatedData.courseId,
+            semesterId: validatedData.semesterId,
+          },
+        },
+      });
+
+      if (duplicateOffering && duplicateOffering.id !== validatedData.id) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Course offering already exists for this course and semester',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Build update data
+    const updateData: any = {};
+    if (validatedData.status !== undefined) {
+      updateData.status = validatedData.status as course_offering_status;
+    }
+    if (validatedData.courseId !== undefined) {
+      updateData.courseId = validatedData.courseId;
+    }
+    if (validatedData.semesterId !== undefined) {
+      updateData.semesterId = validatedData.semesterId;
+    }
+
     // Update course offering
     const offering = await prisma.courseofferings.update({
       where: { id: validatedData.id },
-      data: {
-        status: validatedData.status as course_offering_status,
-      },
+      data: updateData,
       include: {
         course: {
           select: {
@@ -315,11 +409,18 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
+import { syncDepartmentFromSettings } from '@/lib/auth';
 
 // GET /api/settings
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const { success, error } = await requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -22,10 +22,12 @@ export async function GET(request: NextRequest) {
         data: {
           system: {
             applicationName: 'Smart Campus for MNSUET',
-            academicYear: '2024',
+            academicYear: '2025',
             currentSemester: 'Spring',
             defaultLanguage: 'en',
             timeZone: 'UTC',
+            departmentName: '',
+            departmentCode: '',
           },
           email: {
             smtpHost: '',
@@ -42,6 +44,12 @@ export async function GET(request: NextRequest) {
               push: false,
               sms: false,
             },
+          },
+          obe: {
+            directWeight: 0.8,
+            indirectWeight: 0.2,
+            attainmentThreshold: 60,
+            minGraduationCGPA: 2.0,
           },
         },
       });
@@ -60,16 +68,23 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const { success, user, error } = await requireAuth(request);
+    if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Only admins can update settings' },
+        { status: 403 }
+      );
+    }
+
     const data = await request.json();
-    const { system, email, notifications } = data;
+    const { system, email, notifications, obe } = data;
 
     // Update or create settings
     const settings = await prisma.settings.upsert({
@@ -78,14 +93,21 @@ export async function PUT(request: NextRequest) {
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
       create: {
         id: 1,
         system,
         email,
         notifications,
+        ...(obe && { obe }),
       },
     });
+
+    // If department name and code are provided in settings, create/update department
+    if (system?.departmentCode && system?.departmentName) {
+      await syncDepartmentFromSettings();
+    }
 
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {

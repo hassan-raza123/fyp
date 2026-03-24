@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const programId = parseInt(params.id);
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    
+    if (!resolvedParams?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Program ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const programId = parseInt(resolvedParams.id);
     if (isNaN(programId)) {
       return NextResponse.json(
-        { error: 'Invalid program ID' },
+        { success: false, error: 'Invalid program ID' },
         { status: 400 }
       );
     }
@@ -27,7 +40,10 @@ export async function GET(
     });
 
     if (!program) {
-      return NextResponse.json({ error: 'Program not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Program not found' },
+        { status: 404 }
+      );
     }
 
     // Get batches for the program
@@ -54,7 +70,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching program batches:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch batches' },
+      { success: false, error: 'Failed to fetch batches' },
       { status: 500 }
     );
   }

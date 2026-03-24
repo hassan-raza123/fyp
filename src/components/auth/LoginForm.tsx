@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, School, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import {
   BaseUserType,
   LoginResponse,
   ValidationErrors,
   AdminRole,
-} from '@/app/types/login';
+} from '@/types/login';
 import Link from 'next/link';
 
 interface FormData {
@@ -115,16 +115,18 @@ export default function LoginForm() {
         }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         setServerError(data.message || 'Login failed');
         setIsLoading(false);
         return;
       }
 
+      // Success response yahan par guaranteed hai (data.success === true)
+
       // If user is verified and should be redirected directly
-      if (data.data.shouldRedirect) {
+      if ((data as any).data?.shouldRedirect) {
         // Store user preferences in localStorage if remember me is checked
         if (formData.rememberMe) {
           localStorage.setItem('userEmail', formData.email);
@@ -132,14 +134,20 @@ export default function LoginForm() {
         }
 
         // Redirect to dashboard
-        window.location.href = data.data.redirectTo;
+        window.location.href = (data as any).data.redirectTo;
         return;
       }
 
       // For OTP verification required
+      // Backend ho sakta hai effective role (admin / super_admin) return kare
+      // isliye yahan se wahi userType bhejte hain jo server ne diya hai
+      const otpUserType =
+        ((data as any).data && (data as any).data.userType) ||
+        formData.userType;
+
       window.location.href = `/verify-otp?email=${encodeURIComponent(
         formData.email
-      )}&userType=${encodeURIComponent(formData.userType)}`;
+      )}&userType=${encodeURIComponent(otpUserType)}`;
     } catch (error) {
       setServerError('An error occurred during login');
       console.error('Login error:', error);
@@ -151,19 +159,11 @@ export default function LoginForm() {
   const getUserTypeDisplay = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
-        return 'Administrator';
-      case 'teacher':
+        return 'Admin';
+      case 'faculty':
         return 'Faculty';
       case 'student':
         return 'Student';
-      case 'department_admin':
-        return 'Department Admin';
-      case 'super_admin':
-        return 'Super Admin';
-      case 'sub_admin':
-        return 'Sub Admin';
-      case 'child_admin':
-        return 'Child Admin';
       default:
         return String(type).charAt(0).toUpperCase() + String(type).slice(1);
     }
@@ -172,12 +172,8 @@ export default function LoginForm() {
   const getEmailPlaceholder = (type: BaseUserType | AdminRole): string => {
     switch (type) {
       case 'admin':
-      case 'super_admin':
-      case 'sub_admin':
-      case 'department_admin':
-      case 'child_admin':
         return 'admin@university.edu';
-      case 'teacher':
+      case 'faculty':
         return 'faculty@university.edu';
       case 'student':
         return 'student@university.edu';
@@ -187,93 +183,115 @@ export default function LoginForm() {
   };
 
   return (
-    <div className='max-w-md w-full mx-auto'>
+    <div className='w-full'>
       {/* Header */}
-      <div className='text-center mb-10'>
-        <div className='bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 transform hover:rotate-12 transition-all duration-300 group shadow-lg shadow-primary-light/20'>
-          <School className='w-12 h-12 text-white group-hover:scale-110 transition-transform' />
-        </div>
-        <h2 className='text-3xl font-bold text-primary'>Welcome Back!</h2>
-        <p className='text-text-light mt-2'>
-          {formData.userType === 'admin'
-            ? 'Access your administrative dashboard'
-            : `Sign in to your ${formData.userType} account`}
-        </p>
+      <div className='mb-8'>
+        <h2 
+          className='text-3xl font-bold mb-2'
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Sign in to EduTrack
+        </h2>
       </div>
 
       {/* User Type Selector */}
-      <div className='flex rounded-2xl bg-gray-100 p-1.5 mb-8'>
-        {(['student', 'teacher', 'admin'] as const).map((type) => (
+      <div className='flex gap-2 mb-6'>
+        {(['student', 'faculty', 'admin'] as const).map((type) => (
           <button
             key={type}
             type='button'
             onClick={() => handleUserTypeChange(type)}
-            className={`flex-1 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
+            className='flex-1 py-3 text-sm font-medium rounded-lg transition-all'
+            style={
               formData.userType === type
-                ? 'bg-white text-primary shadow-lg shadow-gray-200'
-                : 'text-text-light hover:text-primary'
-            }`}
+                ? {
+                    background: 'var(--brand-primary)',
+                    color: 'var(--white)'
+                  }
+                : {
+                    background: 'var(--gray-100)',
+                    color: 'var(--gray-700)'
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (formData.userType !== type) {
+                e.currentTarget.style.background = 'var(--gray-200)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (formData.userType !== type) {
+                e.currentTarget.style.background = 'var(--gray-100)';
+              }
+            }}
           >
             {getUserTypeDisplay(type)}
           </button>
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-6'>
+      <form onSubmit={handleSubmit} className='space-y-5'>
         {/* Email Field */}
-        <div className='space-y-2'>
-          <label
-            htmlFor='email'
-            className='block text-sm font-semibold text-primary'
-          >
-            {getUserTypeDisplay(formData.userType)} Email
-          </label>
-          <div className='relative group'>
-            <Mail className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
-            <input
-              id='email'
-              name='email'
-              type='email'
-              value={formData.email}
-              onChange={handleInputChange}
-              onBlur={() => validateEmail(formData.email)}
-              className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${
-                errors.email ? 'border-red-500' : 'border-gray-200'
-              } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
-              placeholder={getEmailPlaceholder(formData.userType)}
-            />
-          </div>
+        <div>
+            <label
+              htmlFor='email'
+              className='block text-sm font-medium mb-2 text-gray-700'
+            >
+              Email
+            </label>
+          <input
+            id='email'
+            name='email'
+            type='email'
+            value={formData.email}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              errors.email 
+                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+            }`}
+            onBlur={() => validateEmail(formData.email)}
+            placeholder={getEmailPlaceholder(formData.userType)}
+          />
           {errors.email && (
             <p className='text-red-500 text-sm mt-1'>{errors.email}</p>
           )}
         </div>
 
         {/* Password Field */}
-        <div className='space-y-2'>
-          <label
-            htmlFor='password'
-            className='block text-sm font-semibold text-primary'
-          >
-            Password
-          </label>
-          <div className='relative group'>
-            <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-hover:text-primary-light transition-colors' />
+        <div>
+          <div className='flex justify-between items-center mb-2'>
+            <label
+              htmlFor='password'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Password
+            </label>
+            <Link
+              href='/forgot-password'
+              className='text-sm font-medium hover:underline text-blue-600'
+            >
+              Forgot password
+            </Link>
+          </div>
+          <div className='relative'>
             <input
               id='password'
               name='password'
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleInputChange}
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+                errors.password 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              }`}
               onBlur={() => validatePassword(formData.password)}
-              className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 ${
-                errors.password ? 'border-red-500' : 'border-gray-200'
-              } bg-white text-primary placeholder:text-text-light focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all duration-300 hover:border-primary-light/50`}
               placeholder='Enter your password'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 text-text-light hover:text-primary-light transition-colors'
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -284,74 +302,53 @@ export default function LoginForm() {
           )}
         </div>
 
-        {/* Server Error Message */}
+        {/* Server Error */}
         {serverError && (
-          <div className='bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl'>
+          <div className='bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm'>
             {serverError}
           </div>
         )}
-
-        {/* Remember Me & Forgot Password */}
-        <div className='flex items-center justify-between'>
-          <label className='flex items-center cursor-pointer group'>
-            <input
-              type='checkbox'
-              name='rememberMe'
-              checked={formData.rememberMe}
-              onChange={handleInputChange}
-              className='w-4 h-4 text-primary-light rounded border-gray-300 focus:ring-primary-light'
-            />
-            <span className='ml-2 text-text-light group-hover:text-primary transition-colors'>
-              Remember me
-            </span>
-          </label>
-          <Link
-            href='/forgot-password'
-            className='text-primary hover:text-primary-light font-medium transition-colors inline-flex items-center group'
-          >
-            Forgot Password
-            <ExternalLink className='w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 transition-opacity' />
-          </Link>
-        </div>
 
         {/* Submit Button */}
         <button
           type='submit'
           disabled={isLoading}
-          className='relative w-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-light/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed'
+          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
+          style={{
+            background: 'var(--brand-primary)'
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = 'var(--brand-primary-dark)';
+              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--brand-primary)';
+          }}
         >
-          <span
-            className={`inline-flex items-center justify-center ${
-              isLoading ? 'invisible' : ''
-            }`}
-          >
-            {formData.userType === 'admin'
-              ? 'Access Administrative Dashboard'
-              : `Sign In as ${getUserTypeDisplay(formData.userType)}`}
-          </span>
-          {isLoading && (
-            <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
-            </div>
+          {isLoading ? (
+            <span className='flex items-center justify-center'>
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+              Signing in...
+            </span>
+          ) : (
+            'Sign in'
           )}
         </button>
 
-        {/* Support Section */}
-        <div className='bg-accent-light rounded-xl p-4 mt-6'>
-          <p className='text-center text-text-light text-sm'>
-            Need assistance? Contact{' '}
-            <a
-              href='mailto:itzhassanraza276@gmail.com'
-              className='text-primary hover:text-primary-light font-medium transition-colors inline-flex items-center group'
-            >
-              IT Support
-              <ExternalLink className='w-3 h-3 ml-0.5 opacity-70 group-hover:opacity-100 transition-opacity' />
-            </a>
-          </p>
-          <p className='text-center text-text-light text-xs mt-2'>
-            Your data is securely encrypted.
-          </p>
-        </div>
+        {/* Support Info */}
+        <p className='text-center text-sm mt-4' style={{ color: 'var(--gray-500)' }}>
+          Need help? Contact{' '}
+          <a
+            href='mailto:itzhassanraza276@gmail.com'
+            className='font-medium hover:underline'
+            style={{ color: 'var(--brand-primary)' }}
+          >
+            IT Support
+          </a>
+        </p>
       </form>
     </div>
   );

@@ -2,19 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, Target, BarChart3, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import Link from 'next/link';
 
 interface Course {
   id: number;
@@ -50,8 +49,8 @@ interface Course {
     code: string;
     description: string;
   }[];
-  teachers: {
-    teacher: {
+  faculty: {
+    faculty: {
       id: number;
       name: string;
       email: string;
@@ -72,12 +71,22 @@ interface Course {
 export default function CourseDetailsPage() {
   const router = useRouter();
   const params = useParams();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const courseId = params?.id;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState('information');
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!courseId) {
@@ -92,7 +101,9 @@ export default function CourseDetailsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/courses/${courseId}`);
+      const response = await fetch(`/api/courses/${courseId}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch course');
       const data = await response.json();
       if (data.success && data.data) {
@@ -102,7 +113,7 @@ export default function CourseDetailsPage() {
           prerequisites: data.data.prerequisites || [],
           corequisites: data.data.corequisites || [],
           clos: data.data.clos || [],
-          teachers: data.data.teachers || [],
+          faculty: data.data.faculty || [],
           programs: data.data.programs || [],
         });
       } else {
@@ -121,70 +132,49 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!course) return;
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/courses/${courseId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete course');
-      }
-
-      toast.success('Course deleted successfully');
-      router.push('/admin/courses');
-    } catch (error) {
-      console.error('Error deleting course:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to delete course'
-      );
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
-
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge variant='default'>Theory</Badge>;
+        return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
-        return <Badge variant='success'>Lab</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'PROJECT':
-        return <Badge variant='secondary'>Project</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
-        return <Badge variant='destructive'>Thesis</Badge>;
+        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
-        return <Badge>{type}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{type}</Badge>;
     }
   };
 
   const getStatusBadge = (status: 'active' | 'inactive' | 'archived') => {
     switch (status) {
       case 'active':
-        return <Badge variant='success'>Active</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Active</Badge>;
       case 'inactive':
-        return <Badge variant='secondary'>Inactive</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'archived':
-        return <Badge variant='destructive'>Archived</Badge>;
+        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }
   };
 
   // Loading state
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4'></div>
-            <p>Loading course details...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading course details...</p>
         </div>
       </div>
     );
@@ -193,16 +183,29 @@ export default function CourseDetailsPage() {
   // Error state
   if (error) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-red-500 mb-4'>{error}</p>
-          <Button
-            variant='outline'
-            onClick={() => router.push('/admin/courses')}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Course</h1>
+            <p className="text-xs text-secondary-text mt-0.5">{error}</p>
+          </div>
+          <button
+            onClick={() => router.push('/student/courses')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back to Courses
-          </Button>
+          </button>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">{error}</p>
         </div>
       </div>
     );
@@ -211,223 +214,326 @@ export default function CourseDetailsPage() {
   // Not found state
   if (!course) {
     return (
-      <div className='container mx-auto py-10'>
-        <div className='text-center'>
-          <p className='text-muted-foreground mb-4'>Course not found</p>
-          <Button
-            variant='outline'
-            onClick={() => router.push('/admin/courses')}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Course</h1>
+            <p className="text-xs text-secondary-text mt-0.5">Course not found</p>
+          </div>
+          <button
+            onClick={() => router.push('/student/courses')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back to Courses
-          </Button>
+          </button>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-sm text-primary-text">Course not found</p>
         </div>
       </div>
     );
   }
 
-  // Main content
+  // Main content - admin CLO style (title + subtitle, back on right)
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <div className='flex items-center gap-4'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => router.push('/admin/courses')}
-          >
-            <ArrowLeft className='h-4 w-4' />
-          </Button>
-          <div>
-            <h1 className='text-3xl font-bold'>
-              {course?.name || 'Untitled Course'}
-            </h1>
-            <p className='text-muted-foreground'>
-              Course Code: {course?.code || 'N/A'}
-            </p>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">{course?.name || 'Untitled Course'}</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Course Code: {course?.code || 'N/A'}</p>
         </div>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
-            onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
-          >
-            <Edit className='mr-2 h-4 w-4' />
-            Edit
-          </Button>
-          <Button
-            variant='destructive'
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className='mr-2 h-4 w-4' />
-            Delete
-          </Button>
-        </div>
+        <button
+          onClick={() => router.push('/student/courses')}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Courses
+        </button>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Basic Information</h2>
-          <div className='space-y-4'>
-            <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
-              <p className='font-medium'>
-                {course.department
-                  ? `${course.department.name} (${course.department.code})`
-                  : 'N/A'}
-              </p>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 bg-card border border-card-border">
+          <TabsTrigger value="information" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
+            <BookOpen className="w-4 h-4 mr-2" />
+            Information
+          </TabsTrigger>
+          <TabsTrigger value="clos" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
+            <Target className="w-4 h-4 mr-2" />
+            CLOs
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="offerings" className="text-xs data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
+            <Calendar className="w-4 h-4 mr-2" />
+            Offerings
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Course Information Tab */}
+        <TabsContent value="information" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Basic Information</h2>
+              </div>
+              <div className="p-4 space-y-4">
+                <div>
+                  <p className="text-xs text-secondary-text">Department</p>
+                  <p className="text-sm font-medium text-primary-text">
+                    {course.department
+                      ? `${course.department.name} (${course.department.code})`
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary-text">Credit Hours</p>
+                  <p className="text-sm font-medium text-primary-text">{course.creditHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary-text">Theory Hours</p>
+                  <p className="text-sm font-medium text-primary-text">{course.theoryHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary-text">Lab Hours</p>
+                  <p className="text-sm font-medium text-primary-text">{course.labHours || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary-text">Type</p>
+                  <div className="mt-1">{getTypeBadge(course.type)}</div>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary-text">Status</p>
+                  <div className="mt-1">{getStatusBadge(course.status)}</div>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Credit Hours</p>
-              <p className='font-medium'>{course.creditHours || 0}</p>
+
+            <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Course Details</h2>
+              </div>
+              <div className="p-4 space-y-4">
+                {course.description && (
+                  <div>
+                    <p className="text-xs text-secondary-text">Description</p>
+                    <p className="mt-1 text-sm text-primary-text">{course.description}</p>
+                  </div>
+                )}
+                {course.prerequisites && course.prerequisites.length > 0 && (
+                  <div>
+                    <p className="text-xs text-secondary-text">Prerequisites</p>
+                    <ul className="mt-1 list-disc list-inside text-sm text-primary-text">
+                      {course.prerequisites.map((prereq) => (
+                        <li key={prereq.prerequisite?.id}>
+                          {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {course.corequisites && course.corequisites.length > 0 && (
+                  <div>
+                    <p className="text-xs text-secondary-text">Co-requisites</p>
+                    <ul className="mt-1 list-disc list-inside text-sm text-primary-text">
+                      {course.corequisites.map((coreq) => (
+                        <li key={coreq.corequisite?.id}>
+                          {coreq.corequisite?.code} - {coreq.corequisite?.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Theory Hours</p>
-              <p className='font-medium'>{course.theoryHours || 0}</p>
+
+            <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Course Learning Outcomes</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-4">
+                  {course.clos && course.clos.length > 0 ? (
+                    <>
+                      {course.clos.slice(0, 3).map((clo) => (
+                        <div key={clo.id}>
+                          <p className="text-sm font-medium text-primary-text">{clo.code}</p>
+                          <p className="text-xs text-secondary-text">{clo.description}</p>
+                        </div>
+                      ))}
+                      {course.clos.length > 3 && (
+                        <Link
+                          href={`/student/courses/${courseId}/clos`}
+                          className="text-xs hover:underline"
+                          style={{ color: primaryColor }}
+                        >
+                          View all {course.clos.length} CLOs →
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-secondary-text">
+                      No learning outcomes defined
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Lab Hours</p>
-              <p className='font-medium'>{course.labHours || 0}</p>
+
+            <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Assigned Faculty</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-4">
+                  {course.faculty && course.faculty.length > 0 ? (
+                    course.faculty.map((facultyMember, index) => (
+                      <div key={facultyMember.faculty?.id || index}>
+                        <p className="text-sm font-medium text-primary-text">{facultyMember.faculty?.name}</p>
+                        <p className="text-xs text-secondary-text">
+                          {facultyMember.faculty?.email}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-secondary-text">No faculty assigned</p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Type</p>
-              <div className='mt-1'>{getTypeBadge(course.type)}</div>
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
-              <div className='mt-1'>{getStatusBadge(course.status)}</div>
+
+            <div className="md:col-span-2 bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Programs Offering This Course</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-4">
+                  {course.programs && course.programs.length > 0 ? (
+                    course.programs.map((program) => (
+                      <div key={program.program?.id}>
+                        <p className="text-sm font-medium text-primary-text">
+                          {program.program?.name} ({program.program?.code})
+                        </p>
+                        <p className="text-xs text-secondary-text">
+                          Semester {program.semester} •{' '}
+                          {program.isCore ? 'Core' : 'Elective'} •{' '}
+                          {program.creditHours} Credit Hours
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-secondary-text">
+                      No programs offering this course
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </Card>
+        </TabsContent>
 
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Course Details</h2>
-          <div className='space-y-4'>
-            {course.description && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Description</p>
-                <p className='mt-1'>{course.description}</p>
-              </div>
-            )}
-            {course.prerequisites && course.prerequisites.length > 0 && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Prerequisites</p>
-                <ul className='mt-1 list-disc list-inside'>
-                  {course.prerequisites.map((prereq) => (
-                    <li key={prereq.prerequisite?.id}>
-                      {prereq.prerequisite?.code} - {prereq.prerequisite?.name}
-                    </li>
+        {/* CLOs Tab */}
+        <TabsContent value="clos" className="mt-6">
+          <div className="flex justify-end mb-4">
+            <Link href={`/student/courses/${courseId}/clos`}>
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+                style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              >
+                View All CLOs
+              </button>
+            </Link>
+          </div>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Course Learning Outcomes</h2>
+            </div>
+            <div className="p-4">
+              {course.clos && course.clos.length > 0 ? (
+                <div className="space-y-4">
+                  {course.clos.map((clo) => (
+                    <div key={clo.id} className="border-b border-card-border pb-4 last:border-0">
+                      <p className="text-sm font-medium text-primary-text">{clo.code}</p>
+                      <p className="text-xs text-secondary-text mt-1">{clo.description}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
+              ) : (
+                <p className="text-xs text-secondary-text">
+                  No learning outcomes defined for this course
+                </p>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="mt-6">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Course Analytics</h2>
+            </div>
+            <div className="p-4">
+              <div className="text-center py-8">
+                <p className="text-xs text-secondary-text mb-4">
+                  Course analytics will be displayed here
+                </p>
+                <Link href={`/student/courses/${courseId}/analytics`}>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 transition-colors"
+                    style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                  >
+                    View Detailed Analytics
+                  </button>
+                </Link>
               </div>
-            )}
-            {course.corequisites && course.corequisites.length > 0 && (
-              <div>
-                <p className='text-sm text-muted-foreground'>Co-requisites</p>
-                <ul className='mt-1 list-disc list-inside'>
-                  {course.corequisites.map((coreq) => (
-                    <li key={coreq.corequisite?.id}>
-                      {coreq.corequisite?.code} - {coreq.corequisite?.name}
-                    </li>
-                  ))}
-                </ul>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Offerings Tab */}
+        <TabsContent value="offerings" className="mt-6">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Course Offerings</h2>
+            </div>
+            <div className="p-4">
+              <div className="text-center py-8">
+                <p className="text-xs text-secondary-text mb-4">
+                  Course offerings history will be displayed here
+                </p>
+                <Link href={`/student/courses/${courseId}/offerings`}>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 transition-colors"
+                    style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                  >
+                    View All Offerings
+                  </button>
+                </Link>
               </div>
-            )}
+            </div>
           </div>
-        </Card>
-
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>
-            Course Learning Outcomes
-          </h2>
-          <div className='space-y-4'>
-            {course.clos && course.clos.length > 0 ? (
-              course.clos.map((clo) => (
-                <div key={clo.id}>
-                  <p className='font-medium'>{clo.code}</p>
-                  <p className='text-muted-foreground'>{clo.description}</p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>
-                No learning outcomes defined
-              </p>
-            )}
-          </div>
-        </Card>
-
-        <Card className='p-6'>
-          <h2 className='text-xl font-semibold mb-4'>Assigned Teachers</h2>
-          <div className='space-y-4'>
-            {course.teachers && course.teachers.length > 0 ? (
-              course.teachers.map((teacher) => (
-                <div key={teacher.teacher?.id}>
-                  <p className='font-medium'>{teacher.teacher?.name}</p>
-                  <p className='text-muted-foreground'>
-                    {teacher.teacher?.email}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>No teachers assigned</p>
-            )}
-          </div>
-        </Card>
-
-        <Card className='p-6 md:col-span-2'>
-          <h2 className='text-xl font-semibold mb-4'>
-            Programs Offering This Course
-          </h2>
-          <div className='space-y-4'>
-            {course.programs && course.programs.length > 0 ? (
-              course.programs.map((program) => (
-                <div key={program.program?.id}>
-                  <p className='font-medium'>
-                    {program.program?.name} ({program.program?.code})
-                  </p>
-                  <p className='text-muted-foreground'>
-                    Semester {program.semester} •{' '}
-                    {program.isCore ? 'Core' : 'Elective'} •{' '}
-                    {program.creditHours} Credit Hours
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className='text-muted-foreground'>
-                No programs offering this course
-              </p>
-            )}
-          </div>
-        </Card>
-      </div>
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the
-              course "{course.name}" and all its associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Course'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

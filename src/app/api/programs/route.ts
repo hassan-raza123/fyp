@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Prisma, programs_status } from '@prisma/client';
-import { requireRole, requireAuth } from '@/lib/api-utils';
+import { requireRole, requireAuth } from '@/lib/auth';
 
 type ProgramWithCounts = Prisma.programsGetPayload<{
   include: {
@@ -23,11 +23,9 @@ type ProgramWithCounts = Prisma.programsGetPayload<{
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
-    const { success, user, error } = requireRole(request, [
-      'super_admin',
-      'sub_admin',
-      'department_admin',
-      'teacher',
+    const { success, user, error } = await requireRole(request, [
+      'admin',
+      'faculty',
       'student',
     ]);
     if (!success) {
@@ -37,15 +35,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
+    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const departmentId = searchParams.get('departmentId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
-    const where: any = {};
-    if (departmentId) where.departmentId = parseInt(departmentId);
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not assigned. Please contact super admin.' },
+        { status: 400 }
+      );
+    }
+
+    const where: any = {
+      departmentId: currentDepartmentId, // Always filter by current department
+    };
     if (status) where.status = status;
     if (search) {
       where.OR = [
@@ -111,38 +121,19 @@ export async function POST(request: NextRequest) {
   try {
     console.log('1. Starting program creation process');
 
-    // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
-    console.log('2. Auth check result:', { success, user: user?.email, error });
-
-    if (!success) {
+    // Check authentication and role
+    const authResult = await requireRole(request, ['admin']);
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         {
           success: false,
-          error,
+          error: authResult.error || 'Unauthorized',
         },
-        { status: 401 }
+        { status: authResult.error === 'Insufficient permissions' ? 403 : 401 }
       );
     }
 
-    // Check if user has required role
-    const userRoles = user?.role.split(',') || [];
-    const allowedRoles = ['super_admin', 'sub_admin', 'department_admin'];
-    const hasRequiredRole = userRoles.some((role: string) =>
-      allowedRoles.includes(role)
-    );
-    console.log('3. Role check result:', { userRoles, hasRequiredRole });
-
-    if (!hasRequiredRole) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-        },
-        { status: 403 }
-      );
-    }
-
+    const user = authResult.user;
     let body;
     try {
       body = await request.json();

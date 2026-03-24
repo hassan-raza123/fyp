@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import nodemailer from 'nodemailer';
+import { randomInt } from 'crypto';
 const bcrypt = require('bcryptjs');
-import { createToken } from '@/lib/jwt';
+import { sendOTPEmail } from '@/lib/email-utils';
+import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
   AdminRole,
@@ -13,8 +14,6 @@ import {
   UserData,
   TokenPayload,
 } from '@/types/auth';
-
-const prisma = new PrismaClient();
 
 // Rate limiting setup
 const rateLimit = new Map<string, number[]>();
@@ -33,39 +32,31 @@ const loginSchema = z.object({
     .string({ required_error: 'Password is required' })
     .min(1, 'Password cannot be empty')
     .max(255, 'Password is too long'),
-  userType: z.enum(['student', 'teacher', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin', 'super_admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
 });
 
 // Map login userType to database role name
-function mapUserTypeToRole(
-  userType: 'student' | 'teacher' | 'admin' | 'department_admin'
-): string {
+function mapUserTypeToRole(userType: 'student' | 'faculty' | 'admin' | 'super_admin'): string {
   switch (userType) {
     case 'student':
       return 'student';
-    case 'teacher':
-      return 'teacher';
-    case 'department_admin':
-      return 'department_admin';
+    case 'faculty':
+      return 'faculty';
     case 'admin':
+      return 'admin';
+    case 'super_admin':
       return 'super_admin';
     default:
       throw new Error('Invalid user type');
   }
 }
 
-// Check if a role is an admin role
+// Check if a role is an admin role (includes both admin and super_admin)
 function isAdminRole(role: string): boolean {
-  const adminRoles: string[] = [
-    'super_admin',
-    'sub_admin',
-    'department_admin',
-    'child_admin',
-  ];
-  return adminRoles.includes(role);
+  return role === 'admin' || role === 'super_admin';
 }
 
 function createUserData(user: any, userType: AllRoles): UserData {
@@ -86,7 +77,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
     };
   }
 
-  if (userType === 'teacher' && user.faculty) {
+  if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
       departmentId: user.faculty.departmentId,
@@ -98,52 +89,9 @@ function createUserData(user: any, userType: AllRoles): UserData {
 }
 
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
-async function sendOTPEmail(email: string, otp: string): Promise<void> {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-  });
-
-  await transporter.sendMail({
-    from: {
-      name: 'Smart Campus for MNSUET Support',
-      address: process.env.GMAIL_USER!,
-    },
-    to: email,
-    subject: 'Your Login Verification Code - Smart Campus for MNSUET',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
-          <p style="color: #4B5563; margin: 5px 0;">Login Verification Code</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <p style="color: #111827; margin: 0 0 15px 0;">Hello,</p>
-          <p style="color: #4B5563; line-height: 1.5;">Your verification code for Smart Campus for MNSUET login is:</p>
-          
-          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">
-            ${otp}
-          </div>
-
-          <p style="color: #4B5563; line-height: 1.5;">This code will expire in 5 minutes.</p>
-          <p style="color: #4B5563; line-height: 1.5;">If you didn't request this code, please ignore this email.</p>
-        </div>
-
-        <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
-          <p>If you have any questions, please contact our support team.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The Smart Campus for MNSUET Team</p>
-        </div>
-      </div>
-    `,
-  });
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -246,12 +194,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle admin users
-    if (userType === 'admin') {
-      // Check if user has any admin role
-      const hasAdminRole = userRoles.some(isAdminRole);
+    // Handle admin and super_admin users
+    if (userType === 'admin' || userType === 'super_admin') {
+      /**
+       * Frontend par sirf ek "Admin" tab hai.
+       * - Agar user ke paas `admin` ya `super_admin` dono me se koi bhi role ho to
+       *   usko admin dashboard me allow karna hai.
+       * - Agar sirf `super_admin` role ho (Hassan jaisa user), to bhi "Admin" tab se login ho sakta hai.
+       */
 
-      if (!hasAdminRole) {
+      const hasAdminRole = userRoles.includes('admin');
+      const hasSuperAdminRole = userRoles.includes('super_admin');
+
+      if (!hasAdminRole && !hasSuperAdminRole) {
         return NextResponse.json(
           {
             success: false,
@@ -261,19 +216,68 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get the actual admin role from userRoles
-      const actualRole = userRoles.find(isAdminRole) as AllRoles;
-      if (!actualRole) {
+      // Effective admin role jo token / OTP me use hoga
+      const effectiveAdminRole: AdminRole = hasSuperAdminRole
+        ? 'super_admin'
+        : 'admin';
+
+      // For admin users (including super_admin), always send OTP
+      const otp = generateOTP();
+      const hashedOTP = await bcrypt.hash(otp, 10);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+
+      // Delete any existing OTPs for this user
+      await prisma.otps.deleteMany({
+        where: {
+          email,
+          // OTP records ko effective role ke sath tie karte hain
+          userType: effectiveAdminRole,
+          isUsed: false,
+        },
+      });
+
+      // Save OTP to database
+      await prisma.otps.create({
+        data: {
+          email,
+          userType: effectiveAdminRole,
+          code: hashedOTP,
+          expiresAt,
+          isUsed: false,
+        },
+      });
+
+      // Send OTP via email
+      await sendOTPEmail(email, otp);
+
+      return NextResponse.json({
+        success: true,
+        message: 'OTP sent successfully. Please check your email.',
+        data: {
+          redirectTo: '/verify-otp',
+          email: email,
+          // Frontend ko bhi effective role bhejte hain (admin / super_admin)
+          userType: effectiveAdminRole,
+          otpSent: true,
+        },
+      });
+    }
+
+    // Handle faculty users - always require OTP (like admin)
+    if (userType === 'faculty') {
+      // Check if user has faculty role
+      const requestedRole = mapUserTypeToRole(userType);
+      if (!userRoles.includes(requestedRole)) {
         return NextResponse.json(
           {
             success: false,
-            message: 'Invalid admin role',
+            message: `User does not have ${userType} role`,
           },
           { status: 403 }
         );
       }
 
-      // For admin users, always send OTP
+      // For faculty users, always send OTP (every login)
       const otp = generateOTP();
       const hashedOTP = await bcrypt.hash(otp, 10);
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
@@ -309,14 +313,13 @@ export async function POST(request: NextRequest) {
           email: email,
           userType: userType,
           otpSent: true,
-          actualRole: actualRole, // Pass the actual role to use after OTP verification
         },
       });
     }
 
-    // Handle students and teachers
-    if (userType === 'student' || userType === 'teacher') {
-      // Check if user has the specific role
+    // Handle students - OTP only on first login (email verification)
+    if (userType === 'student') {
+      // Check if user has student role
       const requestedRole = mapUserTypeToRole(userType);
       if (!userRoles.includes(requestedRole)) {
         return NextResponse.json(
@@ -369,12 +372,13 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Verified student/teacher - direct login
-      const userData = createUserData(user, userType);
+      // Verified student - direct login (no OTP required)
+      const frontendRole = userType;
+      const userData = createUserData(user, frontendRole as AllRoles);
       const tokenPayload: TokenPayload = {
         userId: user.id,
         email: user.email,
-        role: userType,
+        role: frontendRole,
         userData,
       };
 
@@ -396,8 +400,8 @@ export async function POST(request: NextRequest) {
         data: {
           user: userData,
           redirectTo: redirectTo,
-          token,
           userType,
+          shouldRedirect: true,
         },
       });
 
@@ -434,7 +438,6 @@ export async function POST(request: NextRequest) {
       data: {
         user: userData,
         redirectTo: redirectTo,
-        token,
         userType,
       },
     });
@@ -455,22 +458,16 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 function getDashboardPath(role: AllRoles): string {
   switch (role) {
     case 'super_admin':
+      return '/super-admin';
+    case 'admin':
       return '/admin';
-    case 'sub_admin':
-      return '/admin';
-    case 'department_admin':
-      return '/department';
-    case 'child_admin':
-      return '/sub-admin';
-    case 'teacher':
+    case 'faculty':
       return '/faculty';
     case 'student':
       return '/student';

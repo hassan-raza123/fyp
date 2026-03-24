@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
 
-    // Return user details
+    // Return user details with departmentId directly from token
     return NextResponse.json({
       isAuthenticated: true,
       user: {
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
         email: payload.email,
         role: payload.role,
         userData: payload.userData,
+        departmentId: (payload as any).departmentId || (payload.userData as any)?.departmentId, // Include departmentId directly
       },
     });
   } catch (error) {

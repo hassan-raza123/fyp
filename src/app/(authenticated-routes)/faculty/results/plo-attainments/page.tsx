@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { PLOAttainments } from '@/components/assessments/PLOAttainments';
-import { Loading } from '@/components/ui/loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, GraduationCap } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -25,6 +25,14 @@ interface Semester {
 }
 
 const PLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
@@ -32,108 +40,102 @@ const PLOAttainmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch programs
   useEffect(() => {
-    const fetchPrograms = async () => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const fetchFilters = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/programs');
-        if (!response.ok) throw new Error('Failed to fetch programs');
+        const response = await fetch('/api/faculty/plo-attainments');
+        if (!response.ok) throw new Error('Failed to fetch filters');
         const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setPrograms(result.data);
-        } else if (Array.isArray(result)) {
-          // Handle direct array response
-          setPrograms(result as Program[]);
+        if (result.success && result.data) {
+          setPrograms(result.data.programs ?? []);
+          setSemesters(result.data.semesters ?? []);
         } else {
-          console.error('Invalid programs data format:', result);
-          setError('Invalid programs data format received from server');
+          setError('Failed to load programs and semesters');
         }
       } catch (err) {
-        console.error('Error fetching programs:', err);
-        setError('Failed to load programs');
+        setError('Failed to load filter options');
       } finally {
         setLoading(false);
       }
     };
-    fetchPrograms();
+    fetchFilters();
   }, []);
 
-  // Fetch semesters
-  useEffect(() => {
-    const fetchSemesters = async () => {
-      try {
-        const response = await fetch('/api/semesters');
-        if (!response.ok) throw new Error('Failed to fetch semesters');
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setSemesters(result.data);
-        } else if (Array.isArray(result)) {
-          // Handle direct array response
-          setSemesters(result as Semester[]);
-        } else {
-          console.error('Invalid semesters data format:', result);
-          setError('Invalid semesters data format received from server');
-        }
-      } catch (err) {
-        console.error('Error fetching semesters:', err);
-        setError('Failed to load semesters');
-      }
-    };
-    fetchSemesters();
-  }, []);
+  if (!mounted) return null;
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>PLO Attainments</h1>
+    <div className="space-y-4">
+      {/* Header - same as Results Management / admin CLO */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <GraduationCap className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">PLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Track and analyze program learning outcomes
+          </p>
+        </div>
+      </div>
 
       {error && (
-        <Alert variant='destructive' className='mb-4'>
-          <AlertCircle className='h-4 w-4' />
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="rounded-lg border-card-border bg-card">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-primary-text">{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Program and Semester Selection */}
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className='block text-sm font-medium mb-2'>
-            Select Program
-          </label>
+          <label className="block text-xs text-secondary-text mb-1">Program</label>
           <Select
             value={selectedProgram?.toString() || ''}
-            onValueChange={(value) => setSelectedProgram(Number(value))}
+            onValueChange={(v) => setSelectedProgram(v ? Number(v) : null)}
             disabled={loading || !programs.length}
           >
-            <SelectTrigger>
-              <SelectValue placeholder='Select a program' />
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a program" />
             </SelectTrigger>
-            <SelectContent>
-              {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id.toString()}>
-                  {program.code} - {program.name}
+            <SelectContent className="bg-card border-card-border">
+              {programs.map((p) => (
+                <SelectItem
+                  key={p.id}
+                  value={p.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {p.code} - {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-
         <div>
-          <label className='block text-sm font-medium mb-2'>
-            Select Semester
-          </label>
+          <label className="block text-xs text-secondary-text mb-1">Semester</label>
           <Select
             value={selectedSemester?.toString() || ''}
-            onValueChange={(value) => setSelectedSemester(Number(value))}
+            onValueChange={(v) => setSelectedSemester(v ? Number(v) : null)}
             disabled={loading || !semesters.length}
           >
-            <SelectTrigger>
-              <SelectValue placeholder='Select a semester' />
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a semester" />
             </SelectTrigger>
-            <SelectContent>
-              {semesters.map((semester) => (
-                <SelectItem key={semester.id} value={semester.id.toString()}>
-                  {semester.name}
+            <SelectContent className="bg-card border-card-border">
+              {semesters.map((s) => (
+                <SelectItem
+                  key={s.id}
+                  value={s.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -142,15 +144,18 @@ const PLOAttainmentsPage = () => {
       </div>
 
       {loading ? (
-        <Loading message='Loading data...' />
+        <div className="flex items-center justify-center min-h-[200px] rounded-lg border border-card-border bg-card">
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       ) : selectedProgram && selectedSemester ? (
-        <PLOAttainments
-          programId={selectedProgram}
-          semesterId={selectedSemester}
-        />
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <PLOAttainments programId={selectedProgram} semesterId={selectedSemester} apiUrl="/api/faculty/plo-attainments" />
+        </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
-          Select a program and semester to view PLO attainments
+        <div className="rounded-lg border border-card-border bg-card p-8 text-center">
+          <p className="text-xs text-secondary-text">
+            Select a program and semester to view PLO attainments
+          </p>
         </div>
       )}
     </div>

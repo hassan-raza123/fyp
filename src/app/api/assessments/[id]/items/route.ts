@@ -1,19 +1,49 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
-    const data = await req.json();
-    console.log('Received data:', data);
-    const { questionNo, description, marks, cloId } = data;
+    const { success, error } = await requireAuth(req as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!cloId || isNaN(Number(cloId))) {
-      console.log('Validation failed: cloId is required and must be a number');
+    const data = await req.json();
+    const { questionNo, description, marks, cloId, lloId } = data;
+
+    // Validate: must have either cloId (theory) or lloId (lab), not both, not neither
+    const hasClo = cloId !== undefined && cloId !== null && cloId !== '';
+    const hasLlo = lloId !== undefined && lloId !== null && lloId !== '';
+
+    if (!hasClo && !hasLlo) {
       return NextResponse.json(
-        { error: 'cloId is required and must be a valid number' },
+        { error: 'Assessment item must be mapped to either a CLO (theory) or an LLO (lab)' },
+        { status: 400 }
+      );
+    }
+
+    if (hasClo && hasLlo) {
+      return NextResponse.json(
+        { error: 'Assessment item can only be mapped to one outcome: either a CLO or an LLO, not both' },
+        { status: 400 }
+      );
+    }
+
+    if (hasClo && isNaN(Number(cloId))) {
+      return NextResponse.json(
+        { error: 'cloId must be a valid number' },
+        { status: 400 }
+      );
+    }
+
+    if (hasLlo && isNaN(Number(lloId))) {
+      return NextResponse.json(
+        { error: 'lloId must be a valid number' },
         { status: 400 }
       );
     }
@@ -23,14 +53,17 @@ export async function POST(
       questionNo,
       description,
       marks,
-      cloId: Number(cloId),
+      ...(hasClo && { cloId: Number(cloId) }),
+      ...(hasLlo && { lloId: Number(lloId) }),
     };
 
-    console.log('Creating assessment item with data:', itemData);
     const assessmentItem = await prisma.assessmentitems.create({
       data: itemData,
+      include: {
+        clo: true,
+        llo: true,
+      },
     });
-    console.log('Assessment item created:', assessmentItem);
 
     return NextResponse.json(assessmentItem);
   } catch (error) {
@@ -43,16 +76,23 @@ export async function POST(
 }
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const assessmentItems = await prisma.assessmentitems.findMany({
       where: {
         assessmentId: parseInt(params.id),
       },
       include: {
         clo: true,
+        llo: true,
       },
       orderBy: {
         questionNo: 'asc',
@@ -64,37 +104,6 @@ export async function GET(
     console.error('Error fetching assessment items:', error);
     return NextResponse.json(
       { error: 'Failed to fetch assessment items' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const itemId = searchParams.get('itemId');
-
-    if (!itemId) {
-      return NextResponse.json(
-        { error: 'Item ID is required' },
-        { status: 400 }
-      );
-    }
-
-    await prisma.assessmentitems.delete({
-      where: {
-        id: parseInt(itemId),
-      },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting assessment item:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete assessment item' },
       { status: 500 }
     );
   }

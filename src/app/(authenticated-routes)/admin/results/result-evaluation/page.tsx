@@ -2,6 +2,29 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { ClipboardCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface CourseOffering {
   id: number;
@@ -24,7 +47,9 @@ interface Student {
   id: number;
   rollNumber: string;
   user: {
-    name: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
   };
 }
 
@@ -44,16 +69,20 @@ interface AssessmentResult {
   totalMarks: number;
   obtainedMarks: number;
   percentage: number;
-  items: {
-    itemId: number;
-    marks: number;
-  }[];
 }
 
 const ResultEvaluationPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
-  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [results, setResults] = useState<Record<number, AssessmentResult[]>>(
@@ -66,13 +95,20 @@ const ResultEvaluationPage = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        setSections(data);
+        if (data.success) {
+          setSections(data.data);
+        } else {
+          setSections(data);
+        }
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
+        toast.error('Failed to load sections');
       }
     };
     fetchSections();
@@ -80,10 +116,16 @@ const ResultEvaluationPage = () => {
 
   // Fetch students, assessments, and results when section is selected
   useEffect(() => {
-    if (!selectedSection) return;
+    if (!selectedSection) {
+      setStudents([]);
+      setAssessments([]);
+      setResults({});
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch students in the section
         const studentsResponse = await fetch(
@@ -93,36 +135,52 @@ const ResultEvaluationPage = () => {
         const studentsData = await studentsResponse.json();
         setStudents(studentsData);
 
-        // Fetch assessments for the section
-        const assessmentsResponse = await fetch(
-          `/api/sections/${selectedSection}/assessments`
-        );
-        if (!assessmentsResponse.ok)
-          throw new Error('Failed to fetch assessments');
-        const assessmentsData = await assessmentsResponse.json();
-        setAssessments(assessmentsData);
-
-        // Fetch results for each student
-        const resultsData: Record<number, AssessmentResult[]> = {};
-        for (const student of studentsData) {
-          const resultsResponse = await fetch(
-            `/api/students/${student.id}/results?sectionId=${selectedSection}`
+        // Fetch assessments for the section's course offering
+        const section = sections.find((s) => s.id.toString() === selectedSection);
+        if (section) {
+          const assessmentsResponse = await fetch(
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
           );
-          if (!resultsResponse.ok) throw new Error('Failed to fetch results');
-          const studentResults = await resultsResponse.json();
-          resultsData[student.id] = studentResults;
+          if (!assessmentsResponse.ok)
+            throw new Error('Failed to fetch assessments');
+          const assessmentsData = await assessmentsResponse.json();
+          setAssessments(Array.isArray(assessmentsData) ? assessmentsData : []);
+
+          // Fetch results for each student
+          const resultsData: Record<number, AssessmentResult[]> = {};
+          for (const student of studentsData) {
+            try {
+              const resultsResponse = await fetch(
+                `/api/assessment-results?studentId=${student.id}&sectionId=${selectedSection}`
+              );
+              if (resultsResponse.ok) {
+                const studentResults = await resultsResponse.json();
+                if (studentResults.success) {
+                  resultsData[student.id] = studentResults.data || [];
+                } else {
+                  resultsData[student.id] = Array.isArray(studentResults)
+                    ? studentResults
+                    : [];
+                }
+              }
+            } catch (err) {
+              console.error(`Error fetching results for student ${student.id}:`, err);
+              resultsData[student.id] = [];
+            }
+          }
+          setResults(resultsData);
         }
-        setResults(resultsData);
       } catch (err) {
         setError('Failed to load data');
         console.error(err);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedSection]);
+  }, [selectedSection, sections]);
 
   const handleStatusChange = async (
     studentId: number,
@@ -147,9 +205,12 @@ const ResultEvaluationPage = () => {
           result.id === resultId ? { ...result, status: newStatus } : result
         ),
       }));
+
+      toast.success('Status updated successfully');
     } catch (err) {
       setError('Failed to update status');
       console.error(err);
+      toast.error('Failed to update status');
     }
   };
 
@@ -176,139 +237,215 @@ const ResultEvaluationPage = () => {
           result.id === resultId ? { ...result, remarks } : result
         ),
       }));
+
+      toast.success('Remarks updated successfully');
     } catch (err) {
       setError('Failed to update remarks');
       console.error(err);
+      toast.error('Failed to update remarks');
     }
   };
 
-  return (
-    <div className='p-6'>
-      <h2 className='text-xl font-semibold mb-4'>Result Evaluation</h2>
+  const getStatusBadge = (status: string) => {
+    const baseClass = 'text-[10px] px-1.5 py-0.5';
+    switch (status) {
+      case 'published':
+        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Published</Badge>;
+      case 'evaluated':
+        return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Evaluated</Badge>;
+      case 'pending':
+        return <Badge className={`bg-[var(--gray-500)] text-white ${baseClass}`} variant="secondary">Pending</Badge>;
+      case 'draft':
+        return <Badge className={`bg-[var(--gray-400)] text-white ${baseClass}`} variant="secondary">Draft</Badge>;
+      default:
+        return <Badge className={baseClass} variant="secondary">{status}</Badge>;
+    }
+  };
 
-      {/* Section Selection */}
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>Select Section</label>
-        <select
-          className='w-full max-w-md p-2 border rounded'
-          value={selectedSection || ''}
-          onChange={(e) => setSelectedSection(Number(e.target.value))}
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="space-y-4">
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
         >
-          <option value=''>Select a section</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.courseOffering.course.code} - {section.name} (
-              {section.courseOffering.semester.name})
-            </option>
-          ))}
-        </select>
+          <ClipboardCheck className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Result Evaluation</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Review and moderate assessment results
+          </p>
+        </div>
       </div>
 
+      <Card className="rounded-lg border border-card-border bg-card p-6">
+        <CardHeader className="p-0 pb-4">
+          <CardTitle className="text-sm font-bold text-primary-text">Select Section</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="space-y-2">
+            <Label htmlFor="section" className="text-xs text-primary-text">Section *</Label>
+            <Select value={selectedSection} onValueChange={setSelectedSection}>
+              <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectValue placeholder="Select a section" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-card-border">
+                {sections.map((section) => (
+                  <SelectItem
+                    key={section.id}
+                    value={section.id.toString()}
+                    className="text-primary-text hover:bg-card/50"
+                  >
+                    {section.courseOffering.course.code} - {section.name} (
+                    {section.courseOffering.semester.name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderColor: 'var(--error-opacity-20)' }}>
+          <p className="text-xs" style={{ color: 'var(--error)' }}>{error}</p>
+        </div>
       )}
 
       {loading ? (
-        <div className='text-center py-4'>Loading...</div>
+        <div className="rounded-lg border border-card-border bg-card p-8 flex flex-col items-center justify-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       ) : selectedSection && students.length > 0 ? (
-        <div className='overflow-x-auto'>
-          <table className='min-w-full bg-white border'>
-            <thead>
-              <tr>
-                <th className='border p-2'>Roll No</th>
-                <th className='border p-2'>Student Name</th>
-                {assessments.map((assessment) => (
-                  <th key={assessment.id} className='border p-2'>
-                    {assessment.title}
-                    <br />
-                    <span className='text-sm text-gray-500'>
-                      ({assessment.type})
-                    </span>
-                  </th>
-                ))}
-                <th className='border p-2'>Status</th>
-                <th className='border p-2'>Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.id}>
-                  <td className='border p-2'>{student.rollNumber}</td>
-                  <td className='border p-2'>{student.user.name}</td>
-                  {assessments.map((assessment) => {
-                    const result = results[student.id]?.find(
-                      (r) => r.assessmentId === assessment.id
-                    );
-                    return (
-                      <td key={assessment.id} className='border p-2'>
-                        {result ? (
-                          <div>
-                            <div>
-                              {result.obtainedMarks} / {result.totalMarks}
-                            </div>
-                            <div className='text-sm text-gray-500'>
-                              {result.percentage.toFixed(1)}%
-                            </div>
-                          </div>
-                        ) : (
-                          'N/A'
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className='border p-2'>
-                    {results[student.id]?.map((result) => (
-                      <select
-                        key={result.id}
-                        value={result.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            student.id,
-                            result.id,
-                            e.target.value as
-                              | 'pending'
-                              | 'evaluated'
-                              | 'published'
-                              | 'draft'
-                          )
-                        }
-                        className='w-full p-1 border rounded'
-                      >
-                        <option value='pending'>Pending</option>
-                        <option value='evaluated'>Evaluated</option>
-                        <option value='published'>Published</option>
-                        <option value='draft'>Draft</option>
-                      </select>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm font-bold text-primary-text">Assessment Results</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="overflow-x-auto rounded-lg border border-card-border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-card-border">
+                    <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Student Name</TableHead>
+                    {assessments.map((assessment) => (
+                      <TableHead key={assessment.id} className="text-xs font-semibold text-primary-text">
+                        <div>{assessment.title}</div>
+                        <div className="text-[10px] text-secondary-text font-normal">
+                          {assessment.type}
+                        </div>
+                      </TableHead>
                     ))}
-                  </td>
-                  <td className='border p-2'>
-                    {results[student.id]?.map((result) => (
-                      <textarea
-                        key={result.id}
-                        value={result.remarks}
-                        onChange={(e) =>
-                          handleRemarksChange(
-                            student.id,
-                            result.id,
-                            e.target.value
-                          )
-                        }
-                        className='w-full p-1 border rounded'
-                        rows={2}
-                        placeholder='Add remarks...'
-                      />
-                    ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students.map((student) => (
+                    <TableRow key={student.id} className="hover:bg-hover-bg transition-colors">
+                      <TableCell className="text-xs font-medium text-primary-text">
+                        {student.rollNumber}
+                      </TableCell>
+                      <TableCell className="text-xs text-primary-text">
+                        {student.user.name ||
+                          `${student.user.firstName} ${student.user.lastName}`}
+                      </TableCell>
+                      {assessments.map((assessment) => {
+                        const result = results[student.id]?.find(
+                          (r) => r.assessmentId === assessment.id
+                        );
+                        return (
+                          <TableCell key={assessment.id} className="text-xs text-primary-text">
+                            {result ? (
+                              <div>
+                                <div className="font-medium">
+                                  {result.obtainedMarks} / {result.totalMarks}
+                                </div>
+                                <div className="text-[10px] text-secondary-text">
+                                  {result.percentage.toFixed(1)}%
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-secondary-text">N/A</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className="text-xs">
+                        {results[student.id]?.map((result) => (
+                          <Select
+                            key={result.id}
+                            value={result.status}
+                            onValueChange={(value: any) =>
+                              handleStatusChange(
+                                student.id,
+                                result.id,
+                                value
+                              )
+                            }
+                          >
+                            <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-card-border">
+                              <SelectItem value="pending" className="text-primary-text hover:bg-card/50">Pending</SelectItem>
+                              <SelectItem value="evaluated" className="text-primary-text hover:bg-card/50">Evaluated</SelectItem>
+                              <SelectItem value="published" className="text-primary-text hover:bg-card/50">Published</SelectItem>
+                              <SelectItem value="draft" className="text-primary-text hover:bg-card/50">Draft</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ))}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {results[student.id]?.map((result) => (
+                          <Textarea
+                            key={result.id}
+                            value={result.remarks || ''}
+                            onChange={(e) =>
+                              handleRemarksChange(
+                                student.id,
+                                result.id,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Add remarks..."
+                            rows={2}
+                            className="min-w-[200px] text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
+                          />
+                        ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       ) : selectedSection ? (
-        <div className='text-center py-4'>
-          No students found in this section
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
+            No students found in this section
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
+            Please select a section to view results
+          </div>
+        </div>
+      )}
     </div>
   );
 };

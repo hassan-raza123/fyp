@@ -1,15 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { assessmentitems } from '@prisma/client';
+import { getFacultyIdFromRequest } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Get logged-in faculty ID
+    const facultyId = await getFacultyIdFromRequest(request);
+    if (!facultyId) {
+      return NextResponse.json(
+        { success: false, error: 'Faculty not found or unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { sectionId, assessmentId, marks } = body;
 
-    if (!sectionId || !assessmentId || !marks || !Array.isArray(marks)) {
+    if (!assessmentId || !marks || !Array.isArray(marks)) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { success: false, error: 'Invalid request data' },
         { status: 400 }
       );
     }
@@ -24,8 +34,31 @@ export async function POST(request: Request) {
 
     if (!assessment) {
       return NextResponse.json(
-        { error: 'Assessment not found' },
+        { success: false, error: 'Assessment not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if the course offering results are locked
+    const offering = await prisma.courseofferings.findUnique({
+      where: { id: assessment.courseOfferingId },
+      select: { isResultsLocked: true },
+    });
+    if (offering?.isResultsLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Results are locked for this course offering. Contact your department admin to unlock.',
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify assessment belongs to faculty
+    if (assessment.conductedBy !== facultyId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Assessment does not belong to you' },
+        { status: 403 }
       );
     }
 
@@ -42,6 +75,11 @@ export async function POST(request: Request) {
           );
           continue;
         }
+        if (item.marks < 0) {
+          validationErrors.push(
+            `Marks for item ${item.itemId} cannot be negative for student ${studentMark.studentId}`
+          );
+        }
         if (item.marks > assessmentItem.marks) {
           validationErrors.push(
             `Marks for item ${item.itemId} exceed maximum marks for student ${studentMark.studentId}`
@@ -52,7 +90,7 @@ export async function POST(request: Request) {
 
     if (validationErrors.length > 0) {
       return NextResponse.json(
-        { error: 'Validation failed', details: validationErrors },
+        { success: false, error: 'Validation failed', details: validationErrors },
         { status: 400 }
       );
     }
@@ -73,9 +111,22 @@ export async function POST(request: Request) {
         );
         const percentage = (obtainedMarks / totalMarks) * 100;
 
-        // Create the main assessment result
-        const result = await tx.studentassessmentresults.create({
-          data: {
+        // Upsert the main assessment result (update if student+assessment combo already exists)
+        const result = await tx.studentassessmentresults.upsert({
+          where: {
+            studentId_assessmentId: {
+              studentId: studentMark.studentId,
+              assessmentId: assessmentId,
+            },
+          },
+          update: {
+            totalMarks,
+            obtainedMarks,
+            percentage,
+            status: 'pending',
+            submittedAt: new Date(),
+          },
+          create: {
             studentId: studentMark.studentId,
             assessmentId: assessmentId,
             totalMarks,
@@ -85,6 +136,11 @@ export async function POST(request: Request) {
             remarks: '',
             submittedAt: new Date(),
           },
+        });
+
+        // Delete existing item results before re-creating (to handle updated marks)
+        await tx.studentassessmentitemresults.deleteMany({
+          where: { studentAssessmentResultId: result.id },
         });
 
         // Create individual item results
@@ -112,11 +168,15 @@ export async function POST(request: Request) {
       return createdResults;
     });
 
-    return NextResponse.json(results);
+    return NextResponse.json({
+      success: true,
+      message: `Successfully entered marks for ${results.length} student(s)`,
+      data: results,
+    });
   } catch (error) {
     console.error('Error in bulk marks entry:', error);
     return NextResponse.json(
-      { error: 'Failed to process marks entry' },
+      { success: false, error: 'Failed to process marks entry' },
       { status: 500 }
     );
   }

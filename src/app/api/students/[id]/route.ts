@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
@@ -21,15 +21,33 @@ const updateStudentSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const studentId = parseInt(resolvedParams.id);
+
+    if (isNaN(studentId) || studentId <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid student ID' },
+        { status: 400 }
       );
     }
 
@@ -62,7 +80,7 @@ export async function PUT(
 
     // Check if student exists
     const existingStudent = await prisma.students.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: studentId },
       include: {
         user: {
           select: {
@@ -163,7 +181,7 @@ export async function PUT(
 
     // Update user and student
     const updatedStudent = await prisma.students.update({
-      where: { id: parseInt(params.id) },
+      where: { id: studentId },
       data: {
         rollNumber,
         status: status || existingStudent.status,
@@ -234,11 +252,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -246,8 +264,26 @@ export async function DELETE(
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const studentId = parseInt(resolvedParams.id);
+
+    if (isNaN(studentId) || studentId <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid student ID' },
+        { status: 400 }
+      );
+    }
+
     const student = await prisma.students.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: studentId },
       include: {
         user: {
           select: {
@@ -277,7 +313,7 @@ export async function DELETE(
     await prisma.$transaction(async (tx) => {
       // First delete the student record
       await tx.students.delete({
-        where: { id: parseInt(params.id) },
+        where: { id: studentId },
       });
 
       // Then explicitly delete the user record
@@ -302,11 +338,11 @@ export async function DELETE(
 // GET /api/students/[id] - Get a single student
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -314,8 +350,19 @@ export async function GET(
       );
     }
 
+    // Handle both sync and async params (Next.js 15+ compatibility)
+    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const studentId = parseInt(resolvedParams.id);
+    
+    if (isNaN(studentId) || studentId <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid student ID' },
+        { status: 400 }
+      );
+    }
+
     const student = await prisma.students.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: studentId },
       include: {
         user: {
           select: {

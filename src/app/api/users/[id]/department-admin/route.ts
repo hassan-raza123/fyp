@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     // Check authentication and get user data
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ success: false, error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'super_admin' && user?.role !== 'sub_admin') {
+    // Check if user has admin or super_admin role
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -58,12 +59,12 @@ export async function POST(
         throw new Error('Department not found');
       }
 
-      // Remove any existing department admin role
+      // Remove any existing admin role
       await tx.userroles.deleteMany({
         where: {
           userId,
           role: {
-            name: 'department_admin',
+            name: 'admin',
           },
         },
       });
@@ -72,24 +73,24 @@ export async function POST(
       await tx.faculties.deleteMany({
         where: {
           userId,
-          designation: 'Department Admin',
+          designation: 'Admin',
         },
       });
 
-      // Get the department admin role
-      const departmentAdminRole = await tx.roles.findUnique({
-        where: { name: 'department_admin' },
+      // Get the admin role
+      const adminRole = await tx.roles.findUnique({
+        where: { name: 'admin' },
       });
 
-      if (!departmentAdminRole) {
-        throw new Error('Department admin role not found');
+      if (!adminRole) {
+        throw new Error('Admin role not found');
       }
 
-      // Create the department admin role
+      // Create the admin role
       await tx.userroles.create({
         data: {
           userId,
-          roleId: departmentAdminRole.id,
+          roleId: adminRole.id,
         },
       });
 
@@ -98,7 +99,7 @@ export async function POST(
         data: {
           userId,
           departmentId,
-          designation: 'Department Admin',
+          designation: 'Admin',
           status: 'active' as const,
           updatedAt: new Date(),
         },

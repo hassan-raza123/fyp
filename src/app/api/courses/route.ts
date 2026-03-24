@@ -10,8 +10,7 @@ const createCourseSchema = z.object({
   creditHours: z.coerce.number().min(1, 'Credit hours must be at least 1'),
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
-  type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
-  departmentId: z.coerce.number().min(1, 'Department is required'),
+  type: z.enum(['THEORY', 'LAB', 'THEORY_LAB', 'PROJECT', 'THESIS'] as const),
   status: z.enum(['active', 'inactive', 'archived'] as const).default('active'),
   prerequisites: z.array(z.number()).optional(),
   programIds: z.array(z.number()).optional(),
@@ -60,25 +59,97 @@ interface CourseResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins, faculty, students, and super_admins can access courses
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
+      );
+    }
+
+    // Import getCurrentDepartmentId and getFacultyIdFromRequest
+    const { getCurrentDepartmentId, getFacultyIdFromRequest } = await import('@/lib/auth');
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
-    const departmentId = searchParams.get('departmentId');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
     const programId = searchParams.get('programId');
 
-    const where: Prisma.coursesWhereInput = {};
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Department not assigned. Please contact super admin.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const where: Prisma.coursesWhereInput = {
+      departmentId: currentDepartmentId, // Always filter by current department
+    };
+
+    // If user is faculty, only show courses assigned to them via sections
+    if (user?.role === 'faculty') {
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        // Get course IDs from faculty's sections
+        const facultySections = await prisma.sections.findMany({
+          where: {
+            facultyId: facultyId,
+            status: 'active',
+          },
+          include: {
+            courseOffering: {
+              select: {
+                courseId: true,
+              },
+            },
+          },
+        });
+
+        const assignedCourseIds = [
+          ...new Set(facultySections.map((s) => s.courseOffering.courseId)),
+        ];
+
+        if (assignedCourseIds.length > 0) {
+          where.id = { in: assignedCourseIds };
+        } else {
+          // Faculty has no assigned courses, return empty result
+          return NextResponse.json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              totalPages: 0,
+            },
+          });
+        }
+      }
+    }
 
     if (search) {
       where.OR = [
         { code: { contains: search } },
         { name: { contains: search } },
       ];
-    }
-    if (departmentId && departmentId !== 'all') {
-      where.departmentId = parseInt(departmentId);
     }
     if (type && type !== 'all') {
       where.type = type as course_type;
@@ -161,6 +232,24 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Course POST request received');
 
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create courses
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     // Parse and validate request body
     const body = await request.json();
     console.log('Request body:', JSON.stringify(body, null, 2));
@@ -200,16 +289,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Import getCurrentDepartmentId
+    const { getCurrentDepartmentId } = await import('@/lib/auth');
+
+    // Get current department ID from authenticated user (override any departmentId from form)
+    const currentDepartmentId = await getCurrentDepartmentId(request);
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Department not assigned. Please contact super admin.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Extract prerequisites and programIds from validated data
-    const { prerequisites, programIds, ...courseData } = validatedData;
+    const { prerequisites, programIds, ...courseData } =
+      validatedData;
     console.log('Course data to create:', JSON.stringify(courseData, null, 2));
     console.log('Prerequisites:', prerequisites);
     console.log('Program IDs:', programIds);
 
-    // Create the course with related data
+    // Create the course with related data (always use current department from settings)
     const course = await prisma.courses.create({
       data: {
         ...courseData,
+        department: {
+          connect: { id: currentDepartmentId }, // Always use current department from settings
+        },
         courses_A: prerequisites
           ? {
               connect: prerequisites.map((id) => ({ id })),
@@ -291,6 +399,23 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateCourseSchema.parse(body);
 
@@ -410,6 +535,23 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

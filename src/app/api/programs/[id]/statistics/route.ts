@@ -5,23 +5,20 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        students: {
-          include: {
-            user: true,
-          },
-        },
-        courses: {
+        students: true,
+        curriculum: {
           include: {
             course: true,
           },
@@ -43,27 +40,27 @@ export async function GET(
     ).length;
 
     // Calculate average CGPA
-    const totalCGPA = program.students.reduce((sum, student) => {
-      return sum + (student.cgpa || 0);
+    const totalCGPA = program.students.reduce((sum: number, student: any) => {
+      return sum + ((student as any).cgpa || 0);
     }, 0);
     const averageCGPA = totalStudents > 0 ? totalCGPA / totalStudents : 0;
 
     // Calculate credit hours distribution
-    const creditHoursBySemester = program.courses.reduce((acc, pc) => {
-      if (!acc[pc.semester]) {
-        acc[pc.semester] = 0;
+    const creditHoursBySemester = program.curriculum.reduce((acc: Record<number, number>, pc: any) => {
+      if (!acc[pc.semesterSlot]) {
+        acc[pc.semesterSlot] = 0;
       }
-      acc[pc.semester] += pc.creditHours;
+      acc[pc.semesterSlot] += pc.course.creditHours;
       return acc;
     }, {} as Record<number, number>);
 
     // Calculate course type distribution
-    const courseTypeDistribution = program.courses.reduce((acc, pc) => {
-      const type = pc.isCore ? 'core' : 'elective';
+    const courseTypeDistribution = program.curriculum.reduce((acc: Record<string, number>, pc: any) => {
+      const type = pc.courseCategory === 'core' ? 'core' : 'elective';
       if (!acc[type]) {
         acc[type] = 0;
       }
-      acc[type] += pc.creditHours;
+      acc[type] += pc.course.creditHours;
       return acc;
     }, {} as Record<string, number>);
 

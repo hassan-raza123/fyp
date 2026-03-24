@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/api-utils';
+import { requireAuth, requireRole } from '@/lib/auth';
+import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/batches/unassigned-students - Get students not assigned to any batch
 export async function GET(request: NextRequest) {
@@ -11,29 +12,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
+    }
+
+    // Get current department ID from request
+    const currentDepartmentId = await getCurrentDepartmentId(request);
+    if (!currentDepartmentId) {
+      return NextResponse.json(
+        { error: 'Department not configured in settings' },
+        { status: 400 }
+      );
     }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
-    const departmentId = searchParams.get('departmentId');
     const search = searchParams.get('search');
 
-    // Build query conditions
-    let whereClause = 'WHERE s.batchId IS NULL';
-    const params: any[] = [];
+    // Build query conditions - automatically filter by current department
+    let whereClause = 'WHERE s.batchId IS NULL AND s.departmentId = ?';
+    const params: any[] = [currentDepartmentId];
 
     if (programId) {
       whereClause += ' AND s.programId = ?';
       params.push(parseInt(programId));
-    }
-
-    if (departmentId) {
-      whereClause += ' AND s.departmentId = ?';
-      params.push(parseInt(departmentId));
     }
 
     if (search) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { assessment_status, assessment_type } from '@prisma/client';
 import { NextRequest } from 'next/server';
 
@@ -14,26 +14,75 @@ const validAssessmentTypes = [
   'project',
   'presentation',
   'lab_report',
-  'lab_performance',
   'lab_exam',
   'viva',
+  'class_participation',
+  'case_study',
 ] as const;
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const courseOfferingId = searchParams.get('courseOfferingId');
+
+    const where: any = {};
+    if (courseOfferingId) {
+      where.courseOfferingId = parseInt(courseOfferingId);
+    }
+
+    // If user is faculty, only show their assessments
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.conductedBy = facultyId;
+      } else {
+        // Faculty not found, return empty
+        return NextResponse.json([]);
+      }
+    }
+
     const assessments = await prisma.assessments.findMany({
+      where,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
         assessmentItems: true,
+        courseOffering: {
+          include: {
+            course: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            semester: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
+
+    // When filtering by courseOffering, include weightage summary
+    if (courseOfferingId) {
+      const usedWeightage = assessments
+        .filter((a) => a.status !== 'cancelled')
+        .reduce((sum, a) => sum + a.weightage, 0);
+      return NextResponse.json({
+        assessments,
+        usedWeightage: Math.round(usedWeightage * 100) / 100,
+        remainingWeightage: Math.round((100 - usedWeightage) * 100) / 100,
+      });
+    }
 
     return NextResponse.json(assessments);
   } catch (error) {
@@ -47,7 +96,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       console.log('Auth failed:', error);
       return NextResponse.json({ error }, { status: 401 });
@@ -97,6 +146,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Faculty not found' }, { status: 404 });
     }
 
+    // Validate total weightage ≤ 100 for this course offering
+    const existingWeightage = await prisma.assessments.aggregate({
+      where: {
+        courseOfferingId: Number(courseOfferingId),
+        status: { not: 'cancelled' },
+      },
+      _sum: { weightage: true },
+    });
+    const usedWeightage = existingWeightage._sum.weightage ?? 0;
+    if (usedWeightage + Number(weightage) > 100) {
+      return NextResponse.json(
+        {
+          error: `Total weightage would exceed 100%. Currently used: ${usedWeightage}%. Available: ${(100 - usedWeightage).toFixed(1)}%`,
+          usedWeightage,
+          remainingWeightage: 100 - usedWeightage,
+        },
+        { status: 400 }
+      );
+    }
+
     try {
       const assessment = await prisma.assessments.create({
         data: {
@@ -111,7 +180,28 @@ export async function POST(request: NextRequest) {
           conductedBy: faculty.id,
           status: assessment_status.active,
         },
+        include: {
+          courseOffering: {
+            include: {
+              course: {
+                select: {
+                  code: true,
+                },
+              },
+            },
+          },
+        },
       });
+
+      // Send notification to faculty
+      const { notifyAssessmentCreated } = await import('@/lib/notification-utils');
+      await notifyAssessmentCreated(
+        assessment.id,
+        assessment.title,
+        assessment.courseOffering.course.code,
+        faculty.id
+      );
+
       return NextResponse.json(assessment);
     } catch (err) {
       console.error('Error creating assessment (prisma):', err);

@@ -1,10 +1,6 @@
-export type BaseUserType = 'student' | 'teacher' | 'admin' | 'department_admin';
-export type AdminRole =
-  | 'super_admin'
-  | 'sub_admin'
-  | 'department_admin'
-  | 'child_admin';
-export type AllRoles = BaseUserType | AdminRole;
+export type BaseUserType = 'student' | 'faculty' | 'admin' | 'super_admin';
+export type AdminRole = 'admin' | 'super_admin';
+export type AllRoles = 'student' | 'faculty' | 'admin' | 'super_admin';
 
 export interface IUser {
   id: number;
@@ -77,6 +73,7 @@ export interface TokenPayload {
   email: string;
   role: string;
   userData: UserData;
+  departmentId?: number; // Direct department ID for quick access (for admin/faculty)
 }
 
 export interface LoginResponse {

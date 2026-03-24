@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { getDefaultPassword } from '@/lib/password-utils';
 
 const createStudentSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   rollNumber: z.string().min(1, 'Roll number is required'),
-  departmentId: z.number(),
+  departmentId: z.number().nullable().optional(),
   programId: z.number(),
   batchId: z.string(),
   status: z.enum(['active', 'inactive']),
@@ -17,12 +18,37 @@ const createStudentSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = requireAuth(request);
-    if (!success) {
+    // Check authentication and authorization
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins, faculty, students, and super_admins can access students
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
+      );
+    }
+
+    // Import getDepartmentIdFromRequest
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+
+    // Get department ID from authenticated user
+    const currentDepartmentId = await getDepartmentIdFromRequest(request);
+    
+    // For super_admin, allow access without department restriction
+    if (!currentDepartmentId && user.role !== 'super_admin') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Department not assigned. Please contact super admin to assign a department to your account.',
+        },
+        { status: 400 }
       );
     }
 
@@ -36,20 +62,62 @@ export async function GET(request: NextRequest) {
     const batchId = searchParams.get('batchId');
     const search = searchParams.get('search');
 
+    // If user is faculty, only show students from their sections
+    let studentIds: number[] | null = null;
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        // Get student IDs from faculty's sections
+        const studentSections = await prisma.studentsections.findMany({
+          where: {
+            section: {
+              facultyId: facultyId,
+              status: 'active',
+            },
+          },
+          select: {
+            studentId: true,
+          },
+        });
+
+        studentIds = [
+          ...new Set(studentSections.map((ss) => ss.studentId)),
+        ];
+
+        if (studentIds.length === 0) {
+          // Faculty has no students, return empty result
+          return NextResponse.json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              totalPages: 0,
+            },
+          });
+        }
+      }
+    }
+
     const where = {
       AND: [
+        // Only filter by department if we have a department ID (not for super_admin without department)
+        ...(currentDepartmentId ? [{ departmentId: currentDepartmentId }] : []),
+        studentIds ? { id: { in: studentIds } } : {}, // Filter by faculty's students if faculty
         status ? { status } : {},
         batchId ? { batchId } : {},
         search
           ? {
               OR: [
-                { rollNumber: { contains: search, mode: 'insensitive' } },
+                { rollNumber: { contains: search } },
                 {
                   user: {
                     OR: [
-                      { first_name: { contains: search, mode: 'insensitive' } },
-                      { last_name: { contains: search, mode: 'insensitive' } },
-                      { email: { contains: search, mode: 'insensitive' } },
+                      { first_name: { contains: search } },
+                      { last_name: { contains: search } },
+                      { email: { contains: search } },
                     ],
                   },
                 },
@@ -168,12 +236,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = requireAuth(request);
-    if (!success) {
+    // Check authentication and authorization
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create students
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 
@@ -192,11 +268,25 @@ export async function POST(request: NextRequest) {
       lastName,
       email,
       rollNumber,
-      departmentId,
+      departmentId: providedDepartmentId,
       programId,
       batchId,
       status,
     } = result.data;
+
+    // Get department ID from authenticated user if not provided
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+    let departmentId = providedDepartmentId;
+    
+    if (!departmentId) {
+      departmentId = await getDepartmentIdFromRequest(request);
+      if (!departmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Department not configured. Please set department in Settings.' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Check if user with email already exists
     const existingUser = await prisma.users.findUnique({
@@ -273,7 +363,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultPassword = '11223344';
+    const defaultPassword = getDefaultPassword('student');
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     // Create user with student role
@@ -381,8 +471,19 @@ export async function POST(request: NextRequest) {
 
     // Transform the data to include currentStudents count
     const transformedStudent = {
-      ...student,
-      currentStudents: student._count.studentsections,
+      id: student.id,
+      rollNumber: student.rollNumber,
+      status: student.status,
+      user: {
+        id: student.user.id,
+        firstName: student.user.first_name,
+        lastName: student.user.last_name,
+        email: student.user.email,
+      },
+      batch: student.batch,
+      department: student.department,
+      program: student.program,
+      currentStudents: student._count?.studentsections || 0,
     };
 
     return NextResponse.json({

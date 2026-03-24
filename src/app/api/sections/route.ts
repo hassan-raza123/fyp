@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/api-utils';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 
 const createSectionSchema = z.object({
@@ -14,7 +14,7 @@ const createSectionSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -22,28 +22,132 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const sections = await prisma.sections.findMany({
-      where: {
-        status: 'active',
-      },
-      include: {
-        courseOffering: {
-          include: {
-            course: true,
-            semester: true,
+    // Build where clause
+    const where: any = {
+      status: 'active',
+    };
+
+    // If user is faculty, only show their assigned sections
+    if (user?.role === 'faculty') {
+      const { getFacultyIdFromRequest } = await import('@/lib/auth');
+      const facultyId = await getFacultyIdFromRequest(request);
+      if (facultyId) {
+        where.facultyId = facultyId;
+      } else {
+        // Faculty not found, return empty
+        return NextResponse.json({
+          success: true,
+          data: [],
+        });
+      }
+    }
+
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const statusFilter = searchParams.get('status');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+
+    // Add search filter
+    if (search) {
+      where.OR = [
+        { name: { contains: search,  } },
+        {
+          courseOffering: {
+            course: {
+              OR: [
+                { code: { contains: search,  } },
+                { name: { contains: search,  } },
+              ],
+            },
           },
         },
-      },
-      orderBy: {
-        courseOffering: {
-          semester: {
-            startDate: 'desc',
+      ];
+    }
+
+    // Add status filter
+    if (statusFilter === 'all') {
+      delete where.status;
+    } else if (statusFilter) {
+      where.status = statusFilter;
+    }
+
+    const [sections, total] = await Promise.all([
+      prisma.sections.findMany({
+        where,
+        include: {
+          courseOffering: {
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                },
+              },
+              semester: {
+                select: {
+                  id: true,
+                  name: true,
+                  startDate: true,
+                  endDate: true,
+                },
+              },
+            },
+          },
+          faculty: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          batch: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              studentsections: true,
+            },
           },
         },
+        orderBy: {
+          courseOffering: {
+            semester: {
+              startDate: 'desc',
+            },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.sections.count({ where }),
+    ]);
+
+    // Transform sections to include currentStudents
+    const transformedSections = sections.map((section) => ({
+      ...section,
+      currentStudents: section._count.studentsections,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: transformedSections,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        page,
+        limit,
       },
     });
-
-    return NextResponse.json(sections);
   } catch (error) {
     console.error('Error fetching sections:', error);
     return NextResponse.json(
@@ -55,12 +159,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = requireAuth(request);
-    if (!success) {
+    // Check authentication and authorization
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Only admins and super_admins can create sections
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 
@@ -185,7 +297,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const { success, user, error } = requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

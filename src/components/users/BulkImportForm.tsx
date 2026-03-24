@@ -25,7 +25,7 @@ export default function BulkImportForm() {
           firstName: 'John',
           lastName: 'Doe',
           email: 'john.doe@example.com',
-          role: 'TEACHER',
+          role: 'FACULTY',
           employeeId: 'EMP001',
         },
         {

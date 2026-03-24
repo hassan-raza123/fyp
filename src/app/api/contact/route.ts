@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import { z } from 'zod';
+import { sendContactEmails } from '@/lib/email-utils';
 
 // Email validation schema
 const emailSchema = z.object({
@@ -10,14 +10,6 @@ const emailSchema = z.object({
   message: z.string().min(10).max(1000),
 });
 
-// Create reusable transporter object using SMTP transport
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
 
 // Rate limiting setup
 const rateLimit = new Map();
@@ -44,7 +36,7 @@ export async function POST(req: Request) {
     const now = Date.now();
     const userRequests = rateLimit.get(email) || [];
     const recentRequests = userRequests.filter(
-      (time) => now - time < RATE_LIMIT_WINDOW
+      (time: number) => now - time < RATE_LIMIT_WINDOW
     );
 
     if (recentRequests.length >= MAX_REQUESTS) {
@@ -57,95 +49,8 @@ export async function POST(req: Request) {
     recentRequests.push(now);
     rateLimit.set(email, recentRequests);
 
-    // Email content for support team
-    const supportMailOptions = {
-      from: {
-        name: 'Smart Campus for MNSUET Support',
-        address: process.env.GMAIL_USER!,
-      },
-      to: process.env.GMAIL_USER,
-      replyTo: {
-        name: name,
-        address: email,
-      },
-      subject: `📬 New Contact Request: ${subject}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
-            <p style="color: #4B5563; margin: 5px 0;">New Contact Form Submission</p>
-          </div>
-          
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Contact Details</h2>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 8px 0; color: #6B7280; width: 100px;">Name:</td>
-                <td style="padding: 8px 0; color: #111827; font-weight: 500;">${name}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6B7280;">Email:</td>
-                <td style="padding: 8px 0; color: #111827;">
-                  <a href="mailto:${email}" style="color: #6B46C1; text-decoration: none;">${email}</a>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6B7280;">Subject:</td>
-                <td style="padding: 8px 0; color: #111827; font-weight: 500;">${subject}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Message</h2>
-            <div style="color: #111827; line-height: 1.5; white-space: pre-wrap;">${message}</div>
-          </div>
-
-          <div style="margin-top: 20px; text-align: center;">
-            <a href="mailto:${email}" style="display: inline-block; background: #6B46C1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply to ${name}</a>
-          </div>
-        </div>
-      `,
-    };
-
-    // Email content for user acknowledgment
-    const userMailOptions = {
-      from: {
-        name: 'Smart Campus for MNSUET Support',
-        address: process.env.GMAIL_USER!,
-      },
-      to: email,
-      subject: 'Thank you for contacting Smart Campus for MNSUET',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #6B46C1; margin: 0;">Smart Campus for MNSUET</h1>
-            <p style="color: #4B5563; margin: 5px 0;">Thank you for reaching out!</p>
-          </div>
-
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px;">
-            <p style="color: #111827; margin: 0 0 15px 0;">Dear ${name},</p>
-            <p style="color: #4B5563; line-height: 1.5;">Thank you for contacting Smart Campus for MNSUET. We have received your message and our support team will review it shortly.</p>
-            <p style="color: #4B5563; line-height: 1.5;">We typically respond within 24-48 hours during business days.</p>
-            <p style="color: #4B5563; line-height: 1.5;">If you have any urgent queries, please feel free to call us at our support number.</p>
-          </div>
-
-          <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
-            <p>Best regards,</p>
-            <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The Smart Campus for MNSUET Team</p>
-          </div>
-        </div>
-      `,
-    };
-
-    // Send both emails
-    const [supportInfo, userInfo] = await Promise.all([
-      transporter.sendMail(supportMailOptions),
-      transporter.sendMail(userMailOptions),
-    ]);
-
-    console.log('Support email sent successfully:', supportInfo);
-    console.log('User acknowledgment email sent successfully:', userInfo);
+    // Send both emails using email-utils
+    await sendContactEmails({ name, email, subject, message });
 
     return NextResponse.json(
       { message: 'Emails sent successfully' },

@@ -1,73 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { AssessmentList } from '@/components/assessments/AssessmentList';
-import { CreateAssessmentForm } from '@/components/assessments/CreateAssessmentForm';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { PlusIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 
 export default function AssessmentsPage() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
 
-  const handleCreateAssessment = async (data: any) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/assessments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create assessment');
-      }
-
-      toast.success('Assessment created successfully');
-      setIsDialogOpen(false);
-      router.refresh();
-    } catch (error) {
-      toast.error('Failed to create assessment');
-      console.error('Error creating assessment:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className='container mx-auto py-6 space-y-6'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-3xl font-bold'>Assessments</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className='mr-2 h-4 w-4' />
-              Create Assessment
-            </Button>
-          </DialogTrigger>
-          <DialogContent className='max-w-2xl'>
-            <DialogHeader>
-              <DialogTitle>Create New Assessment</DialogTitle>
-            </DialogHeader>
-            <CreateAssessmentForm
-              sectionId={1} // This should be dynamic based on the selected section
-              onSubmit={handleCreateAssessment}
-              isLoading={isLoading}
-            />
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Assessments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            View all assessments for your enrolled courses
+          </p>
+        </div>
       </div>
       <AssessmentList />
     </div>
