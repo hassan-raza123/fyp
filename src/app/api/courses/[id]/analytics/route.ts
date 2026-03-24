@@ -198,7 +198,7 @@ export async function GET(
         if (cloId) {
           const existing = cloPerformanceMap.get(cloId);
           if (existing) {
-            existing.totalObtained += itemResult.marks;
+            existing.totalObtained += itemResult.obtainedMarks;
           }
         }
       });

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         firstName: student.user.first_name,
         lastName: student.user.last_name,
         email: student.user.email,
-        phone: student.user.phone || '',
+        phone: student.user.phone_number || '',
         department: student.department,
         program: student.program,
         batch: student.batch,
@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
         first_name: validatedData.firstName,
         last_name: validatedData.lastName,
         email: validatedData.email,
-        phone: validatedData.phone || null,
+        phone_number: validatedData.phone || null,
       },
     });
 

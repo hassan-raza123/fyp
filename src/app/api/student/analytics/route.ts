@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
           in: courseOfferingIds,
         },
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -361,9 +361,6 @@ export async function GET(request: NextRequest) {
       where: {
         courseOfferingId: {
           in: courseOfferingIds,
-        },
-        sectionId: {
-          in: sectionIds,
         },
         status: 'active',
       },

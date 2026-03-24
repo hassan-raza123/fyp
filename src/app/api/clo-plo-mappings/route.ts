@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(request as any);
-    if (!success || !['admin', 'super_admin'].includes(user?.role))
+    if (!success || !['admin', 'super_admin'].includes(user?.role ?? ''))
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();

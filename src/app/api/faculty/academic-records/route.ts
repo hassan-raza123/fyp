@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
                 user: { select: { first_name: true, last_name: true, email: true } },
                 program: { select: { id: true, code: true, name: true } },
                 batch: { select: { id: true, name: true } },
-                cumulativegpa: {
+                cumulativeGPA: {
                   select: {
                     cumulativeGPA: true,
                     totalCreditHours: true,
@@ -117,9 +117,9 @@ export async function GET(request: NextRequest) {
               ? { id: s.program.id, code: s.program.code, name: s.program.name }
               : null,
             batch: s.batch ? { id: s.batch.id, name: s.batch.name } : null,
-            cgpa: Number(s.cumulativegpa?.cumulativeGPA ?? 0),
-            completedSemesters: s.cumulativegpa?.completedSemesters ?? 0,
-            totalCreditHours: s.cumulativegpa?.totalCreditHours ?? 0,
+            cgpa: Number(s.cumulativeGPA?.cumulativeGPA ?? 0),
+            completedSemesters: s.cumulativeGPA?.completedSemesters ?? 0,
+            totalCreditHours: s.cumulativeGPA?.totalCreditHours ?? 0,
           });
         }
       }

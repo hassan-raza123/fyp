@@ -53,7 +53,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -62,7 +62,7 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
@@ -81,7 +81,7 @@ export async function POST(
     }
 
     // Check if program exists
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -127,7 +127,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -136,7 +136,7 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
@@ -184,7 +184,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -193,7 +193,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {

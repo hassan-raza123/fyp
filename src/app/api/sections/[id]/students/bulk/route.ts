@@ -200,7 +200,7 @@ export async function POST(
         section.courseOffering.course.code,
         'added',
         enrollments.length,
-        section.facultyId
+        section.facultyId ?? 0
       );
     }
 

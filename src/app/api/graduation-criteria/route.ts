@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const programs = await prisma.programs.findMany({
       where: programId ? { id: parseInt(programId) } : {},
       include: {
-        graduation_criteria: true,
+        graduationCriteria: true,
       },
       orderBy: { name: 'asc' },
     });
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       programId: program.id,
       programName: program.name,
       programCode: program.code,
-      criteria: program.graduation_criteria ?? null,
+      criteria: program.graduationCriteria ?? null,
     }));
 
     return NextResponse.json({ success: true, data: result });

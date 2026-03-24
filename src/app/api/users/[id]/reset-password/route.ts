@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!['admin', 'super_admin'].includes(authResult.user?.role)) {
+    if (!['admin', 'super_admin'].includes(authResult.user?.role ?? '')) {
       return NextResponse.json({ error: 'Only admins can reset passwords' }, { status: 403 });
     }
 

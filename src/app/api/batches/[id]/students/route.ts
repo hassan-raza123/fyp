@@ -10,7 +10,7 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const batch = await prisma.Batch.findUnique({
+    const batch = await prisma.batches.findUnique({
       where: { id: params.id },
       include: {
         students: {
@@ -54,7 +54,7 @@ export async function POST(
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
@@ -69,7 +69,7 @@ export async function POST(
     }
 
     // Check if batch exists and get its program
-    const batch = await prisma.Batch.findUnique({
+    const batch = await prisma.batches.findUnique({
       where: { id: params.id },
       select: { programId: true },
     });
@@ -79,9 +79,9 @@ export async function POST(
     }
 
     // Check if all students exist and belong to the same program
-    const students = await prisma.student.findMany({
+    const students = await prisma.students.findMany({
       where: {
-        id: { in: studentIds.map((id) => parseInt(id)) },
+        id: { in: studentIds.map((id: string) => parseInt(id)) },
       },
       select: {
         id: true,
@@ -129,9 +129,9 @@ export async function POST(
     }
 
     // Update students in batch
-    await prisma.student.updateMany({
+    await prisma.students.updateMany({
       where: {
-        id: { in: studentIds.map((id) => parseInt(id)) },
+        id: { in: studentIds.map((id: string) => parseInt(id)) },
       },
       data: {
         batchId: params.id,
@@ -161,7 +161,7 @@ export async function DELETE(
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
@@ -176,7 +176,7 @@ export async function DELETE(
     }
 
     // Check if batch exists
-    const batch = await prisma.Batch.findUnique({
+    const batch = await prisma.batches.findUnique({
       where: { id: params.id },
     });
 
@@ -185,9 +185,9 @@ export async function DELETE(
     }
 
     // Check if all students belong to this batch
-    const students = await prisma.student.findMany({
+    const students = await prisma.students.findMany({
       where: {
-        id: { in: studentIds.map((id) => parseInt(id)) },
+        id: { in: studentIds.map((id: string) => parseInt(id)) },
         batchId: params.id,
       },
     });
@@ -200,9 +200,9 @@ export async function DELETE(
     }
 
     // Remove students from batch
-    await prisma.student.updateMany({
+    await prisma.students.updateMany({
       where: {
-        id: { in: studentIds.map((id) => parseInt(id)) },
+        id: { in: studentIds.map((id: string) => parseInt(id)) },
         batchId: params.id,
       },
       data: {

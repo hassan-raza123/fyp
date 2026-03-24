@@ -107,7 +107,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<LoginResponse>> {
+): Promise<NextResponse> {
   try {
     const body = await request.json();
     const validationResult = verifyOTPSchema.safeParse(body);

@@ -69,7 +69,6 @@ export async function GET(
     // Get all students in this section
     const studentSections = await prisma.studentsections.findMany({
       where: {
-        sectionId: sectionId,
       },
       include: {
         student: {
@@ -232,7 +231,6 @@ export async function GET(
     const cloAttainments = await prisma.closattainments.findMany({
       where: {
         courseOfferingId: section.courseOfferingId,
-        sectionId: sectionId,
         status: 'active',
       },
       include: {

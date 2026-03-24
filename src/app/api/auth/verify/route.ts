@@ -27,7 +27,7 @@ export async function GET(request: Request) {
         email: payload.email,
         role: payload.role,
         userData: payload.userData,
-        departmentId: payload.departmentId || payload.userData?.departmentId, // Include departmentId directly
+        departmentId: (payload as any).departmentId || (payload.userData as any)?.departmentId, // Include departmentId directly
       },
     });
   } catch (error) {

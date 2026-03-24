@@ -50,7 +50,7 @@ export async function GET(
           not: assessmentId,
         },
         status: {
-          in: ['evaluated', 'published'],
+          in: ['active', 'completed'] as any,
         },
       },
       include: {
@@ -92,7 +92,7 @@ export async function GET(
           in: studentIds,
         },
         status: {
-          in: ['evaluated', 'published'],
+          in: ['evaluated', 'published'] as any,
         },
       },
     });

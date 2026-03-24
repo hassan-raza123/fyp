@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       where: {
         courseOfferingId: courseOfferingId,
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {

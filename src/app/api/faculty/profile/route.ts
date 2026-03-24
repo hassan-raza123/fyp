@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         lastName: faculty.user.last_name,
         email: faculty.user.email,
         phoneNumber: faculty.user.phone_number || '',
-        employeeId: faculty.employeeId || '',
+        employeeId: '',
         designation: faculty.designation || '',
         department: faculty.department,
         status: faculty.user.status,

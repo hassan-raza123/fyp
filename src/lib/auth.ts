@@ -333,6 +333,7 @@ export async function getFacultyFromRequest(request: NextRequest) {
             last_name: true,
             email: true,
             status: true,
+            phone_number: true,
           },
         },
         department: {

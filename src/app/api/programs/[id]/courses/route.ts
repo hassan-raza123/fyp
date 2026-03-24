@@ -14,13 +14,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const programCourses = await prisma.programCourse.findMany({
+    const programCourses = await prisma.program_curriculum.findMany({
       where: { programId: parseInt(params.id) },
       include: {
         course: true,
       },
       orderBy: {
-        semester: 'asc',
+        semesterSlot: 'asc',
       },
     });
 
@@ -48,7 +48,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -57,10 +57,10 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
-    if (!userRoles.some((role) => allowedRoles.includes(role))) {
+    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -76,7 +76,7 @@ export async function POST(
     }
 
     // Check if program exists
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -85,7 +85,7 @@ export async function POST(
     }
 
     // Check if course exists
-    const course = await prisma.course.findUnique({
+    const course = await prisma.courses.findUnique({
       where: { id: courseId },
     });
 
@@ -94,7 +94,7 @@ export async function POST(
     }
 
     // Check if course is already in program
-    const existingCourse = await prisma.programCourse.findUnique({
+    const existingCourse = await prisma.program_curriculum.findUnique({
       where: {
         programId_courseId: {
           programId: parseInt(params.id),
@@ -110,13 +110,12 @@ export async function POST(
       );
     }
 
-    const programCourse = await prisma.programCourse.create({
+    const programCourse = await prisma.program_curriculum.create({
       data: {
         programId: parseInt(params.id),
         courseId,
-        semester,
-        isCore,
-        creditHours,
+        semesterSlot: semester,
+        isRequired: isCore ?? true,
       },
       include: {
         course: true,
@@ -147,7 +146,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -156,10 +155,10 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
-    if (!userRoles.some((role) => allowedRoles.includes(role))) {
+    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -167,7 +166,7 @@ export async function PUT(
     const { courseId, semester, isCore, creditHours } = body;
 
     // Check if program course exists
-    const programCourse = await prisma.programCourse.findUnique({
+    const programCourse = await prisma.program_curriculum.findUnique({
       where: {
         programId_courseId: {
           programId: parseInt(params.id),
@@ -183,7 +182,7 @@ export async function PUT(
       );
     }
 
-    const updatedProgramCourse = await prisma.programCourse.update({
+    const updatedProgramCourse = await prisma.program_curriculum.update({
       where: {
         programId_courseId: {
           programId: parseInt(params.id),
@@ -191,9 +190,8 @@ export async function PUT(
         },
       },
       data: {
-        semester,
-        isCore,
-        creditHours,
+        semesterSlot: semester,
+        isRequired: isCore ?? programCourse.isRequired,
       },
       include: {
         course: true,
@@ -224,7 +222,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -233,10 +231,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
-    if (!userRoles.some((role) => allowedRoles.includes(role))) {
+    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -251,7 +249,7 @@ export async function DELETE(
     }
 
     // Check if program course exists
-    const programCourse = await prisma.programCourse.findUnique({
+    const programCourse = await prisma.program_curriculum.findUnique({
       where: {
         programId_courseId: {
           programId: parseInt(params.id),
@@ -267,7 +265,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.programCourse.delete({
+    await prisma.program_curriculum.delete({
       where: {
         programId_courseId: {
           programId: parseInt(params.id),

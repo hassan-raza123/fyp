@@ -76,7 +76,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (!['admin', 'super_admin'].includes(user?.role)) {
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
       return NextResponse.json(
         { error: 'Only admins can update settings' },
         { status: 403 }

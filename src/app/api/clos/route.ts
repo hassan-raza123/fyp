@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(req as any);
-    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role))
+    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role ?? ''))
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
 
     const data = await req.json();
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(request: Request) {
   try {
     const { success, user, error } = await requireAuth(request as any);
-    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role))
+    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role ?? ''))
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();

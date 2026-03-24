@@ -122,7 +122,6 @@ export async function GET(
               obtainedMarks: result.obtainedMarks,
               totalMarks: result.totalMarks,
               percentage: result.percentage,
-              grade: result.grade,
               status: result.status,
               submittedAt: result.submittedAt,
               evaluatedAt: result.evaluatedAt,
@@ -133,7 +132,6 @@ export async function GET(
                 description: ir.assessmentItem.description,
                 totalMarks: ir.assessmentItem.marks,
                 obtainedMarks: ir.obtainedMarks,
-                remarks: ir.remarks,
                 clo: ir.assessmentItem.clo,
               })),
             }

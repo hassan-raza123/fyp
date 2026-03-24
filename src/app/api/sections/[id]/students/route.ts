@@ -21,7 +21,7 @@ export async function POST(
     }
 
     // Role check
-    if (!['admin', 'super_admin', 'faculty'].includes(user?.role)) {
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -244,7 +244,7 @@ export async function POST(
         sectionWithDetails.courseOffering.course.code,
         'added',
         1,
-        sectionWithDetails.facultyId
+        sectionWithDetails.facultyId ?? 0
       );
     }
 
@@ -284,7 +284,7 @@ export async function DELETE(
     }
 
     // Role check
-    if (!['admin', 'super_admin', 'faculty'].includes(user?.role)) {
+    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -380,7 +380,7 @@ export async function DELETE(
         sectionWithDetails.courseOffering.course.code,
         'removed',
         1,
-        sectionWithDetails.facultyId
+        sectionWithDetails.facultyId ?? 0
       );
     }
 

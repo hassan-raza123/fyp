@@ -75,7 +75,7 @@ export async function GET(
       where: {
         courseOfferingId: courseOfferingId,
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -131,7 +131,6 @@ export async function GET(
     const cloAttainments = await prisma.closattainments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        sectionId: sectionId,
         status: 'active',
       },
       include: {

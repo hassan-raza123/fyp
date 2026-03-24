@@ -33,7 +33,7 @@ export async function PUT(
       );
     }
 
-    if (!['admin', 'super_admin'].includes(user?.role)) {
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
@@ -264,7 +264,7 @@ export async function DELETE(
       );
     }
 
-    if (!['admin', 'super_admin'].includes(user?.role)) {
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }

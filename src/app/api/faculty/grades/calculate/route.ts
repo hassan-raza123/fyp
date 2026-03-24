@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         courseOfferingId: courseOfferingId,
         conductedBy: facultyId,
         status: {
-          in: ['active', 'evaluated', 'published'],
+          in: ['active', 'completed'] as any,
         },
       },
       orderBy: {
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const creditHours = courseOffering.course.creditHours || 3;
 
     // Calculate grades for each student
-    const calculatedGrades = await prisma.$transaction(
+    const calculatedGrades = await Promise.all(
       uniqueStudentIds.map((studentId) => {
         const gradeScale = studentGradeScales.get(studentId) || [];
         return calculateStudentGrade(

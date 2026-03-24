@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const where: Prisma.action_plansWhereInput = {};
   if (semesterId) where.semesterId = parseInt(semesterId);
   if (ploId) where.ploId = parseInt(ploId);
-  if (status) where.status = status as Prisma.EnumAction_plan_statusFilter['equals'];
+  if (status) where.status = status as Prisma.Enumaction_plan_statusFilter['equals'];
   if (programId) where.plo = { programId: parseInt(programId) };
 
   // Faculty: restrict to course offerings where they teach a section

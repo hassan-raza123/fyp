@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'active';
 
-    const where: { course: { departmentId: number }; status?: string } = {
+    const where: { course: { departmentId: number }; status?: any } = {
       course: {
         departmentId,
       },

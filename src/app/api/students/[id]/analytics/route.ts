@@ -113,6 +113,7 @@ export async function GET(
           include: {
             course: {
               select: {
+                id: true,
                 code: true,
                 name: true,
               },
@@ -147,6 +148,7 @@ export async function GET(
               include: {
                 course: {
                   select: {
+                    id: true,
                     code: true,
                     name: true,
                   },
@@ -243,9 +245,6 @@ export async function GET(
       where: {
         courseOfferingId: {
           in: courseOfferingIds,
-        },
-        sectionId: {
-          in: sectionIds,
         },
         status: 'active',
       },
