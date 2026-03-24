@@ -44,11 +44,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
-        { success: false, error: 'Department not configured. Please set department in Settings.' },
+        { success: false, error: 'Department not assigned. Please contact super admin.' },
         { status: 400 }
       );
     }

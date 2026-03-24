@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
+    // Get current department ID from authenticated user
+    const currentDepartmentId = await getCurrentDepartmentId(request);
     if (!currentDepartmentId) {
       return NextResponse.json(
-        { success: false, error: 'Department not configured in settings' },
+        { success: false, error: 'Department not assigned. Please contact super admin.' },
         { status: 400 }
       );
     }
@@ -154,6 +154,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createOfferingSchema.parse(body);
 
@@ -266,6 +273,13 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateOfferingSchema.parse(body);
 
@@ -281,12 +295,70 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Check if course exists (if being updated)
+    if (validatedData.courseId) {
+      const course = await prisma.courses.findUnique({
+        where: { id: validatedData.courseId },
+      });
+      if (!course) {
+        return NextResponse.json(
+          { success: false, error: 'Course not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if semester exists (if being updated)
+    if (validatedData.semesterId) {
+      const semester = await prisma.semesters.findUnique({
+        where: { id: validatedData.semesterId },
+      });
+      if (!semester) {
+        return NextResponse.json(
+          { success: false, error: 'Semester not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if offering with new courseId and semesterId already exists (if being updated)
+    if (validatedData.courseId && validatedData.semesterId) {
+      const duplicateOffering = await prisma.courseofferings.findUnique({
+        where: {
+          courseId_semesterId: {
+            courseId: validatedData.courseId,
+            semesterId: validatedData.semesterId,
+          },
+        },
+      });
+
+      if (duplicateOffering && duplicateOffering.id !== validatedData.id) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Course offering already exists for this course and semester',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Build update data
+    const updateData: any = {};
+    if (validatedData.status !== undefined) {
+      updateData.status = validatedData.status as course_offering_status;
+    }
+    if (validatedData.courseId !== undefined) {
+      updateData.courseId = validatedData.courseId;
+    }
+    if (validatedData.semesterId !== undefined) {
+      updateData.semesterId = validatedData.semesterId;
+    }
+
     // Update course offering
     const offering = await prisma.courseofferings.update({
       where: { id: validatedData.id },
-      data: {
-        status: validatedData.status as course_offering_status,
-      },
+      data: updateData,
       include: {
         course: {
           select: {
@@ -342,6 +414,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
       );
     }
 

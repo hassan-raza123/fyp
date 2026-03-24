@@ -5,8 +5,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // GET - Fetch existing marks for students in a section for an assessment
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } }
+  { params: _params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     const sectionId = parseInt(params.sectionId);
@@ -166,8 +167,9 @@ export async function GET(
 // POST - Save marks (draft or final)
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } }
+  { params: _params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     const sectionId = parseInt(params.sectionId);

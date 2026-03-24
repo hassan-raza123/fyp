@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import {
   BookOpen,
   Calendar,
@@ -11,14 +12,12 @@ import {
   GraduationCap,
   Target,
   Award,
-  CheckCircle,
   AlertCircle,
   TrendingUp,
   BarChart3,
   User,
   Clock3,
   BookMarked,
-  Activity,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -27,7 +26,8 @@ interface StatCardProps {
   icon: React.ReactNode;
   change?: number;
   trend?: 'up' | 'down';
-  color?: string;
+  iconBgColor: string;
+  iconColor: string;
 }
 
 const StatCard = ({
@@ -36,22 +36,19 @@ const StatCard = ({
   icon,
   change,
   trend,
-  color = 'purple',
+  iconBgColor,
+  iconColor,
 }: StatCardProps) => (
-  <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700'>
-    <div className='flex items-center justify-between'>
+  <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-md">
+    <div className="flex items-center justify-between">
       <div>
-        <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>
-          {title}
-        </p>
-        <h3 className='text-2xl font-bold mt-1 text-gray-900 dark:text-white'>
-          {value}
-        </h3>
+        <p className="text-xs font-medium text-secondary-text">{title}</p>
+        <h3 className="text-lg font-bold mt-1 text-primary-text">{value}</h3>
         {change !== undefined && (
           <div className='flex items-center mt-2'>
             <span
               className={`text-sm font-medium ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
+                trend === 'up' ? 'text-[var(--success-green)]' : 'text-[var(--error)]'
               }`}
             >
               {trend === 'up' ? (
@@ -61,14 +58,12 @@ const StatCard = ({
               )}
               {change}%
             </span>
-            <span className='text-sm text-gray-500 dark:text-gray-400 ml-2'>
-              vs last semester
-            </span>
+            <span className="text-xs text-muted-text ml-2">vs last semester</span>
           </div>
         )}
       </div>
-      <div className={`p-3 bg-${color}-50 dark:bg-${color}-900/20 rounded-lg`}>
-        {icon}
+      <div className="p-2 rounded-lg transition-transform duration-200 hover:scale-110" style={{ backgroundColor: iconBgColor }}>
+        <div style={{ color: iconColor }}>{icon}</div>
       </div>
     </div>
   </div>
@@ -79,7 +74,6 @@ interface CourseCardProps {
   courseName: string;
   instructor: string;
   grade?: string;
-  attendance: number;
   nextClass: string;
   color: string;
   courseId?: number;
@@ -90,45 +84,30 @@ const CourseCard = ({
   courseName,
   instructor,
   grade,
-  attendance,
   nextClass,
   color,
   courseId,
 }: CourseCardProps) => (
   <Link
     href={courseId ? `/student/courses/${courseId}` : '#'}
-    className='block bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer'
+    className="block bg-card border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
   >
-    <div className='flex items-start justify-between mb-4'>
+    <div className="flex items-start justify-between mb-4">
       <div>
-        <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
-          {courseCode}
-        </h3>
-        <p className='text-sm text-gray-600 dark:text-gray-400'>{courseName}</p>
-        <p className='text-xs text-gray-500 dark:text-gray-500 mt-1'>
-          Prof. {instructor}
-        </p>
+        <h3 className="text-sm font-semibold text-primary-text">{courseCode}</h3>
+        <p className="text-xs text-secondary-text">{courseName}</p>
+        <p className="text-[10px] text-muted-text mt-1">Prof. {instructor}</p>
       </div>
       {grade && (
-        <div
-          className={`px-3 py-1 bg-${color}-100 dark:bg-${color}-900/30 text-${color}-800 dark:text-${color}-200 rounded-full text-sm font-medium`}
-        >
+        <span className="px-2 py-0.5 rounded text-xs font-medium bg-[var(--brand-primary-opacity-20)] text-[var(--blue)] dark:bg-[var(--brand-secondary-opacity-20)] dark:text-[var(--orange)]">
           {grade}
-        </div>
+        </span>
       )}
     </div>
-    <div className='space-y-3'>
-      <div className='flex items-center justify-between text-sm'>
-        <span className='text-gray-600 dark:text-gray-400'>Attendance</span>
-        <span className='font-medium text-gray-900 dark:text-white'>
-          {attendance}%
-        </span>
-      </div>
-      <div className='flex items-center justify-between text-sm'>
-        <span className='text-gray-600 dark:text-gray-400'>Next Class</span>
-        <span className='font-medium text-gray-900 dark:text-white'>
-          {nextClass}
-        </span>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-secondary-text">Next Class</span>
+        <span className="font-medium text-primary-text">{nextClass}</span>
       </div>
     </div>
   </Link>
@@ -154,11 +133,11 @@ const AssignmentItem = ({
   const getStatusColor = () => {
     switch (status) {
       case 'submitted':
-        return 'text-green-600 bg-green-100 dark:bg-green-900/30';
+        return 'bg-[var(--success-green)] text-white';
       case 'overdue':
-        return 'text-red-600 bg-red-100 dark:bg-red-900/30';
+        return 'bg-[var(--error)] text-white';
       default:
-        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
+        return 'bg-[var(--warning)] text-white';
     }
   };
 
@@ -174,21 +153,19 @@ const AssignmentItem = ({
   };
 
   const content = (
-    <div className='flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors'>
+    <div className='flex items-center justify-between p-4 hover:bg-hover-bg rounded-lg transition-colors'>
       <div className='flex items-center space-x-3'>
         <div className={`w-2 h-2 rounded-full ${getPriorityColor()}`}></div>
         <div>
-          <p className='text-sm font-medium text-gray-900 dark:text-white'>
+          <p className='text-sm font-medium text-primary-text'>
             {title}
           </p>
-          <p className='text-xs text-gray-500 dark:text-gray-400'>
+          <p className='text-xs text-muted-text'>
             {course} • Due {dueDate}
           </p>
         </div>
       </div>
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}
-      >
+      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getStatusColor()}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     </div>
@@ -216,7 +193,6 @@ interface StudentDashboardData {
   stats: {
     enrolledCourses: number;
     averageGrade: number;
-    attendanceRate: number;
     completedAssignments: number;
     pendingAssignments?: number;
   };
@@ -225,7 +201,6 @@ interface StudentDashboardData {
     courseName: string;
     instructor: string;
     grade?: string;
-    attendance: number;
     nextClass: string;
     color: string;
     courseId?: number;
@@ -249,8 +224,21 @@ interface StudentDashboardData {
 
 export default function StudentDashboard() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<StudentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const iconColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -278,8 +266,7 @@ export default function StudentDashboard() {
               courseName: course.name,
               instructor: course.instructor,
               grade: course.grade || undefined,
-              attendance: 0, // TODO: Implement attendance
-              nextClass: 'N/A', // TODO: Implement next class
+              nextClass: 'N/A',
               color: ['blue', 'green', 'purple', 'orange', 'pink'][index % 5],
               courseId: course.id,
             })),
@@ -306,7 +293,7 @@ export default function StudentDashboard() {
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Keep loading state or show error
+        setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -315,12 +302,27 @@ export default function StudentDashboard() {
     fetchData();
   }, []);
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500'></div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading dashboard...</p>
+        </div>
       </div>
     );
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">{error}</div>;
   }
 
   if (!data) {
@@ -328,30 +330,27 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className='space-y-6'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
-            Student Dashboard
-          </h1>
-          <p className='text-gray-500 dark:text-gray-400'>
-            Welcome back, {data.studentInfo.name}! Here's your academic
-            overview.
+          <h1 className="text-lg font-bold text-primary-text">Student Dashboard</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Welcome back, {data.studentInfo.name}! Here&apos;s your academic overview.
           </p>
         </div>
         <div className='flex items-center space-x-4'>
           <div className='text-right'>
-            <p className='text-sm text-gray-600 dark:text-gray-400'>
+            <p className='text-sm text-secondary-text'>
               Student ID
             </p>
-            <p className='text-sm font-medium text-gray-900 dark:text-white'>
+            <p className='text-sm font-medium text-primary-text'>
               {data.studentInfo.studentId}
             </p>
           </div>
           <div className='text-right'>
-            <p className='text-sm text-gray-600 dark:text-gray-400'>CGPA</p>
-            <p className='text-sm font-medium text-gray-900 dark:text-white'>
+            <p className='text-sm text-secondary-text'>CGPA</p>
+            <p className='text-sm font-medium text-primary-text'>
               {data.studentInfo.cgpa}
             </p>
           </div>
@@ -363,59 +362,41 @@ export default function StudentDashboard() {
         <StatCard
           title='Enrolled Courses'
           value={data.stats.enrolledCourses}
-          icon={
-            <BookOpen className='w-6 h-6 text-blue-600 dark:text-blue-400' />
-          }
-          color='blue'
+          icon={<BookOpen className='w-6 h-6' />}
+          iconBgColor={iconBgColor}
+          iconColor={iconColor}
         />
         <StatCard
           title='Average Grade'
           value={`${data.stats.averageGrade}%`}
-          icon={
-            <Award className='w-6 h-6 text-green-600 dark:text-green-400' />
-          }
-          change={5.2}
-          trend='up'
-          color='green'
-        />
-        <StatCard
-          title='Attendance Rate'
-          value={`${data.stats.attendanceRate}%`}
-          icon={
-            <CheckCircle className='w-6 h-6 text-purple-600 dark:text-purple-400' />
-          }
-          change={2.1}
-          trend='up'
-          color='purple'
+          icon={<Award className='w-6 h-6' />}
+          iconBgColor={iconBgColor}
+          iconColor={iconColor}
         />
         <StatCard
           title='Completed Assignments'
           value={data.stats.completedAssignments}
-          icon={
-            <FileText className='w-6 h-6 text-orange-600 dark:text-orange-400' />
-          }
-          color='orange'
+          icon={<FileText className='w-6 h-6' />}
+          iconBgColor={iconBgColor}
+          iconColor={iconColor}
         />
         {data.stats.pendingAssignments !== undefined && (
           <StatCard
             title='Pending Assignments'
             value={data.stats.pendingAssignments}
-            icon={
-              <Clock className='w-6 h-6 text-red-600 dark:text-red-400' />
-            }
-            color='red'
+            icon={<Clock className='w-6 h-6' />}
+            iconBgColor={iconBgColor}
+            iconColor={iconColor}
           />
         )}
       </div>
 
       {/* Main Content Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Enrolled Courses */}
-        <div className='lg:col-span-2 space-y-6'>
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-              Enrolled Courses
-            </h2>
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-card border border-card-border rounded-lg shadow-sm p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">Enrolled Courses</h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {data.courses.map((course, index) => (
                 <CourseCard
@@ -424,22 +405,20 @@ export default function StudentDashboard() {
                   courseName={course.courseName}
                   instructor={course.instructor}
                   grade={course.grade}
-                  attendance={course.attendance}
                   nextClass={course.nextClass}
                   color={course.color}
+                  courseId={course.courseId}
                 />
               ))}
             </div>
           </div>
 
           {/* Upcoming Assignments */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700'>
-            <div className='p-6 border-b border-gray-100 dark:border-gray-700'>
-              <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
-                Upcoming Assignments
-              </h2>
+          <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Upcoming Assignments</h2>
             </div>
-            <div className='divide-y divide-gray-100 dark:divide-gray-700'>
+            <div className="divide-y divide-card-border">
               {data.assignments.map((assignment, index) => (
                 <AssignmentItem
                   key={index}
@@ -455,66 +434,52 @@ export default function StudentDashboard() {
         </div>
 
         {/* Sidebar */}
-        <div className='space-y-6'>
+        <div className="space-y-4">
           {/* Student Info */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-              Student Information
-            </h2>
-            <div className='space-y-3'>
-              <div className='flex items-center space-x-3'>
-                <User className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+          <div className="bg-card border border-card-border rounded-lg shadow-sm p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">Student Information</h2>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="p-1.5 rounded-lg" style={{ backgroundColor: iconBgColor }}>
+                  <User className="w-4 h-4" style={{ color: iconColor }} />
+                </div>
                 <div>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    Program
-                  </p>
-                  <p className='text-sm font-medium text-gray-900 dark:text-white'>
-                    {data.studentInfo.program}
-                  </p>
+                  <p className="text-[10px] text-muted-text">Program</p>
+                  <p className="text-xs font-medium text-primary-text">{data.studentInfo.program}</p>
                 </div>
               </div>
-              <div className='flex items-center space-x-3'>
-                <Calendar className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+              <div className="flex items-center space-x-3">
+                <div className="p-1.5 rounded-lg" style={{ backgroundColor: iconBgColor }}>
+                  <Calendar className="w-4 h-4" style={{ color: iconColor }} />
+                </div>
                 <div>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    Current Semester
-                  </p>
-                  <p className='text-sm font-medium text-gray-900 dark:text-white'>
-                    {data.studentInfo.semester}
-                  </p>
+                  <p className="text-[10px] text-muted-text">Current Semester</p>
+                  <p className="text-xs font-medium text-primary-text">{data.studentInfo.semester}</p>
                 </div>
               </div>
-              <div className='flex items-center space-x-3'>
-                <Target className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+              <div className="flex items-center space-x-3">
+                <div className="p-1.5 rounded-lg" style={{ backgroundColor: iconBgColor }}>
+                  <Target className="w-4 h-4" style={{ color: iconColor }} />
+                </div>
                 <div>
-                  <p className='text-sm text-gray-600 dark:text-gray-400'>
-                    CGPA
-                  </p>
-                  <p className='text-sm font-medium text-gray-900 dark:text-white'>
-                    {data.studentInfo.cgpa}
-                  </p>
+                  <p className="text-[10px] text-muted-text">CGPA</p>
+                  <p className="text-xs font-medium text-primary-text">{data.studentInfo.cgpa}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Recent Activities */}
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700'>
-            <div className='p-6 border-b border-gray-100 dark:border-gray-700'>
-              <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
-                Recent Activities
-              </h2>
+          <div className="bg-card border border-card-border rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Recent Activities</h2>
             </div>
-            <div className='divide-y divide-gray-100 dark:divide-gray-700'>
+            <div className="divide-y divide-card-border">
               {data.recentActivities.map((activity) => {
                 const content = (
-                  <div className='p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer'>
-                    <p className='text-sm text-gray-900 dark:text-white'>
-                      {activity.summary}
-                    </p>
-                    <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                      {activity.time}
-                    </p>
+                  <div className="p-3 hover:bg-hover-bg transition-colors cursor-pointer">
+                    <p className="text-xs text-primary-text">{activity.summary}</p>
+                    <p className="text-[10px] text-muted-text mt-0.5">{activity.time}</p>
                   </div>
                 );
 
@@ -532,35 +497,36 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div 
-            className='rounded-xl shadow-sm p-6 text-white'
+          <div
+            className="rounded-lg shadow-sm p-4 text-white"
             style={{
-              background: `linear-gradient(to bottom right, var(--brand-primary), var(--brand-primary-dark))`
+              background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColorDark})`,
+              boxShadow: isDarkMode ? '0 4px 12px rgba(252, 153, 40, 0.25)' : '0 4px 12px rgba(38, 40, 149, 0.2)',
             }}
           >
-            <h2 className='text-lg font-semibold mb-2'>Quick Actions</h2>
-            <div className='space-y-3'>
+            <h2 className="text-sm font-semibold mb-2">Quick Actions</h2>
+            <div className="space-y-2">
               <Link
-                href='/student/results'
-                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+                href="/student/results"
+                className="block w-full px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-xs font-medium text-center"
               >
                 View Grades
               </Link>
               <Link
-                href='/student/assessments'
-                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+                href="/student/assessments"
+                className="block w-full px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-xs font-medium text-center"
               >
                 View Assessments
               </Link>
               <Link
-                href='/student/results/clo-attainments'
-                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+                href="/student/results/clo-attainments"
+                className="block w-full px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-xs font-medium text-center"
               >
                 View CLO Attainments
               </Link>
               <Link
-                href='/student/results/plo-attainments'
-                className='block w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-medium text-center'
+                href="/student/results/plo-attainments"
+                className="block w-full px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-xs font-medium text-center"
               >
                 View PLO Attainments
               </Link>

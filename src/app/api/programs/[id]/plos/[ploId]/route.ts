@@ -4,17 +4,18 @@ import { requireAuth } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; ploId: string } }
+  { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
       { status: 401 }
     );
   }
-  const programId = parseInt(params.id);
-  const ploId = parseInt(params.ploId);
+  const { id, ploId: ploIdParam } = await params;
+  const programId = parseInt(id);
+  const ploId = parseInt(ploIdParam);
   if (isNaN(programId) || isNaN(ploId)) {
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },
@@ -35,17 +36,18 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string; ploId: string } }
+  { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
       { status: 401 }
     );
   }
-  const programId = parseInt(params.id);
-  const ploId = parseInt(params.ploId);
+  const { id, ploId: ploIdParam } = await params;
+  const programId = parseInt(id);
+  const ploId = parseInt(ploIdParam);
   if (isNaN(programId) || isNaN(ploId)) {
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },
@@ -79,17 +81,18 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; ploId: string } }
+  { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (!auth.success) {
     return NextResponse.json(
       { success: false, error: auth.error },
       { status: 401 }
     );
   }
-  const programId = parseInt(params.id);
-  const ploId = parseInt(params.ploId);
+  const { id, ploId: ploIdParam } = await params;
+  const programId = parseInt(id);
+  const ploId = parseInt(ploIdParam);
   if (isNaN(programId) || isNaN(ploId)) {
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },

@@ -41,26 +41,11 @@ export async function GET(request: NextRequest) {
                 course: {
                   include: {
                     department: true,
-                    prerequisites: {
-                      include: {
-                        prerequisite: {
-                          select: {
-                            id: true,
-                            code: true,
-                            name: true,
-                          },
-                        },
-                      },
-                    },
-                    corequisites: {
-                      include: {
-                        corequisite: {
-                          select: {
-                            id: true,
-                            code: true,
-                            name: true,
-                          },
-                        },
+                    courses_A: {
+                      select: {
+                        id: true,
+                        code: true,
+                        name: true,
                       },
                     },
                   },

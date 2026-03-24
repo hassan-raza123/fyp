@@ -2,155 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { AssessmentList } from '@/components/assessments/AssessmentList';
-import { CreateAssessmentForm } from '@/components/assessments/CreateAssessmentForm';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { PlusIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-
-interface CourseOffering {
-  id: number;
-  course: {
-    code: string;
-    name: string;
-  };
-  semester: {
-    name: string;
-  };
-}
 
 export default function AssessmentsPage() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
-  const [selectedCourseOffering, setSelectedCourseOffering] =
-    useState<string>('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    fetchCourseOfferings();
+    setMounted(true);
   }, []);
 
-  const fetchCourseOfferings = async () => {
-    try {
-      const response = await fetch('/api/courses/offerings?status=active');
-      if (!response.ok) throw new Error('Failed to fetch course offerings');
-      const data = await response.json();
-      if (data.success) {
-        setCourseOfferings(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching course offerings:', error);
-      toast.error('Failed to load course offerings');
-    }
-  };
-
-  const handleCreateAssessment = async (data: any) => {
-    if (!selectedCourseOffering) {
-      toast.error('Please select a course offering');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/assessments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          courseOfferingId: parseInt(selectedCourseOffering),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create assessment');
-      }
-
-      toast.success('Assessment created successfully');
-      setIsDialogOpen(false);
-      setSelectedCourseOffering('');
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to create assessment'
-      );
-      console.error('Error creating assessment:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Assessments</h1>
-          <p className="text-muted-foreground">
-            Create and manage assessment tools to measure learning outcomes
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Create Assessment
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Assessment</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="courseOffering">Course Offering *</Label>
-                <Select
-                  value={selectedCourseOffering}
-                  onValueChange={setSelectedCourseOffering}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select course offering" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courseOfferings.map((offering) => (
-                      <SelectItem
-                        key={offering.id}
-                        value={offering.id.toString()}
-                      >
-                        {offering.course.code} - {offering.course.name} (
-                        {offering.semester.name})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {selectedCourseOffering && (
-                <CreateAssessmentForm
-                  sectionId={parseInt(selectedCourseOffering)}
-                  onSubmit={handleCreateAssessment}
-                  isLoading={isLoading}
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-4">
+      {/* Header */}
+      <div>
+        <h1 className="text-lg font-bold text-primary-text">Assessments</h1>
+        <p className="text-xs text-secondary-text mt-0.5">
+          View and monitor assessments across the department
+        </p>
       </div>
       <AssessmentList />
     </div>

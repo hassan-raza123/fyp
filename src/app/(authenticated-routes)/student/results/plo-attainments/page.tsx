@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -11,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { GraduationCap, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react';
 import {
@@ -53,6 +53,15 @@ interface ContributingCLO {
   classAttainment: number;
 }
 
+interface ContributingLLO {
+  lloId: number;
+  lloCode: string;
+  lloDescription: string;
+  weight: number;
+  studentAttainment: number;
+  classAttainment: number;
+}
+
 interface PLOAttainment {
   ploId: number;
   ploCode: string;
@@ -67,6 +76,7 @@ interface PLOAttainment {
   };
   threshold: number;
   contributingClos: ContributingCLO[];
+  contributingLlos: ContributingLLO[];
 }
 
 interface PLOAttainmentsData {
@@ -86,6 +96,8 @@ interface PLOAttainmentsData {
 }
 
 const PLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
@@ -94,6 +106,16 @@ const PLOAttainmentsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PLOAttainmentsData | null>(null);
   const [expandedPLO, setExpandedPLO] = useState<number | null>(null);
+  const [expandedPLOLLO, setExpandedPLOLLO] = useState<number | null>(null);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch programs and semesters
   useEffect(() => {
@@ -175,21 +197,23 @@ const PLOAttainmentsPage = () => {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     return (
-      <Badge variant={status === 'attained' ? 'success' : 'destructive'}>
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {status === 'attained' ? 'Attained' : 'Not Attained'}
       </Badge>
     );
   };
+
+  if (!mounted) return null;
 
   const getComparisonIcon = (
     studentPercent: number,
     classPercent: number
   ) => {
     if (studentPercent > classPercent)
-      return <TrendingUp className="h-4 w-4 text-green-600" />;
+      return <TrendingUp className="h-4 w-4 text-[var(--success-green)]" />;
     if (studentPercent < classPercent)
-      return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return <Minus className="h-4 w-4 text-gray-400" />;
+      return <TrendingDown className="h-4 w-4 text-[var(--error)]" />;
+    return <Minus className="h-4 w-4 text-muted-text" />;
   };
 
   const exportToCSV = () => {
@@ -243,36 +267,50 @@ const PLOAttainmentsPage = () => {
     })) || [];
 
   return (
-    <div className='p-6'>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className='text-2xl font-bold'>My PLO Attainments</h1>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My PLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View Program Learning Outcomes achievement</p>
+        </div>
         {data && data.ploAttainments.length > 0 && (
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className='h-4 w-4 mr-2' />
+          <button
+            onClick={exportToCSV}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
+          >
+            <Download className="h-3.5 w-3.5" />
             Export to CSV
-          </Button>
+          </button>
         )}
       </div>
 
       {error && (
-        <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>{error}</div>
+        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
       )}
 
       {/* Program and Semester Selection */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
         <div>
-          <Label htmlFor="program-select">Select Program</Label>
+          <Label htmlFor="program-select" className="text-xs font-medium text-primary-text">Select Program</Label>
           <Select
             value={selectedProgram?.toString() || ''}
             onValueChange={(value) => setSelectedProgram(parseInt(value))}
             disabled={loading || !programs.length}
           >
-            <SelectTrigger id="program-select" className="mt-2">
+            <SelectTrigger id="program-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder='Select a program' />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-card-border">
               {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id.toString()}>
+                <SelectItem key={program.id} value={program.id.toString()} className="text-primary-text hover:bg-card/50">
                   {program.code} - {program.name}
                 </SelectItem>
               ))}
@@ -281,19 +319,19 @@ const PLOAttainmentsPage = () => {
         </div>
 
         <div>
-          <Label htmlFor="semester-select">Select Semester (Optional)</Label>
+          <Label htmlFor="semester-select" className="text-xs font-medium text-primary-text">Select Semester (Optional)</Label>
           <Select
             value={selectedSemester}
             onValueChange={setSelectedSemester}
             disabled={loading || !semesters.length}
           >
-            <SelectTrigger id="semester-select" className="mt-2">
+            <SelectTrigger id="semester-select" className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder='All Semesters' />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Semesters</SelectItem>
+            <SelectContent className="bg-card border-card-border">
+              <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Semesters</SelectItem>
               {semesters.map((semester) => (
-                <SelectItem key={semester.id} value={semester.id.toString()}>
+                <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                   {semester.name}
                 </SelectItem>
               ))}
@@ -302,18 +340,31 @@ const PLOAttainmentsPage = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className='text-center py-4'>Loading PLO attainments...</div>
+      {loading && !data ? (
+        <div className="flex items-center justify-center min-h-[280px] bg-card border border-card-border rounded-lg">
+          <div className="flex flex-col items-center space-y-3">
+            <div
+              className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+              style={{
+                borderTopColor: primaryColor,
+                borderBottomColor: primaryColor,
+                borderRightColor: 'transparent',
+                borderLeftColor: 'transparent',
+              }}
+            />
+            <p className="text-xs text-secondary-text">Loading PLO attainments...</p>
+          </div>
+        </div>
       ) : data && data.ploAttainments.length > 0 ? (
         <div className="space-y-6">
           {/* Program Info */}
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">
                 {data.program.code} - {data.program.name}
               </CardTitle>
               {data.semester && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-secondary-text">
                   Semester: {data.semester}
                 </p>
               )}
@@ -322,48 +373,48 @@ const PLOAttainmentsPage = () => {
 
           {/* Overall Progress Summary */}
           <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Total PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold'>{data.overallProgress.totalPLOs}</div>
+                <div className='text-lg font-bold text-primary-text'>{data.overallProgress.totalPLOs}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Attained PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold text-green-600'>
+                <div className='text-lg font-bold text-[var(--success-green)]'>
                   {data.overallProgress.attainedPLOs}
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Remaining PLOs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold text-orange-600'>
+                <div className='text-lg font-bold text-[var(--warning)]'>
                   {data.overallProgress.remainingPLOs}
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-card border border-card-border">
               <CardHeader>
-                <CardTitle className='text-sm font-medium text-muted-foreground'>
+                <CardTitle className='text-[10px] text-muted-text'>
                   Overall Progress
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-3xl font-bold'>
+                <div className='text-lg font-bold text-primary-text'>
                   {data.overallProgress.progressPercentage.toFixed(1)}%
                 </div>
               </CardContent>
@@ -371,9 +422,9 @@ const PLOAttainmentsPage = () => {
           </div>
 
           {/* Chart */}
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>PLO Attainment Comparison</CardTitle>
+              <CardTitle className="text-sm font-bold text-primary-text">PLO Attainment Comparison</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
@@ -396,20 +447,20 @@ const PLOAttainmentsPage = () => {
           {/* PLO Details */}
           <div className="space-y-4">
             {data.ploAttainments.map((plo) => (
-              <Card key={plo.ploId}>
+              <Card key={plo.ploId} className="bg-card border border-card-border">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <CardTitle className="text-sm font-bold text-primary-text flex items-center gap-2">
                         <GraduationCap className="h-5 w-5" />
                         {plo.ploCode}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs text-secondary-text mt-1">
                         {plo.description}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold">
+                      <div className="text-lg font-bold text-primary-text">
                         {plo.studentAttainment.percentage.toFixed(1)}%
                       </div>
                       <div className="mt-1">
@@ -421,25 +472,25 @@ const PLOAttainmentsPage = () => {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Your Attainment</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-[10px] text-muted-text">Your Attainment</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {plo.studentAttainment.percentage.toFixed(1)}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Class Average</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-[10px] text-muted-text">Class Average</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {plo.classAttainment.percentage.toFixed(1)}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Comparison</p>
+                      <p className="text-[10px] text-muted-text">Comparison</p>
                       <div className="flex items-center gap-2 mt-1">
                         {getComparisonIcon(
                           plo.studentAttainment.percentage,
                           plo.classAttainment.percentage
                         )}
-                        <span className="text-sm">
+                        <span className="text-xs text-primary-text">
                           {plo.studentAttainment.percentage >
                           plo.classAttainment.percentage
                             ? 'Above Average'
@@ -452,8 +503,8 @@ const PLOAttainmentsPage = () => {
                     </div>
                   </div>
 
-                  <div className="mb-4 p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="mb-4 p-3 rounded border border-card-border bg-card">
+                    <p className="text-xs text-secondary-text">
                       Threshold: {plo.threshold}%
                     </p>
                   </div>
@@ -467,7 +518,7 @@ const PLOAttainmentsPage = () => {
                             expandedPLO === plo.ploId ? null : plo.ploId
                           )
                         }
-                        className="text-sm text-primary hover:underline mb-2"
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
                       >
                         {expandedPLO === plo.ploId ? 'Hide' : 'Show'}{' '}
                         Contributing CLOs ({plo.contributingClos.length})
@@ -478,38 +529,100 @@ const PLOAttainmentsPage = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>CLO Code</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Weight</TableHead>
-                                <TableHead>Your Attainment</TableHead>
-                                <TableHead>Class Average</TableHead>
-                                <TableHead>Contribution</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {plo.contributingClos.map((clo) => {
+                                const totalWeight = plo.contributingClos.reduce((sum, c) => sum + c.weight, 0);
                                 const contribution =
-                                  (clo.studentAttainment * clo.weight) /
-                                  plo.contributingClos.reduce(
-                                    (sum, c) => sum + c.weight,
-                                    0
-                                  );
+                                  totalWeight > 0
+                                    ? (clo.studentAttainment * clo.weight) / totalWeight
+                                    : 0;
                                 return (
-                                  <TableRow key={clo.cloId}>
-                                    <TableCell className="font-medium">
+                                  <TableRow key={clo.cloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
                                       {clo.cloCode}
                                     </TableCell>
-                                    <TableCell className="max-w-md truncate">
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
                                       {clo.cloDescription}
                                     </TableCell>
-                                    <TableCell>{clo.weight}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">{clo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {clo.studentAttainment.toFixed(1)}%
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {clo.classAttainment.toFixed(1)}%
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {contribution.toFixed(2)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Contributing LLOs (Lab Learning Outcomes) */}
+                  {plo.contributingLlos?.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() =>
+                          setExpandedPLOLLO(
+                            expandedPLOLLO === plo.ploId ? null : plo.ploId
+                          )
+                        }
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
+                      >
+                        {expandedPLOLLO === plo.ploId ? 'Hide' : 'Show'}{' '}
+                        Contributing LLOs — Lab ({plo.contributingLlos.length})
+                      </button>
+
+                      {expandedPLOLLO === plo.ploId && (
+                        <div className="mt-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {plo.contributingLlos.map((llo) => {
+                                const totalWeight = plo.contributingLlos.reduce((sum, l) => sum + l.weight, 0);
+                                const contribution =
+                                  totalWeight > 0
+                                    ? (llo.studentAttainment * llo.weight) / totalWeight
+                                    : 0;
+                                return (
+                                  <TableRow key={llo.lloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
+                                      {llo.lloCode}
+                                    </TableCell>
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
+                                      {llo.lloDescription}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">{llo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.studentAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.classAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
                                       {contribution.toFixed(2)}%
                                     </TableCell>
                                   </TableRow>
@@ -527,11 +640,11 @@ const PLOAttainmentsPage = () => {
           </div>
         </div>
       ) : selectedProgram ? (
-        <div className='text-center text-gray-500 py-4'>
+        <div className='text-center text-xs text-secondary-text py-4'>
           No PLO attainments data available
         </div>
       ) : (
-        <div className='text-center text-gray-500 py-4'>
+        <div className='text-center text-xs text-secondary-text py-4'>
           Select a program to view PLO attainments
         </div>
       )}

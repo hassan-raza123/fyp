@@ -5,8 +5,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // GET - Get all student results for an assessment that need evaluation
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     if (isNaN(assessmentId)) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { obe_report_type, report_status } from '@prisma/client';
 import { z } from 'zod';
 
@@ -22,13 +22,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get admin's department to scope results
+    const departmentId = await getDepartmentIdFromRequest(request);
+    if (!departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found for your account' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
     const semesterId = searchParams.get('semesterId');
     const reportType = searchParams.get('reportType');
     const status = searchParams.get('status');
 
-    const where: any = {};
+    const where: any = {
+      program: { departmentId },
+    };
     if (programId) where.programId = parseInt(programId);
     if (semesterId) where.semesterId = parseInt(semesterId);
     if (reportType) where.reportType = reportType;
@@ -84,10 +95,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get admin's department to scope access
+    const departmentId = await getDepartmentIdFromRequest(request);
+    if (!departmentId) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found for your account' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createReportSchema.parse(body);
 
-    // Validate program and semester if provided
+    // Validate program belongs to admin's department
     if (validatedData.programId) {
       const program = await prisma.programs.findUnique({
         where: { id: validatedData.programId },
@@ -96,6 +116,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { success: false, error: 'Program not found' },
           { status: 404 }
+        );
+      }
+      if (program.departmentId !== departmentId) {
+        return NextResponse.json(
+          { success: false, error: 'Program does not belong to your department' },
+          { status: 403 }
         );
       }
     }

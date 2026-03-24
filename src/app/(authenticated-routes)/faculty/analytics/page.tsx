@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,13 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -162,6 +155,11 @@ const COLORS = [
 ];
 
 const AnalyticsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
@@ -593,16 +591,27 @@ const AnalyticsPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="text-center py-12">Loading analytics...</div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading analytics...</p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="text-center py-12 text-muted-foreground">
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center text-xs text-muted-text">
           No analytics data available
         </div>
       </div>
@@ -643,39 +652,69 @@ const AnalyticsPage = () => {
   );
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
+      {/* Header - same as admin/faculty dashboard */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-bold text-primary-text">
+            Analytics Dashboard
+          </h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Comprehensive insights and performance metrics
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport('csv')}>
-            <Download className="w-4 h-4 mr-2" />
+          <button
+            onClick={() => handleExport('csv')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
+              color: primaryColor,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+            }}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
             Export CSV
-          </Button>
-          <Button variant="outline" onClick={() => handleExport('pdf')}>
-            <Download className="w-4 h-4 mr-2" />
+          </button>
+          <button
+            onClick={() => handleExport('pdf')}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
+              color: primaryColor,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+            }}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
             Export PDF
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>
+      <div className="bg-card border-card-border rounded-xl shadow-sm border">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Filters</h2>
+          <p className="text-xs text-secondary-text mt-0.5">
             Filter analytics data by course, section, or date range
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-4 gap-4">
+          </p>
+        </div>
+        <div className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label>Course ID (Optional)</Label>
+              <Label className="text-xs text-secondary-text">Course ID (Optional)</Label>
               <Input
+                className="mt-1 h-8 text-xs border-card-border"
                 placeholder="Filter by course ID"
                 value={filters.courseId}
                 onChange={(e) =>
@@ -684,8 +723,9 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label>Section ID (Optional)</Label>
+              <Label className="text-xs text-secondary-text">Section ID (Optional)</Label>
               <Input
+                className="mt-1 h-8 text-xs border-card-border"
                 placeholder="Filter by section ID"
                 value={filters.sectionId}
                 onChange={(e) =>
@@ -694,9 +734,10 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label>Start Date (Optional)</Label>
+              <Label className="text-xs text-secondary-text">Start Date (Optional)</Label>
               <Input
                 type="date"
+                className="mt-1 h-8 text-xs border-card-border"
                 value={filters.startDate}
                 onChange={(e) =>
                   setFilters({ ...filters, startDate: e.target.value })
@@ -704,9 +745,10 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label>End Date (Optional)</Label>
+              <Label className="text-xs text-secondary-text">End Date (Optional)</Label>
               <Input
                 type="date"
+                className="mt-1 h-8 text-xs border-card-border"
                 value={filters.endDate}
                 onChange={(e) =>
                   setFilters({ ...filters, endDate: e.target.value })
@@ -715,8 +757,8 @@ const AnalyticsPage = () => {
             </div>
           </div>
           <div className="mt-4 flex gap-2">
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() =>
                 setFilters({
                   courseId: '',
@@ -725,344 +767,297 @@ const AnalyticsPage = () => {
                   endDate: '',
                 })
               }
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Clear Filters
-            </Button>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Tabs defaultValue="performance" className="w-full">
-        <TabsList>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="clo">CLO Analytics</TabsTrigger>
-          <TabsTrigger value="student">Student Analytics</TabsTrigger>
-          <TabsTrigger value="assessment">Assessment Analytics</TabsTrigger>
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Performance</TabsTrigger>
+          <TabsTrigger value="clo" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Analytics</TabsTrigger>
+          <TabsTrigger value="student" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Student Analytics</TabsTrigger>
+          <TabsTrigger value="assessment" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Assessment Analytics</TabsTrigger>
         </TabsList>
 
         {/* Performance Analytics */}
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Total Courses</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.performance.overall.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Total Sections</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.performance.sectionComparison.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Overall Average</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.performance.overall.length > 0
-                    ? (
-                        data.performance.overall.reduce(
-                          (sum, c) => sum + c.averagePercentage,
-                          0
-                        ) / data.performance.overall.length
-                      ).toFixed(1)
-                    : 0}
-                  %
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Total Courses</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">{data.performance.overall.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Total Sections</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">{data.performance.sectionComparison.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Overall Average</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">
+                {data.performance.overall.length > 0
+                  ? (
+                      data.performance.overall.reduce(
+                        (sum, c) => sum + c.averagePercentage,
+                        0
+                      ) / data.performance.overall.length
+                    ).toFixed(1)
+                  : 0}
+                %
+              </p>
+            </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={performanceChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
-                  />
-                  <Bar dataKey="average" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">Course Performance</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={performanceChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                <Tooltip
+                  formatter={(value: number) => `${value.toFixed(1)}%`}
+                  contentStyle={{
+                    backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                    border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Bar dataKey="average" fill={primaryColor} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Section Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Section Comparison</h2>
+            </div>
+            <div className="p-4 overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Section</TableHead>
-                    <TableHead>Course</TableHead>
-                    <TableHead>Semester</TableHead>
-                    <TableHead>Enrollment</TableHead>
-                    <TableHead>Assessments</TableHead>
-                    <TableHead>Average %</TableHead>
+                  <TableRow className="border-card-border">
+                    <TableHead className="text-xs text-secondary-text">Section</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Course</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Semester</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Enrollment</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Assessments</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Average %</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.performance.sectionComparison.map((section) => (
-                    <TableRow key={section.sectionId}>
-                      <TableCell className="font-medium">
+                    <TableRow key={section.sectionId} className="border-card-border">
+                      <TableCell className="font-medium text-sm text-primary-text">
                         {section.sectionName}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-secondary-text">
                         {section.course.code} - {section.course.name}
                       </TableCell>
-                      <TableCell>{section.semester}</TableCell>
-                      <TableCell>{section.enrollment}</TableCell>
-                      <TableCell>{section.assessmentCount}</TableCell>
+                      <TableCell className="text-xs text-secondary-text">{section.semester}</TableCell>
+                      <TableCell className="text-xs text-primary-text">{section.enrollment}</TableCell>
+                      <TableCell className="text-xs text-primary-text">{section.assessmentCount}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Progress
                             value={section.averagePercentage}
                             className="w-20"
                           />
-                          <span>{section.averagePercentage.toFixed(1)}%</span>
+                          <span className="text-xs text-primary-text">{section.averagePercentage.toFixed(1)}%</span>
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* CLO Analytics */}
         <TabsContent value="clo" className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Total CLOs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.clo.trends.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Weak CLOs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {data.clo.weakCLOs.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Average Attainment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.clo.trends.length > 0
-                    ? (
-                        data.clo.trends.reduce(
-                          (sum, c) => sum + (c.latest || 0),
-                          0
-                        ) / data.clo.trends.length
-                      ).toFixed(1)
-                    : 0}
-                  %
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Total CLOs</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">{data.clo.trends.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Weak CLOs</p>
+              <p className="text-lg font-bold mt-1" style={{ color: 'var(--error)' }}>{data.clo.weakCLOs.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Average Attainment</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">
+                {data.clo.trends.length > 0
+                  ? (
+                      data.clo.trends.reduce(
+                        (sum, c) => sum + (c.latest || 0),
+                        0
+                      ) / data.clo.trends.length
+                    ).toFixed(1)
+                  : 0}
+                %
+              </p>
+            </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>CLO Attainment Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={cloTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
-                  />
-                  <Legend />
-                  <Bar dataKey="latest" fill="#8884d8" name="Latest" />
-                  <Bar dataKey="average" fill="#82ca9d" name="Average" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">CLO Attainment Trends</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={cloTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                <Tooltip
+                  formatter={(value: number) => `${value.toFixed(1)}%`}
+                  contentStyle={{
+                    backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                    border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Bar dataKey="latest" fill={primaryColor} name="Latest" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="average" fill="var(--success-green)" name="Average" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Weak CLOs & Suggestions</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Weak CLOs & Suggestions</h2>
+            </div>
+            <div className="p-4 overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>CLO Code</TableHead>
-                    <TableHead>Current Attainment</TableHead>
-                    <TableHead>Suggestion</TableHead>
+                  <TableRow className="border-card-border">
+                    <TableHead className="text-xs text-secondary-text">CLO Code</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Current Attainment</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Suggestion</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.clo.suggestions.map((suggestion, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">
+                    <TableRow key={idx} className="border-card-border">
+                      <TableCell className="font-medium text-sm text-primary-text">
                         {suggestion.cloCode}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="destructive">
+                        <Badge variant="destructive" className="text-[10px]">
                           {suggestion.currentAttainment.toFixed(1)}%
                         </Badge>
                       </TableCell>
-                      <TableCell>{suggestion.suggestion}</TableCell>
+                      <TableCell className="text-xs text-secondary-text">{suggestion.suggestion}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Student Analytics */}
         <TabsContent value="student" className="space-y-4">
-          <div className="grid grid-cols-4 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Top Performers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {data.student.topPerformers.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">At-Risk Students</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {data.student.atRiskStudents.length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Excellent</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.student.distribution.excellent}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Poor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.student.distribution.poor}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Top Performers</p>
+              <p className="text-lg font-bold mt-1 text-[var(--success-green)]">{data.student.topPerformers.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">At-Risk Students</p>
+              <p className="text-lg font-bold mt-1" style={{ color: 'var(--error)' }}>{data.student.atRiskStudents.length}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Excellent</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">{data.student.distribution.excellent}</p>
+            </div>
+            <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+              <p className="text-xs font-medium text-secondary-text">Poor</p>
+              <p className="text-lg font-bold mt-1 text-primary-text">{data.student.distribution.poor}</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={distributionData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {distributionData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+              <h2 className="text-sm font-semibold text-primary-text mb-3">Performance Distribution</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={distributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={80}
+                    fill={primaryColor}
+                    dataKey="value"
+                  >
+                    {distributionData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                      border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Grade Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={gradeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+              <h2 className="text-sm font-semibold text-primary-text mb-3">Grade Distribution</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={gradeData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                  <YAxis tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                      border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Bar dataKey="count" fill={primaryColor} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
-              </CardHeader>
-              <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-card border-card-border rounded-xl shadow-sm border">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Top Performers</h2>
+              </div>
+              <div className="p-4 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Roll No</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Average</TableHead>
+                    <TableRow className="border-card-border">
+                      <TableHead className="text-xs text-secondary-text">Roll No</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Name</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Average</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.student.topPerformers.slice(0, 10).map((student) => (
-                      <TableRow key={student.studentId}>
-                        <TableCell className="font-medium">
-                          {student.rollNumber}
-                        </TableCell>
-                        <TableCell>{student.name}</TableCell>
+                      <TableRow key={student.studentId} className="border-card-border">
+                        <TableCell className="font-medium text-sm text-primary-text">{student.rollNumber}</TableCell>
+                        <TableCell className="text-xs text-secondary-text">{student.name}</TableCell>
                         <TableCell>
-                          <Badge variant="default" className="bg-green-600">
+                          <Badge className="text-[10px] bg-[var(--success-green)] hover:bg-[var(--success-green)]">
                             {student.average.toFixed(1)}%
                           </Badge>
                         </TableCell>
@@ -1070,31 +1065,29 @@ const AnalyticsPage = () => {
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>At-Risk Students</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="bg-card border-card-border rounded-xl shadow-sm border">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">At-Risk Students</h2>
+              </div>
+              <div className="p-4 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Roll No</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Average</TableHead>
+                    <TableRow className="border-card-border">
+                      <TableHead className="text-xs text-secondary-text">Roll No</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Name</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Average</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.student.atRiskStudents.map((student) => (
-                      <TableRow key={student.studentId}>
-                        <TableCell className="font-medium">
-                          {student.rollNumber}
-                        </TableCell>
-                        <TableCell>{student.name}</TableCell>
+                      <TableRow key={student.studentId} className="border-card-border">
+                        <TableCell className="font-medium text-sm text-primary-text">{student.rollNumber}</TableCell>
+                        <TableCell className="text-xs text-secondary-text">{student.name}</TableCell>
                         <TableCell>
-                          <Badge variant="destructive">
+                          <Badge variant="destructive" className="text-[10px]">
                             {student.average.toFixed(1)}%
                           </Badge>
                         </TableCell>
@@ -1102,36 +1095,36 @@ const AnalyticsPage = () => {
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </TabsContent>
 
         {/* Assessment Analytics */}
         <TabsContent value="assessment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assessment Difficulty Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Assessment Difficulty Analysis</h2>
+            </div>
+            <div className="p-4 overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Assessment</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Difficulty</TableHead>
-                    <TableHead>Average Score</TableHead>
-                    <TableHead>Average %</TableHead>
-                    <TableHead>Students</TableHead>
+                  <TableRow className="border-card-border">
+                    <TableHead className="text-xs text-secondary-text">Assessment</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Type</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Difficulty</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Average Score</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Average %</TableHead>
+                    <TableHead className="text-xs text-secondary-text">Students</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.assessment.map((assessment) => (
-                    <TableRow key={assessment.assessmentId}>
-                      <TableCell className="font-medium">
+                    <TableRow key={assessment.assessmentId} className="border-card-border">
+                      <TableCell className="font-medium text-sm text-primary-text">
                         {assessment.title}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-secondary-text">
                         {assessment.type
                           .replace(/_/g, ' ')
                           .replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -1146,54 +1139,55 @@ const AnalyticsPage = () => {
                                 ? 'secondary'
                                 : 'destructive'
                             }
+                            className="text-[10px]"
                           >
                             {assessment.difficulty.toUpperCase()}
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-xs text-muted-text">N/A</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-primary-text">
                         {assessment.averageScore !== null
                           ? assessment.averageScore.toFixed(1)
                           : 'N/A'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-primary-text">
                         {assessment.averagePercentage !== null
                           ? `${assessment.averagePercentage.toFixed(1)}%`
                           : 'N/A'}
                       </TableCell>
-                      <TableCell>{assessment.totalStudents}</TableCell>
+                      <TableCell className="text-xs text-primary-text">{assessment.totalStudents}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {data.assessment.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
+            <div className="bg-card border-card-border rounded-xl shadow-sm border">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">
                   Item Analysis - {data.assessment[0].title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </h2>
+              </div>
+              <div className="p-4 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Question</TableHead>
-                      <TableHead>Average Marks</TableHead>
-                      <TableHead>Difficulty</TableHead>
+                    <TableRow className="border-card-border">
+                      <TableHead className="text-xs text-secondary-text">Question</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Average Marks</TableHead>
+                      <TableHead className="text-xs text-secondary-text">Difficulty</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.assessment[0].itemAnalysis.map((item) => (
-                      <TableRow key={item.itemId}>
-                        <TableCell className="font-medium">
+                      <TableRow key={item.itemId} className="border-card-border">
+                        <TableCell className="font-medium text-sm text-primary-text">
                           {item.questionNo}
                         </TableCell>
-                        <TableCell>{item.averageMarks.toFixed(1)}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{item.averageMarks.toFixed(1)}</TableCell>
                         <TableCell>
                           {item.difficulty ? (
                             <Badge
@@ -1204,19 +1198,20 @@ const AnalyticsPage = () => {
                                   ? 'secondary'
                                   : 'destructive'
                               }
+                              className="text-[10px]"
                             >
                               {item.difficulty.toUpperCase()}
                             </Badge>
                           ) : (
-                            <span className="text-muted-foreground">N/A</span>
+                            <span className="text-xs text-muted-text">N/A</span>
                           )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </TabsContent>
       </Tabs>

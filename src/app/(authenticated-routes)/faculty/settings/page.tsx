@@ -1,14 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -60,6 +53,12 @@ interface Preferences {
 }
 
 export default function SettingsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -84,9 +83,13 @@ export default function SettingsPage() {
   const [preferences, setPreferences] = useState<Preferences | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+  useEffect(() => {
+    if (!mounted) return;
     fetchProfile();
     fetchPreferences();
-  }, []);
+  }, [mounted]);
 
   const fetchProfile = async () => {
     try {
@@ -226,186 +229,179 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="text-center py-12">Loading settings...</div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading settings...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Faculty Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences
-        </p>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Settings className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Faculty Settings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Manage your account settings and preferences</p>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">
-            <User className="w-4 h-4 mr-2" />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="inline-flex h-10 w-full max-w-md items-center justify-start gap-0 rounded-lg border border-card-border bg-card p-1 text-[var(--text-secondary)]">
+          <TabsTrigger value="profile" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <User className="w-3.5 h-3.5 mr-2 shrink-0" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="preferences">
-            <Settings className="w-4 h-4 mr-2" />
+          <TabsTrigger value="preferences" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <Settings className="w-3.5 h-3.5 mr-2 shrink-0" />
             Preferences
           </TabsTrigger>
-          <TabsTrigger value="teaching">
-            <GraduationCap className="w-4 h-4 mr-2" />
+          <TabsTrigger value="teaching" className="flex-1 text-xs rounded-md data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-[var(--text-primary)]">
+            <GraduationCap className="w-3.5 h-3.5 mr-2 shrink-0" />
             Teaching
           </TabsTrigger>
         </TabsList>
 
-        {/* Profile Settings Tab */}
-        <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>
-                Update your personal information and contact details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <TabsContent value="profile" className="space-y-4">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Personal Information</h2>
+              <p className="text-xs text-secondary-text mt-0.5">Update your personal information and contact details</p>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-xs text-secondary-text">First Name</Label>
                   <Input
                     id="firstName"
                     value={profileForm.firstName}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, firstName: e.target.value })
-                    }
+                    onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+                    className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-xs text-secondary-text">Last Name</Label>
                   <Input
                     id="lastName"
                     value={profileForm.lastName}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, lastName: e.target.value })
-                    }
+                    onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+                    className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-xs text-secondary-text">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={profileForm.email}
-                  onChange={(e) =>
-                    setProfileForm({ ...profileForm, email: e.target.value })
-                  }
+                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                  className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
               <div>
-                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Label htmlFor="phoneNumber" className="text-xs text-secondary-text">Phone Number</Label>
                 <Input
                   id="phoneNumber"
                   value={profileForm.phoneNumber}
-                  onChange={(e) =>
-                    setProfileForm({ ...profileForm, phoneNumber: e.target.value })
-                  }
+                  onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
+                  className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
               {profile && (
-                <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                  <div>
-                    <span className="font-medium">Employee ID:</span> {profile.employeeId || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Department:</span>{' '}
-                    {profile.department?.name || 'N/A'}
-                  </div>
+                <div className="grid grid-cols-2 gap-4 text-xs text-secondary-text">
+                  <div><span className="font-medium text-primary-text">Employee ID:</span> {profile.employeeId || 'N/A'}</div>
+                  <div><span className="font-medium text-primary-text">Department:</span> {profile.department?.name || 'N/A'}</div>
                 </div>
               )}
-              <Button onClick={handleSaveProfile} disabled={saving}>
-                <Save className="w-4 h-4 mr-2" />
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </CardContent>
-          </Card>
+              </button>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>
-                Update your password to keep your account secure
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Change Password</h2>
+              <p className="text-xs text-secondary-text mt-0.5">Update your password to keep your account secure</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div>
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword" className="text-xs text-secondary-text">Current Password</Label>
                 <Input
                   id="currentPassword"
                   type="password"
                   value={passwordForm.currentPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      currentPassword: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
               <div>
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword" className="text-xs text-secondary-text">New Password</Label>
                 <Input
                   id="newPassword"
                   type="password"
                   value={passwordForm.newPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      newPassword: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
               <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword" className="text-xs text-secondary-text">Confirm New Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={passwordForm.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      confirmPassword: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
-              <Button onClick={handleChangePassword} disabled={saving}>
-                <Lock className="w-4 h-4 mr-2" />
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Lock className="w-3.5 h-3.5" />
                 {saving ? 'Changing...' : 'Change Password'}
-              </Button>
-            </CardContent>
-          </Card>
+              </button>
+            </div>
+          </div>
         </TabsContent>
 
-        {/* Preferences Tab */}
-        <TabsContent value="preferences" className="space-y-6">
+        <TabsContent value="preferences" className="space-y-4">
           {preferences && (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Configure how you receive notifications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h2 className="text-sm font-semibold text-primary-text">Notification Preferences</h2>
+                  <p className="text-xs text-secondary-text mt-0.5">Configure how you receive notifications</p>
+                </div>
+                <div className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications via email
-                      </p>
+                      <Label className="text-xs text-primary-text">Email Notifications</Label>
+                      <p className="text-xs text-secondary-text">Receive notifications via email</p>
                     </div>
                     <Switch
                       checked={preferences.notificationPreferences.emailNotifications}
@@ -422,10 +418,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Assessment Reminders</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get reminders for upcoming assessments
-                      </p>
+                      <Label className="text-xs text-primary-text">Assessment Reminders</Label>
+                      <p className="text-xs text-secondary-text">Get reminders for upcoming assessments</p>
                     </div>
                     <Switch
                       checked={preferences.notificationPreferences.assessmentReminders}
@@ -442,10 +436,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Grade Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Notify when grades are calculated
-                      </p>
+                      <Label className="text-xs text-primary-text">Grade Notifications</Label>
+                      <p className="text-xs text-secondary-text">Notify when grades are calculated</p>
                     </div>
                     <Switch
                       checked={preferences.notificationPreferences.gradeNotifications}
@@ -462,10 +454,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>System Updates</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive system update notifications
-                      </p>
+                      <Label className="text-xs text-primary-text">System Updates</Label>
+                      <p className="text-xs text-secondary-text">Receive system update notifications</p>
                     </div>
                     <Switch
                       checked={preferences.notificationPreferences.systemUpdates}
@@ -480,19 +470,17 @@ export default function SettingsPage() {
                       }
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Display Preferences</CardTitle>
-                  <CardDescription>
-                    Customize how information is displayed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h2 className="text-sm font-semibold text-primary-text">Display Preferences</h2>
+                  <p className="text-xs text-secondary-text mt-0.5">Customize how information is displayed</p>
+                </div>
+                <div className="p-4 space-y-4">
                   <div>
-                    <Label>Grade Display Format</Label>
+                    <Label className="text-xs text-secondary-text">Grade Display Format</Label>
                     <Select
                       value={preferences.displayPreferences.gradeDisplayFormat}
                       onValueChange={(value: 'percentage' | 'letter' | 'both') =>
@@ -505,18 +493,18 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="percentage">Percentage Only</SelectItem>
-                        <SelectItem value="letter">Letter Grade Only</SelectItem>
-                        <SelectItem value="both">Both</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="percentage" className="text-primary-text hover:bg-card/50">Percentage Only</SelectItem>
+                        <SelectItem value="letter" className="text-primary-text hover:bg-card/50">Letter Grade Only</SelectItem>
+                        <SelectItem value="both" className="text-primary-text hover:bg-card/50">Both</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Date Format</Label>
+                    <Label className="text-xs text-secondary-text">Date Format</Label>
                     <Input
                       value={preferences.displayPreferences.dateFormat}
                       onChange={(e) =>
@@ -529,10 +517,11 @@ export default function SettingsPage() {
                         })
                       }
                       placeholder="MM/DD/YYYY"
+                      className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                     />
                   </div>
                   <div>
-                    <Label>Default View</Label>
+                    <Label className="text-xs text-secondary-text">Default View</Label>
                     <Select
                       value={preferences.displayPreferences.defaultView}
                       onValueChange={(value) =>
@@ -545,41 +534,44 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dashboard">Dashboard</SelectItem>
-                        <SelectItem value="courses">Courses</SelectItem>
-                        <SelectItem value="assessments">Assessments</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="dashboard" className="text-primary-text hover:bg-card/50">Dashboard</SelectItem>
+                        <SelectItem value="courses" className="text-primary-text hover:bg-card/50">Courses</SelectItem>
+                        <SelectItem value="assessments" className="text-primary-text hover:bg-card/50">Assessments</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Button onClick={handleSavePreferences} disabled={saving}>
-                <Save className="w-4 h-4 mr-2" />
+              <button
+                type="button"
+                onClick={handleSavePreferences}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Preferences'}
-              </Button>
+              </button>
             </>
           )}
         </TabsContent>
 
-        {/* Teaching Preferences Tab */}
-        <TabsContent value="teaching" className="space-y-6">
+        <TabsContent value="teaching" className="space-y-4">
           {preferences && (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Teaching Preferences</CardTitle>
-                  <CardDescription>
-                    Configure default settings for assessments and grading
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h2 className="text-sm font-semibold text-primary-text">Teaching Preferences</h2>
+                  <p className="text-xs text-secondary-text mt-0.5">Configure default settings for assessments and grading</p>
+                </div>
+                <div className="p-4 space-y-4">
                   <div>
-                    <Label>Default Assessment Type</Label>
+                    <Label className="text-xs text-secondary-text">Default Assessment Type</Label>
                     <Select
                       value={preferences.teachingPreferences.defaultAssessmentType}
                       onValueChange={(value) =>
@@ -592,25 +584,25 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="quiz">Quiz</SelectItem>
-                        <SelectItem value="assignment">Assignment</SelectItem>
-                        <SelectItem value="midterm">Midterm</SelectItem>
-                        <SelectItem value="final">Final</SelectItem>
-                        <SelectItem value="project">Project</SelectItem>
-                        <SelectItem value="lab">Lab</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="quiz" className="text-primary-text hover:bg-card/50">Quiz</SelectItem>
+                        <SelectItem value="assignment" className="text-primary-text hover:bg-card/50">Assignment</SelectItem>
+                        <SelectItem value="midterm" className="text-primary-text hover:bg-card/50">Midterm</SelectItem>
+                        <SelectItem value="final" className="text-primary-text hover:bg-card/50">Final</SelectItem>
+                        <SelectItem value="project" className="text-primary-text hover:bg-card/50">Project</SelectItem>
+                        <SelectItem value="lab" className="text-primary-text hover:bg-card/50">Lab</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Default Weightage (%)</Label>
+                    <Label className="text-xs text-secondary-text">Default Weightage (%)</Label>
                     <Input
                       type="number"
-                      min="0"
-                      max="100"
+                      min={0}
+                      max={100}
                       value={preferences.teachingPreferences.defaultWeightage}
                       onChange={(e) =>
                         setPreferences({
@@ -621,14 +613,15 @@ export default function SettingsPage() {
                           },
                         })
                       }
+                      className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                     />
                   </div>
                   <div>
-                    <Label>CLO Calculation Threshold (%)</Label>
+                    <Label className="text-xs text-secondary-text">CLO Calculation Threshold (%)</Label>
                     <Input
                       type="number"
-                      min="0"
-                      max="100"
+                      min={0}
+                      max={100}
                       value={preferences.teachingPreferences.cloCalculationThreshold}
                       onChange={(e) =>
                         setPreferences({
@@ -639,17 +632,14 @@ export default function SettingsPage() {
                           },
                         })
                       }
+                      className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                     />
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Minimum percentage required for CLO attainment
-                    </p>
+                    <p className="text-xs text-secondary-text mt-1">Minimum percentage required for CLO attainment</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Auto Calculate Grades</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Automatically calculate grades after marks entry
-                      </p>
+                      <Label className="text-xs text-primary-text">Auto Calculate Grades</Label>
+                      <p className="text-xs text-secondary-text">Automatically calculate grades after marks entry</p>
                     </div>
                     <Switch
                       checked={preferences.teachingPreferences.autoCalculateGrades}
@@ -664,13 +654,19 @@ export default function SettingsPage() {
                       }
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Button onClick={handleSavePreferences} disabled={saving}>
-                <Save className="w-4 h-4 mr-2" />
+              <button
+                type="button"
+                onClick={handleSavePreferences}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Teaching Preferences'}
-              </Button>
+              </button>
             </>
           )}
         </TabsContent>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import {
   Table,
   TableBody,
@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, Target, TrendingUp, AlertCircle } from 'lucide-react';
@@ -83,6 +82,12 @@ interface CLOPLOMapping {
 export default function CourseCLOsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   const courseId = params.id as string;
   const [clos, setCLOs] = useState<CLO[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
@@ -90,6 +95,10 @@ export default function CourseCLOsPage() {
   const [ploMappings, setPLOMappings] = useState<CLOPLOMapping[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('list');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -146,95 +155,88 @@ export default function CourseCLOsPage() {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     if (status === 'attained') {
-      return (
-        <Badge className="bg-green-500 hover:bg-green-600">Attained</Badge>
-      );
+      return <Badge className="bg-[var(--success-green)] text-white text-[10px]">Attained</Badge>;
     }
-    return (
-      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
-        Not Attained
-      </Badge>
-    );
+    return <Badge variant="destructive" className="text-[10px]">Not Attained</Badge>;
   };
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading CLOs...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading CLOs...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
           onClick={() => router.push(`/faculty/courses/${courseId}`)}
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Target className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-lg font-bold text-primary-text">
             CLOs for {course?.name} ({course?.code})
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-secondary-text mt-0.5">
             View Course Learning Outcomes and their attainment status
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="list">CLO List</TabsTrigger>
-          <TabsTrigger value="attainments">CLO Attainments</TabsTrigger>
-          <TabsTrigger value="plo-mappings">CLO-PLO Mappings</TabsTrigger>
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="list" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO List</TabsTrigger>
+          <TabsTrigger value="attainments" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Attainments</TabsTrigger>
+          <TabsTrigger value="plo-mappings" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO-PLO Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Learning Outcomes</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Course Learning Outcomes</h2>
+            </div>
+            <div className="p-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Bloom's Level</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Bloom's Level</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {clos.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={4} className="text-center text-xs text-secondary-text py-8">
                         No CLOs defined for this course
                       </TableCell>
                     </TableRow>
                   ) : (
                     clos.map((clo) => (
-                      <TableRow key={clo.id}>
-                        <TableCell className="font-medium">{clo.code}</TableCell>
-                        <TableCell>{clo.description}</TableCell>
-                        <TableCell>{clo.bloomLevel || '-'}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              clo.status === 'active'
-                                ? 'default'
-                                : clo.status === 'inactive'
-                                ? 'secondary'
-                                : 'destructive'
-                            }
-                          >
+                      <TableRow key={clo.id} className="hover:bg-[var(--hover-bg)]">
+                        <TableCell className="font-medium text-xs text-primary-text">{clo.code}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{clo.description}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{clo.bloomLevel || '-'}</TableCell>
+                        <TableCell className="text-xs text-primary-text">
+                          <Badge variant={clo.status === 'active' ? 'default' : clo.status === 'inactive' ? 'secondary' : 'destructive'} className="text-[10px]">
                             {clo.status}
                           </Badge>
                         </TableCell>
@@ -243,118 +245,90 @@ export default function CourseCLOsPage() {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="attainments" className="space-y-4">
           {attainments.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  No CLO attainments calculated yet
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Calculate CLO attainments from the Results section
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+              <Target className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+              <p className="text-xs text-secondary-text">No CLO attainments calculated yet</p>
+              <p className="text-xs text-secondary-text mt-1">Calculate CLO attainments from the Results section</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {attainments.map((item) => (
-                <Card key={item.clo.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="w-5 h-5" />
-                          {item.clo.code}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {item.clo.description}
-                        </p>
-                      </div>
-                      {item.latestAttainment && (
-                        <div className="text-right">
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(item.latestAttainment.status)}
-                            <span className="text-2xl font-bold">
-                              {item.latestAttainment.attainmentPercent.toFixed(1)}%
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Threshold: {item.latestAttainment.threshold}%
-                          </p>
-                        </div>
-                      )}
+                <div key={item.clo.id} className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
+                  <div className="flex items-start justify-between flex-wrap gap-2">
+                    <div>
+                      <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2">
+                        <Target className="w-4 h-4" style={{ color: primaryColor }} />
+                        {item.clo.code}
+                      </h3>
+                      <p className="text-xs text-secondary-text mt-0.5">{item.clo.description}</p>
                     </div>
-                  </CardHeader>
-                  <CardContent>
                     {item.latestAttainment && (
-                      <div className="mb-4 p-4 bg-muted rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">
-                              Latest Attainment
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.latestAttainment.semester}
-                              {item.latestAttainment.sectionName &&
-                                ` • ${item.latestAttainment.sectionName}`}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold">
-                              {item.latestAttainment.attainmentPercent.toFixed(1)}%
-                            </p>
-                            {item.averageAttainment && (
-                              <p className="text-xs text-muted-foreground">
-                                Avg: {item.averageAttainment.toFixed(1)}%
-                              </p>
-                            )}
-                          </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(item.latestAttainment.status)}
+                          <span className="text-lg font-bold text-primary-text">
+                            {item.latestAttainment.attainmentPercent.toFixed(1)}%
+                          </span>
                         </div>
+                        <p className="text-xs text-secondary-text mt-0.5">Threshold: {item.latestAttainment.threshold}%</p>
                       </div>
                     )}
+                  </div>
+                  {item.latestAttainment && (
+                    <div className="mb-4 p-4 rounded-lg mt-4 border border-card-border bg-card">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-primary-text">Latest Attainment</p>
+                          <p className="text-xs text-secondary-text mt-0.5">
+                            {item.latestAttainment.semester}
+                            {item.latestAttainment.sectionName && ` • ${item.latestAttainment.sectionName}`}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary-text">
+                            {item.latestAttainment.attainmentPercent.toFixed(1)}%
+                          </p>
+                          {item.averageAttainment && (
+                            <p className="text-xs text-secondary-text">Avg: {item.averageAttainment.toFixed(1)}%</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                    {item.sectionWiseBreakdown.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold mb-3">
-                          Section-wise Breakdown
-                        </h4>
+                  {item.sectionWiseBreakdown.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-primary-text mb-3">Section-wise Breakdown</h4>
+                      <div className="rounded-lg border border-card-border overflow-hidden">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Semester</TableHead>
-                              <TableHead>Section</TableHead>
-                              <TableHead>Attainment</TableHead>
-                              <TableHead>Students</TableHead>
-                              <TableHead>Status</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Section</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Attainment</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Students</TableHead>
+                              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {item.sectionWiseBreakdown.map((breakdown, idx) => (
-                              <TableRow key={idx}>
-                                <TableCell>{breakdown.semester}</TableCell>
-                                <TableCell>
-                                  {breakdown.sectionName || 'N/A'}
+                              <TableRow key={idx} className="hover:bg-[var(--hover-bg)]">
+                                <TableCell className="text-xs text-primary-text">{breakdown.semester}</TableCell>
+                                <TableCell className="text-xs text-primary-text">{breakdown.sectionName || 'N/A'}</TableCell>
+                                <TableCell className="text-xs text-primary-text">
+                                  <span className="font-medium">{breakdown.attainmentPercent.toFixed(1)}%</span>
+                                  <span className="text-xs text-secondary-text"> / {breakdown.threshold}%</span>
                                 </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">
-                                      {breakdown.attainmentPercent.toFixed(1)}%
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      / {breakdown.threshold}%
-                                    </span>
-                                  </div>
+                                <TableCell className="text-xs text-primary-text">
+                                  {breakdown.studentsAchieved} / {breakdown.totalStudents}
                                 </TableCell>
-                                <TableCell>
-                                  {breakdown.studentsAchieved} /{' '}
-                                  {breakdown.totalStudents}
-                                </TableCell>
-                                <TableCell>
+                                <TableCell className="text-xs text-primary-text">
                                   {getStatusBadge(breakdown.status)}
                                 </TableCell>
                               </TableRow>
@@ -362,15 +336,13 @@ export default function CourseCLOsPage() {
                           </TableBody>
                         </Table>
                       </div>
-                    )}
+                    </div>
+                  )}
 
                     {item.sectionWiseBreakdown.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        No section-wise data available
-                      </p>
+                      <p className="text-xs text-secondary-text text-center py-4">No section-wise data available</p>
                     )}
-                  </CardContent>
-                </Card>
+                </div>
               ))}
             </div>
           )}
@@ -378,67 +350,49 @@ export default function CourseCLOsPage() {
 
         <TabsContent value="plo-mappings" className="space-y-4">
           {ploMappings.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  No CLO-PLO mappings found
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  CLO-PLO mappings are managed by administrators
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+              <Target className="w-10 h-10 mx-auto mb-3 text-muted-text" />
+              <p className="text-xs text-secondary-text">No CLO-PLO mappings found</p>
+              <p className="text-xs text-secondary-text mt-1">CLO-PLO mappings are managed by administrators</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {ploMappings.map((item) => (
-                <Card key={item.clo.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="w-5 h-5" />
-                      {item.clo.code}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {item.clo.description}
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    {item.ploMappings.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        No PLO mappings for this CLO
-                      </p>
-                    ) : (
+                <div key={item.clo.id} className="rounded-lg border border-card-border bg-card overflow-hidden p-4">
+                  <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2">
+                    <Target className="w-4 h-4" style={{ color: primaryColor }} />
+                    {item.clo.code}
+                  </h3>
+                  <p className="text-xs text-secondary-text mt-0.5">{item.clo.description}</p>
+                  {item.ploMappings.length === 0 ? (
+                    <p className="text-xs text-secondary-text text-center py-4 mt-4">No PLO mappings for this CLO</p>
+                  ) : (
+                    <div className="mt-4 rounded-lg border border-card-border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>PLO Code</TableHead>
-                            <TableHead>PLO Description</TableHead>
-                            <TableHead>Program</TableHead>
-                            <TableHead>Weight</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">PLO Code</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">PLO Description</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">Program</TableHead>
+                            <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {item.ploMappings.map((mapping) => (
-                            <TableRow key={mapping.ploId}>
-                              <TableCell className="font-medium">
-                                {mapping.ploCode}
-                              </TableCell>
-                              <TableCell>{mapping.ploDescription}</TableCell>
-                              <TableCell>
-                                {mapping.programName} ({mapping.programCode})
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline">
-                                  {(mapping.weight * 100).toFixed(0)}%
-                                </Badge>
+                            <TableRow key={mapping.ploId} className="hover:bg-[var(--hover-bg)]">
+                              <TableCell className="font-medium text-xs text-primary-text">{mapping.ploCode}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{mapping.ploDescription}</TableCell>
+                              <TableCell className="text-xs text-primary-text">{mapping.programName} ({mapping.programCode})</TableCell>
+                              <TableCell className="text-xs text-primary-text">
+                                <Badge variant="outline" className="text-[10px]">{(mapping.weight * 100).toFixed(0)}%</Badge>
                               </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
-                    )}
-                  </CardContent>
-                </Card>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

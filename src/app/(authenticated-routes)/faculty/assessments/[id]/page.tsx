@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -68,33 +67,34 @@ function SubmissionList({ assessmentId }: { assessmentId: number }) {
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading submissions...</p>;
+    return <p className="text-xs text-secondary-text">Loading submissions...</p>;
   }
 
   return (
+    <div className="rounded-lg border border-card-border bg-card overflow-hidden">
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Roll Number</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Submitted At</TableHead>
-          <TableHead>Marks</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Roll Number</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Submitted At</TableHead>
+          <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {submissions.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={5} className="text-center text-xs text-secondary-text py-8">
               No submissions yet
             </TableCell>
           </TableRow>
         ) : (
           submissions.map((submission) => (
-            <TableRow key={submission.studentId}>
-              <TableCell>{submission.rollNumber}</TableCell>
-              <TableCell>{submission.studentName}</TableCell>
-              <TableCell>
+            <TableRow key={submission.studentId} className="hover:bg-[var(--hover-bg)]">
+              <TableCell className="text-xs text-primary-text">{submission.rollNumber}</TableCell>
+              <TableCell className="text-xs text-primary-text">{submission.studentName}              </TableCell>
+              <TableCell className="text-xs text-primary-text">
                 <Badge
                   variant={
                     submission.status === 'published'
@@ -103,24 +103,25 @@ function SubmissionList({ assessmentId }: { assessmentId: number }) {
                       ? 'secondary'
                       : 'outline'
                   }
+                  className="text-[10px]"
                 >
                   {submission.status}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-xs text-secondary-text">
                 {submission.submittedAt
                   ? format(new Date(submission.submittedAt), 'PPP')
                   : 'Not submitted'}
               </TableCell>
-              <TableCell>
-                {submission.obtainedMarks} / {submission.totalMarks} (
-                {submission.percentage.toFixed(1)}%)
+              <TableCell className="text-xs text-primary-text">
+                {submission.obtainedMarks} / {submission.totalMarks} ({submission.percentage.toFixed(1)}%)
               </TableCell>
             </TableRow>
           ))
         )}
       </TableBody>
     </Table>
+    </div>
   );
 }
 
@@ -154,94 +155,68 @@ function ResultsOverview({ assessmentId }: { assessmentId: number }) {
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading results...</p>;
+    return <p className="text-secondary-text">Loading results...</p>;
   }
 
   if (!analytics) {
-    return <p className="text-muted-foreground">No results available</p>;
+    return <p className="text-secondary-text">No results available</p>;
   }
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Students
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.totalStudents}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Marks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.averageMarks.toFixed(1)} /{' '}
-              {analytics.overall.totalMarks}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average %</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.averagePercentage.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.overall.totalStudents > 0
-                ? (
-                    (analytics.gradeDistribution
-                      .filter((g: any) => g.grade !== 'F')
-                      .reduce((sum: number, g: any) => sum + g.count, 0) /
-                      analytics.overall.totalStudents) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              %
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Total Students</p>
+          <div className="text-lg font-bold text-primary-text">{analytics.overall.totalStudents}</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average Marks</p>
+          <div className="text-lg font-bold text-primary-text">
+            {analytics.overall.averageMarks.toFixed(1)} / {analytics.overall.totalMarks}
+          </div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Average %</p>
+          <div className="text-lg font-bold text-primary-text">{analytics.overall.averagePercentage.toFixed(1)}%</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Pass Rate</p>
+          <div className="text-lg font-bold text-primary-text">
+            {analytics.overall.totalStudents > 0
+              ? (
+                  (analytics.gradeDistribution
+                    .filter((g: any) => g.grade !== 'F')
+                    .reduce((sum: number, g: any) => sum + g.count, 0) /
+                    analytics.overall.totalStudents) *
+                  100
+                ).toFixed(1)
+              : 0}%
+          </div>
+        </div>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Grade Distribution</h3>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h3 className="text-sm font-semibold text-primary-text">Grade Distribution</h3>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Grade</TableHead>
-              <TableHead>Count</TableHead>
-              <TableHead>Percentage</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Count</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {analytics.gradeDistribution.map((grade: any) => (
-              <TableRow key={grade.grade}>
-                <TableCell>
-                  <Badge variant="outline">{grade.grade}</Badge>
+              <TableRow key={grade.grade} className="hover:bg-[var(--hover-bg)]">
+                <TableCell className="text-xs text-primary-text">
+                  <Badge variant="outline" className="text-[10px] border-card-border text-primary-text">{grade.grade}</Badge>
                 </TableCell>
-                <TableCell>{grade.count}</TableCell>
-                <TableCell>
+                <TableCell className="text-xs text-primary-text">{grade.count}</TableCell>
+                <TableCell className="text-xs text-primary-text">
                   {analytics.overall.totalStudents > 0
-                    ? (
-                        (grade.count / analytics.overall.totalStudents) *
-                        100
-                      ).toFixed(1)
-                    : 0}
-                  %
+                    ? ((grade.count / analytics.overall.totalStudents) * 100).toFixed(1)
+                    : 0}%
                 </TableCell>
               </TableRow>
             ))}
@@ -287,6 +262,11 @@ interface Assessment {
 export default function AssessmentDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('info');
@@ -295,6 +275,9 @@ export default function AssessmentDetailsPage() {
   const [reminderMessage, setReminderMessage] = useState('');
   const [showReminderDialog, setShowReminderDialog] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     fetchAssessment();
   }, [params.id]);
@@ -408,30 +391,53 @@ export default function AssessmentDetailsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6">
-        <div>Loading...</div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!assessment) {
     return (
-      <div className="container mx-auto py-6">
-        <div>Assessment not found</div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4">
+        <p className="text-xs text-secondary-text">Assessment not found</p>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
+          >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </button>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold">{assessment.title}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-lg font-bold text-primary-text">{assessment.title}</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
               {assessment.courseOffering.course.code} -{' '}
               {assessment.courseOffering.course.name} (
               {assessment.courseOffering.semester.name})
@@ -440,57 +446,77 @@ export default function AssessmentDetailsPage() {
         </div>
         <div className="flex gap-2">
           {assessment.status === 'active' ? (
-            <Button onClick={handlePublish}>Publish</Button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handlePublish}
+            >
+              Publish
+            </button>
           ) : (
-            <Button variant="outline" onClick={handleUnpublish}>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
+              onClick={handleUnpublish}
+            >
               Unpublish
-            </Button>
+            </button>
           )}
-          <Button variant="outline" onClick={() => setShowExtendDialog(true)}>
-            <Clock className="w-4 h-4 mr-2" />
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+            onClick={() => setShowExtendDialog(true)}
+          >
+            <Clock className="w-4 h-4" />
             Extend Due Date
-          </Button>
-          <Button variant="outline" onClick={() => setShowReminderDialog(true)}>
-            <Send className="w-4 h-4 mr-2" />
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+            onClick={() => setShowReminderDialog(true)}
+          >
+            <Send className="w-4 h-4" />
             Send Reminder
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/faculty/assessments/${params.id}/analytics`}>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
+          </button>
+          <Link
+            href={`/faculty/assessments/${params.id}/analytics`}
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </Link>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="info">Info</TabsTrigger>
-          <TabsTrigger value="items">Items</TabsTrigger>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="clo-coverage">CLO Coverage</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="info" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Info</TabsTrigger>
+          <TabsTrigger value="items" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Items</TabsTrigger>
+          <TabsTrigger value="submissions" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Submissions</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Results</TabsTrigger>
+          <TabsTrigger value="clo-coverage" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">CLO Coverage</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assessment Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Assessment Information</h2>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Type
                   </p>
-                  <p className="text-lg">
+                  <p className="text-lg text-primary-text">
                     {assessment.type
                       .replace(/_/g, ' ')
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Status
                   </p>
                   <Badge
@@ -504,87 +530,87 @@ export default function AssessmentDetailsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Total Marks
                   </p>
-                  <p className="text-lg">{assessment.totalMarks}</p>
+                  <p className="text-lg text-primary-text">{assessment.totalMarks}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Weightage
                   </p>
-                  <p className="text-lg">{assessment.weightage}%</p>
+                  <p className="text-lg text-primary-text">{assessment.weightage}%</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-secondary-text">
                     Due Date
                   </p>
-                  <p className="text-lg flex items-center gap-2">
+                  <p className="text-lg flex items-center gap-2 text-primary-text">
                     <Calendar className="w-4 h-4" />
                     {format(new Date(assessment.dueDate), 'PPP')}
                   </p>
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Description
                 </p>
-                <p className="text-sm mt-1">{assessment.description}</p>
+                <p className="text-sm mt-1 text-primary-text">{assessment.description}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-secondary-text">
                   Instructions
                 </p>
-                <p className="text-sm mt-1 whitespace-pre-wrap">
+                <p className="text-sm mt-1 whitespace-pre-wrap text-primary-text">
                   {assessment.instructions}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="items" className="space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Assessment Items</CardTitle>
-              <Button asChild>
-                <Link href={`/faculty/assessments/${params.id}/items`}>
-                  Manage Items
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border flex flex-row items-center justify-between flex-wrap gap-2">
+              <h2 className="text-sm font-semibold text-primary-text">Assessment Items</h2>
+              <Link
+                href={`/faculty/assessments/${params.id}/items`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Manage Items
+              </Link>
+            </div>
+            <div className="p-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Question No</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Marks</TableHead>
-                    <TableHead>CLO</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Question No</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {assessment.assessmentItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={4} className="text-center text-xs text-secondary-text py-8">
                         No items added yet
                       </TableCell>
                     </TableRow>
                   ) : (
                     assessment.assessmentItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.questionNo}</TableCell>
-                        <TableCell className="max-w-md truncate">
+                      <TableRow key={item.id} className="hover:bg-[var(--hover-bg)]">
+                        <TableCell className="text-xs text-primary-text">{item.questionNo}</TableCell>
+                        <TableCell className="max-w-md truncate text-xs text-primary-text">
                           {item.description}
                         </TableCell>
-                        <TableCell>{item.marks}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
+                        <TableCell className="text-xs text-primary-text">
                           {item.clo ? (
-                            <Badge variant="outline">{item.clo.code}</Badge>
+                            <Badge variant="outline" className="text-[10px] border-card-border">{item.clo.code}</Badge>
                           ) : (
-                            <span className="text-muted-foreground">
-                              No CLO
-                            </span>
+                            <span className="text-secondary-text">No CLO</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -592,38 +618,38 @@ export default function AssessmentDetailsPage() {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="submissions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Student Submissions</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Student Submissions</h2>
+            </div>
+            <div className="p-4">
               <SubmissionList assessmentId={assessment.id} />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="results" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Results Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Results Overview</h2>
+            </div>
+            <div className="p-4">
               <ResultsOverview assessmentId={assessment.id} />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="clo-coverage" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>CLO Coverage Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">CLO Coverage Analysis</h2>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 {assessment.assessmentItems.length > 0 ? (
                   <>
@@ -746,26 +772,29 @@ export default function AssessmentDetailsPage() {
                           (item) => item.clo?.code === cloCode
                         );
                         return (
-                          <Card key={cloCode}>
-                            <CardHeader>
-                              <CardTitle className="text-base">
+                          <div
+                            key={cloCode}
+                            className="rounded-lg border border-card-border bg-card overflow-hidden"
+                          >
+                            <div className="p-4 border-b border-card-border">
+                              <p className="text-sm font-semibold text-primary-text">
                                 <Badge variant="outline" className="mr-2">
                                   {cloCode}
                                 </Badge>
                                 {cloItems.length} item(s) -{' '}
                                 {cloItems.reduce((sum, item) => sum + item.marks, 0)} marks
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
+                              </p>
+                            </div>
+                            <div className="p-4">
                               <div className="space-y-2">
                                 {cloItems.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="flex items-center justify-between p-2 border rounded"
+                                    className="flex items-center justify-between p-2 border border-card-border rounded-lg bg-[var(--hover-bg)]"
                                   >
                                     <div>
-                                      <span className="font-medium">{item.questionNo}:</span>{' '}
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className="font-medium text-primary-text">{item.questionNo}:</span>{' '}
+                                      <span className="text-sm text-secondary-text">
                                         {item.description}
                                       </span>
                                     </div>
@@ -773,82 +802,100 @@ export default function AssessmentDetailsPage() {
                                   </div>
                                 ))}
                               </div>
-                            </CardContent>
-                          </Card>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                   </>
                 ) : (
-                  <p className="text-muted-foreground">
+                  <p className="text-secondary-text">
                     No items added yet. Add items to see CLO coverage.
                   </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
       {/* Extend Due Date Dialog */}
       <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Extend Due Date</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Extend Due Date</DialogTitle>
+            <DialogDescription className="text-secondary-text text-xs">
               Select a new due date for this assessment
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>New Due Date</Label>
+              <Label className="text-xs text-secondary-text">New Due Date</Label>
               <Input
                 type="datetime-local"
+                className="h-8 text-xs bg-card border-card-border text-primary-text mt-1"
                 onChange={(e) => setNewDueDate(new Date(e.target.value))}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
               onClick={() => setShowExtendDialog(false)}
             >
               Cancel
-            </Button>
-            <Button onClick={handleExtendDueDate}>Extend</Button>
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handleExtendDueDate}
+            >
+              Extend
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Send Reminder Dialog */}
       <Dialog open={showReminderDialog} onOpenChange={setShowReminderDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Send Reminder to Students</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Send Reminder to Students</DialogTitle>
+            <DialogDescription className="text-secondary-text text-xs">
               Send a reminder message to all students enrolled in this
               assessment
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Reminder Message</Label>
+              <Label className="text-xs text-secondary-text">Reminder Message</Label>
               <Textarea
                 value={reminderMessage}
                 onChange={(e) => setReminderMessage(e.target.value)}
                 placeholder="Enter reminder message..."
                 rows={5}
+                className="mt-1 text-xs bg-card border-card-border text-primary-text"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
               onClick={() => setShowReminderDialog(false)}
             >
               Cancel
-            </Button>
-            <Button onClick={handleSendReminder}>Send Reminder</Button>
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={handleSendReminder}
+            >
+              Send Reminder
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

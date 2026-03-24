@@ -5,18 +5,32 @@ import { requireAuth } from '@/lib/auth';
 // POST /api/users/[id]/roles - Assign roles and role-specific details to a user
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication and get user data
     const { success, user: authUser, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ error }, { status: 401 });
+    if (!success || !authUser) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (authUser?.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    // Check if user has admin role - only admins can assign roles
+    if (authUser.role !== 'admin' && authUser.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    }
+
+    // Handle async params (Next.js 15+)
+    const resolvedParams = await Promise.resolve(params);
+    const idParam = resolvedParams.id;
+
+    if (!idParam) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Parse user ID safely
+    const userId = parseInt(idParam, 10);
+    if (isNaN(userId) || userId <= 0) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
     // Parse and validate request body
@@ -46,12 +60,6 @@ export async function POST(
         { error: 'Only one role can be assigned to a user' },
         { status: 400 }
       );
-    }
-
-    // Parse user ID safely
-    const userId = parseInt(params.id);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
     // Check if user exists
@@ -109,23 +117,56 @@ export async function POST(
       }
     }
 
+    // Prepare faculty details for admin/faculty roles
+    let processedFacultyDetails = facultyDetails || {};
+    
     if (hasFacultyRole) {
-      if (!facultyDetails) {
-        return NextResponse.json(
-          {
-            error:
-              'Faculty details are required for faculty/admin role',
-          },
-          { status: 400 }
-        );
-      }
-      if (!facultyDetails.departmentId || !facultyDetails.designation) {
-        return NextResponse.json(
-          {
-            error: 'Faculty details must include departmentId and designation',
-          },
-          { status: 400 }
-        );
+      // For admin role, automatically get department from logged-in admin
+      // For faculty role, require departmentId and designation
+      if (roles.includes('admin')) {
+        // Admin role - automatically use logged-in admin's department
+        // Designation will be set to "Admin" automatically
+        // Get department ID from authenticated user (logged-in admin's department)
+        const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+        const departmentId = await getDepartmentIdFromRequest(request);
+        
+        if (!departmentId) {
+          return NextResponse.json(
+            {
+              error: 'Department not assigned. Please contact super admin to assign a department to your account.',
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Set departmentId and designation for admin
+        processedFacultyDetails = {
+          ...processedFacultyDetails,
+          departmentId: departmentId,
+          designation: 'Admin',
+        };
+      } else if (roles.includes('faculty')) {
+        // Faculty role - automatically get department from logged-in admin
+        // Designation will be set to "Faculty" automatically
+        // Get department ID from authenticated user (logged-in admin's department)
+        const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+        const departmentId = await getDepartmentIdFromRequest(request);
+        
+        if (!departmentId) {
+          return NextResponse.json(
+            {
+              error: 'Department not assigned. Please contact super admin to assign a department to your account.',
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Set departmentId and designation for faculty
+        processedFacultyDetails = {
+          ...(facultyDetails || {}),
+          departmentId: departmentId,
+          designation: 'Faculty', // Fixed designation for faculty
+        };
       }
     }
 
@@ -202,11 +243,19 @@ export async function POST(
 
           case 'faculty':
           case 'admin':
-            if (facultyDetails) {
+            if (processedFacultyDetails && Object.keys(processedFacultyDetails).length > 0) {
+              // Use processed faculty details (already validated above)
+              const departmentId = processedFacultyDetails.departmentId;
+              const designation = processedFacultyDetails.designation || (role === 'admin' ? 'Admin' : 'Faculty');
+              
+              if (!departmentId) {
+                throw new Error('Department ID is required');
+              }
+
               const faculty = await tx.faculties.create({
                 data: {
-                  departmentId: parseInt(facultyDetails.departmentId),
-                  designation: facultyDetails.designation,
+                  departmentId: departmentId,
+                  designation: designation,
                   status: 'active' as const,
                   updatedAt: new Date(),
                   userId,
@@ -217,14 +266,14 @@ export async function POST(
               // This allows multiple admins to exist, but keeps the first one as department admin
               if (role === 'admin') {
                 const department = await tx.departments.findUnique({
-                  where: { id: parseInt(facultyDetails.departmentId) },
+                  where: { id: departmentId },
                   select: { adminId: true },
                 });
                 
                 // Only update adminId if department doesn't have an admin yet
                 if (!department?.adminId) {
                   await tx.departments.update({
-                    where: { id: parseInt(facultyDetails.departmentId) },
+                    where: { id: departmentId },
                     data: {
                       adminId: userId,
                       updatedAt: new Date(),

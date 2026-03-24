@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Target } from 'lucide-react';
 import { CLOAttainments } from '@/components/assessments/CLOAttainments';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import {
   Select,
   SelectContent,
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 interface Section {
@@ -29,17 +29,29 @@ interface Section {
 }
 
 const CLOAttainmentsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch sections on component mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const fetchSections = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
         if (data.success) {
@@ -48,8 +60,6 @@ const CLOAttainmentsPage = () => {
           setSections(data);
         }
       } catch (err) {
-        setError('Failed to load sections');
-        console.error(err);
         toast.error('Failed to load sections');
       } finally {
         setLoading(false);
@@ -62,71 +72,84 @@ const CLOAttainmentsPage = () => {
     (section) => section.id.toString() === selectedSection
   );
 
+  if (!mounted) return null;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading CLO Attainments...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">CLO Attainments</h1>
-        <p className="text-muted-foreground">
-          Calculate and analyze Course Learning Outcome achievement percentages
-        </p>
+    <div className="space-y-4">
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <Target className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">CLO Attainments</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Calculate and analyze Course Learning Outcome achievement percentages
+          </p>
+        </div>
       </div>
 
-      <Card className="p-6 mb-6">
-        <CardHeader>
-          <CardTitle>Select Section</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="section">Section *</Label>
-            <Select
-              value={selectedSection}
-              onValueChange={setSelectedSection}
-              disabled={loading}
-            >
-              <SelectTrigger id="section">
-                <SelectValue placeholder="Select a section" />
-              </SelectTrigger>
-              <SelectContent>
-                {sections.map((section) => (
-                  <SelectItem key={section.id} value={section.id.toString()}>
-                    {section.courseOffering.course.code} - {section.name} (
-                    {section.courseOffering.semester.name})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {sections.length === 0 && !loading && (
-              <p className="text-sm text-muted-foreground">
-                No active sections found
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Filter */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <Select
+            value={selectedSection}
+            onValueChange={setSelectedSection}
+            disabled={loading}
+          >
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a section" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-card-border">
+              {sections.map((section) => (
+                <SelectItem
+                  key={section.id}
+                  value={section.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {section.courseOffering.course.code} - {section.name} (
+                  {section.courseOffering.semester.name})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      {error && (
-        <Card className="p-4 mb-6 border-red-200 bg-red-50">
-          <p className="text-red-700">{error}</p>
-        </Card>
-      )}
-
-      {loading ? (
-        <Card className="p-6">
-          <div className="text-center py-4">Loading sections...</div>
-        </Card>
-      ) : selectedSection && selectedSectionData ? (
+      {/* Content */}
+      {selectedSection && selectedSectionData ? (
         <CLOAttainments
           sectionId={parseInt(selectedSection)}
           courseId={selectedSectionData.courseOffering.course.id}
         />
       ) : (
-        <Card className="p-6">
-          <div className="text-center text-muted-foreground py-4">
-            {!selectedSection
-              ? 'Please select a section to view CLO attainments'
-              : 'No section data available'}
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text">
+            Please select a section to view CLO attainments
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

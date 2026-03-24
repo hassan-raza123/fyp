@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, FileText, TrendingUp } from 'lucide-react';
 import {
@@ -43,10 +42,20 @@ interface CourseOffering {
 export default function CourseOfferingsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
   const courseId = params.id as string;
   const [course, setCourse] = useState<any>(null);
   const [offerings, setOfferings] = useState<CourseOffering[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (courseId) {
@@ -84,139 +93,128 @@ export default function CourseOfferingsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading course offerings...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading course offerings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
           onClick={() => router.push(`/faculty/courses/${courseId}`)}
+          className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </button>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <FileText className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-lg font-bold text-primary-text">
             Course Offerings - {course?.name} ({course?.code})
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-secondary-text mt-0.5">
             View all offerings and section-wise performance
           </p>
         </div>
       </div>
 
       {offerings.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              No course offerings found for this course
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+          <FileText className="w-10 h-10 mx-auto mb-3 text-secondary-text" />
+          <p className="text-xs text-secondary-text">No course offerings found for this course</p>
+        </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {offerings.map((offering) => (
-            <Card key={offering.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+            <div key={offering.id} className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 pb-2 border-b border-card-border">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
+                    <h2 className="flex items-center gap-2 text-sm font-semibold text-primary-text">
+                      <FileText className="w-4 h-4" style={{ color: primaryColor }} />
                       {offering.semester.name}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {offering.semester.startDate &&
-                        new Date(offering.semester.startDate).toLocaleDateString()}{' '}
-                      -{' '}
-                      {offering.semester.endDate &&
-                        new Date(offering.semester.endDate).toLocaleDateString()}
+                    </h2>
+                    <p className="text-xs text-secondary-text mt-0.5">
+                      {offering.semester.startDate && new Date(offering.semester.startDate).toLocaleDateString()}
+                      {' - '}
+                      {offering.semester.endDate && new Date(offering.semester.endDate).toLocaleDateString()}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      offering.status === 'active' ? 'default' : 'secondary'
-                    }
-                  >
+                  <Badge variant={offering.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
                     {offering.status}
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="p-4">
                 {offering.sections.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No sections found
-                  </p>
+                  <p className="text-xs text-secondary-text text-center py-4">No sections found</p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Section Name</TableHead>
-                        <TableHead>Batch</TableHead>
-                        <TableHead>Enrollment</TableHead>
-                        <TableHead>Assessments</TableHead>
-                        <TableHead>Avg Performance</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {offering.sections.map((section) => (
-                        <TableRow key={section.id}>
-                          <TableCell className="font-medium">
-                            {section.name}
-                          </TableCell>
-                          <TableCell>
-                            {section.batch?.name || 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4 text-muted-foreground" />
-                              {section.currentStudents}
-                            </div>
-                          </TableCell>
-                          <TableCell>{section.totalAssessments}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="w-4 h-4 text-green-600" />
-                              <span className="font-medium">
-                                {section.averagePerformance.toFixed(1)}%
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                router.push(`/faculty/sections/${section.id}`)
-                              }
-                            >
-                              View Details
-                            </Button>
-                          </TableCell>
+                  <div className="rounded-lg border border-card-border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs font-semibold text-primary-text">Section Name</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Batch</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Enrollment</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Assessments</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Avg Performance</TableHead>
+                          <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {offering.sections.map((section) => (
+                          <TableRow key={section.id} className="hover:bg-[var(--hover-bg)]">
+                            <TableCell className="font-medium text-xs text-primary-text">{section.name}</TableCell>
+                            <TableCell className="text-xs text-primary-text">{section.batch?.name || 'N/A'}</TableCell>
+                            <TableCell className="text-xs text-primary-text">
+                              <div className="flex items-center gap-1">
+                                <Users className="w-3.5 h-3.5 text-secondary-text" />
+                                {section.currentStudents}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-primary-text">{section.totalAssessments}</TableCell>
+                            <TableCell className="text-xs text-primary-text">
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="w-3.5 h-3.5 text-[var(--success-green)]" />
+                                <span className="font-medium">{section.averagePerformance.toFixed(1)}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-primary-text">
+                              <button
+                                type="button"
+                                onClick={() => router.push(`/faculty/sections/${section.id}`)}
+                                className="px-2 py-1 rounded-lg text-xs font-medium h-7"
+                                style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                              >
+                                View Details
+                              </button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
     </div>
   );
 }
-

@@ -57,8 +57,8 @@ export default function BatchesList() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProgram, setSelectedProgram] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedProgram, setSelectedProgram] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   // Fetch batches
   const fetchBatches = async () => {
@@ -70,11 +70,11 @@ export default function BatchesList() {
         url += `search=${encodeURIComponent(searchTerm)}&`;
       }
 
-      if (selectedProgram) {
+      if (selectedProgram !== 'all') {
         url += `programId=${selectedProgram}&`;
       }
 
-      if (selectedStatus) {
+      if (selectedStatus !== 'all') {
         url += `status=${selectedStatus}&`;
       }
 
@@ -190,7 +190,7 @@ export default function BatchesList() {
               <SelectValue placeholder='Program' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value=''>All Programs</SelectItem>
+              <SelectItem value='all'>All Programs</SelectItem>
               {programs.map((program) => (
                 <SelectItem key={program.id} value={program.id.toString()}>
                   {program.code} - {program.name}
@@ -204,7 +204,7 @@ export default function BatchesList() {
               <SelectValue placeholder='Status' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value=''>All Statuses</SelectItem>
+              <SelectItem value='all'>All Statuses</SelectItem>
               <SelectItem value='active'>Active</SelectItem>
               <SelectItem value='inactive'>Inactive</SelectItem>
               <SelectItem value='completed'>Completed</SelectItem>

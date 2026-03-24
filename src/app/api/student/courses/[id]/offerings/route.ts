@@ -4,8 +4,9 @@ import { getStudentIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const courseId = parseInt(params.id);
     if (isNaN(courseId)) {

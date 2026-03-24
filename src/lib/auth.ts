@@ -39,6 +39,7 @@ export async function createToken(payload: TokenPayload): Promise<string> {
       email: payload.email,
       role: payload.role,
       userData: payload.userData,
+      departmentId: payload.departmentId || payload.userData?.departmentId, // Include departmentId directly in token
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('24h')
@@ -141,6 +142,7 @@ function parseJwtPayload(payload: any): TokenPayload {
     email: payload.email,
     role: payload.role,
     userData: payload.userData,
+    departmentId: payload.departmentId || payload.userData?.departmentId, // Extract departmentId from token
   };
 }
 
@@ -331,6 +333,7 @@ export async function getFacultyFromRequest(request: NextRequest) {
             last_name: true,
             email: true,
             status: true,
+            phone_number: true,
           },
         },
         department: {
@@ -420,6 +423,7 @@ export async function getStudentFromRequest(request: NextRequest) {
             last_name: true,
             email: true,
             status: true,
+            phone_number: true,
           },
         },
         department: {
@@ -457,39 +461,68 @@ export async function getStudentFromRequest(request: NextRequest) {
 // ============================================================================
 
 /**
- * Get current department ID from settings
- * Returns the department ID based on department code in settings
+ * Get department ID from authenticated user (preferred method)
+ * Fetches from database using user ID from token/cookies
+ * This ensures we always get the latest department assignment
  */
-export async function getCurrentDepartmentId(): Promise<number | null> {
+export async function getDepartmentIdFromRequest(request: NextRequest): Promise<number | null> {
   try {
-    // Get settings
-    const settings = await prisma.settings.findFirst();
-    if (!settings) {
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
       return null;
     }
 
-    // Parse system settings
-    const systemSettings =
-      typeof settings.system === 'string'
-        ? JSON.parse(settings.system)
-        : settings.system;
+    // For admin role, get department from faculties table
+    if (user.role === 'admin') {
+      // Get userId from multiple possible sources
+      let userId: number | null = null;
+      
+      if (user.userId) {
+        userId = typeof user.userId === 'number' ? user.userId : parseInt(String(user.userId), 10);
+      } else if (user.userData?.id) {
+        userId = typeof user.userData.id === 'number' ? user.userData.id : parseInt(String(user.userData.id), 10);
+      }
 
-    const departmentCode = systemSettings?.departmentCode;
-    if (!departmentCode) {
-      return null;
+      if (userId && !isNaN(userId)) {
+        const faculty = await prisma.faculties.findFirst({
+          where: { userId },
+          select: { departmentId: true },
+        });
+        
+        if (faculty?.departmentId) {
+          return faculty.departmentId;
+        }
+      }
     }
 
-    // Find department by code
-    const department = await prisma.departments.findUnique({
-      where: { code: departmentCode },
-      select: { id: true },
-    });
+    // For other roles or fallback, try token first (fast)
+    if (user.departmentId) {
+      return user.departmentId;
+    }
 
-    return department?.id || null;
+    // Fallback: Get from userData
+    if (user.userData?.departmentId) {
+      return user.userData.departmentId;
+    }
+
+    return null;
   } catch (error) {
-    console.error('Error getting current department ID:', error);
+    console.error('Error getting department ID from request:', error);
     return null;
   }
+}
+
+/**
+ * Get current department ID - uses getDepartmentIdFromRequest for authenticated users
+ * If no request provided, returns null (department must come from authenticated user)
+ */
+export async function getCurrentDepartmentId(request?: NextRequest): Promise<number | null> {
+  if (!request) {
+    return null;
+  }
+  
+  // Always get from authenticated user (via request)
+  return await getDepartmentIdFromRequest(request);
 }
 
 /**

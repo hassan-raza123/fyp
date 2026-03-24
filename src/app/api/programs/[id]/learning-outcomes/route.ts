@@ -14,8 +14,9 @@ interface ProgramLearningOutcome {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -43,15 +44,16 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -60,7 +62,7 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
@@ -79,7 +81,7 @@ export async function POST(
     }
 
     // Check if program exists
-    const program = await prisma.program.findUnique({
+    const program = await prisma.programs.findUnique({
       where: { id: parseInt(params.id) },
     });
 
@@ -100,16 +102,11 @@ export async function POST(
       );
     }
 
-    const learningOutcome = await prisma.$queryRaw<ProgramLearningOutcome[]>`
-      INSERT INTO program_learning_outcomes (programId, code, description, createdAt, updatedAt)
-      VALUES (${parseInt(params.id)}, ${code}, ${description}, NOW(), NOW())
-      RETURNING *
-    `;
-
-    return NextResponse.json({
-      success: true,
-      data: learningOutcome[0],
-    });
+    // Deprecated: Use /api/clos and /api/llos instead.
+    return NextResponse.json(
+      { error: 'This endpoint is deprecated. Use /api/clos and /api/llos instead.' },
+      { status: 501 }
+    );
   } catch (error) {
     console.error('Error creating program learning outcome:', error);
     return NextResponse.json(
@@ -121,15 +118,16 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -138,7 +136,7 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {
@@ -161,19 +159,11 @@ export async function PUT(
       );
     }
 
-    const updatedLearningOutcome = await prisma.$queryRaw<
-      ProgramLearningOutcome[]
-    >`
-      UPDATE program_learning_outcomes
-      SET description = ${description}, updatedAt = NOW()
-      WHERE programId = ${parseInt(params.id)} AND code = ${code}
-      RETURNING *
-    `;
-
-    return NextResponse.json({
-      success: true,
-      data: updatedLearningOutcome[0],
-    });
+    // Deprecated: Use /api/clos and /api/llos instead.
+    return NextResponse.json(
+      { error: 'This endpoint is deprecated. Use /api/clos and /api/llos instead.' },
+      { status: 501 }
+    );
   } catch (error) {
     console.error('Error updating program learning outcome:', error);
     return NextResponse.json(
@@ -185,15 +175,16 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: parseInt(session.user.id) },
       include: { userrole: { include: { role: true } } },
     });
@@ -202,7 +193,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userRoles = user.userrole.map((ur) => ur.role.name);
+    const userRoles = user.userrole ? [user.userrole.role.name] : [];
     const allowedRoles = ['admin'];
 
     if (!userRoles.some((role) => allowedRoles.includes(role))) {

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId');
 
     // Get current department ID for filtering
-    const departmentId = await getCurrentDepartmentId();
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createLLOSchema.parse(body);
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
         code: validatedData.code,
         description: validatedData.description,
         courseId: validatedData.courseId,
-        bloomLevel: validatedData.bloomLevel || null,
+        bloomLevel: (validatedData.bloomLevel || null) as any,
         status: validatedData.status as any,
       },
       include: {

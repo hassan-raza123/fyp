@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,13 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -113,6 +107,14 @@ const COLORS = [
 ];
 
 const GradeManagementPage = () => {
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [selectedCourseOffering, setSelectedCourseOffering] = useState<
     number | null
@@ -461,21 +463,21 @@ const GradeManagementPage = () => {
   const getStatusBadge = (status: string) => {
     if (status === 'final') {
       return (
-        <Badge variant="default" className="bg-gray-600">
+        <Badge className="text-[10px] bg-[var(--gray-500)] text-white">
           <Lock className="w-3 h-3 mr-1" />
           Final
         </Badge>
       );
     } else if (status === 'superseded') {
       return (
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="text-[10px]">
           <AlertCircle className="w-3 h-3 mr-1" />
           Superseded
         </Badge>
       );
     } else {
       return (
-        <Badge variant="outline">
+        <Badge className="text-[10px] bg-[var(--success-green)] text-white">
           <CheckCircle className="w-3 h-3 mr-1" />
           Active
         </Badge>
@@ -497,123 +499,324 @@ const GradeManagementPage = () => {
       )
     : [];
 
+  if (loading && courseOfferings.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading grades...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const btnStyle = (disabled?: boolean) => ({
+    backgroundColor: iconBgColor,
+    color: primaryColor,
+    opacity: disabled ? 0.6 : 1,
+  });
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Grade Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-bold text-primary-text">Grade Management</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
             Calculate, review, and manage student grades
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
+        <div className="flex flex-wrap gap-2">
+          <button
             onClick={() => setShowCalculateDialog(true)}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
+            style={btnStyle()}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
           >
-            <Calculator className="w-4 h-4 mr-2" />
+            <Calculator className="w-3.5 h-3.5" />
             Calculate Grades
-          </Button>
+          </button>
           {selectedGrades.size > 0 && (
             <>
-              <Button
-                variant="outline"
+              <button
                 onClick={() => handleBulkAction('submit')}
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
+                style={btnStyle()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = iconBgColor;
+                }}
               >
-                <Send className="w-4 h-4 mr-2" />
+                <Send className="w-3.5 h-3.5" />
                 Submit ({selectedGrades.size})
-              </Button>
-              <Button
-                variant="outline"
+              </button>
+              <button
                 onClick={() => handleBulkAction('lock')}
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
+                style={btnStyle()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = iconBgColor;
+                }}
               >
-                <Lock className="w-4 h-4 mr-2" />
+                <Lock className="w-3.5 h-3.5" />
                 Lock ({selectedGrades.size})
-              </Button>
+              </button>
             </>
           )}
         </div>
       </div>
 
       <Tabs defaultValue="review" className="w-full">
-        <TabsList>
-          <TabsTrigger value="review">Grade Review</TabsTrigger>
-          <TabsTrigger value="statistics">Statistics</TabsTrigger>
-          <TabsTrigger value="reports">Grade Reports</TabsTrigger>
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="review" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Grade Review</TabsTrigger>
+          <TabsTrigger value="statistics" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Statistics</TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Grade Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="review" className="space-y-4">
           {/* Course Offering Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Course Offering</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={selectedCourseOffering?.toString() || ''}
-                onValueChange={(value) =>
-                  setSelectedCourseOffering(parseInt(value))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a course offering" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courseOfferings.map((co) => (
-                    <SelectItem
-                      key={co.courseOffering.id}
-                      value={co.courseOffering.id.toString()}
-                    >
-                      {co.courseOffering.course.code} -{' '}
-                      {co.courseOffering.course.name} (
-                      {co.courseOffering.semester.name})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
+          <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+            <h2 className="text-sm font-semibold text-primary-text mb-3">Select Course Offering</h2>
+            <Select
+              value={selectedCourseOffering?.toString() || ''}
+              onValueChange={(value) =>
+                setSelectedCourseOffering(parseInt(value))
+              }
+            >
+              <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text w-full max-w-md">
+                <SelectValue placeholder="Select a course offering" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-card-border">
+                {courseOfferings.map((co) => (
+                  <SelectItem
+                    key={co.courseOffering.id}
+                    value={co.courseOffering.id.toString()}
+                    className="text-primary-text hover:bg-card/50 text-xs"
+                  >
+                    {co.courseOffering.course.code} - {co.courseOffering.course.name} (
+                    {co.courseOffering.semester.name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {selectedData && (
             <div className="space-y-4">
               {/* Statistics Cards */}
-              <div className="grid grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Total Students</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedData.statistics.totalStudents}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Calculated Grades</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedData.statistics.calculatedGrades}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Average %</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedData.statistics.averagePercentage.toFixed(1)}%
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Completion Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+                  <p className="text-xs font-medium text-secondary-text">Total Students</p>
+                  <p className="text-lg font-bold mt-1 text-primary-text">{selectedData.statistics.totalStudents}</p>
+                </div>
+                <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+                  <p className="text-xs font-medium text-secondary-text">Calculated Grades</p>
+                  <p className="text-lg font-bold mt-1 text-primary-text">{selectedData.statistics.calculatedGrades}</p>
+                </div>
+                <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+                  <p className="text-xs font-medium text-secondary-text">Average %</p>
+                  <p className="text-lg font-bold mt-1 text-primary-text">{selectedData.statistics.averagePercentage.toFixed(1)}%</p>
+                </div>
+                <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border">
+                  <p className="text-xs font-medium text-secondary-text">Completion Rate</p>
+                  <p className="text-lg font-bold mt-1 text-primary-text">
+                    {selectedData.statistics.totalStudents > 0
+                      ? (
+                          (selectedData.statistics.calculatedGrades /
+                            selectedData.statistics.totalStudents) *
+                          100
+                        ).toFixed(1)
+                      : 0}
+                    %
+                  </p>
+                </div>
+              </div>
+
+              {/* Grades Table */}
+              <div className="bg-card border-card-border rounded-xl shadow-sm border">
+                <div className="p-4 border-b border-card-border flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold text-primary-text">Student Grades</h2>
+                    <p className="text-xs text-secondary-text mt-0.5">
+                      {selectedData.courseOffering.course.code} - {selectedData.courseOffering.course.name} (
+                      {selectedData.courseOffering.semester.name})
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleExport(selectedData, 'csv')}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export CSV
+                    </button>
+                    <button
+                      onClick={() => handleExport(selectedData, 'pdf')}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export PDF
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">
+                          <input
+                            type="checkbox"
+                            className="rounded border-card-border"
+                            checked={
+                              selectedData.grades.length > 0 &&
+                              selectedGrades.size === selectedData.grades.length
+                            }
+                            onChange={() => {
+                              if (selectedGrades.size === selectedData.grades.length) {
+                                setSelectedGrades(new Set());
+                              } else {
+                                setSelectedGrades(new Set(selectedData.grades.map((g) => g.id)));
+                              }
+                            }}
+                          />
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Total</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Obtained</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">%</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">GPA</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">QP</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Calculated</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedData.grades.map((grade) => (
+                        <TableRow key={grade.id} className="hover:bg-[var(--hover-bg)] transition-colors">
+                          <TableCell>
+                            <input
+                              type="checkbox"
+                              className="rounded border-card-border"
+                              checked={selectedGrades.has(grade.id)}
+                              onChange={() => toggleGradeSelection(grade.id)}
+                            />
+                          </TableCell>
+                          <TableCell className="text-xs font-medium text-primary-text">{grade.rollNumber}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.name}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.totalMarks}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.obtainedMarks.toFixed(1)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={grade.percentage} className="w-16" />
+                              <span className="text-xs text-primary-text">{grade.percentage.toFixed(1)}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-[10px]">{grade.grade}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.gpaPoints}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.qualityPoints.toFixed(1)}</TableCell>
+                          <TableCell>{getStatusBadge(grade.status)}</TableCell>
+                          <TableCell className="text-xs text-secondary-text">{format(new Date(grade.calculatedAt), 'PPp')}</TableCell>
+                          <TableCell>
+                            <button
+                              onClick={() => handleEdit(grade)}
+                              disabled={grade.status === 'final'}
+                              className="px-2 py-1 rounded-md text-xs font-medium h-7 inline-flex items-center gap-1 disabled:opacity-50"
+                              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                              onMouseEnter={(e) => {
+                                if (grade.status !== 'final') e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = iconBgColor;
+                              }}
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                              Edit
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!selectedCourseOffering && (
+            <div className="bg-card border-card-border rounded-xl shadow-sm border py-12 text-center">
+              <BarChart3 className="w-10 h-10 mx-auto text-muted-text" />
+              <p className="text-xs text-secondary-text mt-2">Select a course offering to view grades</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="statistics" className="space-y-4">
+          {selectedData && (
+            <div className="space-y-4">
+              <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+                <h2 className="text-sm font-semibold text-primary-text mb-3">Grade Distribution</h2>
+                {gradeDistributionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={gradeDistributionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                          border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                        }}
+                      />
+                      <Bar dataKey="count" fill={primaryColor} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-xs text-muted-text text-center py-8">No grade distribution data available</p>
+                )}
+              </div>
+
+              <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+                <h2 className="text-sm font-semibold text-primary-text mb-3">Grade Statistics</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-secondary-text">Total Students</p>
+                    <p className="text-lg font-bold text-primary-text">{selectedData.statistics.totalStudents}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Calculated Grades</p>
+                    <p className="text-lg font-bold text-primary-text">{selectedData.statistics.calculatedGrades}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Average Percentage</p>
+                    <p className="text-lg font-bold text-primary-text">{selectedData.statistics.averagePercentage.toFixed(1)}%</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Completion Rate</p>
+                    <p className="text-lg font-bold text-primary-text">
                       {selectedData.statistics.totalStudents > 0
                         ? (
                             (selectedData.statistics.calculatedGrades /
@@ -622,517 +825,285 @@ const GradeManagementPage = () => {
                           ).toFixed(1)
                         : 0}
                       %
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Grades Table */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Student Grades</CardTitle>
-                      <CardDescription>
-                        {selectedData.courseOffering.course.code} -{' '}
-                        {selectedData.courseOffering.course.name} (
-                        {selectedData.courseOffering.semester.name})
-                      </CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExport(selectedData, 'csv')}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export CSV
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExport(selectedData, 'pdf')}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export PDF
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">
-                            <input
-                              type="checkbox"
-                              checked={
-                                selectedData.grades.length > 0 &&
-                                selectedGrades.size ===
-                                  selectedData.grades.length
-                              }
-                              onChange={() => {
-                                if (
-                                  selectedGrades.size ===
-                                  selectedData.grades.length
-                                ) {
-                                  setSelectedGrades(new Set());
-                                } else {
-                                  setSelectedGrades(
-                                    new Set(
-                                      selectedData.grades.map((g) => g.id)
-                                    )
-                                  );
-                                }
-                              }}
-                              className="w-4 h-4"
-                            />
-                          </TableHead>
-                          <TableHead>Roll No</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Total Marks</TableHead>
-                          <TableHead>Obtained</TableHead>
-                          <TableHead>Percentage</TableHead>
-                          <TableHead>Grade</TableHead>
-                          <TableHead>GPA Points</TableHead>
-                          <TableHead>Quality Points</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Calculated At</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedData.grades.map((grade) => (
-                          <TableRow key={grade.id}>
-                            <TableCell>
-                              <input
-                                type="checkbox"
-                                checked={selectedGrades.has(grade.id)}
-                                onChange={() => toggleGradeSelection(grade.id)}
-                                className="w-4 h-4"
-                              />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {grade.rollNumber}
-                            </TableCell>
-                            <TableCell>{grade.name}</TableCell>
-                            <TableCell>{grade.totalMarks}</TableCell>
-                            <TableCell>
-                              {grade.obtainedMarks.toFixed(1)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress
-                                  value={grade.percentage}
-                                  className="w-20"
-                                />
-                                <span>{grade.percentage.toFixed(1)}%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{grade.grade}</Badge>
-                            </TableCell>
-                            <TableCell>{grade.gpaPoints}</TableCell>
-                            <TableCell>
-                              {grade.qualityPoints.toFixed(1)}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(grade.status)}
-                            </TableCell>
-                            <TableCell>
-                              {format(new Date(grade.calculatedAt), 'PPp')}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEdit(grade)}
-                                  disabled={grade.status === 'final'}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {!selectedCourseOffering && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a course offering to view grades
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="statistics" className="space-y-4">
-          {selectedData && (
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Grade Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {gradeDistributionData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={gradeDistributionData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      No grade distribution data available
                     </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Grade Statistics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Total Students
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {selectedData.statistics.totalStudents}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Calculated Grades
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {selectedData.statistics.calculatedGrades}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Average Percentage
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {selectedData.statistics.averagePercentage.toFixed(1)}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Completion Rate
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {selectedData.statistics.totalStudents > 0
-                          ? (
-                              (selectedData.statistics.calculatedGrades /
-                                selectedData.statistics.totalStudents) *
-                              100
-                            ).toFixed(1)
-                          : 0}
-                        %
-                      </p>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
 
           {!selectedCourseOffering && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a course offering to view statistics
-              </CardContent>
-            </Card>
+            <div className="bg-card border-card-border rounded-xl shadow-sm border py-12 text-center">
+              <BarChart3 className="w-10 h-10 mx-auto text-muted-text" />
+              <p className="text-xs text-secondary-text mt-2">Select a course offering to view statistics</p>
+            </div>
           )}
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
           {selectedData && (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Section-wise Grade Report</CardTitle>
-                  <CardDescription>
-                    Comprehensive grade report for{' '}
-                    {selectedData.courseOffering.course.code} -{' '}
-                    {selectedData.courseOffering.course.name}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Course</p>
-                        <p className="text-lg font-semibold">
-                          {selectedData.courseOffering.course.code} -{' '}
-                          {selectedData.courseOffering.course.name}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Semester
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {selectedData.courseOffering.semester.name}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Credit Hours
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {selectedData.courseOffering.course.creditHours}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Total Students
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {selectedData.statistics.totalStudents}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        variant="default"
-                        onClick={() => handleExport(selectedData, 'pdf')}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Generate Full Report (PDF)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleExport(selectedData, 'csv')}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export as CSV
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Student Grade Sheets</CardTitle>
-                  <CardDescription>
-                    Detailed grade information for all students
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Roll No</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Total Marks</TableHead>
-                          <TableHead>Obtained</TableHead>
-                          <TableHead>Percentage</TableHead>
-                          <TableHead>Grade</TableHead>
-                          <TableHead>GPA Points</TableHead>
-                          <TableHead>Quality Points</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedData.grades.map((grade) => (
-                          <TableRow key={grade.id}>
-                            <TableCell className="font-medium">
-                              {grade.rollNumber}
-                            </TableCell>
-                            <TableCell>{grade.name}</TableCell>
-                            <TableCell>{grade.totalMarks}</TableCell>
-                            <TableCell>
-                              {grade.obtainedMarks.toFixed(1)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress
-                                  value={grade.percentage}
-                                  className="w-16"
-                                />
-                                <span>{grade.percentage.toFixed(1)}%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{grade.grade}</Badge>
-                            </TableCell>
-                            <TableCell>{grade.gpaPoints}</TableCell>
-                            <TableCell>
-                              {grade.qualityPoints.toFixed(1)}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(grade.status)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Grade Distribution Report</CardTitle>
-                  <CardDescription>
-                    Visual representation of grade distribution
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {gradeDistributionData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={gradeDistributionData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      No grade distribution data available
+              <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+                <h2 className="text-sm font-semibold text-primary-text">Section-wise Grade Report</h2>
+                <p className="text-xs text-secondary-text mt-0.5">
+                  {selectedData.courseOffering.course.code} - {selectedData.courseOffering.course.name}
+                </p>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <p className="text-xs text-secondary-text">Course</p>
+                    <p className="text-sm font-semibold text-primary-text">
+                      {selectedData.courseOffering.course.code} - {selectedData.courseOffering.course.name}
                     </p>
-                  )}
-                </CardContent>
-              </Card>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Semester</p>
+                    <p className="text-sm font-semibold text-primary-text">{selectedData.courseOffering.semester.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Credit Hours</p>
+                    <p className="text-sm font-semibold text-primary-text">{selectedData.courseOffering.course.creditHours}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary-text">Total Students</p>
+                    <p className="text-sm font-semibold text-primary-text">{selectedData.statistics.totalStudents}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <button
+                    onClick={() => handleExport(selectedData, 'pdf')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5"
+                    style={{ backgroundColor: primaryColor, color: '#fff' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Generate Full Report (PDF)
+                  </button>
+                  <button
+                    onClick={() => handleExport(selectedData, 'csv')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Export as CSV
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-card border-card-border rounded-xl shadow-sm border">
+                <div className="p-4 border-b border-card-border">
+                  <h2 className="text-sm font-semibold text-primary-text">Student Grade Sheets</h2>
+                  <p className="text-xs text-secondary-text mt-0.5">Detailed grade information for all students</p>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Total</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Obtained</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">%</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Grade</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">GPA</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">QP</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedData.grades.map((grade) => (
+                        <TableRow key={grade.id} className="hover:bg-[var(--hover-bg)]">
+                          <TableCell className="text-xs font-medium text-primary-text">{grade.rollNumber}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.name}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.totalMarks}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.obtainedMarks.toFixed(1)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={grade.percentage} className="w-14" />
+                              <span className="text-xs text-primary-text">{grade.percentage.toFixed(1)}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px]">{grade.grade}</Badge></TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.gpaPoints}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{grade.qualityPoints.toFixed(1)}</TableCell>
+                          <TableCell>{getStatusBadge(grade.status)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              <div className="bg-card border-card-border rounded-xl shadow-sm border p-4">
+                <h2 className="text-sm font-semibold text-primary-text mb-3">Grade Distribution Report</h2>
+                {gradeDistributionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={gradeDistributionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: isDarkMode ? '#171717' : '#ffffff',
+                          border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                        }}
+                      />
+                      <Bar dataKey="count" fill={primaryColor} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-xs text-muted-text text-center py-8">No grade distribution data available</p>
+                )}
+              </div>
             </div>
           )}
 
           {!selectedCourseOffering && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a course offering to view grade reports
-              </CardContent>
-            </Card>
+            <div className="bg-card border-card-border rounded-xl shadow-sm border py-12 text-center">
+              <FileText className="w-10 h-10 mx-auto text-muted-text" />
+              <p className="text-xs text-secondary-text mt-2">Select a course offering to view grade reports</p>
+            </div>
           )}
         </TabsContent>
       </Tabs>
 
       {/* Calculate Dialog */}
       <Dialog open={showCalculateDialog} onOpenChange={setShowCalculateDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text max-w-md">
           <DialogHeader>
-            <DialogTitle>Calculate Grades</DialogTitle>
-            <DialogDescription>
-              Calculate final grades for a course offering based on assessment
-              results
+            <DialogTitle className="text-lg font-bold text-primary-text">Calculate Grades</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
+              Calculate final grades for a course offering based on assessment results
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <div>
-              <Label>Course Offering</Label>
+              <Label className="text-xs text-secondary-text">Course Offering</Label>
               <Select
                 value={selectedCourseOffering?.toString() || ''}
                 onValueChange={(value) =>
                   setSelectedCourseOffering(parseInt(value))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course offering" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courseOfferings.map((co) => (
                     <SelectItem
                       key={co.courseOffering.id}
                       value={co.courseOffering.id.toString()}
+                      className="text-primary-text hover:bg-card/50 text-xs"
                     >
-                      {co.courseOffering.course.code} -{' '}
-                      {co.courseOffering.semester.name}
+                      {co.courseOffering.course.code} - {co.courseOffering.semester.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="bg-blue-50 p-3 rounded text-sm text-blue-800">
-              <p>
-                Grades will be calculated based on weighted average of all
-                assessments. Grade scale from the program will be applied.
-              </p>
+            <div
+              className="p-3 rounded-lg text-xs text-primary-text"
+              style={{
+                backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.08)',
+                border: `1px solid ${isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.15)'}`,
+              }}
+            >
+              Grades will be calculated based on weighted average of all assessments. Grade scale from the program will be applied.
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="mt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowCalculateDialog(false)}
               disabled={calculating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleCalculate}
               disabled={calculating || !selectedCourseOffering}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              onMouseEnter={(e) => {
+                if (!calculating && selectedCourseOffering) e.currentTarget.style.backgroundColor = primaryColorDark;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = primaryColor;
+              }}
             >
               {calculating ? 'Calculating...' : 'Calculate Grades'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Grade Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Grade</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Edit Grade</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Manually adjust grade for {selectedGrade?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="percentage">Percentage (%)</Label>
+              <Label htmlFor="percentage" className="text-xs text-secondary-text">Percentage (%)</Label>
               <Input
                 id="percentage"
                 type="number"
-                min="0"
-                max="100"
-                step="0.1"
+                min={0}
+                max={100}
+                step={0.1}
                 value={editPercentage}
                 onChange={(e) =>
                   setEditPercentage(parseFloat(e.target.value) || 0)
                 }
+                className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
               />
             </div>
             <div>
-              <Label htmlFor="grade">Grade</Label>
+              <Label htmlFor="grade" className="text-xs text-secondary-text">Grade</Label>
               <Input
                 id="grade"
                 value={editGrade}
                 onChange={(e) => setEditGrade(e.target.value.toUpperCase())}
                 placeholder="A+, A, B+, etc."
+                className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
             <div>
-              <Label htmlFor="reason">Reason for Adjustment (Optional)</Label>
+              <Label htmlFor="reason" className="text-xs text-secondary-text">Reason for Adjustment (Optional)</Label>
               <Input
                 id="reason"
                 value={editReason}
                 onChange={(e) => setEditReason(e.target.value)}
                 placeholder="Reason for manual grade adjustment"
+                className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+          <DialogFooter className="mt-4 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowEditDialog(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
+            >
               Cancel
-            </Button>
-            <Button onClick={handleSaveEdit}>Save Changes</Button>
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+            >
+              Save Changes
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -163,6 +162,11 @@ export default function SectionDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const queryClient = useQueryClient();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [section, setSection] = useState<Section | null>(null);
   const [analytics, setAnalytics] = useState<SectionAnalytics | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -194,6 +198,9 @@ export default function SectionDetailsPage() {
     }
   };
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     fetchSection();
     fetchAnalytics();
@@ -284,19 +291,28 @@ export default function SectionDetailsPage() {
     },
   });
 
-  if (section === null) {
+  if (!mounted || section === null) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin' />
+      <div className='flex items-center justify-center min-h-[50vh] bg-page'>
+        <div className='flex flex-col items-center gap-3'>
+          <Loader2 className='w-8 h-8 animate-spin text-primary-text' style={{ color: primaryColor }} />
+          <p className='text-xs text-secondary-text'>Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!section) {
     return (
-      <div className='flex flex-col items-center justify-center min-h-screen'>
-        <h1 className='text-2xl font-bold mb-4'>Section not found</h1>
-        <Button onClick={() => window.history.back()}>Go Back</Button>
+      <div className='flex flex-col items-center justify-center min-h-[50vh] bg-page gap-4'>
+        <h1 className='text-lg font-bold text-primary-text'>Section not found</h1>
+        <button
+          type='button'
+          onClick={() => window.history.back()}
+          className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]'
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -306,38 +322,61 @@ export default function SectionDetailsPage() {
       case 'active':
         return 'bg-green-500';
       case 'inactive':
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
       case 'suspended':
         return 'bg-yellow-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-[var(--gray-500)]';
     }
   };
 
   return (
-    <div className='container mx-auto py-8'>
-      <div className='flex justify-between items-center mb-8'>
-        <div>
-          <h1 className='text-3xl font-bold mb-2'>{section.name}</h1>
-          <p className='text-gray-500'>
-            {section.courseOffering.course.name} -{' '}
-            {section.courseOffering.semester.name}
-          </p>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between flex-wrap gap-3'>
+        <div className='flex items-center gap-3'>
+          <button
+            type='button'
+            onClick={() => router.back()}
+            className='p-2 rounded-lg hover:bg-[var(--hover-bg)] transition-colors'
+            style={{ color: primaryColor }}
+          >
+            <ArrowLeft className='h-4 w-4' />
+          </button>
+          <div
+            className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg'
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <FileText className='h-5 w-5' style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className='text-lg font-bold text-primary-text'>{section.name}</h1>
+            <p className='text-xs text-secondary-text mt-0.5'>
+              {section.courseOffering.course.name} - {section.courseOffering.semester.name}
+            </p>
+          </div>
         </div>
-        <div className='flex gap-4'>
-          <Button variant='outline' onClick={() => router.back()}>
+        <div className='flex gap-2'>
+          <button
+            type='button'
+            onClick={() => router.back()}
+            className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]'
+          >
             Back
-          </Button>
+          </button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className='w-4 h-4 mr-2' />
+              <button
+                type='button'
+                className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2'
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <Plus className='w-3.5 h-3.5' />
                 Add Student
-              </Button>
+              </button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card border-card-border text-primary-text">
               <DialogHeader>
-                <DialogTitle>Add Student to Section</DialogTitle>
+                <DialogTitle className="text-lg font-bold text-primary-text">Add Student to Section</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form
@@ -351,28 +390,29 @@ export default function SectionDetailsPage() {
                     name='studentId'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Select Student</FormLabel>
+                        <FormLabel className="text-xs text-secondary-text">Select Student</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                               <SelectValue placeholder='Select a student' />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="bg-card border-card-border">
                             {students?.map((student) => (
                               <SelectItem
                                 key={student.id}
                                 value={student.id.toString()}
+                                className="text-primary-text hover:bg-card/50"
                               >
                                 <div className='flex flex-col'>
                                   <span className='font-medium'>
                                     {student.user.first_name}{' '}
                                     {student.user.last_name}
                                   </span>
-                                  <span className='text-sm text-gray-500'>
+                                  <span className='text-sm text-secondary-text'>
                                     Roll No: {student.rollNumber} | Email:{' '}
                                     {student.user.email}
                                   </span>
@@ -385,16 +425,17 @@ export default function SectionDetailsPage() {
                       </FormItem>
                     )}
                   />
-                  <Button
+                  <button
                     type='submit'
-                    className='w-full'
+                    className='w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50'
+                    style={{ backgroundColor: primaryColor, color: '#fff' }}
                     disabled={addStudentMutation.isPending}
                   >
                     {addStudentMutation.isPending && (
                       <Loader2 className='w-4 h-4 mr-2 animate-spin' />
                     )}
                     Add Student
-                  </Button>
+                  </button>
                 </form>
               </Form>
             </DialogContent>
@@ -403,69 +444,70 @@ export default function SectionDetailsPage() {
       </div>
 
       <div className='grid gap-6'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Section Details</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-card-border">
+            <h2 className="text-sm font-semibold text-primary-text">Section Details</h2>
+          </div>
+          <div className="p-4">
             <div className='grid grid-cols-2 gap-4'>
               <div>
-                <p className='text-sm text-gray-500'>Course</p>
-                <p className='font-medium'>
+                <p className='text-sm text-secondary-text'>Course</p>
+                <p className='font-medium text-primary-text'>
                   {section.courseOffering.course.name}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Semester</p>
-                <p className='font-medium'>
+                <p className='text-sm text-secondary-text'>Semester</p>
+                <p className='font-medium text-primary-text'>
                   {section.courseOffering.semester.name}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Faculty</p>
-                <p className='font-medium'>
+                <p className='text-sm text-secondary-text'>Faculty</p>
+                <p className='font-medium text-primary-text'>
                   {section.faculty
                     ? `${section.faculty.user.first_name} ${section.faculty.user.last_name}`
                     : 'Not assigned'}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Batch</p>
-                <p className='font-medium'>{section.batch.name}</p>
+                <p className='text-sm text-secondary-text'>Batch</p>
+                <p className='font-medium text-primary-text'>{section.batch.name}</p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Students</p>
-                <p className='font-medium'>
+                <p className='text-sm text-secondary-text'>Students</p>
+                <p className='font-medium text-primary-text'>
                   {section._count.studentsections} / {section.maxStudents}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-500'>Status</p>
+                <p className='text-sm text-secondary-text'>Status</p>
                 <Badge
                   variant={
                     section.status === 'active' ? 'default' : 'secondary'
                   }
+                  className="text-[10px]"
                 >
                   {section.status}
                 </Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="students">Students</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-card border border-card-border p-1 rounded-lg">
+            <TabsTrigger value="students" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Students</TabsTrigger>
+            <TabsTrigger value="performance" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Performance</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Enrolled Students</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Enrolled Students</h2>
+              </div>
+              <div className="p-4">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -497,9 +539,10 @@ export default function SectionDetailsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant='ghost'
-                            size='icon'
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg shrink-0 disabled:opacity-50"
+                            style={{ backgroundColor: iconBgColor, color: primaryColor }}
                             onClick={() => {
                               if (
                                 window.confirm(
@@ -516,9 +559,9 @@ export default function SectionDetailsPage() {
                             {removeStudentMutation.isPending ? (
                               <Loader2 className='w-4 h-4 animate-spin' />
                             ) : (
-                              <Trash2 className='w-4 h-4 text-red-500' />
+                              <Trash2 className='w-4 h-4 text-[var(--error)]' />
                             )}
-                          </Button>
+                          </button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -526,7 +569,7 @@ export default function SectionDetailsPage() {
                       <TableRow>
                         <TableCell
                           colSpan={5}
-                          className='text-center text-gray-500'
+                          className='text-center text-secondary-text'
                         >
                           No students enrolled
                         </TableCell>
@@ -534,8 +577,8 @@ export default function SectionDetailsPage() {
                     )}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">
@@ -543,66 +586,66 @@ export default function SectionDetailsPage() {
               <>
                 {/* Performance Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Avg Performance</p>
+                          <p className="text-sm text-secondary-text">Avg Performance</p>
                           <p className="text-2xl font-bold">
                             {analytics.averagePerformance.toFixed(1)}%
                           </p>
                         </div>
                         <TrendingUp className="w-8 h-8 text-green-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Total Students</p>
+                          <p className="text-sm text-secondary-text">Total Students</p>
                           <p className="text-2xl font-bold">
                             {analytics.section.totalStudents}
                           </p>
                         </div>
-                        <Users className="w-8 h-8 text-blue-600" />
+                        <Users className="w-8 h-8 text-primary-text" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">Assessments</p>
+                          <p className="text-sm text-secondary-text">Assessments</p>
                           <p className="text-2xl font-bold">
                             {analytics.totalAssessments}
                           </p>
                         </div>
                         <FileText className="w-8 h-8 text-purple-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                    <div className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-muted-foreground">CLOs Attained</p>
+                          <p className="text-sm text-secondary-text">CLOs Attained</p>
                           <p className="text-2xl font-bold">
                             {analytics.cloAttainmentSummary.filter(c => c.status === 'attained').length} / {analytics.cloAttainmentSummary.length}
                           </p>
                         </div>
                         <Target className="w-8 h-8 text-orange-600" />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Student Performance Table */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Student Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Student Performance</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -641,29 +684,30 @@ export default function SectionDetailsPage() {
                               {student.completionRate.toFixed(1)}%
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <button
+                                type="button"
+                                className="px-2 py-1 rounded-lg text-xs font-medium h-7"
+                                style={{ backgroundColor: iconBgColor, color: primaryColor }}
                                 onClick={() =>
                                   router.push(`/faculty/students/${student.studentId}`)
                                 }
                               >
                                 View Details
-                              </Button>
+                              </button>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Assessment Completion Rates */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Assessment Completion Rates</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Assessment Completion Rates</h2>
+                  </div>
+                  <div className="p-4">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -697,7 +741,7 @@ export default function SectionDetailsPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="w-24 bg-[var(--hover-bg)] rounded-full h-2">
                                   <div
                                     className="bg-blue-600 h-2 rounded-full"
                                     style={{
@@ -714,16 +758,16 @@ export default function SectionDetailsPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             ) : (
-              <Card>
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading performance data...</p>
-                </CardContent>
-              </Card>
+                  <p className="text-secondary-text">Loading performance data...</p>
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -731,16 +775,16 @@ export default function SectionDetailsPage() {
             {analytics ? (
               <>
                 {/* Performance Distribution */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Performance Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">Performance Distribution</h2>
+                  </div>
+                  <div className="p-4">
                     <div className="space-y-4">
                       {analytics.performanceDistribution.map((range) => (
                         <div key={range.range} className="flex items-center gap-4">
                           <div className="w-24 text-sm font-medium">{range.range}</div>
-                          <div className="flex-1 bg-gray-200 rounded-full h-4">
+                          <div className="flex-1 bg-[var(--hover-bg)] rounded-full h-4">
                             <div
                               className="bg-purple-600 h-4 rounded-full"
                               style={{
@@ -752,15 +796,15 @@ export default function SectionDetailsPage() {
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* CLO Attainment Summary */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>CLO Attainment Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                  <div className="p-4 border-b border-card-border">
+                    <h2 className="text-sm font-semibold text-primary-text">CLO Attainment Summary</h2>
+                  </div>
+                  <div className="p-4">
                     {analytics.cloAttainmentSummary.length > 0 ? (
                       <Table>
                         <TableHeader>
@@ -793,20 +837,20 @@ export default function SectionDetailsPage() {
                         </TableBody>
                       </Table>
                     ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">
+                      <p className="text-sm text-secondary-text text-center py-4">
                         No CLO attainment data available
                       </p>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             ) : (
-              <Card>
-                <CardContent className="py-8 text-center">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 py-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading analytics...</p>
-                </CardContent>
-              </Card>
+                  <p className="text-secondary-text">Loading analytics...</p>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { courseOfferingId, cloId, sectionId, threshold = 60 } = body;
+    const { courseOfferingId, cloId, sectionId, threshold } = body;
 
     if (!courseOfferingId) {
       return NextResponse.json(
@@ -23,13 +23,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify course offering belongs to faculty
+    // Fetch ALL active sections for this course offering
     const courseOffering = await prisma.courseofferings.findUnique({
       where: { id: courseOfferingId },
       include: {
         sections: {
           where: {
-            facultyId: facultyId,
             status: 'active',
             ...(sectionId && { id: sectionId }),
           },
@@ -42,13 +41,25 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!courseOffering || courseOffering.sections.length === 0) {
+    // Authorization: faculty must teach at least one section in this offering
+    const isAssigned = courseOffering?.sections.some(
+      (s) => s.facultyId === facultyId
+    );
+    if (!courseOffering || !isAssigned) {
       return NextResponse.json(
         { success: false, error: 'Course offering not found or unauthorized' },
         { status: 404 }
       );
     }
 
+    // Resolve threshold: use request value → pass/fail criteria minPassPercent → default 60
+    const criteria = await prisma.passfailcriteria.findUnique({
+      where: { courseOfferingId: courseOfferingId },
+      select: { minPassPercent: true },
+    });
+    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
+
+    // Use ALL sections for student collection (course-offering-wide attainment)
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
     // Get students in these sections
@@ -83,22 +94,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get assessments for this course offering
+    // Get ALL assessments for this course offering (not filtered by faculty).
+    // CLO attainment is course-offering-wide: all faculty assessments contribute
+    // so that multi-section courses produce a single consistent attainment record.
     const assessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        conductedBy: facultyId,
         status: {
-          in: ['active', 'evaluated', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
         assessmentItems: {
           where: {
-            ...(cloId && { cloId: cloId }),
-            cloId: {
-              not: null,
-            },
+            cloId: cloId ? cloId : { not: null },
           },
           include: {
             clo: {
@@ -112,8 +121,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate CLO attainments
-    const calculatedAttainments = await prisma.$transaction(
+    // Calculate CLO attainments.
+    // Promise.all is used here (not prisma.$transaction) because calculateCLOAttainment
+    // is an async function that makes multiple internal Prisma calls and returns a
+    // regular Promise, not a PrismaPromise required by $transaction.
+    const calculatedAttainments = await Promise.all(
       clos.map((clo) =>
         calculateCLOAttainment(
           clo,
@@ -121,7 +133,7 @@ export async function POST(req: NextRequest) {
           assessments,
           studentIds,
           totalStudents,
-          threshold,
+          effectiveThreshold,
           facultyId
         )
       )
@@ -200,7 +212,7 @@ async function calculateCLOAttainment(
       assessmentItemId: {
         in: cloItems.map((i) => i.itemId),
       },
-      studentAssessmentResult: {
+      studentResult: {
         studentId: {
           in: studentIds,
         },
@@ -213,7 +225,7 @@ async function calculateCLOAttainment(
       },
     },
     include: {
-      studentAssessmentResult: {
+      studentResult: {
         select: {
           studentId: true,
         },
@@ -227,12 +239,6 @@ async function calculateCLOAttainment(
     },
   });
 
-  // Calculate total possible marks for this CLO
-  const totalPossibleMarks = cloItems.reduce(
-    (sum, item) => sum + item.marks,
-    0
-  );
-
   // Group by student and calculate their CLO performance
   const studentCLOPerformance = new Map<
     number,
@@ -240,7 +246,7 @@ async function calculateCLOAttainment(
   >();
 
   itemResults.forEach((itemResult) => {
-    const studentId = itemResult.studentAssessmentResult.studentId;
+    const studentId = itemResult.studentResult.studentId;
     if (!studentCLOPerformance.has(studentId)) {
       studentCLOPerformance.set(studentId, { obtained: 0, total: 0 });
     }

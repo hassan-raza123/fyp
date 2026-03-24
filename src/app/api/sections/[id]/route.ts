@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { z } from 'zod';
+
+const updateSectionSchema = z.object({
+  name: z.string().min(1, 'Name is required').optional(),
+  courseOfferingId: z.number().optional(),
+  facultyId: z.number().nullable().optional(),
+  batchId: z.string().optional(),
+  maxStudents: z.number().min(1, 'Max students must be at least 1').optional(),
+  status: z.enum(['active', 'inactive', 'suspended', 'deleted']).optional(),
+});
 
 // GET /api/sections/[id] - Get section details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
@@ -17,7 +27,16 @@ export async function GET(
       );
     }
 
-    const sectionId = parseInt(params.id);
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
+
+    if (!resolvedParams?.id || isNaN(sectionId)) {
+      return NextResponse.json(
+        { success: false, error: 'Section ID is required or invalid' },
+        { status: 400 }
+      );
+    }
 
     const section = await prisma.sections.findUnique({
       where: { id: sectionId },
@@ -86,7 +105,7 @@ export async function GET(
 // PUT /api/sections/[id] - Update section
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
@@ -98,17 +117,25 @@ export async function PUT(
       );
     }
 
-    const sectionId = parseInt(params.id);
-    const body = await request.json();
-    const { name, maxStudents, status, facultyId } = body;
-
-    // Validate required fields
-    if (!name || !maxStudents) {
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
       return NextResponse.json(
-        { success: false, error: 'Name and max students are required' },
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
+
+    if (!resolvedParams?.id || isNaN(sectionId)) {
+      return NextResponse.json(
+        { success: false, error: 'Section ID is required or invalid' },
         { status: 400 }
       );
     }
+    const body = await request.json();
+    const validatedData = updateSectionSchema.parse(body);
 
     // Check if section exists
     const existingSection = await prisma.sections.findUnique({
@@ -122,15 +149,58 @@ export async function PUT(
       );
     }
 
+    // Check if course offering exists (if being updated)
+    if (validatedData.courseOfferingId) {
+      const courseOffering = await prisma.courseofferings.findUnique({
+        where: { id: validatedData.courseOfferingId },
+      });
+      if (!courseOffering) {
+        return NextResponse.json(
+          { success: false, error: 'Course offering not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if batch exists (if being updated)
+    if (validatedData.batchId) {
+      const batch = await prisma.batches.findUnique({
+        where: { id: validatedData.batchId },
+      });
+      if (!batch) {
+        return NextResponse.json(
+          { success: false, error: 'Batch not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Check if faculty exists (if being updated)
+    if (validatedData.facultyId !== undefined && validatedData.facultyId !== null) {
+      const faculty = await prisma.faculties.findUnique({
+        where: { id: validatedData.facultyId },
+      });
+      if (!faculty) {
+        return NextResponse.json(
+          { success: false, error: 'Faculty not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Build update data
+    const updateData: any = {};
+    if (validatedData.name !== undefined) updateData.name = validatedData.name;
+    if (validatedData.courseOfferingId !== undefined) updateData.courseOfferingId = validatedData.courseOfferingId;
+    if (validatedData.facultyId !== undefined) updateData.facultyId = validatedData.facultyId;
+    if (validatedData.batchId !== undefined) updateData.batchId = validatedData.batchId;
+    if (validatedData.maxStudents !== undefined) updateData.maxStudents = validatedData.maxStudents;
+    if (validatedData.status !== undefined) updateData.status = validatedData.status;
+
     // Update section
     const updatedSection = await prisma.sections.update({
       where: { id: sectionId },
-      data: {
-        name,
-        maxStudents,
-        status: status || 'active',
-        facultyId: facultyId || null,
-      },
+      data: updateData,
       include: {
         courseOffering: {
           include: {
@@ -159,6 +229,12 @@ export async function PUT(
     });
   } catch (error) {
     console.error('Error updating section:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { success: false, error: 'Failed to update section' },
       { status: 500 }
@@ -169,7 +245,7 @@ export async function PUT(
 // DELETE /api/sections/[id] - Delete section
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     // Check authentication
@@ -181,7 +257,23 @@ export async function DELETE(
       );
     }
 
-    const sectionId = parseInt(params.id);
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Handle both sync and async params
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const sectionId = parseInt(resolvedParams.id);
+
+    if (!resolvedParams?.id || isNaN(sectionId)) {
+      return NextResponse.json(
+        { success: false, error: 'Section ID is required or invalid' },
+        { status: 400 }
+      );
+    }
 
     // Check if section exists
     const existingSection = await prisma.sections.findUnique({

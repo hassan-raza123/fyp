@@ -1,26 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/auth';
+import { requireAuth, requireRole, getDepartmentIdFromRequest } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
-import { getCurrentDepartmentId } from '@/lib/auth';
 
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and authorization
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Get current department ID from settings
-    const currentDepartmentId = await getCurrentDepartmentId();
-    if (!currentDepartmentId) {
+    // Only admins, faculty, and students can access batches
+    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
       return NextResponse.json(
-        { success: false, error: 'Department not configured in settings' },
+        { success: false, error: 'Unauthorized - Invalid role' },
+        { status: 403 }
+      );
+    }
+
+    // Get department ID from authenticated user
+    const currentDepartmentId = await getDepartmentIdFromRequest(request);
+    
+    // For super_admin, allow access without department restriction
+    if (!currentDepartmentId && user.role !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
         { status: 400 }
       );
     }
@@ -32,14 +41,20 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     // Build query conditions - automatically filter by current department through program
-    const where: any = {
-      program: {
+    const where: any = {};
+    
+    // Only filter by department if we have a department ID (not for super_admin without department)
+    if (currentDepartmentId) {
+      where.program = {
         departmentId: currentDepartmentId,
-      },
-    };
+      };
+    }
 
     if (programId) {
-      where.programId = parseInt(programId);
+      const parsedProgramId = parseInt(programId);
+      if (!isNaN(parsedProgramId)) {
+        where.programId = parsedProgramId;
+      }
     }
 
     if (status) {
@@ -113,9 +128,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check role
-    const { success: roleSuccess, error: roleError } = requireRole(request, [
+    // Check role - only admins can create batches
+    const { success: roleSuccess, error: roleError } = await requireRole(request, [
       'admin',
+      'super_admin',
     ]);
     if (!roleSuccess) {
       return NextResponse.json(

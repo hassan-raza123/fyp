@@ -6,7 +6,7 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/llo-plo-mappings
 export async function GET(request: NextRequest) {
   try {
-    const { success } = requireAuth(request);
+    const { success } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const ploId = searchParams.get('ploId');
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },

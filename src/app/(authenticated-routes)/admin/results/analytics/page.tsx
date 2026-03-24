@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { BarChart3 } from 'lucide-react';
 import { ResultAnalytics } from '@/components/assessments/ResultAnalytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -17,6 +19,7 @@ interface Section {
   id: number;
   name: string;
   courseOffering: {
+    id: number;
     course: {
       code: string;
       name: string;
@@ -35,6 +38,14 @@ interface Assessment {
 }
 
 const AnalyticsPage = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -42,19 +53,21 @@ const AnalyticsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Fetch sections on component mount
   useEffect(() => {
     const fetchSections = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
-        if (data.success) {
-          setSections(data.data);
-        } else {
-          setSections(data);
-        }
+        setSections(data?.success ? (data.data ?? []) : Array.isArray(data) ? data : []);
       } catch (err) {
         setError('Failed to load sections');
         console.error(err);
@@ -80,11 +93,12 @@ const AnalyticsPage = () => {
         const section = sections.find((s) => s.id.toString() === selectedSection);
         if (section) {
           const response = await fetch(
-            `/api/assessments?courseOfferingId=${section.courseOffering.id}`
+            `/api/assessments?courseOfferingId=${section.courseOffering.id}`,
+            { credentials: 'include' }
           );
           if (!response.ok) throw new Error('Failed to fetch assessments');
           const data = await response.json();
-          setAssessments(Array.isArray(data) ? data : []);
+          setAssessments(Array.isArray(data) ? data : data?.data ?? []);
         }
       } catch (err) {
         setError('Failed to load assessments');
@@ -98,34 +112,45 @@ const AnalyticsPage = () => {
     fetchAssessments();
   }, [selectedSection, sections]);
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Result Analytics</h1>
-        <p className="text-muted-foreground">
-          View detailed analytics and performance metrics for assessments
-        </p>
+    <div className="space-y-4">
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Result Analytics</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            View detailed analytics and performance metrics for assessments
+          </p>
+        </div>
       </div>
 
-      <Card className="p-6 mb-6">
-        <CardHeader>
-          <CardTitle>Select Section and Assessment</CardTitle>
+      <Card className="rounded-lg border border-card-border bg-card p-6">
+        <CardHeader className="p-0 pb-4">
+          <CardTitle className="text-sm font-bold text-primary-text">Select Section and Assessment</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="section">Section *</Label>
+              <Label htmlFor="section" className="text-xs text-primary-text">Section *</Label>
               <Select
                 value={selectedSection}
                 onValueChange={setSelectedSection}
                 disabled={loading}
               >
-                <SelectTrigger id="section">
+                <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a section" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {sections.map((section) => (
-                    <SelectItem key={section.id} value={section.id.toString()}>
+                    <SelectItem key={section.id} value={section.id.toString()} className="text-primary-text hover:bg-card/50">
                       {section.courseOffering.course.code} - {section.name} (
                       {section.courseOffering.semester.name})
                     </SelectItem>
@@ -136,20 +161,21 @@ const AnalyticsPage = () => {
 
             {selectedSection && (
               <div className="space-y-2">
-                <Label htmlFor="assessment">Assessment *</Label>
+                <Label htmlFor="assessment" className="text-xs text-primary-text">Assessment *</Label>
                 <Select
                   value={selectedAssessment}
                   onValueChange={setSelectedAssessment}
                   disabled={loading || assessments.length === 0}
                 >
-                  <SelectTrigger id="assessment">
+                  <SelectTrigger id="assessment" className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select an assessment" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-card-border">
                     {assessments.map((assessment) => (
                       <SelectItem
                         key={assessment.id}
                         value={assessment.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {assessment.title} ({assessment.type})
                       </SelectItem>
@@ -157,7 +183,7 @@ const AnalyticsPage = () => {
                   </SelectContent>
                 </Select>
                 {assessments.length === 0 && !loading && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-secondary-text">
                     No assessments found for this section
                   </p>
                 )}
@@ -168,28 +194,32 @@ const AnalyticsPage = () => {
       </Card>
 
       {error && (
-        <Card className="p-4 mb-6 border-red-200 bg-red-50">
-          <p className="text-red-700">{error}</p>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderColor: 'var(--error-opacity-20)' }}>
+          <p className="text-xs text-secondary-text" style={{ color: 'var(--error)' }}>{error}</p>
+        </div>
       )}
 
       {loading ? (
-        <Card className="p-6">
-          <div className="text-center py-4">Loading...</div>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-8 flex flex-col items-center justify-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       ) : selectedSection && selectedAssessment ? (
         <ResultAnalytics
           sectionId={parseInt(selectedSection)}
           assessmentId={parseInt(selectedAssessment)}
         />
       ) : (
-        <Card className="p-6">
-          <div className="text-center text-muted-foreground py-4">
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
             {!selectedSection || !selectedAssessment
               ? 'Please select a section and assessment to view analytics'
               : 'No data available'}
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

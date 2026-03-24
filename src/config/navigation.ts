@@ -13,6 +13,7 @@ import {
   Link,
   Settings2,
   Shield,
+  ShieldCheck,
   ClipboardList,
   Award,
   UserCheck,
@@ -24,6 +25,7 @@ import {
   BookMarked,
   FileSpreadsheet,
   UserPlus,
+  FlaskConical,
   GraduationCap as FacultyIcon,
   Eye,
   Edit,
@@ -111,6 +113,9 @@ import {
   MessageCircle as MessageCircleIcon,
   MessageSquare as MessageSquareIcon,
   Send as SendIcon,
+  Grid,
+  Compass,
+  Trophy,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -135,11 +140,52 @@ const adminNavigation = [
     title: 'DASHBOARD',
     items: [
       { id: 'overview', label: 'Overview', icon: Home, href: '/admin' },
+    ],
+  },
+  {
+    title: 'ACADEMIC STRUCTURE',
+    items: [
       {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: BarChart2,
-        href: '/admin/analytics',
+        id: 'programs',
+        label: 'Programs',
+        icon: School,
+        href: '/admin/programs',
+      },
+      {
+        id: 'semesters',
+        label: 'Semesters',
+        icon: Calendar,
+        href: '/admin/semesters',
+      },
+      {
+        id: 'batches',
+        label: 'Batches',
+        icon: Layers,
+        href: '/admin/batches',
+      },
+      {
+        id: 'courses',
+        label: 'Courses',
+        icon: BookOpen,
+        href: '/admin/courses',
+      },
+      {
+        id: 'curriculum',
+        label: 'Program Curriculum',
+        icon: BookMarked,
+        href: '/admin/curriculum',
+      },
+      {
+        id: 'course-offerings',
+        label: 'Course Offerings',
+        icon: BookCheck,
+        href: '/admin/course-offerings',
+      },
+      {
+        id: 'sections',
+        label: 'Sections',
+        icon: UserCheck,
+        href: '/admin/sections',
       },
     ],
   },
@@ -167,55 +213,14 @@ const adminNavigation = [
     ],
   },
   {
-    title: 'ACADEMIC STRUCTURE',
-    items: [
-      {
-        id: 'programs',
-        label: 'Programs',
-        icon: School,
-        href: '/admin/programs',
-      },
-      {
-        id: 'courses',
-        label: 'Courses',
-        icon: BookOpen,
-        href: '/admin/courses',
-      },
-      {
-        id: 'course-offerings',
-        label: 'Course Offerings',
-        icon: BookCheck,
-        href: '/admin/course-offerings',
-      },
-      {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Clock,
-        href: '/admin/sessions',
-      },
-      {
-        id: 'semesters',
-        label: 'Semesters',
-        icon: Calendar,
-        href: '/admin/semesters',
-      },
-      {
-        id: 'batches',
-        label: 'Batches',
-        icon: Layers,
-        href: '/admin/batches',
-      },
-      {
-        id: 'sections',
-        label: 'Sections',
-        icon: UserCheck,
-        href: '/admin/sections',
-      },
-    ],
-  },
-  {
     title: 'LEARNING OUTCOMES',
     items: [
+      {
+        id: 'peos',
+        label: 'PEOs',
+        icon: Trophy,
+        href: '/admin/peos',
+      },
       {
         id: 'plos',
         label: 'PLOs',
@@ -235,6 +240,12 @@ const adminNavigation = [
         href: '/admin/llos',
       },
       {
+        id: 'peo-plo-mappings',
+        label: 'PEO-PLO Mappings',
+        icon: Compass,
+        href: '/admin/peo-plo-mappings',
+      },
+      {
         id: 'clo-plo-mappings',
         label: 'CLO-PLO Mappings',
         icon: Link,
@@ -245,12 +256,6 @@ const adminNavigation = [
         label: 'LLO-PLO Mappings',
         icon: Link,
         href: '/admin/llo-plo-mappings',
-      },
-      {
-        id: 'plo-attainments',
-        label: 'PLO Attainments',
-        icon: TrendingUp,
-        href: '/admin/results/plo-attainments',
       },
     ],
   },
@@ -269,6 +274,54 @@ const adminNavigation = [
         icon: BarChart2,
         href: '/admin/results',
       },
+      {
+        id: 'academic-records',
+        label: 'Academic Records',
+        icon: FileSpreadsheet,
+        href: '/admin/results/academic-records',
+      },
+      {
+        id: 'pass-fail-criteria',
+        label: 'Pass/Fail Criteria',
+        icon: ShieldCheck,
+        href: '/admin/pass-fail-criteria',
+      },
+      {
+        id: 'action-plans',
+        label: 'Action Plans',
+        icon: TrendingUp,
+        href: '/admin/action-plans',
+      },
+      {
+        id: 'graduation',
+        label: 'Graduation Tracker',
+        icon: GraduationCap,
+        href: '/admin/results/graduation',
+      },
+      {
+        id: 'graduation-criteria',
+        label: 'Graduation Criteria',
+        icon: ShieldCheck,
+        href: '/admin/results/graduation-criteria',
+      },
+      {
+        id: 'peo-attainments',
+        label: 'PEO Attainments',
+        icon: Trophy,
+        href: '/admin/results/peo-attainments',
+      },
+      {
+        id: 'bloom-analysis',
+        label: "Bloom's Analysis",
+        icon: PieChart,
+        href: '/admin/results/bloom-analysis',
+      },
+      {
+        id: 'plo-coverage-matrix',
+        label: 'CLO-PLO Coverage Matrix',
+        icon: Grid,
+        href: '/admin/results/plo-coverage-matrix',
+      },
     ],
   },
   {
@@ -285,6 +338,12 @@ const adminNavigation = [
         label: 'Transcripts',
         icon: FileSpreadsheet,
         href: '/admin/transcripts',
+      },
+      {
+        id: 'surveys',
+        label: 'Surveys',
+        icon: ClipboardList,
+        href: '/admin/surveys',
       },
       {
         id: 'notifications',
@@ -418,17 +477,35 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Target,
           href: '/faculty/results/clo-attainments',
         },
+        {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/faculty/results/llo-attainments',
+        },
+        {
+          id: 'plo-attainments',
+          label: 'PLO Attainments',
+          icon: TrendingUp,
+          href: '/faculty/results/plo-attainments',
+        },
+        {
+          id: 'academic-records',
+          label: 'Academic Records',
+          icon: FileSpreadsheet,
+          href: '/faculty/results/academic-records',
+        },
+        {
+          id: 'surveys',
+          label: 'My Surveys',
+          icon: ClipboardList,
+          href: '/faculty/surveys',
+        },
       ],
     },
     {
       title: 'SYSTEM',
       items: [
-        {
-          id: 'sessions',
-          label: 'Class Sessions',
-          icon: Calendar,
-          href: '/faculty/sessions',
-        },
         {
           id: 'notifications',
           label: 'Notifications',
@@ -487,10 +564,22 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/student/results/clo-attainments',
         },
         {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/student/results/llo-attainments',
+        },
+        {
           id: 'plo-attainments',
           label: 'PLO Attainments',
           icon: TrendingUp,
           href: '/student/results/plo-attainments',
+        },
+        {
+          id: 'surveys',
+          label: 'Surveys',
+          icon: ClipboardList,
+          href: '/student/surveys',
         },
       ],
     },

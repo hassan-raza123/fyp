@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
                     id: true,
                     code: true,
                     name: true,
+                    labHours: true,
+                    theoryHours: true,
+                    creditHours: true,
                   },
                 },
                 semester: {
@@ -56,7 +59,9 @@ export async function GET(request: NextRequest) {
     const sections = studentSections.map((ss) => ({
       id: ss.section.id,
       name: ss.section.name,
+      courseOfferingId: ss.section.courseOfferingId,
       courseOffering: {
+        id: ss.section.courseOffering.id,
         course: ss.section.courseOffering.course,
         semester: ss.section.courseOffering.semester,
       },

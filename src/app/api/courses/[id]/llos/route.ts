@@ -6,10 +6,11 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/courses/[id]/llos
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
-    const { success } = requireAuth(req);
+    const { success } = await requireAuth(req);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -26,8 +27,8 @@ export async function GET(
       );
     }
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(req);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },
@@ -78,10 +79,11 @@ export async function GET(
 // POST /api/courses/[id]/llos
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
-    const { success, user } = requireAuth(req);
+    const { success, user } = await requireAuth(req);
     if (!success || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -97,8 +99,8 @@ export async function POST(
       );
     }
 
-    // Get current department ID
-    const departmentId = await getCurrentDepartmentId();
+    // Get current department ID from request
+    const departmentId = await getCurrentDepartmentId(req);
     if (!departmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not configured' },

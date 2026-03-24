@@ -18,11 +18,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    // Get admin's department for scoping
+    const { getDepartmentIdFromRequest } = await import('@/lib/auth');
+    const departmentId = await getDepartmentIdFromRequest(request);
+
     // Build the where clause
     const whereClause: any = {
       NOT: {
         id: user.userId, // Exclude current user
       },
+      // Scope to admin's department: include users who are faculty or students in this department
+      ...(departmentId && {
+        OR: [
+          { faculty: { departmentId } },
+          { student: { departmentId } },
+        ],
+      }),
     };
 
     const users = await prisma.users.findMany({
@@ -103,7 +114,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and get user data
-    const { success, user: authUser, error } = requireAuth(request);
+    const { success, user: authUser, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json({ error }, { status: 401 });
     }

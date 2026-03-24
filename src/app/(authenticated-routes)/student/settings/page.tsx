@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import {
   Card,
   CardContent,
@@ -62,9 +62,20 @@ interface Preferences {
 }
 
 export default function SettingsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Profile state
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -239,50 +250,66 @@ export default function SettingsPage() {
     }
   };
 
-  // Password strength calculation
+  // Password strength calculation (theme-aware)
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return { strength: 0, label: '', color: '' };
-    if (password.length < 6) return { strength: 1, label: 'Weak', color: 'bg-red-500' };
-    if (password.length < 8) return { strength: 2, label: 'Fair', color: 'bg-yellow-500' };
-    if (password.length < 12) return { strength: 3, label: 'Good', color: 'bg-blue-500' };
-    return { strength: 4, label: 'Strong', color: 'bg-green-500' };
+    if (password.length < 6) return { strength: 1, label: 'Weak', color: 'bg-[var(--error)]' };
+    if (password.length < 8) return { strength: 2, label: 'Fair', color: 'bg-[var(--warning)]' };
+    if (password.length < 12) return { strength: 3, label: 'Good', color: 'bg-[var(--blue)]' };
+    return { strength: 4, label: 'Strong', color: 'bg-[var(--success-green)]' };
   };
 
   const passwordStrength = getPasswordStrength(passwordForm.newPassword);
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Student Settings</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Student Settings</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Manage your profile and preferences</p>
+        </div>
+      </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="profile">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-card border border-card-border">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <User className="mr-2 h-4 w-4" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="password">
+          <TabsTrigger value="password" className="data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Lock className="mr-2 h-4 w-4" />
             Change Password
           </TabsTrigger>
-          <TabsTrigger value="preferences">
+          <TabsTrigger value="preferences" className="data-[state=active]:bg-hover-bg data-[state=active]:text-primary-text text-secondary-text">
             <Settings className="mr-2 h-4 w-4" />
             Preferences
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sm font-bold text-primary-text">Profile Information</CardTitle>
+              <CardDescription className="text-xs text-secondary-text">
                 Update your personal information
               </CardDescription>
             </CardHeader>
@@ -291,50 +318,50 @@ export default function SettingsPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="rollNumber">Roll Number</Label>
+                      <Label htmlFor="rollNumber" className="text-xs text-primary-text">Roll Number</Label>
                       <Input
                         id="rollNumber"
                         value={profile.rollNumber}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Roll number cannot be changed
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="program">Program</Label>
+                      <Label htmlFor="program" className="text-xs text-primary-text">Program</Label>
                       <Input
                         id="program"
                         value={profile.program?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Program cannot be changed
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="department">Department</Label>
+                      <Label htmlFor="department" className="text-xs text-primary-text">Department</Label>
                       <Input
                         id="department"
                         value={profile.department?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Department cannot be changed
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="batch">Batch</Label>
+                      <Label htmlFor="batch" className="text-xs text-primary-text">Batch</Label>
                       <Input
                         id="batch"
                         value={profile.batch?.name || 'N/A'}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Batch cannot be changed
                       </p>
                     </div>
@@ -342,7 +369,7 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
+                      <Label htmlFor="firstName" className="text-xs text-primary-text">First Name *</Label>
                       <Input
                         id="firstName"
                         value={profileForm.firstName}
@@ -352,10 +379,11 @@ export default function SettingsPage() {
                             firstName: e.target.value,
                           })
                         }
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Label htmlFor="lastName" className="text-xs text-primary-text">Last Name *</Label>
                       <Input
                         id="lastName"
                         value={profileForm.lastName}
@@ -365,10 +393,11 @@ export default function SettingsPage() {
                             lastName: e.target.value,
                           })
                         }
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email" className="text-xs text-primary-text">Email *</Label>
                       <Input
                         id="email"
                         type="email"
@@ -379,10 +408,11 @@ export default function SettingsPage() {
                             email: e.target.value,
                           })
                         }
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-xs text-primary-text">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -393,14 +423,22 @@ export default function SettingsPage() {
                             phone: e.target.value,
                           })
                         }
+                        className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                       />
                     </div>
                   </div>
 
-                  <Button onClick={handleSaveProfile} disabled={saving}>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+                    style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                    onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                  </button>
                 </>
               )}
             </CardContent>
@@ -408,16 +446,16 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="password">
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sm font-bold text-primary-text">Change Password</CardTitle>
+              <CardDescription className="text-xs text-secondary-text">
                 Update your password to keep your account secure
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password *</Label>
+                <Label htmlFor="currentPassword" className="text-xs text-primary-text">Current Password *</Label>
                 <Input
                   id="currentPassword"
                   type="password"
@@ -428,10 +466,11 @@ export default function SettingsPage() {
                       currentPassword: e.target.value,
                     })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password *</Label>
+                <Label htmlFor="newPassword" className="text-xs text-primary-text">New Password *</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -442,6 +481,7 @@ export default function SettingsPage() {
                       newPassword: e.target.value,
                     })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
                 {passwordForm.newPassword && (
                   <div className="space-y-1">
@@ -452,22 +492,22 @@ export default function SettingsPage() {
                           className={`h-1 flex-1 rounded ${
                             level <= passwordStrength.strength
                               ? passwordStrength.color
-                              : 'bg-gray-200'
+                              : 'bg-[var(--hover-bg)]'
                           }`}
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-secondary-text">
                       Strength: {passwordStrength.label || 'Enter password'}
                     </p>
                   </div>
                 )}
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-secondary-text">
                   Password must be at least 6 characters long
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+                <Label htmlFor="confirmPassword" className="text-xs text-primary-text">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -478,41 +518,49 @@ export default function SettingsPage() {
                       confirmPassword: e.target.value,
                     })
                   }
+                  className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
                 {passwordForm.confirmPassword &&
                   passwordForm.newPassword !== passwordForm.confirmPassword && (
-                    <p className="text-xs text-red-500">
+                    <p className="text-xs text-[var(--error)]">
                       Passwords don't match
                     </p>
                   )}
               </div>
-              <Button onClick={handleChangePassword} disabled={saving}>
+              <button
+                onClick={handleChangePassword}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+                style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+              >
                 <Lock className="mr-2 h-4 w-4" />
                 {saving ? 'Changing...' : 'Change Password'}
-              </Button>
+              </button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="preferences">
-          <Card>
+          <Card className="bg-card border border-card-border">
             <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sm font-bold text-primary-text">Preferences</CardTitle>
+              <CardDescription className="text-xs text-secondary-text">
                 Customize your notification and display preferences
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Notification Preferences */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Notification Preferences</h3>
+                <h3 className="text-sm font-semibold text-primary-text">Notification Preferences</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="emailNotifications">
+                      <Label htmlFor="emailNotifications" className="text-xs text-primary-text">
                         Email Notifications
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Receive notifications via email
                       </p>
                     </div>
@@ -532,10 +580,10 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="assessmentReminders">
+                      <Label htmlFor="assessmentReminders" className="text-xs text-primary-text">
                         Assessment Reminders
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Get reminders for upcoming assessments
                       </p>
                     </div>
@@ -555,10 +603,10 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="gradeNotifications">
+                      <Label htmlFor="gradeNotifications" className="text-xs text-primary-text">
                         Grade Notifications
                       </Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-secondary-text">
                         Get notified when grades are published
                       </p>
                     </div>
@@ -578,8 +626,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="systemUpdates">System Updates</Label>
-                      <p className="text-sm text-gray-500">
+                      <Label htmlFor="systemUpdates" className="text-xs text-primary-text">System Updates</Label>
+                      <p className="text-xs text-secondary-text">
                         Receive system updates and announcements
                       </p>
                     </div>
@@ -602,10 +650,10 @@ export default function SettingsPage() {
 
               {/* Display Preferences */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Display Preferences</h3>
+                <h3 className="text-sm font-semibold text-primary-text">Display Preferences</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="gradeDisplayFormat">
+                    <Label htmlFor="gradeDisplayFormat" className="text-xs text-primary-text">
                       Grade Display Format
                     </Label>
                     <Select
@@ -620,18 +668,18 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger id="gradeDisplayFormat">
+                      <SelectTrigger id="gradeDisplayFormat" className="h-8 text-xs bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="percentage">Percentage</SelectItem>
-                        <SelectItem value="letter">Letter Grade</SelectItem>
-                        <SelectItem value="both">Both</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="percentage" className="text-primary-text hover:bg-card/50">Percentage</SelectItem>
+                        <SelectItem value="letter" className="text-primary-text hover:bg-card/50">Letter Grade</SelectItem>
+                        <SelectItem value="both" className="text-primary-text hover:bg-card/50">Both</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateFormat">Date Format</Label>
+                    <Label htmlFor="dateFormat" className="text-xs text-primary-text">Date Format</Label>
                     <Select
                       value={preferences.displayPreferences.dateFormat}
                       onValueChange={(value) =>
@@ -644,18 +692,18 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger id="dateFormat">
+                      <SelectTrigger id="dateFormat" className="h-8 text-xs bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                        <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                        <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="MM/DD/YYYY" className="text-primary-text hover:bg-card/50">MM/DD/YYYY</SelectItem>
+                        <SelectItem value="DD/MM/YYYY" className="text-primary-text hover:bg-card/50">DD/MM/YYYY</SelectItem>
+                        <SelectItem value="YYYY-MM-DD" className="text-primary-text hover:bg-card/50">YYYY-MM-DD</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="defaultView">Default View</Label>
+                    <Label htmlFor="defaultView" className="text-xs text-primary-text">Default View</Label>
                     <Select
                       value={preferences.displayPreferences.defaultView}
                       onValueChange={(value) =>
@@ -668,24 +716,31 @@ export default function SettingsPage() {
                         })
                       }
                     >
-                      <SelectTrigger id="defaultView">
+                      <SelectTrigger id="defaultView" className="h-8 text-xs bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dashboard">Dashboard</SelectItem>
-                        <SelectItem value="courses">Courses</SelectItem>
-                        <SelectItem value="assessments">Assessments</SelectItem>
-                        <SelectItem value="results">Results</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="dashboard" className="text-primary-text hover:bg-card/50">Dashboard</SelectItem>
+                        <SelectItem value="courses" className="text-primary-text hover:bg-card/50">Courses</SelectItem>
+                        <SelectItem value="assessments" className="text-primary-text hover:bg-card/50">Assessments</SelectItem>
+                        <SelectItem value="results" className="text-primary-text hover:bg-card/50">Results</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
               </div>
 
-              <Button onClick={handleSavePreferences} disabled={saving}>
+              <button
+                onClick={handleSavePreferences}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
+                style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+              >
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? 'Saving...' : 'Save Preferences'}
-              </Button>
+              </button>
             </CardContent>
           </Card>
         </TabsContent>

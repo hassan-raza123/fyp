@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import {
   AdminRole,
@@ -12,8 +12,6 @@ import {
 } from '@/types/auth';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 const bcrypt = require('bcryptjs');
-
-const prisma = new PrismaClient();
 
 const verifyOTPSchema = z.object({
   email: z
@@ -82,15 +80,24 @@ function createUserData(user: any, userType: AllRoles): UserData {
     return {
       ...baseData,
       rollNumber: user.student.rollNumber,
-      departmentId: user.student.departmentId || 0, // Handle null case
-      programId: user.student.programId || 0, // Handle null case
+      departmentId: user.student.departmentId || undefined,
+      programId: user.student.programId || undefined,
     };
   }
 
   if (userType === 'faculty' && user.faculty) {
     return {
       ...baseData,
-      departmentId: user.faculty.departmentId || 0, // Handle null case
+      departmentId: user.faculty.departmentId || undefined,
+      designation: user.faculty.designation,
+    };
+  }
+
+  // For admin users, get department from faculty record
+  if ((userType === 'admin' || userType === 'super_admin') && user.faculty) {
+    return {
+      ...baseData,
+      departmentId: user.faculty.departmentId || undefined,
       designation: user.faculty.designation,
     };
   }
@@ -100,7 +107,7 @@ function createUserData(user: any, userType: AllRoles): UserData {
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<LoginResponse>> {
+): Promise<NextResponse> {
   try {
     const body = await request.json();
     const validationResult = verifyOTPSchema.safeParse(body);
@@ -261,6 +268,7 @@ export async function POST(
       email: user.email,
       role: actualRole,
       userData,
+      departmentId: userData.departmentId, // Include departmentId directly in token for quick access
     };
 
     const token = await createToken(tokenPayload);
@@ -281,7 +289,6 @@ export async function POST(
       data: {
         user: userData,
         redirectTo: redirectTo,
-        token,
         userType: actualRole,
       },
     });
@@ -299,7 +306,5 @@ export async function POST(
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

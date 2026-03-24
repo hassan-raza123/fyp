@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         courseOfferingId: courseOfferingId,
         conductedBy: facultyId,
         status: {
-          in: ['active', 'evaluated', 'published'],
+          in: ['active', 'completed'] as any,
         },
       },
       orderBy: {
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const creditHours = courseOffering.course.creditHours || 3;
 
     // Calculate grades for each student
-    const calculatedGrades = await prisma.$transaction(
+    const calculatedGrades = await Promise.all(
       uniqueStudentIds.map((studentId) => {
         const gradeScale = studentGradeScales.get(studentId) || [];
         return calculateStudentGrade(
@@ -198,34 +198,39 @@ async function calculateStudentGrade(
     );
   }
 
-  // Calculate weighted average
+  // Calculate weighted average using ALL assessment weights (not just ones student took)
   let totalWeightedMarks = 0;
   let totalWeight = 0;
 
-  assessments.forEach((assessment) => {
-    const result = studentResults.find((r) => r.assessmentId === assessment.id);
-    if (result) {
-      const weight = assessment.weightage || 0;
-      totalWeightedMarks += result.percentage * weight;
-      totalWeight += weight;
-    }
-  });
+  // First, calculate total weight across ALL assessments (not just ones with results)
+  const allAssessmentsWeight = assessments.reduce((sum, a) => sum + (a.weightage || 0), 0);
 
-  // If no weightage is set, use equal weight
-  if (totalWeight === 0) {
+  if (allAssessmentsWeight > 0) {
+    // Use actual weightages — include 0 for missing assessments
+    assessments.forEach((assessment) => {
+      const result = studentResults.find((r) => r.assessmentId === assessment.id);
+      const weight = assessment.weightage || 0;
+      totalWeight += weight;
+      if (result) {
+        totalWeightedMarks += result.percentage * weight;
+      }
+      // Missing assessments contribute 0 to totalWeightedMarks but their weight is counted
+    });
+  } else {
+    // No weightage set on any assessment — use equal weight across ALL assessments
     const equalWeight = 100 / assessments.length;
     assessments.forEach((assessment) => {
       const result = studentResults.find((r) => r.assessmentId === assessment.id);
+      totalWeight += equalWeight;
       if (result) {
         totalWeightedMarks += result.percentage * equalWeight;
-        totalWeight += equalWeight;
       }
     });
   }
 
   const finalPercentage = totalWeight > 0 ? totalWeightedMarks / totalWeight : 0;
 
-  // Calculate total marks and obtained marks
+  // Note: totalMarks and obtainedMarks are raw (unweighted) sums for display purposes. The 'percentage' field is the authoritative weighted grade.
   const totalMarks = assessments.reduce((sum, a) => sum + a.totalMarks, 0);
   const obtainedMarks = studentResults.reduce(
     (sum, r) => sum + r.obtainedMarks,
@@ -269,13 +274,14 @@ async function createOrUpdateGrade(
   qualityPoints: number,
   facultyId: number
 ) {
-  // Check if grade already exists
+  // Check if grade already exists — find latest attempt regardless of attemptNumber
   const existing = await prisma.studentgrades.findFirst({
     where: {
       studentId: studentId,
       courseOfferingId: courseOfferingId,
-      attemptNumber: 1, // Default to first attempt
+      component: 'combined',
     },
+    orderBy: { attemptNumber: 'desc' },
   });
 
   if (existing) {

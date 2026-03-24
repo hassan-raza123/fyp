@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, List } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface AssessmentItem {
@@ -33,10 +32,21 @@ interface AssessmentItem {
 export default function AssessmentItemsPage() {
   const params = useParams();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const assessmentId = params?.id;
   const [items, setItems] = useState<AssessmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [assessmentTitle, setAssessmentTitle] = useState('');
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!assessmentId) return;
@@ -73,85 +83,95 @@ export default function AssessmentItemsPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <p>Loading items...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderBottomColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading items...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button variant='ghost' size='icon' onClick={() => router.back()}>
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle, back on right) */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className='text-3xl font-bold'>{assessmentTitle}</h1>
-          <p className='text-gray-500'>Assessment Items</p>
+          <h1 className="text-lg font-bold text-primary-text">{assessmentTitle}</h1>
+          <p className="text-xs text-secondary-text mt-0.5">Assessment Items</p>
         </div>
+        <button
+          onClick={() => router.back()}
+          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = iconBgColor;
+          }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
+        </button>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Assessment Items</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Assessment Items</h2>
+        </div>
+        <div className="p-4">
           {items.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No items available
-            </p>
+            <p className="text-xs text-secondary-text text-center py-4">No items available</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Question</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Marks</TableHead>
-                  <TableHead>CLO</TableHead>
-                  <TableHead>Your Marks</TableHead>
-                  <TableHead>Remarks</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Question</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Your Marks</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Remarks</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">
-                      Q{item.questionNo}
-                    </TableCell>
-                    <TableCell className="max-w-md">{item.description}</TableCell>
-                    <TableCell>{item.marks}</TableCell>
+                  <TableRow key={item.id} className="hover:bg-hover-bg transition-colors">
+                    <TableCell className="text-xs font-medium text-primary-text">Q{item.questionNo}</TableCell>
+                    <TableCell className="text-xs text-secondary-text max-w-md">{item.description}</TableCell>
+                    <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
                     <TableCell>
                       {item.clo ? (
-                        <Badge variant="outline">{item.clo.code}</Badge>
+                        <Badge className="border border-card-border text-[10px] px-1.5 py-0.5 text-primary-text">{item.clo.code}</Badge>
                       ) : (
-                        '-'
+                        <span className="text-xs text-muted-text">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs text-primary-text">
                       {item.obtainedMarks !== null ? (
-                        <span className="font-medium">
-                          {item.obtainedMarks} / {item.marks}
-                        </span>
+                        <span className="font-medium">{item.obtainedMarks} / {item.marks}</span>
                       ) : (
-                        <span className="text-muted-foreground">Not evaluated</span>
+                        <span className="text-muted-text">Not evaluated</span>
                       )}
                     </TableCell>
-                    <TableCell className="max-w-xs">
-                      {item.remarks || '-'}
-                    </TableCell>
+                    <TableCell className="text-xs text-secondary-text max-w-xs">{item.remarks || '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

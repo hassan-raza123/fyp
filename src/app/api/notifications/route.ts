@@ -51,7 +51,12 @@ export async function GET(request: NextRequest) {
             first_name: true,
             last_name: true,
             email: true,
-            role: true,
+            status: true,
+            userrole: {
+              select: {
+                role: { select: { name: true } },
+              },
+            },
           },
         },
       },
@@ -60,7 +65,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: notifications });
+    // Shape response so frontend gets user.role (from userrole.role.name)
+    const data = notifications.map((n) => ({
+      ...n,
+      user: {
+        id: n.user.id,
+        first_name: n.user.first_name,
+        last_name: n.user.last_name,
+        email: n.user.email,
+        status: n.user.status,
+        role: n.user.userrole?.role?.name ?? '—',
+      },
+    }));
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error fetching notifications:', error);
     return NextResponse.json(

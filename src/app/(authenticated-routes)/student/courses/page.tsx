@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Course {
@@ -28,7 +28,7 @@ interface Course {
   code: string;
   name: string;
   creditHours: number;
-  type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS';
+  type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS';
   department: {
     id: number;
     name: string;
@@ -61,6 +61,11 @@ interface Semester {
 
 export default function CoursesPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -70,6 +75,10 @@ export default function CoursesPage() {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchSemesters();
@@ -127,91 +136,110 @@ export default function CoursesPage() {
     }
   };
 
-  const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
+  const getTypeBadge = (type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge variant="default">Theory</Badge>;
+        return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
-        return <Badge variant="success">Lab</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Lab</Badge>;
+      case 'THEORY_LAB':
+        return <Badge className="bg-[var(--orange)] text-white text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
       case 'PROJECT':
-        return <Badge variant="secondary">Project</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
-        return <Badge variant="destructive">Thesis</Badge>;
+        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
-        return <Badge>{type}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{type}</Badge>;
     }
   };
 
   const getStatusBadge = (status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED') => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Active</Badge>;
       case 'INACTIVE':
-        return <Badge variant="secondary">Inactive</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'ARCHIVED':
-        return <Badge variant="destructive">Archived</Badge>;
+        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-page">
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderTopColor: primaryColor,
+              borderRightColor: 'transparent',
+              borderBottomColor: primaryColor,
+              borderLeftColor: 'transparent',
+            }}
+          />
+          <p className="text-xs text-secondary-text">Loading courses...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Courses</h1>
+    <div className="space-y-4">
+      {/* Header - admin CLO style (title + subtitle only) */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">My Courses</h1>
+          <p className="text-xs text-secondary-text mt-0.5">View enrolled courses and details</p>
+        </div>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* Filters - admin CLO style */}
+      <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
               placeholder="Search enrolled courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
             />
           </div>
         </div>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Course Type" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="THEORY">Theory</SelectItem>
-            <SelectItem value="LAB">Lab</SelectItem>
-            <SelectItem value="PROJECT">Project</SelectItem>
-            <SelectItem value="THESIS">Thesis</SelectItem>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+            <SelectItem value="THEORY" className="text-primary-text hover:bg-card/50">Theory</SelectItem>
+            <SelectItem value="LAB" className="text-primary-text hover:bg-card/50">Lab</SelectItem>
+            <SelectItem value="PROJECT" className="text-primary-text hover:bg-card/50">Project</SelectItem>
+            <SelectItem value="THEORY_LAB" className="text-primary-text hover:bg-card/50">Theory + Lab</SelectItem>
+            <SelectItem value="THESIS" className="text-primary-text hover:bg-card/50">Thesis</SelectItem>
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="INACTIVE">Inactive</SelectItem>
-            <SelectItem value="ARCHIVED">Archived</SelectItem>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Status</SelectItem>
+            <SelectItem value="ACTIVE" className="text-primary-text hover:bg-card/50">Active</SelectItem>
+            <SelectItem value="INACTIVE" className="text-primary-text hover:bg-card/50">Inactive</SelectItem>
+            <SelectItem value="ARCHIVED" className="text-primary-text hover:bg-card/50">Archived</SelectItem>
           </SelectContent>
         </Select>
         <Select value={semesterId} onValueChange={setSemesterId}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Semester" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Semesters</SelectItem>
+          <SelectContent className="bg-card border-card-border">
+            <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Semesters</SelectItem>
             {semesters.map((semester) => (
-              <SelectItem key={semester.id} value={semester.id.toString()}>
+              <SelectItem key={semester.id} value={semester.id.toString()} className="text-primary-text hover:bg-card/50">
                 {semester.name}
               </SelectItem>
             ))}
@@ -219,44 +247,46 @@ export default function CoursesPage() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Section</TableHead>
-              <TableHead>Instructor</TableHead>
-              <TableHead>Semester</TableHead>
-              <TableHead>Credit Hours</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Code</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Section</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Instructor</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Semester</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Credit Hours</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Type</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {courses.map((course) => (
-              <TableRow key={course.id}>
-                <TableCell className="font-medium">{course.code}</TableCell>
-                <TableCell>{course.name}</TableCell>
-                <TableCell>{course.currentSection || 'N/A'}</TableCell>
-                <TableCell>{course.currentInstructor || 'TBA'}</TableCell>
-                <TableCell>{course.currentSemester || 'N/A'}</TableCell>
-                <TableCell>{course.creditHours}</TableCell>
+              <TableRow key={course.id} className="hover:bg-hover-bg transition-colors">
+                <TableCell className="text-xs font-medium text-primary-text">{course.code}</TableCell>
+                <TableCell className="text-xs text-primary-text">{course.name}</TableCell>
+                <TableCell className="text-xs text-secondary-text">{course.currentSection || 'N/A'}</TableCell>
+                <TableCell className="text-xs text-secondary-text">{course.currentInstructor || 'TBA'}</TableCell>
+                <TableCell className="text-xs text-secondary-text">{course.currentSemester || 'N/A'}</TableCell>
+                <TableCell className="text-xs text-primary-text">{course.creditHours}</TableCell>
                 <TableCell>{getTypeBadge(course.type)}</TableCell>
                 <TableCell>{getStatusBadge(course.status)}</TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        router.push(`/student/courses/${course.id}`)
-                      }
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <button
+                    onClick={() => router.push(`/student/courses/${course.id}`)}
+                    className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center justify-center"
+                    style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = iconBgColor;
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                  </button>
                 </TableCell>
               </TableRow>
             ))}
@@ -264,23 +294,21 @@ export default function CoursesPage() {
         </Table>
       </div>
 
-      <div className="flex justify-center mt-4">
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+      <div className="flex justify-center gap-2">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-hover-bg disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

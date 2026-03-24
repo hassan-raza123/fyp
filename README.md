@@ -45,7 +45,7 @@ npm start
 - **User Management**: Role-based access control
 - **Department & Program Management**: Academic structure
 - **Course Management**: CLOs, assessments, offerings
-- **Student Management**: Batches, sections, attendance
+- **Student Management**: Batches, sections
 - **Assessment System**: Marks entry, analytics
 - **Results Management**: CLO/PLO attainments
 - **Analytics Dashboard**: Comprehensive reporting

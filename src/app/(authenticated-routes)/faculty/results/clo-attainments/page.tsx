@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,13 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -152,6 +145,14 @@ interface CLODetails {
 
 const CLOAttainmentsPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
@@ -161,6 +162,10 @@ const CLOAttainmentsPage = () => {
   const [calculating, setCalculating] = useState(false);
   const [selectedCourseOffering, setSelectedCourseOffering] = useState<number | null>(null);
   const [threshold, setThreshold] = useState(60);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchCourses();
@@ -291,134 +296,119 @@ const CLOAttainmentsPage = () => {
 
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00'];
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">CLO Attainments</h1>
-          <p className="text-muted-foreground">
-            Calculate and analyze Course Learning Outcomes attainment
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Target className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">CLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Calculate and analyze Course Learning Outcomes attainment
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={() => setShowCalculateDialog(true)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
           >
-            <Calculator className="w-4 h-4 mr-2" />
+            <Calculator className="w-3.5 h-3.5" />
             Calculate Attainments
-          </Button>
-          <Button variant="outline" onClick={fetchCourses}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+          </button>
+          <button
+            type="button"
+            onClick={fetchCourses}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:opacity-90"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
             Refresh
-          </Button>
+          </button>
         </div>
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="details" disabled={!selectedCLO}>
-            CLO Details
-          </TabsTrigger>
-          <TabsTrigger value="analysis" disabled={!selectedCourse}>
-            Analysis
-          </TabsTrigger>
-          <TabsTrigger value="plo-mappings" disabled={!selectedCourse}>
-            CLO-PLO Mappings
-          </TabsTrigger>
+        <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+          <TabsTrigger value="dashboard" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Dashboard</TabsTrigger>
+          <TabsTrigger value="details" disabled={!selectedCLO} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">CLO Details</TabsTrigger>
+          <TabsTrigger value="analysis" disabled={!selectedCourse} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">Analysis</TabsTrigger>
+          <TabsTrigger value="plo-mappings" disabled={!selectedCourse} className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md disabled:opacity-50">CLO-PLO Mappings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
           {/* Course Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Course</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-card-border">
+              <h2 className="text-sm font-semibold text-primary-text">Select Course</h2>
+            </div>
+            <div className="p-4">
               <Select
                 value={selectedCourse?.toString() || ''}
                 onValueChange={(value) => {
-                  setSelectedCourse(parseInt(value));
+                  setSelectedCourse(value ? parseInt(value) : null);
                   setSelectedCLO(null);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a course" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courses.map((course) => (
                     <SelectItem
                       key={course.course.id}
                       value={course.course.id.toString()}
+                      className="text-primary-text hover:bg-card/50"
                     >
                       {course.course.code} - {course.course.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {selectedCourseData && (
             <div className="space-y-4">
               {/* Overall Statistics */}
-              <div className="grid grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Total CLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.totalCLOs}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Attained CLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">
-                      {selectedCourseData.attainedCLOs}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Average Attainment</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.averageAttainment.toFixed(1)}%
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Attainment Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedCourseData.totalCLOs > 0
-                        ? (
-                            (selectedCourseData.attainedCLOs /
-                              selectedCourseData.totalCLOs) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Total CLOs</p>
+                  <div className="text-lg font-bold text-primary-text">{selectedCourseData.totalCLOs}</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Attained CLOs</p>
+                  <div className="text-lg font-bold text-[var(--success-green)]">{selectedCourseData.attainedCLOs}</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Average Attainment</p>
+                  <div className="text-lg font-bold text-primary-text">{selectedCourseData.averageAttainment.toFixed(1)}%</div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Attainment Rate</p>
+                  <div className="text-lg font-bold text-primary-text">
+                    {selectedCourseData.totalCLOs > 0
+                      ? ((selectedCourseData.attainedCLOs / selectedCourseData.totalCLOs) * 100).toFixed(1)
+                      : 0}%
+                  </div>
+                </div>
               </div>
 
               {/* CLO Attainment Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>CLO Attainment Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">CLO Attainment Overview</h3>
+                </div>
+                <div className="p-4">
                   {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={chartData}>
@@ -433,22 +423,20 @@ const CLOAttainmentsPage = () => {
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">
+                    <p className="text-secondary-text text-center py-8 text-xs">
                       No CLO attainment data available
                     </p>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* CLOs List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>CLOs List</CardTitle>
-                  <CardDescription>
-                    Click on a CLO to view detailed information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">CLOs List</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">Click on a CLO to view detailed information</p>
+                </div>
+                <div className="p-4">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -484,7 +472,7 @@ const CLOAttainmentsPage = () => {
                                 <span>{clo.attainmentPercent.toFixed(1)}%</span>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">N/A</span>
+                              <span className="text-secondary-text">N/A</span>
                             )}
                           </TableCell>
                           <TableCell>{clo.threshold}%</TableCell>
@@ -495,81 +483,74 @@ const CLOAttainmentsPage = () => {
                               : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedCLO(clo.id);
                               }}
+                              className="p-2 rounded-lg text-xs font-medium h-7 inline-flex items-center justify-center hover:bg-[var(--hover-bg)]"
+                              style={{ backgroundColor: iconBgColor, color: primaryColor }}
                             >
-                              <Eye className="w-4 h-4" />
-                            </Button>
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
 
           {!selectedCourse && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a course to view CLO attainments
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+              Select a course to view CLO attainments
+            </div>
           )}
         </TabsContent>
 
         <TabsContent value="details" className="space-y-4">
           {cloDetails ? (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{cloDetails.clo.code}</CardTitle>
-                  <CardDescription>{cloDetails.clo.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-4">
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">{cloDetails.clo.code}</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">{cloDetails.clo.description}</p>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Course</p>
-                      <p className="font-semibold">
+                      <p className="text-xs text-secondary-text">Course</p>
+                      <p className="text-sm font-semibold text-primary-text">
                         {cloDetails.clo.course.code} - {cloDetails.clo.course.name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Bloom's Level</p>
-                      <p className="font-semibold">{cloDetails.clo.bloomLevel}</p>
+                      <p className="text-xs text-secondary-text">Bloom's Level</p>
+                      <p className="text-sm font-semibold text-primary-text">{cloDetails.clo.bloomLevel}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">
-                        Latest Attainment
-                      </p>
-                      <p className="font-semibold">
-                        {cloDetails.attainments[0]?.attainmentPercent.toFixed(1) ||
-                          'N/A'}
-                        %
+                      <p className="text-xs text-secondary-text">Latest Attainment</p>
+                      <p className="text-sm font-semibold text-primary-text">
+                        {cloDetails.attainments[0]?.attainmentPercent.toFixed(1) || 'N/A'}%
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Status</p>
-                      {getStatusBadge(
-                        cloDetails.attainments[0]?.status || 'not_calculated'
-                      )}
+                      <p className="text-xs text-secondary-text">Status</p>
+                      <div className="mt-1">{getStatusBadge(cloDetails.attainments[0]?.status || 'not_calculated')}</div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Attainments History */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Attainment History</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Attainment History</h3>
+                </div>
+                <div className="p-4 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -612,15 +593,15 @@ const CLOAttainmentsPage = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Assessment Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assessment-wise Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Assessment-wise Breakdown</h3>
+                </div>
+                <div className="p-4 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -649,15 +630,15 @@ const CLOAttainmentsPage = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Student Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Student-wise Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Student-wise Breakdown</h3>
+                </div>
+                <div className="p-4">
                   <div className="max-h-96 overflow-y-auto">
                     <Table>
                       <TableHeader>
@@ -699,44 +680,38 @@ const CLOAttainmentsPage = () => {
                       </TableBody>
                     </Table>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Select a CLO from the dashboard to view details
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+              Select a CLO from the dashboard to view details
+            </div>
           )}
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-4">
           {selectedCourseData && (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Trend Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Historical trend analysis coming soon...
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Trend Analysis</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs text-secondary-text">Historical trend analysis coming soon...</p>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Section Comparison</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Section-wise comparison coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-        </div>
-      )}
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="p-4 border-b border-card-border">
+                  <h3 className="text-sm font-semibold text-primary-text">Section Comparison</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs text-secondary-text">Section-wise comparison coming soon...</p>
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="plo-mappings" className="space-y-4">
@@ -748,31 +723,32 @@ const CLOAttainmentsPage = () => {
 
       {/* Calculate Dialog */}
       <Dialog open={showCalculateDialog} onOpenChange={setShowCalculateDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text max-w-md">
           <DialogHeader>
-            <DialogTitle>Calculate CLO Attainments</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Calculate CLO Attainments</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Calculate CLO attainments for a course offering
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Course Offering</Label>
+              <Label className="text-xs text-secondary-text">Course Offering</Label>
               <Select
                 value={selectedCourseOffering?.toString() || ''}
                 onValueChange={(value) =>
                   setSelectedCourseOffering(parseInt(value))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course offering" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-card-border">
                   {courses.flatMap((course) =>
                     course.courseOfferings.map((co) => (
                       <SelectItem
                         key={co.id}
                         value={co.id.toString()}
+                        className="text-primary-text hover:bg-card/50"
                       >
                         {course.course.code} - {co.semester.name}
                       </SelectItem>
@@ -782,31 +758,39 @@ const CLOAttainmentsPage = () => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="threshold">Threshold (%)</Label>
+              <Label htmlFor="threshold" className="text-xs text-secondary-text">Threshold (%)</Label>
               <Input
                 id="threshold"
                 type="number"
-                min="0"
-                max="100"
+                min={0}
+                max={100}
                 value={threshold}
                 onChange={(e) => setThreshold(parseFloat(e.target.value) || 60)}
+                className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-secondary-text mt-1">
                 Minimum percentage required for CLO attainment (default: 60%)
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowCalculateDialog(false)}
               disabled={calculating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button onClick={handleCalculate} disabled={calculating || !selectedCourseOffering}>
+            </button>
+            <button
+              type="button"
+              onClick={handleCalculate}
+              disabled={calculating || !selectedCourseOffering}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+            >
               {calculating ? 'Calculating...' : 'Calculate'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -843,67 +827,55 @@ function CLOPLOMappingsView({ courseId }: { courseId: number }) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">Loading mappings...</CardContent>
-      </Card>
+      <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">Loading mappings...</div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>CLO-PLO Mappings</CardTitle>
-        <CardDescription>
-          View how CLOs map to Program Learning Outcomes
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+      <div className="p-4 border-b border-card-border">
+        <h3 className="text-sm font-semibold text-primary-text">CLO-PLO Mappings</h3>
+        <p className="text-xs text-secondary-text mt-0.5">View how CLOs map to Program Learning Outcomes</p>
+      </div>
+      <div className="p-4">
         {mappings.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            No CLO-PLO mappings found
-          </p>
+          <p className="text-xs text-secondary-text text-center py-8">No CLO-PLO mappings found</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>CLO Code</TableHead>
-                <TableHead>CLO Description</TableHead>
-                <TableHead>Mapped PLOs</TableHead>
-                <TableHead>Total Weight</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mappings.map((mapping) => (
-                <TableRow key={mapping.clo.id}>
-                  <TableCell className="font-medium">
-                    {mapping.clo.code}
-                  </TableCell>
-                  <TableCell className="max-w-md truncate">
-                    {mapping.clo.description}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {mapping.plos.map((plo: any) => (
-                        <Badge key={plo.ploId} variant="outline">
-                          {plo.ploCode} ({plo.weight}%)
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {mapping.plos.reduce(
-                      (sum: number, plo: any) => sum + plo.weight,
-                      0
-                    )}
-                    %
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO Code</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">CLO Description</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Mapped PLOs</TableHead>
+                  <TableHead className="text-xs font-semibold text-primary-text">Total Weight</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {mappings.map((mapping) => (
+                  <TableRow key={mapping.clo.id} className="hover:bg-[var(--hover-bg)]">
+                    <TableCell className="font-medium text-xs text-primary-text">{mapping.clo.code}</TableCell>
+                    <TableCell className="max-w-md truncate text-xs text-primary-text">{mapping.clo.description}</TableCell>
+                    <TableCell className="text-xs text-primary-text">
+                      <div className="flex flex-wrap gap-1">
+                        {mapping.plos.map((plo: any) => (
+                          <Badge key={plo.ploId} variant="outline" className="text-[10px] border-card-border text-secondary-text">
+                            {plo.ploCode} ({plo.weight}%)
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-primary-text">
+                      {mapping.plos.reduce((sum: number, plo: any) => sum + plo.weight, 0)}%
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

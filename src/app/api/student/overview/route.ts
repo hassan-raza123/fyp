@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
           in: courseOfferingIds,
         },
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -270,7 +270,6 @@ export async function GET(request: NextRequest) {
         stats: {
           enrolledCourses: totalCourses,
           averageGrade: parseFloat(averageGrade.toFixed(1)),
-          attendanceRate: 0, // TODO: Implement attendance tracking
           completedAssignments,
         },
         courses,

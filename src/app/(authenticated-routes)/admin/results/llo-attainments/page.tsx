@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Select,
   SelectContent,
@@ -30,7 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Calculator, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 
 interface CourseOffering {
   id: number;
@@ -67,15 +66,25 @@ interface LLOAttainment {
 }
 
 export default function LLOAttainmentsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [selectedCourseOffering, setSelectedCourseOffering] = useState<string>('');
   const [llos, setLLOs] = useState<LLO[]>([]);
   const [attainments, setAttainments] = useState<LLOAttainment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
   const [isCalculateDialogOpen, setIsCalculateDialogOpen] = useState(false);
   const [threshold, setThreshold] = useState('60');
 
   useEffect(() => {
+    setMounted(true);
     fetchCourseOfferings();
   }, []);
 
@@ -97,20 +106,17 @@ export default function LLOAttainmentsPage() {
         setCourseOfferings(result.data || []);
       }
     } catch (error) {
-      console.error('Error fetching course offerings:', error);
       toast.error('Failed to load course offerings');
     }
   };
 
   const fetchLLOs = async () => {
     if (!selectedCourseOffering) return;
-
     try {
       const offering = courseOfferings.find(
         (co) => co.id.toString() === selectedCourseOffering
       );
       if (!offering) return;
-
       const response = await fetch(`/api/llos?courseId=${offering.course.id}`, {
         credentials: 'include',
       });
@@ -120,14 +126,12 @@ export default function LLOAttainmentsPage() {
         setLLOs(result.data || []);
       }
     } catch (error) {
-      console.error('Error fetching LLOs:', error);
       toast.error('Failed to load LLOs');
     }
   };
 
   const fetchAttainments = async () => {
     if (!selectedCourseOffering) return;
-
     try {
       const response = await fetch(
         `/api/admin/llo-attainments?courseOfferingId=${selectedCourseOffering}`,
@@ -139,7 +143,6 @@ export default function LLOAttainmentsPage() {
         setAttainments(result.data || []);
       }
     } catch (error) {
-      console.error('Error fetching attainments:', error);
       toast.error('Failed to load attainments');
     }
   };
@@ -149,9 +152,8 @@ export default function LLOAttainmentsPage() {
       toast.error('Please select a course offering');
       return;
     }
-
     try {
-      setLoading(true);
+      setIsCalculating(true);
       const response = await fetch('/api/admin/llo-attainments/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,7 +163,6 @@ export default function LLOAttainmentsPage() {
           threshold: parseFloat(threshold),
         }),
       });
-
       if (!response.ok) throw new Error('Failed to calculate attainments');
       const result = await response.json();
       if (result.success) {
@@ -172,248 +173,267 @@ export default function LLOAttainmentsPage() {
         throw new Error(result.error || 'Failed to calculate attainments');
       }
     } catch (error) {
-      console.error('Error calculating attainments:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to calculate attainments');
     } finally {
-      setLoading(false);
+      setIsCalculating(false);
     }
   };
 
   const getStatusBadge = (attainment: LLOAttainment) => {
-    if (attainment.attainmentPercent >= attainment.threshold) {
-      return (
-        <Badge variant="default" className="bg-green-500">
-          Attained
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge variant="destructive">
-          Not Attained
-        </Badge>
-      );
-    }
+    const attained = attainment.attainmentPercent >= attainment.threshold;
+    return (
+      <Badge
+        className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-white' : 'bg-[var(--error)] text-white'}`}
+        variant="secondary"
+      >
+        {attained ? 'Attained' : 'Not Attained'}
+      </Badge>
+    );
   };
 
   const getTrendIcon = (attainment: LLOAttainment) => {
-    if (attainment.attainmentPercent >= attainment.threshold) {
-      return <TrendingUp className="w-4 h-4 text-green-600" />;
-    } else {
-      return <TrendingDown className="w-4 h-4 text-red-600" />;
-    }
+    return attainment.attainmentPercent >= attainment.threshold ? (
+      <TrendingUp className="w-3.5 h-3.5" style={{ color: 'var(--success-green)' }} />
+    ) : (
+      <TrendingDown className="w-3.5 h-3.5" style={{ color: 'var(--error)' }} />
+    );
   };
 
   const selectedOffering = courseOfferings.find(
     (co) => co.id.toString() === selectedCourseOffering
   );
 
+  const attainedCount = attainments.filter(
+    (a) => a.attainmentPercent >= a.threshold
+  ).length;
+  const avgAttainment =
+    attainments.length > 0
+      ? (attainments.reduce((sum, a) => sum + a.attainmentPercent, 0) / attainments.length).toFixed(1)
+      : '0';
+  const attainmentRate =
+    llos.length > 0
+      ? ((attainedCount / llos.length) * 100).toFixed(1)
+      : '0';
+
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
+      {/* Header - CLO style */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">LLO Attainments</h1>
-          <p className="text-muted-foreground">
-            Calculate and analyze Lab Learning Outcome achievement percentages
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Calculator className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">LLO Attainments</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Calculate and analyze Lab Learning Outcome achievement percentages
+            </p>
+          </div>
         </div>
         {selectedCourseOffering && (
-          <Button onClick={() => setIsCalculateDialogOpen(true)}>
-            <Calculator className="w-4 h-4 mr-2" />
+          <button
+            onClick={() => setIsCalculateDialogOpen(true)}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode
+                ? 'rgba(252, 153, 40, 0.2)'
+                : 'rgba(38, 40, 149, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = iconBgColor;
+            }}
+          >
+            <Calculator className="w-3.5 h-3.5" />
             Calculate Attainments
-          </Button>
+          </button>
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Course Offering</CardTitle>
-          <CardDescription>
-            Choose a course offering to view LLO attainments
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label>Course Offering *</Label>
-            <Select
-              value={selectedCourseOffering}
-              onValueChange={setSelectedCourseOffering}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a course offering" />
-              </SelectTrigger>
-              <SelectContent>
-                {courseOfferings.map((offering) => (
-                  <SelectItem key={offering.id} value={offering.id.toString()}>
-                    {offering.course.code} - {offering.course.name} (
-                    {offering.semester.name})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Course Offering Filter */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <Select
+            value={selectedCourseOffering}
+            onValueChange={setSelectedCourseOffering}
+          >
+            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectValue placeholder="Select a course offering" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-card-border">
+              {courseOfferings.map((offering) => (
+                <SelectItem
+                  key={offering.id}
+                  value={offering.id.toString()}
+                  className="text-primary-text hover:bg-card/50"
+                >
+                  {offering.course.code} - {offering.course.name} (
+                  {offering.semester.name})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
+      {/* Content — visible when a course offering is selected */}
       {selectedCourseOffering && (
         <>
           {llos.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <div className="rounded-lg border border-card-border bg-card p-8">
+              <div className="text-center text-xs text-secondary-text">
                 No LLOs found for this course. Please create LLOs first.
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : attainments.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">
+            <div className="rounded-lg border border-card-border bg-card p-8">
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-xs text-secondary-text">
                   No LLO attainments calculated yet for this course offering.
                 </p>
-                <Button onClick={() => setIsCalculateDialogOpen(true)}>
-                  <Calculator className="w-4 h-4 mr-2" />
+                <button
+                  onClick={() => setIsCalculateDialogOpen(true)}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+                  style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode
+                      ? 'rgba(252, 153, 40, 0.2)'
+                      : 'rgba(38, 40, 149, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = iconBgColor;
+                  }}
+                >
+                  <Calculator className="w-3.5 h-3.5" />
                   Calculate Attainments
-                </Button>
-              </CardContent>
-            </Card>
+                </button>
+              </div>
+            </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Total LLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{llos.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Attained LLOs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">
-                      {attainments.filter(
-                        (a) => a.attainmentPercent >= a.threshold
-                      ).length}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Average Attainment</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {attainments.length > 0
-                        ? (
-                            attainments.reduce(
-                              (sum, a) => sum + a.attainmentPercent,
-                              0
-                            ) / attainments.length
-                          ).toFixed(1)
-                        : '0'}
-                      %
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Attainment Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {llos.length > 0
-                        ? (
-                            (attainments.filter(
-                              (a) => a.attainmentPercent >= a.threshold
-                            ).length /
-                              llos.length) *
-                            100
-                          ).toFixed(1)
-                        : '0'}
-                      %
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-[10px] text-secondary-text mb-1">Total LLOs</p>
+                  <p className="text-xl font-bold text-primary-text">{llos.length}</p>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-[10px] text-secondary-text mb-1">Attained LLOs</p>
+                  <p className="text-xl font-bold" style={{ color: 'var(--success-green)' }}>
+                    {attainedCount}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-[10px] text-secondary-text mb-1">Average Attainment</p>
+                  <p className="text-xl font-bold text-primary-text">{avgAttainment}%</p>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-[10px] text-secondary-text mb-1">Attainment Rate</p>
+                  <p className="text-xl font-bold text-primary-text">{attainmentRate}%</p>
+                </div>
               </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>LLO Attainment Details</CardTitle>
-                  <CardDescription>
-                    {selectedOffering?.course.code} - {selectedOffering?.course.name} (
-                    {selectedOffering?.semester.name})
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>LLO Code</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Total Students</TableHead>
-                          <TableHead>Students Achieved</TableHead>
-                          <TableHead>Attainment %</TableHead>
-                          <TableHead>Threshold</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Calculated At</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {attainments.map((attainment) => (
-                          <TableRow key={attainment.id}>
-                            <TableCell className="font-medium">
-                              {attainment.llo.code}
-                            </TableCell>
-                            <TableCell className="max-w-md truncate">
-                              {attainment.llo.description}
-                            </TableCell>
-                            <TableCell>{attainment.totalStudents}</TableCell>
-                            <TableCell>{attainment.studentsAchieved}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {getTrendIcon(attainment)}
-                                <span className="font-medium">
-                                  {attainment.attainmentPercent.toFixed(1)}%
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{attainment.threshold}%</TableCell>
-                            <TableCell>{getStatusBadge(attainment)}</TableCell>
-                            <TableCell>
-                              {new Date(attainment.calculatedAt).toLocaleDateString()}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Table */}
+              <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+                <div className="px-4 py-3 border-b border-card-border">
+                  <p className="text-xs font-semibold text-primary-text">LLO Attainment Details</p>
+                  {selectedOffering && (
+                    <p className="text-[10px] text-secondary-text mt-0.5">
+                      {selectedOffering.course.code} - {selectedOffering.course.name} (
+                      {selectedOffering.semester.name})
+                    </p>
+                  )}
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-card-border">
+                      <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Total Students</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Achieved</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Attainment %</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Threshold</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Calculated At</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {attainments.map((attainment) => (
+                      <TableRow key={attainment.id} className="hover:bg-hover-bg transition-colors">
+                        <TableCell className="text-xs font-medium text-primary-text">
+                          {attainment.llo.code}
+                        </TableCell>
+                        <TableCell className="text-xs text-secondary-text max-w-xs truncate">
+                          {attainment.llo.description}
+                        </TableCell>
+                        <TableCell className="text-xs text-primary-text">
+                          {attainment.totalStudents}
+                        </TableCell>
+                        <TableCell className="text-xs text-primary-text">
+                          {attainment.studentsAchieved}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            {getTrendIcon(attainment)}
+                            <span className="text-xs font-medium text-primary-text">
+                              {attainment.attainmentPercent.toFixed(1)}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-secondary-text">
+                          {attainment.threshold}%
+                        </TableCell>
+                        <TableCell>{getStatusBadge(attainment)}</TableCell>
+                        <TableCell className="text-xs text-secondary-text">
+                          {new Date(attainment.calculatedAt).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </>
           )}
         </>
       )}
 
+      {/* Empty state when nothing selected */}
+      {!selectedCourseOffering && (
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text">
+            Please select a course offering to view LLO attainments
+          </div>
+        </div>
+      )}
+
       {/* Calculate Dialog */}
       <Dialog open={isCalculateDialogOpen} onOpenChange={setIsCalculateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border p-5">
           <DialogHeader>
-            <DialogTitle>Calculate LLO Attainments</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm font-bold text-primary-text">
+              Calculate LLO Attainments
+            </DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text mt-1">
               Calculate LLO attainments for the selected course offering
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Course Offering</Label>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-[10px] text-muted-text mb-1">Course Offering</p>
+              <p className="text-xs text-primary-text">
                 {selectedOffering?.course.code} - {selectedOffering?.course.name} (
                 {selectedOffering?.semester.name})
               </p>
             </div>
-            <div>
-              <Label htmlFor="threshold">Threshold (%)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="threshold" className="text-xs text-primary-text">
+                Threshold (%)
+              </Label>
               <Input
                 id="threshold"
                 type="number"
@@ -422,26 +442,61 @@ export default function LLOAttainmentsPage() {
                 value={threshold}
                 onChange={(e) => setThreshold(e.target.value)}
                 placeholder="60"
+                className="h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] text-secondary-text">
                 Minimum percentage required for LLO attainment (default: 60%)
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="mt-4">
+            <button
               onClick={() => setIsCalculateDialogOpen(false)}
+              disabled={isCalculating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: isDarkMode ? '#ffffff' : '#111827',
+                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+              }}
+              onMouseEnter={(e) => {
+                if (!isCalculating)
+                  e.currentTarget.style.backgroundColor = isDarkMode
+                    ? 'rgba(255, 255, 255, 0.1)'
+                    : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                if (!isCalculating) e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               Cancel
-            </Button>
-            <Button onClick={handleCalculate} disabled={loading}>
-              {loading ? 'Calculating...' : 'Calculate'}
-            </Button>
+            </button>
+            <button
+              onClick={handleCalculate}
+              disabled={isCalculating}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: iconBgColor, color: primaryColor }}
+              onMouseEnter={(e) => {
+                if (!isCalculating)
+                  e.currentTarget.style.backgroundColor = isDarkMode
+                    ? 'rgba(252, 153, 40, 0.2)'
+                    : 'rgba(38, 40, 149, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                if (!isCalculating) e.currentTarget.style.backgroundColor = iconBgColor;
+              }}
+            >
+              {isCalculating ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Calculating...
+                </>
+              ) : (
+                'Calculate'
+              )}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-

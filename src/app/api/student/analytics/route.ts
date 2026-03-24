@@ -69,13 +69,20 @@ export async function GET(request: NextRequest) {
           in: courseOfferingIds,
         },
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
         assessmentItems: {
           include: {
             clo: {
+              select: {
+                id: true,
+                code: true,
+                description: true,
+              },
+            },
+            llo: {
               select: {
                 id: true,
                 code: true,
@@ -355,9 +362,6 @@ export async function GET(request: NextRequest) {
         courseOfferingId: {
           in: courseOfferingIds,
         },
-        sectionId: {
-          in: sectionIds,
-        },
         status: 'active',
       },
       include: {
@@ -406,6 +410,11 @@ export async function GET(request: NextRequest) {
                     id: true,
                   },
                 },
+                llo: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -420,6 +429,13 @@ export async function GET(request: NextRequest) {
       Array<{ itemId: number; marks: number }>
     >();
 
+    // Calculate student's personal LLO attainments
+    const studentLLOAttainments = new Map<number, number>();
+    const lloItemsMap = new Map<
+      number,
+      Array<{ itemId: number; marks: number }>
+    >();
+
     assessments.forEach((assessment) => {
       assessment.assessmentItems.forEach((item) => {
         if (item.clo) {
@@ -428,6 +444,16 @@ export async function GET(request: NextRequest) {
             cloItemsMap.set(cloId, []);
           }
           cloItemsMap.get(cloId)!.push({
+            itemId: item.id,
+            marks: item.marks,
+          });
+        }
+        if (item.llo) {
+          const lloId = item.llo.id;
+          if (!lloItemsMap.has(lloId)) {
+            lloItemsMap.set(lloId, []);
+          }
+          lloItemsMap.get(lloId)!.push({
             itemId: item.id,
             marks: item.marks,
           });
@@ -456,6 +482,30 @@ export async function GET(request: NextRequest) {
       if (totalPossibleMarks > 0) {
         const percentage = (studentObtainedMarks / totalPossibleMarks) * 100;
         studentCLOAttainments.set(cloId, percentage);
+      }
+    });
+
+    // Calculate student's attainment for each LLO
+    lloItemsMap.forEach((items, lloId) => {
+      let totalPossibleMarks = 0;
+      let studentObtainedMarks = 0;
+
+      items.forEach((item) => {
+        totalPossibleMarks += item.marks;
+
+        studentResults.forEach((result) => {
+          const itemResult = result.itemResults.find(
+            (ir) => ir.assessmentItem.id === item.itemId
+          );
+          if (itemResult) {
+            studentObtainedMarks += itemResult.obtainedMarks;
+          }
+        });
+      });
+
+      if (totalPossibleMarks > 0) {
+        const percentage = (studentObtainedMarks / totalPossibleMarks) * 100;
+        studentLLOAttainments.set(lloId, percentage);
       }
     });
 
@@ -558,6 +608,7 @@ export async function GET(request: NextRequest) {
 
     // Grade distribution
     const gradeDistribution = {
+      'A+': 0,
       A: 0,
       'A-': 0,
       'B+': 0,
@@ -621,6 +672,7 @@ export async function GET(request: NextRequest) {
 function getGradePoints(grade: string | null): number {
   if (!grade) return 0;
   const gradeMap: Record<string, number> = {
+    'A+': 4.0,
     A: 4.0,
     'A-': 3.7,
     'B+': 3.3,

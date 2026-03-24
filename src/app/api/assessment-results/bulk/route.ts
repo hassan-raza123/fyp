@@ -39,6 +39,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if the course offering results are locked
+    const offering = await prisma.courseofferings.findUnique({
+      where: { id: assessment.courseOfferingId },
+      select: { isResultsLocked: true },
+    });
+    if (offering?.isResultsLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Results are locked for this course offering. Contact your department admin to unlock.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Verify assessment belongs to faculty
     if (assessment.conductedBy !== facultyId) {
       return NextResponse.json(
@@ -59,6 +74,11 @@ export async function POST(request: NextRequest) {
             `Invalid item ID ${item.itemId} for student ${studentMark.studentId}`
           );
           continue;
+        }
+        if (item.marks < 0) {
+          validationErrors.push(
+            `Marks for item ${item.itemId} cannot be negative for student ${studentMark.studentId}`
+          );
         }
         if (item.marks > assessmentItem.marks) {
           validationErrors.push(
@@ -91,9 +111,22 @@ export async function POST(request: NextRequest) {
         );
         const percentage = (obtainedMarks / totalMarks) * 100;
 
-        // Create the main assessment result
-        const result = await tx.studentassessmentresults.create({
-          data: {
+        // Upsert the main assessment result (update if student+assessment combo already exists)
+        const result = await tx.studentassessmentresults.upsert({
+          where: {
+            studentId_assessmentId: {
+              studentId: studentMark.studentId,
+              assessmentId: assessmentId,
+            },
+          },
+          update: {
+            totalMarks,
+            obtainedMarks,
+            percentage,
+            status: 'pending',
+            submittedAt: new Date(),
+          },
+          create: {
             studentId: studentMark.studentId,
             assessmentId: assessmentId,
             totalMarks,
@@ -103,6 +136,11 @@ export async function POST(request: NextRequest) {
             remarks: '',
             submittedAt: new Date(),
           },
+        });
+
+        // Delete existing item results before re-creating (to handle updated marks)
+        await tx.studentassessmentitemresults.deleteMany({
+          where: { studentAssessmentResultId: result.id },
         });
 
         // Create individual item results

@@ -14,9 +14,10 @@ const validAssessmentTypes = [
   'project',
   'presentation',
   'lab_report',
-  'lab_performance',
   'lab_exam',
   'viva',
+  'class_participation',
+  'case_study',
 ] as const;
 
 export async function GET(request: NextRequest) {
@@ -70,6 +71,18 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    // When filtering by courseOffering, include weightage summary
+    if (courseOfferingId) {
+      const usedWeightage = assessments
+        .filter((a) => a.status !== 'cancelled')
+        .reduce((sum, a) => sum + a.weightage, 0);
+      return NextResponse.json({
+        assessments,
+        usedWeightage: Math.round(usedWeightage * 100) / 100,
+        remainingWeightage: Math.round((100 - usedWeightage) * 100) / 100,
+      });
+    }
 
     return NextResponse.json(assessments);
   } catch (error) {
@@ -131,6 +144,26 @@ export async function POST(request: NextRequest) {
     if (!faculty) {
       console.log('Faculty not found for userId:', user?.userId);
       return NextResponse.json({ error: 'Faculty not found' }, { status: 404 });
+    }
+
+    // Validate total weightage ≤ 100 for this course offering
+    const existingWeightage = await prisma.assessments.aggregate({
+      where: {
+        courseOfferingId: Number(courseOfferingId),
+        status: { not: 'cancelled' },
+      },
+      _sum: { weightage: true },
+    });
+    const usedWeightage = existingWeightage._sum.weightage ?? 0;
+    if (usedWeightage + Number(weightage) > 100) {
+      return NextResponse.json(
+        {
+          error: `Total weightage would exceed 100%. Currently used: ${usedWeightage}%. Available: ${(100 - usedWeightage).toFixed(1)}%`,
+          usedWeightage,
+          remainingWeightage: 100 - usedWeightage,
+        },
+        { status: 400 }
+      );
     }
 
     try {

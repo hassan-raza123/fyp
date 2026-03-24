@@ -73,6 +73,7 @@ export interface TokenPayload {
   email: string;
   role: string;
   userData: UserData;
+  departmentId?: number; // Direct department ID for quick access (for admin/faculty)
 }
 
 export interface LoginResponse {

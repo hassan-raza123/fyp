@@ -38,6 +38,7 @@ const formSchema = z.object({
   dueDate: z.string().min(1, 'Due date is required'),
   totalMarks: z.string().min(1, 'Total marks is required'),
   instructions: z.string().optional(),
+  type: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -68,7 +69,7 @@ export function EditAssessmentForm({
   onSubmit,
   isLoading = false,
 }: EditAssessmentFormProps) {
-  const form = useForm<FormData & { type: string }>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: assessment.title,

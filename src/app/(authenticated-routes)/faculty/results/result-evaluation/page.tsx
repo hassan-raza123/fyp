@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,13 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -50,6 +43,7 @@ import {
   Edit,
   CheckSquare,
   Square,
+  ListChecks,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -112,6 +106,14 @@ interface StudentResult {
 
 const ResultEvaluationPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>(
     []
@@ -146,6 +148,10 @@ const ResultEvaluationPage = () => {
   const [bulkAction, setBulkAction] = useState<
     'approve' | 'reject' | 'evaluate' | 'publish'
   >('evaluate');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchAssessments();
@@ -390,165 +396,155 @@ const ResultEvaluationPage = () => {
     );
   };
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Result Evaluation</h1>
-          <p className="text-muted-foreground">
-            Evaluate and manage student assessment results
-          </p>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <ListChecks className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Result Evaluation</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Evaluate and manage student assessment results
+            </p>
+          </div>
         </div>
         {selectedAssessment && evaluationData && (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setShowBulkDialog(true)}
               disabled={selectedResults.size === 0}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
-              <CheckSquare className="w-4 h-4 mr-2" />
+              <CheckSquare className="w-3.5 h-3.5" />
               Bulk Evaluate ({selectedResults.size})
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
+              type="button"
               onClick={() => setSelectedAssessment(null)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
             >
               Back to List
-            </Button>
+            </button>
           </div>
         )}
       </div>
 
       {!selectedAssessment ? (
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList>
-            <TabsTrigger value="dashboard">Evaluation Dashboard</TabsTrigger>
+          <TabsList className="bg-card border border-card-border p-1 rounded-lg">
+            <TabsTrigger value="dashboard" className="text-xs data-[state=active]:bg-[var(--hover-bg)] data-[state=active]:text-primary-text rounded-md">Evaluation Dashboard</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-4">
             {/* Filters */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Filters</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border">
+                <h2 className="text-sm font-semibold text-primary-text">Filters</h2>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Status Filter</Label>
-                    <Select
-                      value={statusFilter}
-                      onValueChange={setStatusFilter}
-                    >
-                      <SelectTrigger>
+                    <Label className="text-xs text-secondary-text">Status Filter</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Assessments</SelectItem>
-                        <SelectItem value="pending">
-                          Pending Evaluation
-                        </SelectItem>
-                        <SelectItem value="evaluated">Evaluated</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
+                      <SelectContent className="bg-card border-card-border">
+                        <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Assessments</SelectItem>
+                        <SelectItem value="pending" className="text-primary-text hover:bg-card/50">Pending Evaluation</SelectItem>
+                        <SelectItem value="evaluated" className="text-primary-text hover:bg-card/50">Evaluated</SelectItem>
+                        <SelectItem value="published" className="text-primary-text hover:bg-card/50">Published</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Search</Label>
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Label className="text-xs text-secondary-text">Search</Label>
+                    <div className="relative mt-1">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-text" />
                       <Input
                         placeholder="Search by title, course code..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                       />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Assessments List */}
             {loading ? (
-              <div className="text-center py-8">Loading assessments...</div>
+              <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+                <p className="text-xs text-secondary-text">Loading assessments...</p>
+              </div>
             ) : filteredAssessments.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  No assessments found
-                </CardContent>
-              </Card>
+              <div className="rounded-lg border border-card-border bg-card py-12 text-center">
+                <p className="text-xs text-secondary-text">No assessments found</p>
+              </div>
             ) : (
               <div className="grid gap-4">
                 {filteredAssessments.map((assessment) => (
-                  <Card
+                  <div
                     key={assessment.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="rounded-lg border border-card-border bg-card p-4 transition-colors hover:bg-[var(--hover-bg)]"
                   >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle>{assessment.title}</CardTitle>
-                          <CardDescription>
-                            {assessment.course.code} - {assessment.course.name}{' '}
-                            ({assessment.semester.name})
-                          </CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(assessment.status)}
-                          <Button
-                            onClick={() => setSelectedAssessment(assessment.id)}
-                            variant="outline"
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Evaluate
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-5 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">
-                            Total Students
-                          </p>
-                          <p className="font-semibold">
-                            {assessment.statistics.totalStudents}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Pending</p>
-                          <p className="font-semibold text-yellow-600">
-                            {assessment.statistics.pendingCount}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Evaluated</p>
-                          <p className="font-semibold text-blue-600">
-                            {assessment.statistics.evaluatedCount}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Published</p>
-                          <p className="font-semibold text-green-600">
-                            {assessment.statistics.publishedCount}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">
-                            Completion Rate
-                          </p>
-                          <p className="font-semibold">
-                            {assessment.statistics.completionRate.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-                      {assessment.dueDate && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Due: {format(new Date(assessment.dueDate), 'PPP')}
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-primary-text">{assessment.title}</h3>
+                        <p className="text-xs text-secondary-text mt-0.5">
+                          {assessment.course.code} - {assessment.course.name} ({assessment.semester.name})
                         </p>
-                      )}
-                    </CardContent>
-                  </Card>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(assessment.status)}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAssessment(assessment.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                          style={{ backgroundColor: iconBgColor, color: primaryColor }}
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Evaluate
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-5 gap-4 mt-4 text-xs">
+                      <div>
+                        <p className="text-secondary-text">Total Students</p>
+                        <p className="font-semibold text-primary-text">{assessment.statistics.totalStudents}</p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-text">Pending</p>
+                        <p className="font-semibold text-primary-text">{assessment.statistics.pendingCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-text">Evaluated</p>
+                        <p className="font-semibold text-primary-text">{assessment.statistics.evaluatedCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-text">Published</p>
+                        <p className="font-semibold text-primary-text">{assessment.statistics.publishedCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-text">Completion Rate</p>
+                        <p className="font-semibold text-primary-text">{assessment.statistics.completionRate.toFixed(1)}%</p>
+                      </div>
+                    </div>
+                    {assessment.dueDate && (
+                      <p className="text-xs text-secondary-text mt-2">
+                        Due: {format(new Date(assessment.dueDate), 'PPP')}
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -557,63 +553,55 @@ const ResultEvaluationPage = () => {
       ) : (
         evaluationData && (
           <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{evaluationData.assessment.title}</CardTitle>
-                <CardDescription>
-                  {evaluationData.assessment.type} • Total Marks:{' '}
-                  {evaluationData.assessment.totalMarks}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="rounded-lg border border-card-border bg-card p-4">
+              <h2 className="text-sm font-semibold text-primary-text">{evaluationData.assessment.title}</h2>
+              <p className="text-xs text-secondary-text mt-0.5">
+                {evaluationData.assessment.type} • Total Marks: {evaluationData.assessment.totalMarks}
+              </p>
+            </div>
 
             {/* Results Table */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Student Results</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={toggleSelectAll}
-                    >
-                      {selectedResults.size === evaluationData.results.length
-                        ? 'Deselect All'
-                        : 'Select All'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowBulkDialog(true)}
-                      disabled={selectedResults.size === 0}
-                    >
-                      Bulk Evaluate ({selectedResults.size})
-                    </Button>
-                  </div>
+            <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+              <div className="p-4 border-b border-card-border flex items-center justify-between flex-wrap gap-2">
+                <h2 className="text-sm font-semibold text-primary-text">Student Results</h2>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleSelectAll}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+                  >
+                    {selectedResults.size === evaluationData.results.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkDialog(true)}
+                    disabled={selectedResults.size === 0}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
+                  >
+                    Bulk Evaluate ({selectedResults.size})
+                  </button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <CheckSquare className="w-4 h-4" />
-                        </TableHead>
-                        <TableHead>Roll No</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Section</TableHead>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 text-xs font-semibold text-primary-text">
+                        <CheckSquare className="w-4 h-4" />
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Name</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Section</TableHead>
                         <TableHead>Marks</TableHead>
-                        <TableHead>Percentage</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Submitted</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Percentage</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Submitted</TableHead>
+                        <TableHead className="text-xs font-semibold text-primary-text">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {evaluationData.results.map((result) => (
-                        <TableRow key={result.studentId}>
+                        <TableRow key={result.studentId} className="hover:bg-[var(--hover-bg)]">
                           <TableCell>
                             {result.resultId && (
                               <input
@@ -626,35 +614,28 @@ const ResultEvaluationPage = () => {
                               />
                             )}
                           </TableCell>
-                          <TableCell className="font-medium">
-                            {result.rollNumber}
+                          <TableCell className="font-medium text-xs text-primary-text">{result.rollNumber}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{result.name}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{result.sectionName}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{result.obtainedMarks} / {result.totalMarks}</TableCell>
+                          <TableCell className="text-xs text-primary-text">{result.percentage.toFixed(1)}%</TableCell>
+                          <TableCell className="text-xs text-primary-text">{getStatusBadge(result.status)}</TableCell>
+                          <TableCell className="text-xs text-secondary-text">
+                            {result.submittedAt ? format(new Date(result.submittedAt), 'PPp') : 'N/A'}
                           </TableCell>
-                          <TableCell>{result.name}</TableCell>
-                          <TableCell>{result.sectionName}</TableCell>
-                          <TableCell>
-                            {result.obtainedMarks} / {result.totalMarks}
-                          </TableCell>
-                          <TableCell>{result.percentage.toFixed(1)}%</TableCell>
-                          <TableCell>{getStatusBadge(result.status)}</TableCell>
-                          <TableCell>
-                            {result.submittedAt
-                              ? format(new Date(result.submittedAt), 'PPp')
-                              : 'N/A'}
-                          </TableCell>
-                          <TableCell>
+                          <TableCell className="text-xs text-primary-text">
                             {result.resultId ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
+                              <button
+                                type="button"
                                 onClick={() => openEvaluationDialog(result)}
+                                className="px-2 py-1 rounded-lg text-xs font-medium h-7 inline-flex items-center gap-1.5"
+                                style={{ backgroundColor: iconBgColor, color: primaryColor }}
                               >
-                                <Edit className="w-4 h-4 mr-2" />
+                                <Edit className="w-3.5 h-3.5" />
                                 Evaluate
-                              </Button>
+                              </button>
                             ) : (
-                              <span className="text-muted-foreground text-sm">
-                                No submission
-                              </span>
+                              <span className="text-secondary-text text-xs">No submission</span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -662,8 +643,7 @@ const ResultEvaluationPage = () => {
                     </TableBody>
                   </Table>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
           </div>
         )
       )}
@@ -673,14 +653,13 @@ const ResultEvaluationPage = () => {
         open={showEvaluationDialog}
         onOpenChange={setShowEvaluationDialog}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Evaluate Student Result</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Evaluate Student Result</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               {selectedResult && (
                 <>
-                  {selectedResult.name} ({selectedResult.rollNumber}) -{' '}
-                  {evaluationData?.assessment.title}
+                  {selectedResult.name} ({selectedResult.rollNumber}) - {evaluationData?.assessment.title}
                 </>
               )}
             </DialogDescription>
@@ -689,97 +668,76 @@ const ResultEvaluationPage = () => {
           {selectedResult && evaluationData && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Total Marks</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {Object.values(itemMarks).reduce((sum, m) => sum + m, 0)}{' '}
-                      / {evaluationData.assessment.totalMarks}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Percentage</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {evaluationData.assessment.totalMarks > 0
-                        ? (
-                            (Object.values(itemMarks).reduce(
-                              (sum, m) => sum + m,
-                              0
-                            ) /
-                              evaluationData.assessment.totalMarks) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Current Status</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {getStatusBadge(selectedResult.status)}
-                  </CardContent>
-                </Card>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Total Marks</p>
+                  <div className="text-lg font-bold text-primary-text">
+                    {Object.values(itemMarks).reduce((sum, m) => sum + m, 0)} / {evaluationData.assessment.totalMarks}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Percentage</p>
+                  <div className="text-lg font-bold text-primary-text">
+                    {evaluationData.assessment.totalMarks > 0
+                      ? ((Object.values(itemMarks).reduce((sum, m) => sum + m, 0) / evaluationData.assessment.totalMarks) * 100).toFixed(1)
+                      : 0}%
+                  </div>
+                </div>
+                <div className="rounded-lg border border-card-border bg-card p-4">
+                  <p className="text-xs font-medium text-secondary-text mb-1">Current Status</p>
+                  <div className="text-primary-text">{getStatusBadge(selectedResult.status)}</div>
+                </div>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Item-wise Marks</h3>
+                <h3 className="text-sm font-semibold text-primary-text mb-2">Item-wise Marks</h3>
+                <div className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Q No.</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Max Marks</TableHead>
-                      <TableHead>Obtained Marks</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Q No.</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Max Marks</TableHead>
+                      <TableHead className="text-xs font-semibold text-primary-text">Obtained Marks</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {selectedResult.itemResults.map((item) => (
-                      <TableRow key={item.assessmentItemId}>
-                        <TableCell>{item.assessmentItem.questionNo}</TableCell>
-                        <TableCell className="max-w-md">
-                          {item.assessmentItem.description}
-                        </TableCell>
-                        <TableCell>{item.assessmentItem.marks}</TableCell>
-                        <TableCell>
+                      <TableRow key={item.assessmentItemId} className="hover:bg-[var(--hover-bg)]">
+                        <TableCell className="text-xs text-primary-text">{item.assessmentItem.questionNo}</TableCell>
+                        <TableCell className="max-w-md text-xs text-primary-text">{item.assessmentItem.description}</TableCell>
+                        <TableCell className="text-xs text-primary-text">{item.assessmentItem.marks}</TableCell>
+                        <TableCell className="text-xs text-primary-text">
                           <Input
                             type="number"
-                            min="0"
+                            min={0}
                             max={item.assessmentItem.marks}
-                            step="0.5"
+                            step={0.5}
                             value={itemMarks[item.assessmentItemId] || 0}
                             onChange={(e) =>
                               setItemMarks({
                                 ...itemMarks,
-                                [item.assessmentItemId]:
-                                  parseFloat(e.target.value) || 0,
+                                [item.assessmentItemId]: parseFloat(e.target.value) || 0,
                               })
                             }
-                            className="w-24"
+                            className="w-24 h-8 text-xs bg-card border-card-border text-primary-text"
                           />
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="remarks">Remarks/Comments</Label>
+                <Label htmlFor="remarks" className="text-xs text-secondary-text">Remarks/Comments</Label>
                 <Textarea
                   id="remarks"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   placeholder="Add evaluation remarks..."
                   rows={3}
+                  className="mt-1 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                 />
               </div>
 
@@ -797,79 +755,85 @@ const ResultEvaluationPage = () => {
             </div>
           )}
 
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowEvaluationDialog(false)}
               disabled={evaluating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button onClick={handleEvaluate} disabled={evaluating}>
+            </button>
+            <button
+              type="button"
+              onClick={handleEvaluate}
+              disabled={evaluating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+            >
               {evaluating ? 'Evaluating...' : 'Mark as Evaluated'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Bulk Evaluation Dialog */}
       <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
-        <DialogContent>
+        <DialogContent className="bg-card border-card-border text-primary-text">
           <DialogHeader>
-            <DialogTitle>Bulk Evaluation</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-bold text-primary-text">Bulk Evaluation</DialogTitle>
+            <DialogDescription className="text-xs text-secondary-text">
               Evaluate {selectedResults.size} selected result(s)
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label>Action</Label>
-              <Select
-                value={bulkAction}
-                onValueChange={(v: any) => setBulkAction(v)}
-              >
-                <SelectTrigger>
+              <Label className="text-xs text-secondary-text">Action</Label>
+              <Select value={bulkAction} onValueChange={(v: any) => setBulkAction(v)}>
+                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="evaluate">Mark as Evaluated</SelectItem>
-                  <SelectItem value="approve">Approve</SelectItem>
-                  <SelectItem value="publish">Publish</SelectItem>
-                  <SelectItem value="reject">
-                    Reject (Back to Pending)
-                  </SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="evaluate" className="text-primary-text hover:bg-card/50">Mark as Evaluated</SelectItem>
+                  <SelectItem value="approve" className="text-primary-text hover:bg-card/50">Approve</SelectItem>
+                  <SelectItem value="publish" className="text-primary-text hover:bg-card/50">Publish</SelectItem>
+                  <SelectItem value="reject" className="text-primary-text hover:bg-card/50">Reject (Back to Pending)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="bulk-remarks">
-                Remarks (applied to all selected)
-              </Label>
+              <Label htmlFor="bulk-remarks" className="text-xs text-secondary-text">Remarks (applied to all selected)</Label>
               <Textarea
                 id="bulk-remarks"
                 value={bulkRemarks}
                 onChange={(e) => setBulkRemarks(e.target.value)}
                 placeholder="Add remarks for all selected results..."
                 rows={3}
+                className="mt-1 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
               />
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="border-t border-card-border pt-4 gap-2">
+            <button
+              type="button"
               onClick={() => setShowBulkDialog(false)}
               disabled={evaluating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button onClick={handleBulkEvaluate} disabled={evaluating}>
-              {evaluating
-                ? 'Processing...'
-                : `Apply to ${selectedResults.size} Result(s)`}
-            </Button>
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkEvaluate}
+              disabled={evaluating}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
+              style={{ backgroundColor: primaryColor, color: '#fff' }}
+            >
+              {evaluating ? 'Processing...' : `Apply to ${selectedResults.size} Result(s)`}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

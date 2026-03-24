@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -28,7 +19,6 @@ import {
   Calculator,
   Target,
   Calendar,
-  Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -45,6 +35,14 @@ interface Notification {
 }
 
 export default function FacultyNotificationsPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -52,23 +50,22 @@ export default function FacultyNotificationsPage() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     fetchNotifications();
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, [typeFilter, readFilter]);
+  }, [mounted, typeFilter, readFilter]);
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (typeFilter !== 'all') {
-        params.append('type', typeFilter);
-      }
-      if (readFilter !== 'all') {
-        params.append('isRead', readFilter === 'read' ? 'true' : 'false');
-      }
-
+      if (typeFilter !== 'all') params.append('type', typeFilter);
+      if (readFilter !== 'all') params.append('isRead', readFilter === 'read' ? 'true' : 'false');
       const response = await fetch(`/api/notifications?${params.toString()}`, {
         credentials: 'include',
       });
@@ -94,7 +91,6 @@ export default function FacultyNotificationsPage() {
         credentials: 'include',
         body: JSON.stringify({ isRead: true }),
       });
-
       if (!response.ok) throw new Error('Failed to update notification');
       fetchNotifications();
     } catch (error) {
@@ -126,35 +122,23 @@ export default function FacultyNotificationsPage() {
 
   const getNotificationIcon = (type: notification_type) => {
     switch (type) {
-      case 'assessment':
-        return <FileText className="w-4 h-4" />;
-      case 'grade':
-        return <Calculator className="w-4 h-4" />;
-      case 'result':
-        return <Target className="w-4 h-4" />;
-      case 'course':
-        return <Calendar className="w-4 h-4" />;
-      case 'alert':
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Bell className="w-4 h-4" />;
+      case 'assessment': return <FileText className="w-4 h-4" />;
+      case 'grade': return <Calculator className="w-4 h-4" />;
+      case 'result': return <Target className="w-4 h-4" />;
+      case 'course': return <Calendar className="w-4 h-4" />;
+      case 'alert': return <AlertCircle className="w-4 h-4" />;
+      default: return <Bell className="w-4 h-4" />;
     }
   };
 
   const getNotificationBadgeColor = (type: notification_type) => {
     switch (type) {
-      case 'assessment':
-        return 'bg-blue-500';
-      case 'grade':
-        return 'bg-green-500';
-      case 'result':
-        return 'bg-purple-500';
-      case 'course':
-        return 'bg-orange-500';
-      case 'alert':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
+      case 'assessment': return 'bg-[var(--blue)]';
+      case 'grade': return 'bg-[var(--success-green)]';
+      case 'result': return 'bg-[var(--orange)]';
+      case 'course': return 'bg-[var(--orange)]';
+      case 'alert': return 'bg-[var(--error)]';
+      default: return primaryColor === 'var(--orange)' ? 'bg-[var(--orange)]' : 'bg-[var(--blue)]';
     }
   };
 
@@ -165,183 +149,165 @@ export default function FacultyNotificationsPage() {
     return true;
   });
 
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">
-            Stay updated with assessment, grade, and system notifications
-          </p>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: iconBgColor }}
+          >
+            <Bell className="h-5 w-5" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-primary-text">Notifications</h1>
+            <p className="text-xs text-secondary-text mt-0.5">
+              Stay updated with assessment, grade, and system notifications
+            </p>
+          </div>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={handleMarkAllAsRead}>
-            <CheckCheck className="w-4 h-4 mr-2" />
+          <button
+            type="button"
+            onClick={handleMarkAllAsRead}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 border border-card-border text-primary-text hover:bg-[var(--hover-bg)]"
+          >
+            <CheckCheck className="w-3.5 h-3.5" />
             Mark All as Read ({unreadCount})
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Total Notifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notifications.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Unread</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{unreadCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Assessments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {notifications.filter((n) => n.type === 'assessment').length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Grades</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {notifications.filter((n) => n.type === 'grade').length}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Statistics */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Total Notifications</p>
+          <div className="text-lg font-bold text-primary-text">{notifications.length}</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Unread</p>
+          <div className="text-lg font-bold text-[var(--error)]">{unreadCount}</div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Assessments</p>
+          <div className="text-lg font-bold text-primary-text">
+            {notifications.filter((n) => n.type === 'assessment').length}
+          </div>
+        </div>
+        <div className="rounded-lg border border-card-border bg-card p-4">
+          <p className="text-xs font-medium text-secondary-text mb-1">Grades</p>
+          <div className="text-lg font-bold text-primary-text">
+            {notifications.filter((n) => n.type === 'grade').length}
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Filters</h2>
+        </div>
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Type</label>
+              <label className="text-xs text-secondary-text mb-1 block">Type</label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="assessment">Assessment</SelectItem>
-                  <SelectItem value="grade">Grade</SelectItem>
-                  <SelectItem value="result">Result</SelectItem>
-                  <SelectItem value="course">Course</SelectItem>
-                  <SelectItem value="alert">Alert</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="all" className="text-primary-text hover:bg-card/50">All Types</SelectItem>
+                  <SelectItem value="assessment" className="text-primary-text hover:bg-card/50">Assessment</SelectItem>
+                  <SelectItem value="grade" className="text-primary-text hover:bg-card/50">Grade</SelectItem>
+                  <SelectItem value="result" className="text-primary-text hover:bg-card/50">Result</SelectItem>
+                  <SelectItem value="course" className="text-primary-text hover:bg-card/50">Course</SelectItem>
+                  <SelectItem value="alert" className="text-primary-text hover:bg-card/50">Alert</SelectItem>
+                  <SelectItem value="system" className="text-primary-text hover:bg-card/50">System</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="text-xs text-secondary-text mb-1 block">Status</label>
               <Select value={readFilter} onValueChange={setReadFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="unread">Unread</SelectItem>
-                  <SelectItem value="read">Read</SelectItem>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="all" className="text-primary-text hover:bg-card/50">All</SelectItem>
+                  <SelectItem value="unread" className="text-primary-text hover:bg-card/50">Unread</SelectItem>
+                  <SelectItem value="read" className="text-primary-text hover:bg-card/50">Read</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Notifications List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>
-            {filteredNotifications.length} notification(s) found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-card-border bg-card overflow-hidden">
+        <div className="p-4 border-b border-card-border">
+          <h2 className="text-sm font-semibold text-primary-text">Notifications</h2>
+          <p className="text-xs text-secondary-text mt-0.5">{filteredNotifications.length} notification(s) found</p>
+        </div>
+        <div className="p-4">
           {loading ? (
-            <div className="text-center py-12">Loading notifications...</div>
+            <div className="text-center py-12 text-xs text-secondary-text">Loading notifications...</div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No notifications found
-            </div>
+            <div className="text-center py-12 text-xs text-secondary-text">No notifications found</div>
           ) : (
             <div className="space-y-2">
               {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-lg border ${
+                  className={`p-4 rounded-lg border transition-colors ${
                     notification.isRead
-                      ? 'bg-muted/50'
-                      : 'bg-background border-primary/20'
+                      ? 'border-card-border bg-card/50'
+                      : 'border-card-border bg-card'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div
-                        className={`p-2 rounded-full ${getNotificationBadgeColor(
-                          notification.type
-                        )} text-white`}
+                        className={`p-2 rounded-full shrink-0 text-white ${getNotificationBadgeColor(notification.type)}`}
                       >
                         {getNotificationIcon(notification.type)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3
-                            className={`font-semibold ${
-                              !notification.isRead ? 'text-foreground' : 'text-muted-foreground'
-                            }`}
-                          >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className={`text-sm font-semibold ${notification.isRead ? 'text-secondary-text' : 'text-primary-text'}`}>
                             {notification.title}
                           </h3>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-[10px] border-card-border text-secondary-text">
                             {notification.type}
                           </Badge>
                           {!notification.isRead && (
-                            <Badge variant="default" className="bg-red-500 text-xs">
-                              New
-                            </Badge>
+                            <Badge className="bg-[var(--error)] text-white text-[10px]">New</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(notification.createdAt), 'PPp')}
-                        </p>
+                        <p className="text-xs text-secondary-text mb-2">{notification.message}</p>
+                        <p className="text-xs text-secondary-text">{format(new Date(notification.createdAt), 'PPp')}</p>
                       </div>
                     </div>
                     {!notification.isRead && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
+                        type="button"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="ml-2"
+                        className="p-2 rounded-lg shrink-0 hover:bg-[var(--hover-bg)] transition-colors"
+                        style={{ color: primaryColor }}
                       >
                         <Check className="w-4 h-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
-

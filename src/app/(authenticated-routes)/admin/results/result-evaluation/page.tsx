@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -71,6 +73,14 @@ interface AssessmentResult {
 
 const ResultEvaluationPage = () => {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const isDarkMode = resolvedTheme === 'dark';
+  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconBgColor = isDarkMode
+    ? 'rgba(252, 153, 40, 0.15)'
+    : 'rgba(38, 40, 149, 0.15)';
+
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
@@ -85,7 +95,9 @@ const ResultEvaluationPage = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await fetch('/api/sections?status=active');
+        const response = await fetch('/api/sections?status=active', {
+          credentials: 'include',
+        });
         if (!response.ok) throw new Error('Failed to fetch sections');
         const data = await response.json();
         if (data.success) {
@@ -235,45 +247,62 @@ const ResultEvaluationPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const baseClass = 'text-[10px] px-1.5 py-0.5';
     switch (status) {
       case 'published':
-        return <Badge variant="default">Published</Badge>;
+        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Published</Badge>;
       case 'evaluated':
-        return <Badge variant="default">Evaluated</Badge>;
+        return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Evaluated</Badge>;
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge className={`bg-[var(--gray-500)] text-white ${baseClass}`} variant="secondary">Pending</Badge>;
       case 'draft':
-        return <Badge variant="outline">Draft</Badge>;
+        return <Badge className={`bg-[var(--gray-400)] text-white ${baseClass}`} variant="secondary">Draft</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className={baseClass} variant="secondary">{status}</Badge>;
     }
   };
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Result Evaluation</h1>
-        <p className="text-muted-foreground">
-          Review and moderate assessment results
-        </p>
+    <div className="space-y-4">
+      {/* Header - CLO style */}
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: iconBgColor }}
+        >
+          <ClipboardCheck className="h-5 w-5" style={{ color: primaryColor }} />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-primary-text">Result Evaluation</h1>
+          <p className="text-xs text-secondary-text mt-0.5">
+            Review and moderate assessment results
+          </p>
+        </div>
       </div>
 
-      <Card className="p-6 mb-6">
-        <CardHeader>
-          <CardTitle>Select Section</CardTitle>
+      <Card className="rounded-lg border border-card-border bg-card p-6">
+        <CardHeader className="p-0 pb-4">
+          <CardTitle className="text-sm font-bold text-primary-text">Select Section</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="space-y-2">
-            <Label htmlFor="section">Section *</Label>
+            <Label htmlFor="section" className="text-xs text-primary-text">Section *</Label>
             <Select value={selectedSection} onValueChange={setSelectedSection}>
-              <SelectTrigger id="section">
+              <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
                 <SelectValue placeholder="Select a section" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-card-border">
                 {sections.map((section) => (
                   <SelectItem
                     key={section.id}
                     value={section.id.toString()}
+                    className="text-primary-text hover:bg-card/50"
                   >
                     {section.courseOffering.course.code} - {section.name} (
                     {section.courseOffering.semester.name})
@@ -286,46 +315,50 @@ const ResultEvaluationPage = () => {
       </Card>
 
       {error && (
-        <Card className="p-4 mb-6 border-red-200 bg-red-50">
-          <p className="text-red-700">{error}</p>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-4" style={{ borderColor: 'var(--error-opacity-20)' }}>
+          <p className="text-xs" style={{ color: 'var(--error)' }}>{error}</p>
+        </div>
       )}
 
       {loading ? (
-        <Card className="p-6">
-          <div className="text-center py-4">Loading...</div>
-        </Card>
+        <div className="rounded-lg border border-card-border bg-card p-8 flex flex-col items-center justify-center gap-3">
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
+          />
+          <p className="text-xs text-secondary-text">Loading...</p>
+        </div>
       ) : selectedSection && students.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Assessment Results</CardTitle>
+        <Card className="rounded-lg border border-card-border bg-card overflow-hidden">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm font-bold text-primary-text">Assessment Results</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
+          <CardContent className="p-4 pt-0">
+            <div className="overflow-x-auto rounded-lg border border-card-border">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Roll No</TableHead>
-                    <TableHead>Student Name</TableHead>
+                  <TableRow className="border-b border-card-border">
+                    <TableHead className="text-xs font-semibold text-primary-text">Roll No</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Student Name</TableHead>
                     {assessments.map((assessment) => (
-                      <TableHead key={assessment.id}>
+                      <TableHead key={assessment.id} className="text-xs font-semibold text-primary-text">
                         <div>{assessment.title}</div>
-                        <div className="text-xs text-muted-foreground font-normal">
+                        <div className="text-[10px] text-secondary-text font-normal">
                           {assessment.type}
                         </div>
                       </TableHead>
                     ))}
-                    <TableHead>Status</TableHead>
-                    <TableHead>Remarks</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Status</TableHead>
+                    <TableHead className="text-xs font-semibold text-primary-text">Remarks</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {students.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={student.id} className="hover:bg-hover-bg transition-colors">
+                      <TableCell className="text-xs font-medium text-primary-text">
                         {student.rollNumber}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-primary-text">
                         {student.user.name ||
                           `${student.user.firstName} ${student.user.lastName}`}
                       </TableCell>
@@ -334,23 +367,23 @@ const ResultEvaluationPage = () => {
                           (r) => r.assessmentId === assessment.id
                         );
                         return (
-                          <TableCell key={assessment.id}>
+                          <TableCell key={assessment.id} className="text-xs text-primary-text">
                             {result ? (
                               <div>
                                 <div className="font-medium">
                                   {result.obtainedMarks} / {result.totalMarks}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-[10px] text-secondary-text">
                                   {result.percentage.toFixed(1)}%
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">N/A</span>
+                              <span className="text-secondary-text">N/A</span>
                             )}
                           </TableCell>
                         );
                       })}
-                      <TableCell>
+                      <TableCell className="text-xs">
                         {results[student.id]?.map((result) => (
                           <Select
                             key={result.id}
@@ -363,19 +396,19 @@ const ResultEvaluationPage = () => {
                               )
                             }
                           >
-                            <SelectTrigger className="w-[140px]">
+                            <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="evaluated">Evaluated</SelectItem>
-                              <SelectItem value="published">Published</SelectItem>
-                              <SelectItem value="draft">Draft</SelectItem>
+                            <SelectContent className="bg-card border-card-border">
+                              <SelectItem value="pending" className="text-primary-text hover:bg-card/50">Pending</SelectItem>
+                              <SelectItem value="evaluated" className="text-primary-text hover:bg-card/50">Evaluated</SelectItem>
+                              <SelectItem value="published" className="text-primary-text hover:bg-card/50">Published</SelectItem>
+                              <SelectItem value="draft" className="text-primary-text hover:bg-card/50">Draft</SelectItem>
                             </SelectContent>
                           </Select>
                         ))}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs">
                         {results[student.id]?.map((result) => (
                           <Textarea
                             key={result.id}
@@ -389,7 +422,7 @@ const ResultEvaluationPage = () => {
                             }
                             placeholder="Add remarks..."
                             rows={2}
-                            className="min-w-[200px]"
+                            className="min-w-[200px] text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
                           />
                         ))}
                       </TableCell>
@@ -401,17 +434,17 @@ const ResultEvaluationPage = () => {
           </CardContent>
         </Card>
       ) : selectedSection ? (
-        <Card className="p-6">
-          <div className="text-center text-muted-foreground py-4">
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
             No students found in this section
           </div>
-        </Card>
+        </div>
       ) : (
-        <Card className="p-6">
-          <div className="text-center text-muted-foreground py-4">
+        <div className="rounded-lg border border-card-border bg-card p-8">
+          <div className="text-center text-xs text-secondary-text py-4">
             Please select a section to view results
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

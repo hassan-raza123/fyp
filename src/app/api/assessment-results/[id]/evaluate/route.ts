@@ -5,8 +5,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // PATCH - Evaluate a student result (update marks, remarks, status)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const resultId = parseInt(params.id);
     if (isNaN(resultId)) {
@@ -66,6 +67,16 @@ export async function PATCH(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
       );
+    }
+
+    // Validate no negative marks
+    if (itemMarks && Array.isArray(itemMarks)) {
+      if (itemMarks.some((itemMark: any) => itemMark.marks < 0)) {
+        return NextResponse.json(
+          { success: false, error: 'Marks cannot be negative' },
+          { status: 400 }
+        );
+      }
     }
 
     // Update item results if provided

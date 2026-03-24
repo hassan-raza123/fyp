@@ -10,23 +10,21 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const userId = parseInt(id);
-    if (isNaN(userId)) {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId) || userId <= 0) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
+    // Check authentication and authorization
     const authResult = await requireAuth(request);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get the requesting user's role
-    const requestingUserRole = await prisma.userroles.findFirst({
-      where: { userId: authResult.user.userId },
-      include: { role: true },
-    });
-
-    // Admin can access all users
+    // Only admins and super_admins can access user details
+    if (authResult.user.role !== 'admin' && authResult.user.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    }
 
     // Get the target user with only the required fields
     const targetUser = await prisma.users.findUnique({
@@ -83,13 +81,13 @@ export async function PUT(
   try {
     // Check authentication and get user data
     const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ error }, { status: 401 });
+    if (!success || !user) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
     }
 
     // Check if user has admin or super_admin role
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
     }
 
     const { id } = await context.params;
@@ -175,24 +173,21 @@ export async function DELETE(
   try {
     // First validate the user ID
     const { id } = await context.params;
-    const userId = parseInt(id);
-    if (isNaN(userId)) {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId) || userId <= 0) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    // Check authentication
+    // Check authentication and authorization
     const authResult = await requireAuth(request);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get the requesting user's role
-    const requestingUserRole = await prisma.userroles.findFirst({
-      where: { userId: authResult.user.userId },
-      include: { role: true },
-    });
-
-    // Admin can delete users (with appropriate safeguards)
+    // Only admins and super_admins can delete users
+    if (authResult.user.role !== 'admin' && authResult.user.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    }
 
     // First delete any related records
     await prisma.userroles.deleteMany({
