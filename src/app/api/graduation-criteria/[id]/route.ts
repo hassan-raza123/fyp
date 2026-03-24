@@ -6,8 +6,8 @@ import { requireAuth } from '@/lib/auth';
  * GET /api/graduation-criteria/[id]
  */
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
-  try {
   const params = await _params;
+  try {
     const { success, user, error } = await requireAuth(request);
     if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
 
@@ -33,8 +33,8 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
  * Admin-only.
  */
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
-  try {
   const params = await _params;
+  try {
     const { success, user, error } = await requireAuth(request);
     if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
     if (user?.role !== 'admin' && user?.role !== 'super_admin') {

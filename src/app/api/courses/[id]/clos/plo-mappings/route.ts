@@ -5,6 +5,7 @@ export async function GET(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const courseId = await Promise.resolve(parseInt(params.id));
 

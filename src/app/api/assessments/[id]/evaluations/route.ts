@@ -7,6 +7,7 @@ export async function GET(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     if (isNaN(assessmentId)) {

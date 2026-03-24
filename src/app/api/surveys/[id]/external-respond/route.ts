@@ -14,6 +14,7 @@ export async function POST(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const surveyId = parseInt(params.id);
 
@@ -134,6 +135,7 @@ export async function GET(
   _request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const survey = await prisma.surveys.findUnique({
       where: { id: parseInt(params.id) },

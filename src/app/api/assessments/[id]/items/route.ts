@@ -6,6 +6,7 @@ export async function POST(
   req: Request,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, error } = await requireAuth(req as any);
     if (!success) {
@@ -78,6 +79,7 @@ export async function GET(
   request: Request,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, error } = await requireAuth(request as any);
     if (!success) {

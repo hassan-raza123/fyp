@@ -8,6 +8,7 @@ export async function GET(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success } = await requireAuth(req);
     if (!success) {
@@ -80,6 +81,7 @@ export async function POST(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user } = await requireAuth(req);
     if (!success || user?.role !== 'admin') {

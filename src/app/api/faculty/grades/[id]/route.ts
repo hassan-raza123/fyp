@@ -7,6 +7,7 @@ export async function PATCH(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const gradeId = parseInt(params.id);
     if (isNaN(gradeId)) {
@@ -94,6 +95,7 @@ export async function POST(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const gradeId = parseInt(params.id);
     if (isNaN(gradeId)) {

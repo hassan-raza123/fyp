@@ -8,6 +8,7 @@ export async function GET(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const batch = await prisma.Batch.findUnique({
       where: { id: params.id },
@@ -45,6 +46,7 @@ export async function POST(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     // Authentication and authorization check
     const authResult = await requireAuth(request);
@@ -151,6 +153,7 @@ export async function DELETE(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     // Authentication and authorization check
     const authResult = await requireAuth(request);

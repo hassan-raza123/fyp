@@ -5,6 +5,7 @@ export async function GET(
   request: Request,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const sectionId = parseInt(params.id);
     if (isNaN(sectionId)) {

@@ -6,6 +6,7 @@ export async function GET(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     const sectionId = parseInt(params.sectionId);

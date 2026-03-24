@@ -7,6 +7,7 @@ export async function GET(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -40,6 +41,7 @@ export async function POST(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -138,6 +140,7 @@ export async function PUT(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -214,6 +217,7 @@ export async function DELETE(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {

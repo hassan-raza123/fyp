@@ -4,8 +4,8 @@ import { requireAuth } from '@/lib/auth';
 
 // DELETE /api/peo-plo-mappings/[id]
 export async function DELETE(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
-  try {
   const params = await _params;
+  try {
     const auth = await requireAuth(request);
     if (!auth.success || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

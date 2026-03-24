@@ -7,6 +7,7 @@ export async function GET(
   req: NextRequest,
   { params: _params }: { params: Promise<{ cloId: string }> }
 ) {
+  const params = await _params;
   try {
     const cloId = parseInt(params.cloId);
     if (isNaN(cloId)) {

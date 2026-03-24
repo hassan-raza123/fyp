@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
-  const { success, error } = await requireAuth(request);
   const params = await _params;
+  const { success, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
 
   const criterion = await prisma.passfailcriteria.findUnique({
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 }
 
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
   const params = await _params;
+  const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
   if (user?.role !== 'admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });

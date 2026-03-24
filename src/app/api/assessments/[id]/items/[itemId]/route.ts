@@ -5,6 +5,7 @@ export async function PUT(
   req: Request,
   { params: _params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
+  const params = await _params;
   try {
     const data = await req.json();
     const { questionNo, description, marks, cloId, lloId } = data;
@@ -62,6 +63,7 @@ export async function DELETE(
   req: Request,
   { params: _params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
+  const params = await _params;
   try {
     const itemId = parseInt(params.itemId);
     if (isNaN(itemId)) {

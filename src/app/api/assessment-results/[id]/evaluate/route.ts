@@ -7,6 +7,7 @@ export async function PATCH(
   req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const resultId = parseInt(params.id);
     if (isNaN(resultId)) {

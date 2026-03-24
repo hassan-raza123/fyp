@@ -7,6 +7,7 @@ export async function GET(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     // Check authentication
     const { success, user, error } = await requireAuth(request);

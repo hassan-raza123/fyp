@@ -15,6 +15,7 @@ export async function POST(
   request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
