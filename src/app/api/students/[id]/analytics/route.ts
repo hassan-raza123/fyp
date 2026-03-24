@@ -4,8 +4,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const studentId = await Promise.resolve(parseInt(params.id));
 
@@ -112,6 +113,7 @@ export async function GET(
           include: {
             course: {
               select: {
+                id: true,
                 code: true,
                 name: true,
               },
@@ -146,6 +148,7 @@ export async function GET(
               include: {
                 course: {
                   select: {
+                    id: true,
                     code: true,
                     name: true,
                   },
@@ -242,9 +245,6 @@ export async function GET(
       where: {
         courseOfferingId: {
           in: courseOfferingIds,
-        },
-        sectionId: {
-          in: sectionIds,
         },
         status: 'active',
       },

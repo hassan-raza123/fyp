@@ -28,7 +28,7 @@ interface Course {
   code: string;
   name: string;
   creditHours: number;
-  type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS';
+  type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS';
   department: {
     id: number;
     name: string;
@@ -136,12 +136,14 @@ export default function CoursesPage() {
     }
   };
 
-  const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
+  const getTypeBadge = (type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
         return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
         return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Lab</Badge>;
+      case 'THEORY_LAB':
+        return <Badge className="bg-[var(--orange)] text-white text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
       case 'PROJECT':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
@@ -215,6 +217,7 @@ export default function CoursesPage() {
             <SelectItem value="THEORY" className="text-primary-text hover:bg-card/50">Theory</SelectItem>
             <SelectItem value="LAB" className="text-primary-text hover:bg-card/50">Lab</SelectItem>
             <SelectItem value="PROJECT" className="text-primary-text hover:bg-card/50">Project</SelectItem>
+            <SelectItem value="THEORY_LAB" className="text-primary-text hover:bg-card/50">Theory + Lab</SelectItem>
             <SelectItem value="THESIS" className="text-primary-text hover:bg-card/50">Thesis</SelectItem>
           </SelectContent>
         </Select>

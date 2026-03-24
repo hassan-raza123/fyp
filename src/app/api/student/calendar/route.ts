@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
           in: courseOfferingIds,
         },
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
         dueDate: {
           not: null,
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     assessments.forEach((assessment) => {
       if (assessment.dueDate) {
         const dueDate = new Date(assessment.dueDate);
-        const isExam = assessment.type === 'exam' || assessment.type === 'final_exam';
+        const isExam = assessment.type === 'mid_exam' || assessment.type === 'final_exam';
         
         events.push({
           id: `assessment-${assessment.id}`,
@@ -131,8 +131,8 @@ export async function GET(request: NextRequest) {
           assessmentId: assessment.id,
           assessmentType: assessment.type,
           totalMarks: assessment.totalMarks,
-          startTime: assessment.startTime || null,
-          endTime: assessment.endTime || null,
+          startTime: (assessment as any).startTime || null,
+          endTime: (assessment as any).endTime || null,
         });
       }
     });

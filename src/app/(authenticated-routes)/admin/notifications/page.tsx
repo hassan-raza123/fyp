@@ -111,7 +111,9 @@ export default function NotificationsPage() {
         params.append('isRead', readFilter === 'read' ? 'true' : 'false');
       }
 
-      const response = await fetch(`/api/notifications?${params.toString()}`);
+      const response = await fetch(`/api/notifications?${params.toString()}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch notifications');
       const data = await response.json();
       if (data.success) {
@@ -141,7 +143,9 @@ export default function NotificationsPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch('/api/users', {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       if (data.success) {
@@ -162,6 +166,7 @@ export default function NotificationsPage() {
       setIsCreating(true);
       const response = await fetch('/api/notifications', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: parseInt(formData.userId),
@@ -199,6 +204,7 @@ export default function NotificationsPage() {
     try {
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isRead: true }),
       });
@@ -227,6 +233,7 @@ export default function NotificationsPage() {
     try {
       const response = await fetch(`/api/notifications/${selectedNotification.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       const data = await response.json();

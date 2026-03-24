@@ -26,6 +26,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
+
 export default function AssessmentItemsPage() {
   const params = useParams();
   const router = useRouter();
@@ -36,7 +38,7 @@ export default function AssessmentItemsPage() {
 
   const [assessment, setAssessment] = useState<any>(null);
   const [clos, setClos] = useState<any[]>([]);
-  const [plos, setPlos] = useState<any[]>([]);
+  const [llos, setLlos] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,29 +51,42 @@ export default function AssessmentItemsPage() {
     setMounted(true);
   }, []);
 
+  const isLabAssessment = LAB_ASSESSMENT_TYPES.includes(assessment?.type);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [assessmentRes, closRes, plosRes] = await Promise.all([
-          fetch(`/api/assessments/${params.id}`),
-          fetch('/api/clos'),
+        const assessmentRes = await fetch(`/api/assessments/${params.id}`);
+        if (!assessmentRes.ok) throw new Error('Failed to fetch assessment');
+        const assessmentData = await assessmentRes.json();
+        setAssessment(assessmentData);
+        setItems(assessmentData.assessmentItems || []);
+
+        const isLab = LAB_ASSESSMENT_TYPES.includes(assessmentData?.type);
+
+        // For lab assessments fetch LLOs for the course; for theory fetch CLOs
+        // courseOffering.course.id is included in the API response
+        const courseId = assessmentData?.courseOffering?.course?.id || assessmentData?.courseOffering?.courseId;
+
+        const [outcomeRes, plosRes] = await Promise.all([
+          isLab
+            ? fetch(`/api/llos${courseId ? `?courseId=${courseId}` : ''}`)
+            : fetch(`/api/clos${courseId ? `?courseId=${courseId}` : ''}`),
           fetch('/api/plos'),
         ]);
 
-        if (!assessmentRes.ok || !closRes.ok || !plosRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const [assessmentData, closData, plosData] = await Promise.all([
-          assessmentRes.json(),
-          closRes.json(),
+        const [outcomeData, plosData] = await Promise.all([
+          outcomeRes.json(),
           plosRes.json(),
         ]);
 
-        setAssessment(assessmentData);
-        setItems(assessmentData.assessmentItems || []);
-        setClos(Array.isArray(closData.data) ? closData.data : []);
-        setPlos(Array.isArray(plosData.data) ? plosData.data : []);
+        if (isLab) {
+          setLlos(Array.isArray(outcomeData.data) ? outcomeData.data : []);
+          setClos([]);
+        } else {
+          setClos(Array.isArray(outcomeData.data) ? outcomeData.data : []);
+          setLlos([]);
+        }
       } catch (error) {
         toast.error('Failed to load data');
         console.error('Error fetching data:', error);
@@ -82,6 +97,20 @@ export default function AssessmentItemsPage() {
 
     if (params.id) fetchData();
   }, [params.id]);
+
+  const fetchData = async () => {
+    try {
+      const assessmentRes = await fetch(`/api/assessments/${params.id}`, {
+        credentials: 'include',
+      });
+      if (!assessmentRes.ok) throw new Error('Failed to fetch assessment');
+      const assessmentData = await assessmentRes.json();
+      setAssessment(assessmentData);
+      setItems(assessmentData.assessmentItems || []);
+    } catch (error) {
+      console.error('Error fetching assessment:', error);
+    }
+  };
 
   const handleSubmit = async (data: any) => {
     try {
@@ -100,11 +129,8 @@ export default function AssessmentItemsPage() {
       });
 
       if (!response.ok) {
-        throw new Error(
-          editingItem
-            ? 'Failed to update assessment item'
-            : 'Failed to create assessment item'
-        );
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || (editingItem ? 'Failed to update assessment item' : 'Failed to create assessment item'));
       }
 
       toast.success(
@@ -115,29 +141,11 @@ export default function AssessmentItemsPage() {
       setShowForm(false);
       setEditingItem(null);
       fetchData();
-    } catch (error) {
-      toast.error(
-        editingItem
-          ? 'Failed to update assessment item'
-          : 'Failed to create assessment item'
-      );
+    } catch (error: any) {
+      toast.error(error?.message || (editingItem ? 'Failed to update assessment item' : 'Failed to create assessment item'));
       console.error('Error saving assessment item:', error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      const assessmentRes = await fetch(`/api/assessments/${params.id}`, {
-        credentials: 'include',
-      });
-      if (!assessmentRes.ok) throw new Error('Failed to fetch assessment');
-      const assessmentData = await assessmentRes.json();
-      setAssessment(assessmentData);
-      setItems(assessmentData.assessmentItems || []);
-    } catch (error) {
-      console.error('Error fetching assessment:', error);
     }
   };
 
@@ -162,6 +170,26 @@ export default function AssessmentItemsPage() {
     }
   };
 
+  // CSV template columns differ for lab vs theory assessments
+  const csvOutcomeColumn = isLabAssessment ? 'lloId' : 'cloId';
+
+  const handleDownloadTemplate = () => {
+    const template = [
+      ['questionNo', 'description', 'marks', csvOutcomeColumn],
+      ['Q1', 'Question 1 description', '10', '1'],
+      ['Q2', 'Question 2 description', '15', '2'],
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `assessment-items-template-${isLabAssessment ? 'lab' : 'theory'}.csv`;
+    a.click();
+    toast.success('Template downloaded');
+  };
+
   const handleBulkImport = async () => {
     if (!bulkFile) {
       toast.error('Please select a CSV file');
@@ -171,32 +199,39 @@ export default function AssessmentItemsPage() {
     try {
       const text = await bulkFile.text();
       const lines = text.split('\n').filter((line) => line.trim());
-      const headers = lines[0].split(',').map((h) => h.trim());
 
       const itemsToImport = [];
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map((v) => v.trim());
         if (values.length < 3) continue;
 
-        itemsToImport.push({
+        const item: any = {
           questionNo: values[0],
           description: values[1],
           marks: parseFloat(values[2]),
-          cloId: values[3] ? parseInt(values[3]) : null,
-        });
+        };
+
+        if (isLabAssessment) {
+          item.lloId = values[3] ? parseInt(values[3]) : null;
+        } else {
+          item.cloId = values[3] ? parseInt(values[3]) : null;
+        }
+
+        itemsToImport.push(item);
       }
 
-      // Import items one by one
+      let successCount = 0;
       for (const item of itemsToImport) {
-        await fetch(`/api/assessments/${params.id}/items`, {
+        const res = await fetch(`/api/assessments/${params.id}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify(item),
         });
+        if (res.ok) successCount++;
       }
 
-      toast.success(`Successfully imported ${itemsToImport.length} items`);
+      toast.success(`Successfully imported ${successCount} of ${itemsToImport.length} items`);
       setShowBulkImport(false);
       setBulkFile(null);
       fetchData();
@@ -245,32 +280,22 @@ export default function AssessmentItemsPage() {
           <div>
             <h1 className="text-lg font-bold text-primary-text">Assessment Items</h1>
             <p className="text-xs text-secondary-text mt-0.5">
-              {assessment?.title || 'Loading...'}
+              {assessment?.title || 'Loading...'}{' '}
+              {isLabAssessment && (
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                  Lab Assessment — items mapped to LLOs
+                </span>
+              )}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             type="button"
-            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium"
-            onClick={() => {
-              const template = [
-                ['questionNo', 'description', 'marks', 'cloId'],
-                ['Q1', 'Question 1 description', '10', '1'],
-                ['Q2', 'Question 2 description', '15', '2'],
-              ]
-                .map((row) => row.join(','))
-                .join('\n');
-              const blob = new Blob([template], { type: 'text/csv' });
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'assessment-items-template.csv';
-              a.click();
-              toast.success('Template downloaded');
-            }}
+            className="px-3 py-1.5 rounded-lg border border-card-border text-primary-text hover:bg-[var(--hover-bg)] text-xs font-medium inline-flex items-center gap-2"
+            onClick={handleDownloadTemplate}
           >
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            <FileSpreadsheet className="w-4 h-4" />
             Download Template
           </button>
           <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
@@ -303,7 +328,11 @@ export default function AssessmentItemsPage() {
                     className="mt-2 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
                   <p className="text-xs text-secondary-text mt-2">
-                    Format: questionNo, description, marks, cloId
+                    Format: questionNo, description, marks,{' '}
+                    <span className="font-medium">{csvOutcomeColumn}</span>
+                    {isLabAssessment
+                      ? ' (LLO ID — required for lab assessments)'
+                      : ' (CLO ID — required for theory assessments)'}
                   </p>
                 </div>
               </div>
@@ -347,6 +376,8 @@ export default function AssessmentItemsPage() {
               <AssessmentItemForm
                 assessmentId={assessmentId}
                 clos={clos}
+                llos={llos}
+                isLabAssessment={isLabAssessment}
                 onSubmit={handleSubmit}
                 isLoading={isSubmitting}
                 initialData={editingItem}
@@ -358,7 +389,9 @@ export default function AssessmentItemsPage() {
 
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <div className="p-4 border-b border-card-border">
-          <h2 className="text-sm font-semibold text-primary-text">Assessment Items ({items.length})</h2>
+          <h2 className="text-sm font-semibold text-primary-text">
+            Assessment Items ({items.length})
+          </h2>
         </div>
         <div className="p-4">
           <Table>
@@ -367,15 +400,20 @@ export default function AssessmentItemsPage() {
                 <TableHead className="text-xs font-semibold text-primary-text">Question No</TableHead>
                 <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
                 <TableHead className="text-xs font-semibold text-primary-text">Marks</TableHead>
-                <TableHead className="text-xs font-semibold text-primary-text">CLO</TableHead>
+                <TableHead className="text-xs font-semibold text-primary-text">
+                  {isLabAssessment ? 'LLO (Lab Outcome)' : 'CLO (Course Outcome)'}
+                </TableHead>
                 <TableHead className="text-right text-xs font-semibold text-primary-text">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-xs text-secondary-text">
-                    No items added yet
+                  <TableCell colSpan={5} className="text-center text-xs text-secondary-text py-8">
+                    No items added yet.{' '}
+                    {isLabAssessment
+                      ? 'Add lab assessment items and map them to LLOs.'
+                      : 'Add items and map them to CLOs.'}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -387,10 +425,14 @@ export default function AssessmentItemsPage() {
                     </TableCell>
                     <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
                     <TableCell>
-                      {item.clo ? (
+                      {item.llo ? (
+                        <Badge variant="outline" className="text-blue-600 border-blue-300">
+                          {item.llo.code}
+                        </Badge>
+                      ) : item.clo ? (
                         <Badge variant="outline">{item.clo.code}</Badge>
                       ) : (
-                        <span className="text-xs text-secondary-text">No CLO</span>
+                        <span className="text-xs text-secondary-text">Not mapped</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

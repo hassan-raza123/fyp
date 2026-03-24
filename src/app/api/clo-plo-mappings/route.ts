@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) return NextResponse.json({ error }, { status: 401 });
+
     const { searchParams } = new URL(request.url);
     const cloId = searchParams.get('cloId');
     const ploId = searchParams.get('ploId');
@@ -46,6 +50,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { success, user, error } = await requireAuth(request as any);
+    if (!success || !['admin', 'super_admin'].includes(user?.role ?? ''))
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+
     const body = await request.json();
     const { cloId, ploId, weight } = body;
 

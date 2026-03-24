@@ -4,8 +4,9 @@ import { requireAuth } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     // Check authentication and get user data
     const { success, user, error } = await requireAuth(request);

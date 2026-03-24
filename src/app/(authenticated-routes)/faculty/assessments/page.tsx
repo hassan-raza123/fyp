@@ -12,11 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 
 export default function AssessmentsPage() {
   const { resolvedTheme } = useTheme();
-  const router = useRouter();
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
   const iconBgColor = isDarkMode
@@ -25,6 +23,7 @@ export default function AssessmentsPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateAssessment = async (data: any) => {
     try {
@@ -34,6 +33,7 @@ export default function AssessmentsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -43,7 +43,7 @@ export default function AssessmentsPage() {
 
       toast.success('Assessment created successfully');
       setIsDialogOpen(false);
-      router.refresh();
+      setRefreshKey((k) => k + 1);
     } catch (error) {
       toast.error('Failed to create assessment');
       console.error('Error creating assessment:', error);
@@ -78,7 +78,7 @@ export default function AssessmentsPage() {
         </button>
       </div>
 
-      <AssessmentList />
+      <AssessmentList key={refreshKey} />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl bg-card border-card-border text-primary-text p-6 max-h-[90vh] overflow-y-auto">

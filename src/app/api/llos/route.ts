@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
         code: validatedData.code,
         description: validatedData.description,
         courseId: validatedData.courseId,
-        bloomLevel: validatedData.bloomLevel || null,
+        bloomLevel: (validatedData.bloomLevel || null) as any,
         status: validatedData.status as any,
       },
       include: {

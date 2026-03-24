@@ -6,12 +6,12 @@ import {
   ClipboardList,
   Plus,
   Trash2,
-  Eye,
   PlayCircle,
   StopCircle,
   BarChart2,
   X,
   CheckCircle2,
+  Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,12 @@ interface CourseOffering {
   semester: { name: string };
 }
 
+interface Program {
+  id: number;
+  name: string;
+  code: string;
+}
+
 interface Plo {
   id: number;
   code: string;
@@ -51,13 +57,31 @@ interface Question {
   ploId: string;
 }
 
+type SurveyType = 'course_exit' | 'program_exit' | 'alumni' | 'employer';
+
+const SURVEY_TYPE_LABELS: Record<SurveyType, string> = {
+  course_exit: 'Course Exit',
+  program_exit: 'Program Exit',
+  alumni: 'Alumni',
+  employer: 'Employer',
+};
+
+const SURVEY_TYPE_COLORS: Record<SurveyType, string> = {
+  course_exit: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  program_exit: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  alumni: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+  employer: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+};
+
 interface Survey {
   id: number;
   title: string;
   description: string | null;
+  type: SurveyType;
   status: 'draft' | 'active' | 'closed';
   dueDate: string | null;
-  courseOffering: CourseOffering;
+  courseOffering: CourseOffering | null;
+  program: Program | null;
   creator: { first_name: string; last_name: string };
   _count: { questions: number; responses: number };
 }
@@ -94,12 +118,14 @@ export default function AdminSurveysPage() {
 
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [plos, setPlos] = useState<Plo[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+  const [surveyScope, setSurveyScope] = useState<'course' | 'program'>('course');
+  const [form, setForm] = useState({ title: '', description: '', type: 'course_exit' as SurveyType, courseOfferingId: '', programId: '', dueDate: '' });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQ, setNewQ] = useState<Question>({ question: '', questionType: 'rating', ploId: '' });
   const [saving, setSaving] = useState(false);
@@ -109,15 +135,24 @@ export default function AdminSurveysPage() {
   const [resultData, setResultData] = useState<SurveyResult | null>(null);
   const [resultsLoading, setResultsLoading] = useState(false);
 
+  // Send invitations dialog
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteSurvey, setInviteSurvey] = useState<Survey | null>(null);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ sent: number; failed: string[] } | null>(null);
+
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [sRes, coRes] = await Promise.all([
+        const [sRes, coRes, progRes] = await Promise.all([
           fetch('/api/surveys', { credentials: 'include' }),
           fetch('/api/course-offerings', { credentials: 'include' }),
+          fetch('/api/programs', { credentials: 'include' }),
         ]);
         if (sRes.ok) {
           const d = await sRes.json();
@@ -126,6 +161,10 @@ export default function AdminSurveysPage() {
         if (coRes.ok) {
           const d = await coRes.json();
           setCourseOfferings(d.data ?? []);
+        }
+        if (progRes.ok) {
+          const d = await progRes.json();
+          setPrograms(d.data ?? d ?? []);
         }
       } catch {
         toast.error('Failed to load surveys');
@@ -136,30 +175,51 @@ export default function AdminSurveysPage() {
     load();
   }, []);
 
-  // Load PLOs when course offering is selected
+  // Load PLOs when course offering or program is selected
   useEffect(() => {
-    if (!form.courseOfferingId) { setPlos([]); return; }
-    const co = courseOfferings.find((c) => c.id.toString() === form.courseOfferingId);
-    if (!co) return;
-    // We'll fetch PLOs for the program via course → program
-    fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
-      .catch(() => setPlos([]));
-  }, [form.courseOfferingId, courseOfferings]);
+    if (surveyScope === 'course') {
+      if (!form.courseOfferingId) { setPlos([]); return; }
+      fetch(`/api/plos?courseOfferingId=${form.courseOfferingId}`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    } else {
+      if (!form.programId) { setPlos([]); return; }
+      fetch(`/api/programs/${form.programId}/plos`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((d) => setPlos(Array.isArray(d) ? d : d.data ?? []))
+        .catch(() => setPlos([]));
+    }
+  }, [form.courseOfferingId, form.programId, surveyScope]);
 
   const handleCreate = async () => {
-    if (!form.title || !form.courseOfferingId) {
-      toast.error('Title and course offering are required');
+    if (!form.title) {
+      toast.error('Survey title is required');
+      return;
+    }
+    if (surveyScope === 'course' && !form.courseOfferingId) {
+      toast.error('Please select a course offering');
+      return;
+    }
+    if (surveyScope === 'program' && !form.programId) {
+      toast.error('Please select a program');
       return;
     }
     setSaving(true);
     try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        type: form.type,
+        dueDate: form.dueDate,
+        courseOfferingId: surveyScope === 'course' ? form.courseOfferingId : undefined,
+        programId: surveyScope === 'program' ? form.programId : undefined,
+      };
       const res = await fetch('/api/surveys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ...form }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error); return; }
@@ -182,8 +242,9 @@ export default function AdminSurveysPage() {
 
       toast.success('Survey created successfully');
       setCreateOpen(false);
-      setForm({ title: '', description: '', courseOfferingId: '', dueDate: '' });
+      setForm({ title: '', description: '', type: 'course_exit', courseOfferingId: '', programId: '', dueDate: '' });
       setQuestions([]);
+      setSurveyScope('course');
       // Refresh
       const sRes = await fetch('/api/surveys', { credentials: 'include' });
       const sData = await sRes.json();
@@ -243,6 +304,39 @@ export default function AdminSurveysPage() {
     }
   };
 
+  const handleSendInvitations = async () => {
+    if (!inviteSurvey) return;
+    const rawEmails = inviteEmails
+      .split(/[\n,]+/)
+      .map((e) => e.trim())
+      .filter(Boolean);
+    if (rawEmails.length === 0) {
+      toast.error('Enter at least one email address');
+      return;
+    }
+    setInviteSending(true);
+    setInviteResult(null);
+    try {
+      const res = await fetch(`/api/surveys/${inviteSurvey.id}/send-invitations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ emails: rawEmails, customMessage: inviteMessage || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setInviteResult({ sent: data.data.sent, failed: data.data.failed });
+        toast.success(`${data.data.sent} invitation${data.data.sent !== 1 ? 's' : ''} sent`);
+      } else {
+        toast.error(data.error || 'Failed to send invitations');
+      }
+    } catch {
+      toast.error('Failed to send invitations');
+    } finally {
+      setInviteSending(false);
+    }
+  };
+
   const addQuestion = () => {
     if (!newQ.question.trim()) { toast.error('Enter a question'); return; }
     setQuestions((prev) => [...prev, { ...newQ }]);
@@ -296,10 +390,17 @@ export default function AdminSurveysPage() {
                   <Badge className={`text-[10px] h-4 px-1.5 border ${STATUS_COLORS[survey.status]}`}>
                     {survey.status}
                   </Badge>
+                  <Badge className={`text-[10px] h-4 px-1.5 border ${SURVEY_TYPE_COLORS[survey.type ?? 'course_exit']}`}>
+                    {SURVEY_TYPE_LABELS[survey.type ?? 'course_exit']}
+                  </Badge>
                 </div>
                 <p className="text-xs text-secondary-text mt-0.5">
-                  {survey.courseOffering.course.code} · {survey.courseOffering.semester.name} ·{' '}
-                  {survey._count.questions} questions · {survey._count.responses} responses
+                  {survey.courseOffering
+                    ? `${survey.courseOffering.course.code} · ${survey.courseOffering.semester.name}`
+                    : survey.program
+                    ? `Program: ${survey.program.code} — ${survey.program.name}`
+                    : 'General Survey'}{' '}
+                  · {survey._count.questions} questions · {survey._count.responses} responses
                 </p>
                 {survey.dueDate && (
                   <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -318,6 +419,19 @@ export default function AdminSurveysPage() {
                   <Button size="sm" variant="ghost" className="h-7 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => handleStatusChange(survey.id, 'closed')}>
                     <StopCircle className="h-3.5 w-3.5 mr-1" /> Close
+                  </Button>
+                )}
+                {survey.status === 'active' && (survey.type === 'alumni' || survey.type === 'employer') && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs hover:bg-hover-bg"
+                    style={{ color: primaryColor }}
+                    onClick={() => {
+                      setInviteSurvey(survey);
+                      setInviteEmails('');
+                      setInviteMessage('');
+                      setInviteResult(null);
+                      setInviteOpen(true);
+                    }}>
+                    <Send className="h-3.5 w-3.5 mr-1" /> Invite
                   </Button>
                 )}
                 <Button size="sm" variant="ghost" className="h-7 text-xs text-primary-text hover:bg-hover-bg"
@@ -352,21 +466,76 @@ export default function AdminSurveysPage() {
                 placeholder="Optional description" rows={2}
                 className="text-xs bg-card border-card-border text-primary-text resize-none" />
             </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">Survey Type * <span className="font-normal text-secondary-text">(HEC indirect assessment category)</span></Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as SurveyType })}>
+                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-card-border">
+                  <SelectItem value="course_exit" className="text-xs text-primary-text">Course Exit Survey — per course, per semester</SelectItem>
+                  <SelectItem value="program_exit" className="text-xs text-primary-text">Program Exit Survey — graduating students</SelectItem>
+                  <SelectItem value="alumni" className="text-xs text-primary-text">Alumni Survey — 1–3 years post-graduation</SelectItem>
+                  <SelectItem value="employer" className="text-xs text-primary-text">Employer Survey — employer feedback on graduates</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-secondary-text">Survey Scope *</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('course')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'course' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'course' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Course-Level
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSurveyScope('program')}
+                  className={`flex-1 h-8 text-xs rounded-md border transition-colors ${surveyScope === 'program' ? 'border-transparent text-white' : 'border-card-border text-primary-text'}`}
+                  style={surveyScope === 'program' ? { backgroundColor: primaryColor } : {}}
+                >
+                  Program Exit Survey
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Course Offering *</Label>
-                <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
-                    <SelectValue placeholder="Select course" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-card-border">
-                    {courseOfferings.map((co) => (
-                      <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
-                        {co.course.code} ({co.semester.name})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {surveyScope === 'course' ? (
+                  <>
+                    <Label className="text-xs text-secondary-text">Course Offering *</Label>
+                    <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select course" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {courseOfferings.map((co) => (
+                          <SelectItem key={co.id} value={co.id.toString()} className="text-primary-text text-xs">
+                            {co.course.code} ({co.semester.name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <Label className="text-xs text-secondary-text">Program *</Label>
+                    <Select value={form.programId} onValueChange={(v) => setForm({ ...form, programId: v })}>
+                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                        <SelectValue placeholder="Select program" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-card-border">
+                        {programs.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()} className="text-primary-text text-xs">
+                            {p.code} — {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">Due Date</Label>
@@ -442,6 +611,84 @@ export default function AdminSurveysPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── SEND INVITATIONS DIALOG ── */}
+      <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) setInviteResult(null); }}>
+        <DialogContent className="max-w-lg bg-card border-card-border text-primary-text p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-primary-text flex items-center gap-2">
+              <Send className="h-4 w-4" style={{ color: primaryColor }} />
+              Send Survey Invitations
+            </DialogTitle>
+          </DialogHeader>
+          {inviteSurvey && (
+            <div className="space-y-4 mt-2">
+              <div className="rounded-lg bg-hover-bg p-3">
+                <p className="text-xs font-medium text-primary-text">{inviteSurvey.title}</p>
+                <p className="text-[10px] text-secondary-text mt-0.5 capitalize">{inviteSurvey.type.replace('_', ' ')} survey</p>
+              </div>
+
+              {inviteResult ? (
+                <div className="space-y-3">
+                  <div className="rounded-lg p-3 bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-sm font-semibold text-emerald-600">{inviteResult.sent} invitation{inviteResult.sent !== 1 ? 's' : ''} sent successfully</p>
+                  </div>
+                  {inviteResult.failed.length > 0 && (
+                    <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/20">
+                      <p className="text-xs font-medium text-red-600 mb-1">{inviteResult.failed.length} failed to send:</p>
+                      <p className="text-xs text-red-500">{inviteResult.failed.join(', ')}</p>
+                    </div>
+                  )}
+                  <Button size="sm" variant="outline" onClick={() => { setInviteResult(null); setInviteEmails(''); }}
+                    className="h-8 text-xs border-card-border text-primary-text">
+                    Send to More
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">
+                      Email Addresses * <span className="font-normal">(one per line or comma-separated, max 200)</span>
+                    </Label>
+                    <textarea
+                      value={inviteEmails}
+                      onChange={(e) => setInviteEmails(e.target.value)}
+                      placeholder="alumni@example.com&#10;employer@company.com&#10;..."
+                      rows={5}
+                      className="w-full rounded-md border border-card-border bg-card text-primary-text text-xs p-2 resize-none placeholder:text-secondary-text focus:outline-none focus:ring-1"
+                      style={{ ['--tw-ring-color' as string]: primaryColor }}
+                    />
+                    <p className="text-[10px] text-secondary-text">
+                      {inviteEmails.split(/[\n,]+/).filter((e) => e.trim()).length} email(s) entered
+                    </p>
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs text-secondary-text">Custom Message (optional)</Label>
+                    <textarea
+                      value={inviteMessage}
+                      onChange={(e) => setInviteMessage(e.target.value)}
+                      placeholder="Add a personal message to include in the invitation email..."
+                      rows={2}
+                      className="w-full rounded-md border border-card-border bg-card text-primary-text text-xs p-2 resize-none placeholder:text-secondary-text focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button size="sm" variant="outline" onClick={() => setInviteOpen(false)}
+                      className="h-8 text-xs border-card-border text-primary-text">
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={handleSendInvitations} disabled={inviteSending}
+                      className="h-8 text-xs text-white disabled:opacity-50"
+                      style={{ backgroundColor: primaryColor }}>
+                      {inviteSending ? 'Sending...' : `Send Invitations`}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

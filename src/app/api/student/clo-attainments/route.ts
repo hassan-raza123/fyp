@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
     }
 
     const courseOfferingId = studentSection.section.courseOfferingId;
-    const sectionIdNum = parseInt(sectionId);
 
     // Get all CLOs for this course
     const clos = await prisma.clos.findMany({
@@ -75,11 +74,10 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get CLO attainments for this section
+    // Get CLO attainments for this course offering (closattainments is per course offering, not per section)
     const cloAttainments = await prisma.closattainments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        sectionId: sectionIdNum,
         status: 'active',
       },
       include: {
@@ -111,7 +109,7 @@ export async function GET(request: NextRequest) {
       where: {
         courseOfferingId: courseOfferingId,
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -232,8 +230,8 @@ export async function GET(request: NextRequest) {
           : 0;
 
       // Get class average from attainment record
-      const classAttainmentPercent = attainment?.attainmentPercent || 0;
-      const threshold = attainment?.threshold || 60;
+      const classAttainmentPercent = attainment?.attainmentPercent ?? 0;
+      const threshold = attainment?.threshold ?? 60;
 
       return {
         clo: {

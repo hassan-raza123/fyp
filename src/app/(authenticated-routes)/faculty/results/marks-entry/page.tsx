@@ -133,9 +133,9 @@ const MarksEntryPage = () => {
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to fetch sections');
-        const data = await response.json();
-        // Sections API returns array directly
-        setSections(Array.isArray(data) ? data : []);
+        const result = await response.json();
+        // Sections API returns { success, data, pagination }
+        setSections(Array.isArray(result) ? result : result.data || []);
       } catch (error) {
         toast.error('Failed to load sections');
         console.error(error);
@@ -580,13 +580,13 @@ const MarksEntryPage = () => {
 
   const statistics = calculateStatistics();
 
-  // Update outliers when statistics change
+  // Update outliers when marks data changes (not statistics — it's a new object every render)
   useEffect(() => {
-    if (statistics) {
+    if (Object.keys(marks).length > 0) {
       const detected = detectOutliers();
       setOutliers(detected);
     }
-  }, [marks, marksData, statistics]);
+  }, [marks, marksData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const detectedOutliers = outliers;
 

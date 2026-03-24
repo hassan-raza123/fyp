@@ -8,8 +8,9 @@ import { requireAuth } from '@/lib/auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, error } = await requireAuth(request);
     if (!success) {
@@ -39,8 +40,9 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) {
@@ -109,8 +111,9 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) {

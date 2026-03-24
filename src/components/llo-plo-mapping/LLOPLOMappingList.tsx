@@ -90,6 +90,7 @@ export function LLOPLOMappingList() {
   const [plos, setPLOs] = useState<PLO[]>([]);
   const [availablePLOs, setAvailablePLOs] = useState<PLO[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingWeights, setEditingWeights] = useState<Record<number, string>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -422,10 +423,19 @@ export function LLOPLOMappingList() {
                         min="0"
                         max="1"
                         step="0.1"
-                        value={mapping.weight}
+                        value={editingWeights[mapping.id] ?? mapping.weight}
                         onChange={(e) =>
-                          handleUpdate(mapping.id, Number(e.target.value))
+                          setEditingWeights((prev) => ({ ...prev, [mapping.id]: e.target.value }))
                         }
+                        onBlur={(e) => {
+                          const val = Number(e.target.value);
+                          setEditingWeights((prev) => {
+                            const next = { ...prev };
+                            delete next[mapping.id];
+                            return next;
+                          });
+                          if (!isNaN(val) && val > 0) handleUpdate(mapping.id, val);
+                        }}
                         className="w-20 h-7 text-xs bg-card border-card-border text-primary-text"
                       />
                       <span className="text-[10px] text-secondary-text">

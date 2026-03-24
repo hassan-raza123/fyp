@@ -104,10 +104,13 @@ model programs {
   obeReports       obereports[]
   ploAttainments   ploattainments[]
   plos             plos[]
+  peos             peos[]
   department       departments      @relation(fields: [departmentId], references: [id])
   students         students[]
-  courses          courses[]        @relation("programtocourse")
-  curriculum       program_curriculum[]
+  courses            courses[]              @relation("programtocourse")
+  curriculum         program_curriculum[]
+  surveys            surveys[]              @relation("ProgramSurveys")
+  graduationCriteria graduation_criteria?
 
   @@index([departmentId])
 }
@@ -195,6 +198,7 @@ model courseofferings {
   studentGrades    studentgrades[]
   surveys          surveys[]
   actionPlans      action_plans[]
+  rubrics          rubrics[]
 
   @@unique([courseId, semesterId])
   @@index([courseId])
@@ -254,7 +258,6 @@ model students {
   programId         Int
   batchId           String?
   cumulativeGPA     cumulativegpa?
-  detailedResults   detailedresults[]
   ploScores         ploscores[]
   semesterGPA       semestergpa[]
   assessmentResults studentassessmentresults[]
@@ -293,12 +296,14 @@ model plos {
   code           String
   description    String           @db.Text
   programId      Int
-  bloomLevel     String?
+  bloomLevel     bloom_level?
+  bloomDomain    bloom_domain     @default(Cognitive)
   status         plo_status       @default(active)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   cloMappings      cloplomappings[]
   lloMappings      lloplomappings[]
+  peoMappings      peoplomappings[]
   ploAttainments   ploattainments[]
   program          programs           @relation(fields: [programId], references: [id])
   ploScores        ploscores[]
@@ -314,7 +319,8 @@ model clos {
   code            String
   description     String            @db.Text
   courseId        Int
-  bloomLevel      String?
+  bloomLevel      bloom_level?
+  bloomDomain     bloom_domain      @default(Cognitive)
   status          clo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -322,6 +328,7 @@ model clos {
   ploMappings     cloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   closAttainments closattainments[]
+  rubrics         rubrics[]
   actionPlans     action_plans[]
 
   @@unique([code, courseId])
@@ -333,13 +340,17 @@ model llos {
   code            String
   description     String            @db.Text
   courseId        Int
-  bloomLevel      String?
+  bloomLevel      bloom_level?
+  bloomDomain     bloom_domain      @default(Psychomotor)
   status          llo_status        @default(active)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   ploMappings     lloplomappings[]
   course          courses           @relation(fields: [courseId], references: [id])
   llosAttainments llosattainments[]
+  assessmentItems assessmentitems[]
+  rubrics         rubrics[]
+  actionPlans     action_plans[]
 
   @@unique([code, courseId])
   @@index([courseId])
@@ -366,7 +377,7 @@ model closattainments {
   courseOfferingId  Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent Float
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
@@ -402,7 +413,7 @@ model llosattainments {
   courseOfferingId  Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent Float
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
@@ -424,7 +435,7 @@ model ploattainments {
   semesterId        Int
   totalStudents     Int
   studentsAchieved  Int
-  threshold         Float             @default(60)
+  threshold         Float             @default(50)
   attainmentPercent  Float
   directAttainment   Float?
   indirectAttainment Float?
@@ -480,7 +491,6 @@ model assessments {
   assessmentItems  assessmentitems[]
   faculty          faculties                  @relation(fields: [conductedBy], references: [id])
   courseOffering   courseofferings            @relation(fields: [courseOfferingId], references: [id])
-  detailedResults  detailedresults[]
   studentResults   studentassessmentresults[]
 
   @@index([courseOfferingId])
@@ -493,16 +503,19 @@ model assessmentitems {
   questionNo         String
   description        String?
   marks              Float
-  cloId              Int
+  cloId              Int?
+  lloId              Int?
   createdAt          DateTime                       @default(now())
   updatedAt          DateTime                       @updatedAt
   assessment         assessments                    @relation(fields: [assessmentId], references: [id])
-  clo                clos                           @relation(fields: [cloId], references: [id])
+  clo                clos?                          @relation(fields: [cloId], references: [id])
+  llo                llos?                          @relation(fields: [lloId], references: [id])
   studentItemResults studentassessmentitemresults[]
 
   @@unique([assessmentId, questionNo])
   @@index([assessmentId])
   @@index([cloId])
+  @@index([lloId])
 }
 
 model studentassessmentresults {
@@ -547,31 +560,6 @@ model studentassessmentitemresults {
   @@index([assessmentItemId])
 }
 
-model detailedresults {
-  id                 Int         @id @default(autoincrement())
-  studentId          Int
-  assessmentId       Int
-  quiz1Marks         Float?
-  quiz2Marks         Float?
-  midtermMarks       Float?
-  finalMarks         Float?
-  assignmentMarks    Float?
-  presentationMarks  Float?
-  classParticipation Float?
-  totalObtained      Float
-  totalPossible      Float
-  percentage         Float
-  grade              String
-  isPassed           Boolean     @default(false)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  assessment         assessments @relation(fields: [assessmentId], references: [id])
-  student            students    @relation(fields: [studentId], references: [id])
-
-  @@unique([studentId, assessmentId])
-  @@index([studentId])
-  @@index([assessmentId])
-}
 
 model gradescales {
   id          Int          @id @default(autoincrement())
@@ -591,9 +579,10 @@ model gradescales {
 }
 
 model studentgrades {
-  id               Int             @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   studentId        Int
   courseOfferingId Int
+  component        grade_component  @default(combined)
   totalMarks       Float
   obtainedMarks    Float
   percentage       Float
@@ -601,18 +590,18 @@ model studentgrades {
   gpaPoints        Float
   creditHours      Int
   qualityPoints    Float
-  isRepeat         Boolean         @default(false)
-  attemptNumber    Int             @default(1)
-  status           grade_status    @default(active)
-  calculatedAt     DateTime        @default(now())
+  isRepeat         Boolean          @default(false)
+  attemptNumber    Int              @default(1)
+  status           grade_status     @default(active)
+  calculatedAt     DateTime         @default(now())
   calculatedBy     Int?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  calculator       faculties?      @relation("GradeCalculator", fields: [calculatedBy], references: [id])
-  courseOffering   courseofferings @relation(fields: [courseOfferingId], references: [id])
-  student          students        @relation(fields: [studentId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  calculator       faculties?       @relation("GradeCalculator", fields: [calculatedBy], references: [id])
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  student          students         @relation(fields: [studentId], references: [id])
 
-  @@unique([studentId, courseOfferingId, attemptNumber])
+  @@unique([studentId, courseOfferingId, component, attemptNumber])
   @@index([studentId])
   @@index([courseOfferingId])
   @@index([calculatedBy])
@@ -737,8 +726,10 @@ model passwordresets {
 model passfailcriteria {
   id               Int                     @id @default(autoincrement())
   courseOfferingId Int                     @unique(map: "passFailCriteria_courseOfferingId_key")
-  minPassPercent   Float                   @default(50)
-  status           passfailcriteria_status @default(active)
+  minPassPercent          Float                   @default(50)
+  minCloAttainmentPercent Float?
+  minLloAttainmentPercent Float?
+  status                  passfailcriteria_status @default(active)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime
   courseofferings  courseofferings         @relation(fields: [courseOfferingId], references: [id], map: "passFailCriteria_courseOfferingId_fkey")
@@ -843,6 +834,7 @@ enum studentsection_status {
 enum course_type {
   THEORY
   LAB
+  THEORY_LAB
   PROJECT
   THESIS
 }
@@ -894,6 +886,15 @@ enum llo_status {
   archived
 }
 
+enum bloom_level {
+  Remember
+  Understand
+  Apply
+  Analyze
+  Evaluate
+  Create
+}
+
 enum attainment_status {
   active
   archived
@@ -904,6 +905,12 @@ enum grade_status {
   active
   superseded
   final
+}
+
+enum grade_component {
+  theory
+  lab
+  combined
 }
 
 enum gpa_status {
@@ -930,6 +937,7 @@ enum notification_type {
 
 enum obe_report_type {
   clo_attainment
+  llo_attainment
   plo_attainment
   program_assessment
   semester_summary
@@ -961,18 +969,23 @@ model surveys {
   id               Int              @id @default(autoincrement())
   title            String
   description      String?
-  courseOfferingId Int
+  type             survey_type      @default(course_exit)
+  courseOfferingId Int?
+  programId        Int?
   createdBy        Int
   status           survey_status    @default(draft)
   dueDate          DateTime?
+  publicToken      String?          @unique
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  courseOffering   courseofferings? @relation(fields: [courseOfferingId], references: [id])
+  program          programs?        @relation("ProgramSurveys", fields: [programId], references: [id])
   creator          users            @relation("SurveyCreator", fields: [createdBy], references: [id])
   questions        survey_questions[]
   responses        survey_responses[]
 
   @@index([courseOfferingId])
+  @@index([programId])
   @@index([createdBy])
 }
 
@@ -994,13 +1007,15 @@ model survey_questions {
 }
 
 model survey_responses {
-  id          Int              @id @default(autoincrement())
-  surveyId    Int
-  studentId   Int
-  submittedAt DateTime         @default(now())
-  survey      surveys          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  student     students         @relation(fields: [studentId], references: [id])
-  answers     survey_answers[]
+  id              Int              @id @default(autoincrement())
+  surveyId        Int
+  studentId       Int?
+  respondentName  String?
+  respondentEmail String?
+  submittedAt     DateTime         @default(now())
+  survey          surveys          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  student         students?        @relation(fields: [studentId], references: [id])
+  answers         survey_answers[]
 
   @@unique([surveyId, studentId])
   @@index([surveyId])
@@ -1025,6 +1040,13 @@ enum survey_status {
   draft
   active
   closed
+}
+
+enum survey_type {
+  course_exit
+  program_exit
+  alumni
+  employer
 }
 
 enum survey_question_type {
@@ -1071,26 +1093,134 @@ model action_plans {
   courseOfferingId Int
   ploId            Int
   cloId            Int?
+  lloId            Int?
   semesterId       Int
   attainmentValue  Float
-  threshold        Float              @default(60)
-  rootCause        String?            @db.Text
-  actionTaken      String?            @db.Text
-  expectedOutcome  String?            @db.Text
-  targetDate       DateTime?
-  status           action_plan_status @default(pending)
+  threshold        Float              @default(50)
+  rootCause               String?            @db.Text
+  actionTaken             String?            @db.Text
+  expectedOutcome         String?            @db.Text
+  targetDate              DateTime?
+  status                  action_plan_status @default(pending)
+  // CQI Loop Closure fields
+  actualOutcome           String?            @db.Text
+  implementedAt           DateTime?
+  followUpAttainmentValue Float?
+  isLoopClosed            Boolean            @default(false)
+  nextReviewDate          DateTime?
   createdBy        Int
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
   plo              plos               @relation(fields: [ploId], references: [id])
   clo              clos?              @relation(fields: [cloId], references: [id])
+  llo              llos?              @relation(fields: [lloId], references: [id])
   semester         semesters          @relation(fields: [semesterId], references: [id])
   creator          users              @relation("ActionPlanCreator", fields: [createdBy], references: [id])
 
   @@index([courseOfferingId])
   @@index([ploId])
   @@index([cloId])
+  @@index([lloId])
   @@index([semesterId])
   @@index([createdBy])
+}
+
+// ─── Graduation Criteria ──────────────────────────────────────────────────────
+
+model graduation_criteria {
+  id                      Int      @id @default(autoincrement())
+  programId               Int      @unique
+  minCGPA                 Float    @default(2.0)
+  minPloAttainmentPercent Float    @default(50)
+  requireAllCourses       Boolean  @default(true)
+  directWeight            Float    @default(0.7)
+  indirectWeight          Float    @default(0.3)
+  minSurveyResponseRate   Float    @default(0.0)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  program                 programs @relation(fields: [programId], references: [id])
+
+  @@index([programId])
+}
+
+// ─── Program Educational Objectives (PEOs) ────────────────────────────────────
+
+model peos {
+  id          Int            @id @default(autoincrement())
+  code        String
+  description String         @db.Text
+  programId   Int
+  status      peo_status     @default(active)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  program     programs       @relation(fields: [programId], references: [id])
+  ploMappings peoplomappings[]
+
+  @@unique([code, programId])
+  @@index([programId])
+}
+
+model peoplomappings {
+  id        Int      @id @default(autoincrement())
+  peoId     Int
+  ploId     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  peo       peos     @relation(fields: [peoId], references: [id], onDelete: Cascade)
+  plo       plos     @relation(fields: [ploId], references: [id], onDelete: Cascade)
+
+  @@unique([peoId, ploId])
+  @@index([peoId])
+  @@index([ploId])
+}
+
+enum peo_status {
+  active
+  inactive
+  archived
+}
+
+// ─── Assessment Rubrics ───────────────────────────────────────────────────────
+
+model rubrics {
+  id               Int              @id @default(autoincrement())
+  title            String
+  courseOfferingId Int
+  cloId            Int?
+  lloId            Int?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  courseOffering   courseofferings  @relation(fields: [courseOfferingId], references: [id])
+  clo              clos?            @relation(fields: [cloId], references: [id])
+  llo              llos?            @relation(fields: [lloId], references: [id])
+  criteria         rubric_criteria[]
+
+  @@index([courseOfferingId])
+  @@index([cloId])
+  @@index([lloId])
+}
+
+model rubric_criteria {
+  id             Int      @id @default(autoincrement())
+  rubricId       Int
+  description    String
+  excellent      String   @db.Text
+  good           String   @db.Text
+  satisfactory   String   @db.Text
+  unsatisfactory String   @db.Text
+  weight         Float    @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  rubric         rubrics  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@index([rubricId])
+}
+
+// ─── Bloom's Domain ───────────────────────────────────────────────────────────
+
+enum bloom_domain {
+  Cognitive
+  Affective
+  Psychomotor
 }

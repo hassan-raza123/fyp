@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { title, description, dueDate, totalMarks, instructions, weightage } = body;
 
@@ -43,12 +50,12 @@ export async function PUT(
         id: parseInt(params.id),
       },
       data: {
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(dueDate && { dueDate: new Date(dueDate) }),
-        ...(totalMarks && { totalMarks: parseInt(totalMarks) }),
-        ...(instructions && { instructions }),
-        ...(weightage && { weightage: Number(weightage) }),
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(dueDate !== undefined && { dueDate: new Date(dueDate) }),
+        ...(totalMarks !== undefined && { totalMarks: parseInt(totalMarks) }),
+        ...(instructions !== undefined && { instructions }),
+        ...(weightage !== undefined && { weightage: Number(weightage) }),
       },
     });
 
@@ -61,15 +68,22 @@ export async function PUT(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { status } = body;
 
-    if (!status) {
+    const validStatuses = ['active', 'draft', 'completed', 'evaluated', 'published', 'cancelled'];
+    if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
-        { error: 'Status is required' },
+        { error: `Status is required and must be one of: ${validStatuses.join(', ')}` },
         { status: 400 }
       );
     }
@@ -95,35 +109,65 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
-    // Delete related assessment items first
-    await prisma.assessmentitems.deleteMany({
-      where: {
-        assessmentId: parseInt(params.id),
-      },
-    });
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
 
-    // Now delete the assessment
-    await prisma.assessments.delete({
-      where: {
-        id: parseInt(params.id),
-      },
+    const assessmentId = parseInt(params.id);
+
+    // Get all assessment item IDs for this assessment
+    const items = await prisma.assessmentitems.findMany({
+      where: { assessmentId },
+      select: { id: true },
     });
+    const itemIds = items.map((i) => i.id);
+
+    // Delete in correct cascade order within a transaction
+    await prisma.$transaction([
+      // 1. Delete student assessment item results
+      prisma.studentassessmentitemresults.deleteMany({
+        where: { assessmentItemId: { in: itemIds } },
+      }),
+      // 2. Delete student assessment results
+      prisma.studentassessmentresults.deleteMany({
+        where: { assessmentId },
+      }),
+      // 3. Delete assessment items
+      prisma.assessmentitems.deleteMany({
+        where: { assessmentId },
+      }),
+      // 4. Delete the assessment
+      prisma.assessments.delete({
+        where: { id: assessmentId },
+      }),
+    ]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ASSESSMENT_DELETE]', error);
-    return new NextResponse('Internal error', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete assessment' },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
+    const { success, error } = await requireAuth(request as any);
+    if (!success) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const assessment = await prisma.assessments.findUnique({
       where: {
         id: parseInt(params.id),
@@ -132,6 +176,13 @@ export async function GET(
         assessmentItems: {
           include: {
             clo: {
+              select: {
+                id: true,
+                code: true,
+                description: true,
+              },
+            },
+            llo: {
               select: {
                 id: true,
                 code: true,
@@ -147,6 +198,7 @@ export async function GET(
           include: {
             course: {
               select: {
+                id: true,
                 code: true,
                 name: true,
               },

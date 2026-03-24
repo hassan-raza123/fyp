@@ -52,14 +52,21 @@ interface PLOAttainment {
     attainment: number;
     weight: number;
   }[];
+  contributingLlos: {
+    lloId: number;
+    lloCode: string;
+    attainment: number;
+    weight: number;
+  }[];
 }
 
 interface PLOAttainmentsProps {
   programId: number;
   semesterId: number;
+  apiUrl?: string;
 }
 
-export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
+export function PLOAttainments({ programId, semesterId, apiUrl = '/api/plo-attainments' }: PLOAttainmentsProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
@@ -75,7 +82,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
     const fetchAttainments = async () => {
       try {
         const response = await fetch(
-          `/api/plo-attainments?programId=${programId}&semesterId=${semesterId}`,
+          `${apiUrl}?programId=${programId}&semesterId=${semesterId}`,
           { credentials: 'include' }
         );
         if (!response.ok) throw new Error('Failed to fetch PLO attainments');
@@ -104,9 +111,9 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
       const rows = attainments.map((plo) => [
         plo.ploCode,
         plo.description,
-        `${plo.attainment.toFixed(2)}%`,
+        `${(plo.attainment ?? 0).toFixed(2)}%`,
         plo.contributingClos
-          .map((clo) => `${clo.cloCode} (${clo.attainment.toFixed(2)}%)`)
+          .map((clo) => `${clo.cloCode} (${(clo.attainment ?? 0).toFixed(2)}%)`)
           .join(', '),
       ]);
 
@@ -179,7 +186,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
   // Prepare data for the chart
   const chartData = attainments.map((plo) => ({
     name: plo.ploCode,
-    attainment: Number(plo.attainment.toFixed(2)),
+    attainment: Number((plo.attainment ?? 0).toFixed(2)),
   }));
 
   return (
@@ -291,7 +298,7 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                   className='text-xl font-bold text-primary-text'
                   style={{ color: primaryColor }}
                 >
-                  {plo.attainment.toFixed(2)}%
+                  {(plo.attainment ?? 0).toFixed(2)}%
                 </p>
               </div>
               {plo.contributingClos?.length > 0 && (
@@ -307,7 +314,27 @@ export function PLOAttainments({ programId, semesterId }: PLOAttainmentsProps) {
                       >
                         <span>{clo.cloCode}</span>
                         <span className='font-medium text-secondary-text'>
-                          {clo.attainment.toFixed(2)}% (W: {clo.weight})
+                          {(clo.attainment ?? 0).toFixed(2)}% (W: {clo.weight})
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {plo.contributingLlos?.length > 0 && (
+                <div>
+                  <p className='text-[10px] text-secondary-text mb-2'>
+                    Contributing LLOs (Lab)
+                  </p>
+                  <div className='space-y-1.5'>
+                    {plo.contributingLlos.map((llo) => (
+                      <div
+                        key={llo.lloId}
+                        className='flex justify-between items-center text-xs text-primary-text'
+                      >
+                        <span>{llo.lloCode}</span>
+                        <span className='font-medium text-secondary-text'>
+                          {(llo.attainment ?? 0).toFixed(2)}% (W: {llo.weight})
                         </span>
                       </div>
                     ))}

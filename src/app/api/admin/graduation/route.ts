@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
-const THRESHOLD = 60;
-
 export async function GET(request: NextRequest) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
@@ -46,6 +44,18 @@ export async function GET(request: NextRequest) {
   // Gather all unique program IDs
   const programIds = [...new Set(students.map((s) => s.programId))];
 
+  // Fetch per-program graduation thresholds (minPloAttainmentPercent)
+  const graduationCriteriaList = await prisma.graduation_criteria.findMany({
+    where: { programId: { in: programIds } },
+    select: { programId: true, minPloAttainmentPercent: true, minCGPA: true },
+  });
+  const thresholdByProgram = new Map<number, number>();
+  const minCGPAByProgram = new Map<number, number>();
+  for (const gc of graduationCriteriaList) {
+    thresholdByProgram.set(gc.programId, gc.minPloAttainmentPercent);
+    minCGPAByProgram.set(gc.programId, gc.minCGPA);
+  }
+
   // Get PLOs per program
   const plosByProgram = new Map<number, { id: number; code: string }[]>();
   const allPlos = await prisma.plos.findMany({
@@ -75,17 +85,24 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Build result for each student
+  // Build result for each student using their program's threshold
   const result = students.map((student) => {
+    const threshold = thresholdByProgram.get(student.programId) ?? 50;
+    const minCGPA = minCGPAByProgram.get(student.programId) ?? 2.0;
     const plos = plosByProgram.get(student.programId) ?? [];
     const totalPlos = plos.length;
     const attainedPlos = plos.filter((plo) => {
       const best = bestScoreMap.get(`${student.id}_${plo.id}`) ?? -1;
-      return best >= THRESHOLD;
+      return best >= threshold;
     }).length;
     const assessedPlos = plos.filter((plo) => bestScoreMap.has(`${student.id}_${plo.id}`)).length;
     const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
-    const isEligible = totalPlos > 0 && attainedPlos === totalPlos;
+    const cgpa = student.cumulativeGPA?.cumulativeGPA ?? null;
+    const isEligible =
+      totalPlos > 0 &&
+      attainedPlos === totalPlos &&
+      cgpa !== null &&
+      cgpa >= minCGPA;
 
     return {
       studentId: student.id,
@@ -93,12 +110,14 @@ export async function GET(request: NextRequest) {
       name: `${student.user.first_name} ${student.user.last_name}`,
       program: student.program,
       batch: student.batch,
-      cgpa: student.cumulativeGPA?.cumulativeGPA ?? null,
+      cgpa,
       totalPlos,
       attainedPlos,
       assessedPlos,
       completionPercent,
       isEligible,
+      threshold,
+      minCGPA,
     };
   });
 

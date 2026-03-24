@@ -228,6 +228,7 @@ export default function StudentDashboard() {
   const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<StudentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
@@ -292,7 +293,7 @@ export default function StudentDashboard() {
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Keep loading state or show error
+        setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -318,6 +319,10 @@ export default function StudentDashboard() {
         </div>
       </div>
     );
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">{error}</div>;
   }
 
   if (!data) {
@@ -365,8 +370,6 @@ export default function StudentDashboard() {
           title='Average Grade'
           value={`${data.stats.averageGrade}%`}
           icon={<Award className='w-6 h-6' />}
-          change={5.2}
-          trend='up'
           iconBgColor={iconBgColor}
           iconColor={iconColor}
         />

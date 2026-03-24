@@ -336,7 +336,8 @@ export default function CourseCLOsPage() {
                           </TableBody>
                         </Table>
                       </div>
-                    )}
+                    </div>
+                  )}
 
                     {item.sectionWiseBreakdown.length === 0 && (
                       <p className="text-xs text-secondary-text text-center py-4">No section-wise data available</p>

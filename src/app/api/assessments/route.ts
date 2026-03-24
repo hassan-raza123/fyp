@@ -14,9 +14,10 @@ const validAssessmentTypes = [
   'project',
   'presentation',
   'lab_report',
-  'lab_performance',
   'lab_exam',
   'viva',
+  'class_participation',
+  'case_study',
 ] as const;
 
 export async function GET(request: NextRequest) {

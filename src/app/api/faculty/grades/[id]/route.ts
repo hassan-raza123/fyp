@@ -5,8 +5,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // PATCH - Update a grade (manual adjustment)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const gradeId = parseInt(params.id);
     if (isNaN(gradeId)) {
@@ -92,8 +93,9 @@ export async function PATCH(
 // POST - Submit grades for approval
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const gradeId = parseInt(params.id);
     if (isNaN(gradeId)) {

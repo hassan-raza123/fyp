@@ -6,6 +6,7 @@ import { getStudentFromRequest } from '@/lib/auth';
 function getGradePoints(grade: string | null): number {
   if (!grade) return 0;
   const gradeMap: Record<string, number> = {
+    'A+': 4.0,
     A: 4.0,
     'A-': 3.7,
     'B+': 3.3,
@@ -113,9 +114,6 @@ export async function GET(request: NextRequest) {
         courseOfferingId: {
           in: courseOfferingIds,
         },
-        sectionId: {
-          in: sectionIds,
-        },
         status: 'active',
       },
       include: {
@@ -143,20 +141,25 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get assessments for CLO calculation
+    // Get assessments for CLO/LLO calculation
     const assessments = await prisma.assessments.findMany({
       where: {
         courseOfferingId: {
           in: courseOfferingIds,
         },
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
         assessmentItems: {
           include: {
             clo: {
+              select: {
+                id: true,
+              },
+            },
+            llo: {
               select: {
                 id: true,
               },
@@ -187,6 +190,11 @@ export async function GET(request: NextRequest) {
                     id: true,
                   },
                 },
+                llo: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -201,6 +209,13 @@ export async function GET(request: NextRequest) {
       Array<{ itemId: number; marks: number }>
     >();
 
+    // Calculate student's personal LLO attainments
+    const studentLLOAttainments = new Map<number, number>();
+    const lloItemsMap = new Map<
+      number,
+      Array<{ itemId: number; marks: number }>
+    >();
+
     assessments.forEach((assessment) => {
       assessment.assessmentItems.forEach((item) => {
         if (item.clo) {
@@ -209,6 +224,16 @@ export async function GET(request: NextRequest) {
             cloItemsMap.set(cloId, []);
           }
           cloItemsMap.get(cloId)!.push({
+            itemId: item.id,
+            marks: item.marks,
+          });
+        }
+        if (item.llo) {
+          const lloId = item.llo.id;
+          if (!lloItemsMap.has(lloId)) {
+            lloItemsMap.set(lloId, []);
+          }
+          lloItemsMap.get(lloId)!.push({
             itemId: item.id,
             marks: item.marks,
           });
@@ -237,6 +262,30 @@ export async function GET(request: NextRequest) {
       if (totalPossibleMarks > 0) {
         const percentage = (studentObtainedMarks / totalPossibleMarks) * 100;
         studentCLOAttainments.set(cloId, percentage);
+      }
+    });
+
+    // Calculate student's attainment for each LLO
+    lloItemsMap.forEach((items, lloId) => {
+      let totalPossibleMarks = 0;
+      let studentObtainedMarks = 0;
+
+      items.forEach((item) => {
+        totalPossibleMarks += item.marks;
+
+        assessmentResults.forEach((result) => {
+          const itemResult = result.itemResults.find(
+            (ir) => ir.assessmentItem.id === item.itemId
+          );
+          if (itemResult) {
+            studentObtainedMarks += itemResult.obtainedMarks;
+          }
+        });
+      });
+
+      if (totalPossibleMarks > 0) {
+        const percentage = (studentObtainedMarks / totalPossibleMarks) * 100;
+        studentLLOAttainments.set(lloId, percentage);
       }
     });
 
@@ -278,9 +327,15 @@ export async function GET(request: NextRequest) {
     });
 
     // Get PLO attainments
-    const programId = student.program?.id;
+    const programId = student.program?.id || student.programId;
     let ploAttainments: any[] = [];
     if (programId) {
+      // Get threshold from graduation criteria instead of hardcoding
+      const criteria = await prisma.graduation_criteria.findFirst({
+        where: { programId: programId },
+      });
+      const ploThreshold = criteria?.minPloAttainmentPercent ?? 60;
+
       const plos = await prisma.plos.findMany({
         where: {
           programId: programId,
@@ -296,10 +351,20 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          lloMappings: {
+            include: {
+              llo: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       });
 
       ploAttainments = plos.map((plo) => {
+        // Include CLO contributions
         const contributingClos = plo.cloMappings.map((mapping) => {
           const cloId = mapping.clo.id;
           const studentAttainment = studentCLOAttainments.get(cloId) || 0;
@@ -309,24 +374,35 @@ export async function GET(request: NextRequest) {
           };
         });
 
-        const totalWeight = contributingClos.reduce(
-          (sum, clo) => sum + clo.weight,
+        // Include LLO contributions
+        const contributingLlos = plo.lloMappings.map((mapping) => {
+          const lloId = mapping.llo.id;
+          const studentAttainment = studentLLOAttainments.get(lloId) || 0;
+          return {
+            weight: mapping.weight,
+            studentAttainment: parseFloat(studentAttainment.toFixed(2)),
+          };
+        });
+
+        const allContributions = [...contributingClos, ...contributingLlos];
+
+        const totalWeight = allContributions.reduce(
+          (sum, item) => sum + item.weight,
           0
         );
-        const studentWeightedSum = contributingClos.reduce(
-          (sum, clo) => sum + clo.studentAttainment * clo.weight,
+        const studentWeightedSum = allContributions.reduce(
+          (sum, item) => sum + item.studentAttainment * item.weight,
           0
         );
         const studentPLOAttainment =
           totalWeight > 0 ? studentWeightedSum / totalWeight : 0;
-        const threshold = 60;
 
         return {
           ploCode: plo.code,
           description: plo.description,
           attainmentPercent: parseFloat(studentPLOAttainment.toFixed(2)),
           status:
-            studentPLOAttainment >= threshold ? 'attained' : 'not_attained',
+            studentPLOAttainment >= ploThreshold ? 'attained' : 'not_attained',
         };
       });
     }
@@ -398,7 +474,11 @@ export async function GET(request: NextRequest) {
       (sum, grade) => sum + grade.creditHours,
       0
     );
-    const requiredCreditHours = student.program?.totalCreditHours || 0;
+    const program = await prisma.programs.findUnique({
+      where: { id: student.programId },
+      select: { totalCreditHours: true },
+    });
+    const requiredCreditHours = program?.totalCreditHours || 0;
     const completionPercentage =
       requiredCreditHours > 0
         ? (totalCreditHours / requiredCreditHours) * 100

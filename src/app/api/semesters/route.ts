@@ -171,6 +171,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Only admins can manage semesters' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { name, startDate, endDate, status = 'active' } = body;
 
@@ -231,6 +238,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Only admins can manage semesters' },
+        { status: 403 }
       );
     }
 
@@ -302,6 +316,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Only admins can manage semesters' },
+        { status: 403 }
       );
     }
 

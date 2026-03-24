@@ -17,10 +17,7 @@ export function Calendar({
 }: CalendarProps) {
   return (
     <DayPicker
-      mode={mode}
-      selected={selected}
-      onSelect={onSelect}
-      initialFocus={initialFocus}
+      {...({ mode, selected, onSelect, initialFocus } as any)}
     />
   );
 }

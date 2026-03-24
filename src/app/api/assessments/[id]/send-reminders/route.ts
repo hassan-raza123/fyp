@@ -5,8 +5,9 @@ import { createNotificationsForUsers } from '@/lib/notification-utils';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const facultyId = await getFacultyIdFromRequest(req);
     if (!facultyId) {
@@ -91,7 +92,7 @@ export async function POST(
     }
 
     // Send notifications to all students
-    const reminderMessage = message || `Reminder: Assessment "${assessment.title}" is due on ${new Date(assessment.dueDate).toLocaleDateString()}. Please complete it on time.`;
+    const reminderMessage = message || `Reminder: Assessment "${assessment.title}" is due on ${assessment.dueDate ? new Date(assessment.dueDate).toLocaleDateString() : 'the due date'}. Please complete it on time.`;
 
     await createNotificationsForUsers(
       uniqueStudentUserIds,

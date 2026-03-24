@@ -51,13 +51,13 @@ export async function GET(request: NextRequest) {
     // Add search filter
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search,  } },
         {
           courseOffering: {
             course: {
               OR: [
-                { code: { contains: search, mode: 'insensitive' } },
-                { name: { contains: search, mode: 'insensitive' } },
+                { code: { contains: search,  } },
+                { name: { contains: search,  } },
               ],
             },
           },
@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Add status filter
-    if (statusFilter && statusFilter !== 'all') {
+    if (statusFilter === 'all') {
+      delete where.status;
+    } else if (statusFilter) {
       where.status = statusFilter;
     }
 

@@ -53,6 +53,15 @@ interface ContributingCLO {
   classAttainment: number;
 }
 
+interface ContributingLLO {
+  lloId: number;
+  lloCode: string;
+  lloDescription: string;
+  weight: number;
+  studentAttainment: number;
+  classAttainment: number;
+}
+
 interface PLOAttainment {
   ploId: number;
   ploCode: string;
@@ -67,6 +76,7 @@ interface PLOAttainment {
   };
   threshold: number;
   contributingClos: ContributingCLO[];
+  contributingLlos: ContributingLLO[];
 }
 
 interface PLOAttainmentsData {
@@ -96,6 +106,7 @@ const PLOAttainmentsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PLOAttainmentsData | null>(null);
   const [expandedPLO, setExpandedPLO] = useState<number | null>(null);
+  const [expandedPLOLLO, setExpandedPLOLLO] = useState<number | null>(null);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
@@ -528,12 +539,11 @@ const PLOAttainmentsPage = () => {
                             </TableHeader>
                             <TableBody>
                               {plo.contributingClos.map((clo) => {
+                                const totalWeight = plo.contributingClos.reduce((sum, c) => sum + c.weight, 0);
                                 const contribution =
-                                  (clo.studentAttainment * clo.weight) /
-                                  plo.contributingClos.reduce(
-                                    (sum, c) => sum + c.weight,
-                                    0
-                                  );
+                                  totalWeight > 0
+                                    ? (clo.studentAttainment * clo.weight) / totalWeight
+                                    : 0;
                                 return (
                                   <TableRow key={clo.cloId} className="hover:bg-hover-bg transition-colors">
                                     <TableCell className="text-xs font-medium text-primary-text">
@@ -548,6 +558,69 @@ const PLOAttainmentsPage = () => {
                                     </TableCell>
                                     <TableCell className="text-xs text-primary-text">
                                       {clo.classAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {contribution.toFixed(2)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Contributing LLOs (Lab Learning Outcomes) */}
+                  {plo.contributingLlos?.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() =>
+                          setExpandedPLOLLO(
+                            expandedPLOLLO === plo.ploId ? null : plo.ploId
+                          )
+                        }
+                        className="text-xs font-medium text-primary-text hover:underline mb-2"
+                      >
+                        {expandedPLOLLO === plo.ploId ? 'Hide' : 'Show'}{' '}
+                        Contributing LLOs — Lab ({plo.contributingLlos.length})
+                      </button>
+
+                      {expandedPLOLLO === plo.ploId && (
+                        <div className="mt-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-xs font-semibold text-primary-text">LLO Code</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Description</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Weight</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Your Attainment</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Class Average</TableHead>
+                                <TableHead className="text-xs font-semibold text-primary-text">Contribution</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {plo.contributingLlos.map((llo) => {
+                                const totalWeight = plo.contributingLlos.reduce((sum, l) => sum + l.weight, 0);
+                                const contribution =
+                                  totalWeight > 0
+                                    ? (llo.studentAttainment * llo.weight) / totalWeight
+                                    : 0;
+                                return (
+                                  <TableRow key={llo.lloId} className="hover:bg-hover-bg transition-colors">
+                                    <TableCell className="text-xs font-medium text-primary-text">
+                                      {llo.lloCode}
+                                    </TableCell>
+                                    <TableCell className="max-w-md truncate text-xs text-secondary-text">
+                                      {llo.lloDescription}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">{llo.weight}</TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.studentAttainment.toFixed(1)}%
+                                    </TableCell>
+                                    <TableCell className="text-xs text-primary-text">
+                                      {llo.classAttainment.toFixed(1)}%
                                     </TableCell>
                                     <TableCell className="text-xs text-primary-text">
                                       {contribution.toFixed(2)}%

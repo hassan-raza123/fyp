@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
+  const params = await _params;
   const { success, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
 
@@ -22,7 +23,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ success: true, data: criterion });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
+  const params = await _params;
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
   if (user?.role !== 'admin') {
@@ -30,12 +32,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const body = await request.json();
-  const { minPassPercent, status } = body;
+  const { minPassPercent, minCloAttainmentPercent, minLloAttainmentPercent, status } = body;
 
   const criterion = await prisma.passfailcriteria.update({
     where: { id: parseInt(params.id) },
     data: {
       ...(minPassPercent !== undefined && { minPassPercent: parseFloat(minPassPercent) }),
+      ...(minCloAttainmentPercent !== undefined && {
+        minCloAttainmentPercent: minCloAttainmentPercent === null ? null : parseFloat(minCloAttainmentPercent),
+      }),
+      ...(minLloAttainmentPercent !== undefined && {
+        minLloAttainmentPercent: minLloAttainmentPercent === null ? null : parseFloat(minLloAttainmentPercent),
+      }),
       ...(status !== undefined && { status }),
       updatedAt: new Date(),
     },

@@ -39,6 +39,10 @@ const studentSchema = z.object({
   batchId: z.string().min(1, 'Batch is required'),
 });
 
+const editStudentSchema = studentSchema.extend({
+  password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
+});
+
 interface Student {
   id: string;
   rollNumber: string;
@@ -181,7 +185,7 @@ export function StudentManagement() {
     if (!selectedStudent) return;
 
     try {
-      const result = studentSchema.safeParse(formData);
+      const result = editStudentSchema.safeParse(formData);
       if (!result.success) {
         toast({
           title: 'Validation Error',
@@ -191,12 +195,17 @@ export function StudentManagement() {
         return;
       }
 
+      const dataToSubmit = { ...formData };
+      if (!dataToSubmit.password) {
+        delete (dataToSubmit as Record<string, unknown>).password;
+      }
+
       const response = await fetch(`/api/students/${selectedStudent.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSubmit),
       });
 
       const data = await response.json();

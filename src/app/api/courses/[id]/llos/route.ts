@@ -6,8 +6,9 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/courses/[id]/llos
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success } = await requireAuth(req);
     if (!success) {
@@ -78,8 +79,9 @@ export async function GET(
 // POST /api/courses/[id]/llos
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user } = await requireAuth(req);
     if (!success || user?.role !== 'admin') {

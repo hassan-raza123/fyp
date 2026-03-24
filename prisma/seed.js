@@ -10,8 +10,6 @@ async function clearDatabase() {
   await prisma.obereports.deleteMany();
   await prisma.transcripts.deleteMany();
   await prisma.notifications.deleteMany();
-  await prisma.sessions.deleteMany();
-  await prisma.detailedresults.deleteMany();
   await prisma.studentassessmentitemresults.deleteMany();
   await prisma.studentassessmentresults.deleteMany();
   await prisma.assessmentitems.deleteMany();
@@ -37,6 +35,7 @@ async function clearDatabase() {
   await prisma.batches.deleteMany();
   await prisma.semesters.deleteMany();
   await prisma.courses.deleteMany();
+  await prisma.graduation_criteria.deleteMany();
   await prisma.programs.deleteMany();
   await prisma.gradescales.deleteMany();
   await prisma.departments.deleteMany();

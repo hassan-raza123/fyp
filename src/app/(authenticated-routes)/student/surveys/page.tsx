@@ -27,6 +27,7 @@ interface Survey {
   title: string;
   description: string | null;
   status: 'draft' | 'active' | 'closed';
+  type?: string | null;
   dueDate: string | null;
   courseOffering: {
     course: { code: string; name: string };
@@ -200,7 +201,9 @@ export default function StudentSurveysPage() {
                     )}
                   </div>
                   <p className="text-xs text-secondary-text mt-0.5">
-                    {survey.courseOffering.course.code} — {survey.courseOffering.course.name} · {survey.courseOffering.semester.name}
+                    {survey.courseOffering
+                      ? `${survey.courseOffering.course.code} — ${survey.courseOffering.course.name} · ${survey.courseOffering.semester.name}`
+                      : `Program Survey${survey.type ? ` · ${survey.type.replace('_', ' ')}` : ''}`}
                   </p>
                   <p className="text-[11px] text-secondary-text mt-0.5">
                     {survey._count.questions} question{survey._count.questions !== 1 ? 's' : ''}

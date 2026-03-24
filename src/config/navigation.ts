@@ -25,6 +25,7 @@ import {
   BookMarked,
   FileSpreadsheet,
   UserPlus,
+  FlaskConical,
   GraduationCap as FacultyIcon,
   Eye,
   Edit,
@@ -112,6 +113,9 @@ import {
   MessageCircle as MessageCircleIcon,
   MessageSquare as MessageSquareIcon,
   Send as SendIcon,
+  Grid,
+  Compass,
+  Trophy,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -212,6 +216,12 @@ const adminNavigation = [
     title: 'LEARNING OUTCOMES',
     items: [
       {
+        id: 'peos',
+        label: 'PEOs',
+        icon: Trophy,
+        href: '/admin/peos',
+      },
+      {
         id: 'plos',
         label: 'PLOs',
         icon: Target,
@@ -228,6 +238,12 @@ const adminNavigation = [
         label: 'LLOs',
         icon: FileText,
         href: '/admin/llos',
+      },
+      {
+        id: 'peo-plo-mappings',
+        label: 'PEO-PLO Mappings',
+        icon: Compass,
+        href: '/admin/peo-plo-mappings',
       },
       {
         id: 'clo-plo-mappings',
@@ -259,6 +275,12 @@ const adminNavigation = [
         href: '/admin/results',
       },
       {
+        id: 'academic-records',
+        label: 'Academic Records',
+        icon: FileSpreadsheet,
+        href: '/admin/results/academic-records',
+      },
+      {
         id: 'pass-fail-criteria',
         label: 'Pass/Fail Criteria',
         icon: ShieldCheck,
@@ -275,6 +297,30 @@ const adminNavigation = [
         label: 'Graduation Tracker',
         icon: GraduationCap,
         href: '/admin/results/graduation',
+      },
+      {
+        id: 'graduation-criteria',
+        label: 'Graduation Criteria',
+        icon: ShieldCheck,
+        href: '/admin/results/graduation-criteria',
+      },
+      {
+        id: 'peo-attainments',
+        label: 'PEO Attainments',
+        icon: Trophy,
+        href: '/admin/results/peo-attainments',
+      },
+      {
+        id: 'bloom-analysis',
+        label: "Bloom's Analysis",
+        icon: PieChart,
+        href: '/admin/results/bloom-analysis',
+      },
+      {
+        id: 'plo-coverage-matrix',
+        label: 'CLO-PLO Coverage Matrix',
+        icon: Grid,
+        href: '/admin/results/plo-coverage-matrix',
       },
     ],
   },
@@ -432,10 +478,22 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/faculty/results/clo-attainments',
         },
         {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/faculty/results/llo-attainments',
+        },
+        {
           id: 'plo-attainments',
           label: 'PLO Attainments',
           icon: TrendingUp,
           href: '/faculty/results/plo-attainments',
+        },
+        {
+          id: 'academic-records',
+          label: 'Academic Records',
+          icon: FileSpreadsheet,
+          href: '/faculty/results/academic-records',
         },
         {
           id: 'surveys',
@@ -504,6 +562,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'CLO Attainments',
           icon: Target,
           href: '/student/results/clo-attainments',
+        },
+        {
+          id: 'llo-attainments',
+          label: 'LLO Attainments',
+          icon: FlaskConical,
+          href: '/student/results/llo-attainments',
         },
         {
           id: 'plo-attainments',

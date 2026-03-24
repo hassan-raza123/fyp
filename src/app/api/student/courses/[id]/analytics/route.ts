@@ -4,8 +4,9 @@ import { getStudentIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const courseId = parseInt(params.id);
     if (isNaN(courseId)) {
@@ -74,7 +75,7 @@ export async function GET(
       where: {
         courseOfferingId: courseOfferingId,
         status: {
-          in: ['active', 'published'],
+          in: ['active', 'completed'],
         },
       },
       include: {
@@ -130,7 +131,6 @@ export async function GET(
     const cloAttainments = await prisma.closattainments.findMany({
       where: {
         courseOfferingId: courseOfferingId,
-        sectionId: sectionId,
         status: 'active',
       },
       include: {

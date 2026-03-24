@@ -45,6 +45,12 @@ export async function GET(request: NextRequest) {
               sms: false,
             },
           },
+          obe: {
+            directWeight: 0.8,
+            indirectWeight: 0.2,
+            attainmentThreshold: 60,
+            minGraduationCGPA: 2.0,
+          },
         },
       });
     }
@@ -62,11 +68,18 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings
 export async function PUT(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { error: 'Only admins can update settings' },
+        { status: 403 }
       );
     }
 

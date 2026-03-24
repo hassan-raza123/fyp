@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email-utils';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 const forgotPasswordSchema = z.object({
   email: z

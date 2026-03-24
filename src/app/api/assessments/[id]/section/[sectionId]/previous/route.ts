@@ -4,8 +4,9 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } }
+  { params: _params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await _params;
   try {
     const assessmentId = parseInt(params.id);
     const sectionId = parseInt(params.sectionId);
@@ -49,7 +50,7 @@ export async function GET(
           not: assessmentId,
         },
         status: {
-          in: ['evaluated', 'published'],
+          in: ['active', 'completed'] as any,
         },
       },
       include: {
@@ -91,7 +92,7 @@ export async function GET(
           in: studentIds,
         },
         status: {
-          in: ['evaluated', 'published'],
+          in: ['evaluated', 'published'] as any,
         },
       },
     });

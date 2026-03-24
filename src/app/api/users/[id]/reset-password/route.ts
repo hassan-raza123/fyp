@@ -14,9 +14,13 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    const user = await requireAuth(request);
-    if (!user) {
+    const authResult = await requireAuth(request);
+    if (!authResult.success) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!['admin', 'super_admin'].includes(authResult.user?.role ?? '')) {
+      return NextResponse.json({ error: 'Only admins can reset passwords' }, { status: 403 });
     }
 
     // Get the target user's email

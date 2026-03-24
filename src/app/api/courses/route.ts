@@ -10,7 +10,7 @@ const createCourseSchema = z.object({
   creditHours: z.coerce.number().min(1, 'Credit hours must be at least 1'),
   theoryHours: z.coerce.number().min(0, 'Theory hours cannot be negative'),
   labHours: z.coerce.number().min(0, 'Lab hours cannot be negative'),
-  type: z.enum(['THEORY', 'LAB', 'PROJECT', 'THESIS'] as const),
+  type: z.enum(['THEORY', 'LAB', 'THEORY_LAB', 'PROJECT', 'THESIS'] as const),
   status: z.enum(['active', 'inactive', 'archived'] as const).default('active'),
   prerequisites: z.array(z.number()).optional(),
   programIds: z.array(z.number()).optional(),
@@ -399,6 +399,23 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateCourseSchema.parse(body);
 
@@ -518,6 +535,23 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check authentication and authorization
+    const { requireAuth } = await import('@/lib/auth');
+    const { success, user } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

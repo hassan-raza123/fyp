@@ -8,8 +8,9 @@ import { requireAuth } from '@/lib/auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, error } = await requireAuth(request);
     if (!success) {
@@ -57,8 +58,9 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) {
@@ -73,13 +75,45 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, description, dueDate, status } = body;
+    const { title, description, type, dueDate, status } = body;
+
+    // Validate status transition if status is being changed
+    if (status !== undefined) {
+      const validStatuses = ['draft', 'active', 'closed'];
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+          { status: 400 }
+        );
+      }
+
+      const currentSurvey = await prisma.surveys.findUnique({
+        where: { id: parseInt(params.id) },
+        select: { status: true },
+      });
+
+      if (currentSurvey) {
+        const allowedTransitions: Record<string, string[]> = {
+          draft: ['active'],
+          active: ['closed'],
+          closed: [], // closed surveys cannot be reopened
+        };
+        const allowed = allowedTransitions[currentSurvey.status] || [];
+        if (!allowed.includes(status)) {
+          return NextResponse.json(
+            { success: false, error: `Cannot transition from '${currentSurvey.status}' to '${status}'. Allowed transitions: ${allowed.length > 0 ? allowed.join(', ') : 'none'}` },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     const survey = await prisma.surveys.update({
       where: { id: parseInt(params.id) },
       data: {
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
+        ...(type !== undefined && { type }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(status !== undefined && { status }),
       },
@@ -101,8 +135,9 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
+  const params = await _params;
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) {
