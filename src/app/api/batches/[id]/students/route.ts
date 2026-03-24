@@ -6,7 +6,7 @@ import { requireRole } from '@/lib/auth';
 // GET /api/batches/[id]/students - Get students in a batch
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const batch = await prisma.Batch.findUnique({
@@ -43,7 +43,7 @@ export async function GET(
 // POST /api/batches/[id]/students - Add students to a batch
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authentication and authorization check
@@ -149,7 +149,7 @@ export async function POST(
 // DELETE /api/batches/[id]/students - Remove students from a batch
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authentication and authorization check

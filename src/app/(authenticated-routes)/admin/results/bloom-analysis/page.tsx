@@ -254,7 +254,7 @@ function BloomAnalysisContent() {
               {
                 label: 'Total Outcomes',
                 value: data.total,
-                sub: `${data.total - data.summary?.unset} with Bloom level`,
+                sub: `${data.totalWithLevel} with Bloom level`,
                 color: primaryColor,
                 bg: iconBgColor,
               },
@@ -274,7 +274,7 @@ function BloomAnalysisContent() {
               },
               {
                 label: 'Unassigned',
-                value: data.summary?.unset ?? 0,
+                value: data.total - data.totalWithLevel,
                 sub: `${data.unsetPercent}% without Bloom level`,
                 color: '#f59e0b',
                 bg: 'rgba(245,158,11,0.1)',

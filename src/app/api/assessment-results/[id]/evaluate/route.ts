@@ -5,7 +5,7 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // PATCH - Evaluate a student result (update marks, remarks, status)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resultId = parseInt(params.id);

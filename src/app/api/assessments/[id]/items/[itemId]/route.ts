@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string; itemId: string } }
+  { params: _params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   try {
     const data = await req.json();
@@ -60,7 +60,7 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string; itemId: string } }
+  { params: _params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   try {
     const itemId = parseInt(params.itemId);

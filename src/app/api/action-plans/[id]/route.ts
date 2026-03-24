@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getFacultyIdFromRequest } from '@/lib/auth';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const { success, error } = await requireAuth(request);
+  const params = await _params;
   if (!success) return NextResponse.json({ error }, { status: 401 });
 
   const plan = await prisma.action_plans.findUnique({
@@ -24,8 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ success: true, data: plan });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const { success, user, error } = await requireAuth(request);
+  const params = await _params;
   if (!success) return NextResponse.json({ error }, { status: 401 });
 
   if (user?.role !== 'admin' && user?.role !== 'faculty') {

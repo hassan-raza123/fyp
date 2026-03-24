@@ -4,7 +4,7 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } }
+  { params: _params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
   try {
     const assessmentId = parseInt(params.id);

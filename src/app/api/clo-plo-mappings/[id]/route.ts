@@ -4,7 +4,7 @@ import type { UpdateCLOPLOMappingDTO } from '@/types/clo-plo-mapping';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
@@ -49,7 +49,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await prisma.cloplomappings.delete({

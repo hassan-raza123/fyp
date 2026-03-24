@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const surveyId = parseInt(params.id);
@@ -132,7 +132,7 @@ export async function POST(
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const survey = await prisma.surveys.findUnique({

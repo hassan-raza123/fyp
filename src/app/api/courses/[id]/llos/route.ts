@@ -6,7 +6,7 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/courses/[id]/llos
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success } = await requireAuth(req);
@@ -78,7 +78,7 @@ export async function GET(
 // POST /api/courses/[id]/llos
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, user } = await requireAuth(req);

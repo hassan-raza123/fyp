@@ -27,6 +27,7 @@ interface Survey {
   title: string;
   description: string | null;
   status: 'draft' | 'active' | 'closed';
+  type?: string | null;
   dueDate: string | null;
   courseOffering: {
     course: { code: string; name: string };

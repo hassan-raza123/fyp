@@ -5,7 +5,7 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // GET - Get detailed CLO attainment information
 export async function GET(
   req: NextRequest,
-  { params }: { params: { cloId: string } }
+  { params: _params }: { params: Promise<{ cloId: string }> }
 ) {
   try {
     const cloId = parseInt(params.cloId);

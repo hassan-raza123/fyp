@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         },
         program: { select: { id: true, code: true, name: true } },
         batch: { select: { id: true, name: true } },
-        studentgrades: {
+        studentGrades: {
           where: {
             status: 'active',
             ...(semesterId
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
             courseOffering: { semester: { startDate: 'asc' } },
           },
         },
-        cumulativegpa: {
+        cumulativeGPA: {
           select: { cumulativeGPA: true, totalCreditHours: true, completedSemesters: true },
         },
       },
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         }
       >();
 
-      for (const grade of student.studentgrades) {
+      for (const grade of student.studentGrades) {
         const sem = grade.courseOffering.semester;
         const course = grade.courseOffering.course;
 
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
           courses: sem.courses,
         }));
 
-      const cgpa = student.cumulativegpa?.cumulativeGPA ?? 0;
+      const cgpa = student.cumulativeGPA?.cumulativeGPA ?? 0;
 
       return {
         id: student.id,
@@ -159,8 +159,8 @@ export async function GET(request: NextRequest) {
           : null,
         batch: student.batch ? { id: student.batch.id, name: student.batch.name } : null,
         cgpa: Number(cgpa),
-        completedSemesters: student.cumulativegpa?.completedSemesters ?? semesters.length,
-        totalCreditHours: student.cumulativegpa?.totalCreditHours ?? 0,
+        completedSemesters: student.cumulativeGPA?.completedSemesters ?? semesters.length,
+        totalCreditHours: student.cumulativeGPA?.totalCreditHours ?? 0,
         semesters,
       };
     });

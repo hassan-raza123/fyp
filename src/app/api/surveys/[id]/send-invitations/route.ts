@@ -13,7 +13,7 @@ const MAX_EMAILS_PER_REQUEST = 200;
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, user, error } = await requireAuth(request);

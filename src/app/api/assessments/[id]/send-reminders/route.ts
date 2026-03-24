@@ -5,7 +5,7 @@ import { createNotificationsForUsers } from '@/lib/notification-utils';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const facultyId = await getFacultyIdFromRequest(req);

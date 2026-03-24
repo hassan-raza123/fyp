@@ -5,7 +5,7 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 // PATCH - Update a grade (manual adjustment)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const gradeId = parseInt(params.id);
@@ -92,7 +92,7 @@ export async function PATCH(
 // POST - Submit grades for approval
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const gradeId = parseInt(params.id);

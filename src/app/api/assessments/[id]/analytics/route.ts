@@ -4,7 +4,7 @@ import { getFacultyIdFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const assessmentId = parseInt(params.id);
@@ -105,8 +105,8 @@ export async function GET(
             id: true,
             user: {
               select: {
-                firstName: true,
-                lastName: true,
+                first_name: true,
+                last_name: true,
                 email: true,
               },
             },
@@ -265,7 +265,7 @@ export async function GET(
         itemAnalysis,
         studentResults: results.map((r) => ({
           studentId: r.student.id,
-          studentName: `${r.student.user.firstName} ${r.student.user.lastName}`,
+          studentName: `${r.student.user.first_name} ${r.student.user.last_name}`,
           rollNumber: r.student.rollNumber,
           obtainedMarks: r.obtainedMarks,
           totalMarks: r.totalMarks,

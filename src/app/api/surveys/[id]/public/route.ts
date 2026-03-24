@@ -5,8 +5,9 @@ import { randomBytes } from 'crypto';
 // POST /api/surveys/[id]/public
 // Generates (or returns existing) a public token link for alumni/employer surveys.
 // Requires admin auth.
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   try {
+  const params = await _params;
     const survey = await prisma.surveys.findUnique({
       where: { id: Number(params.id) },
       select: { id: true, type: true, status: true, publicToken: true },

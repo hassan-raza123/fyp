@@ -7,7 +7,7 @@ const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
 // GET - Get detailed LLO attainment information
 export async function GET(
   req: NextRequest,
-  { params }: { params: { lloId: string } }
+  { params: _params }: { params: Promise<{ lloId: string }> }
 ) {
   try {
     const lloId = parseInt(params.lloId);

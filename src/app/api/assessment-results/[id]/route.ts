@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { success, error } = await requireAuth(request as any);

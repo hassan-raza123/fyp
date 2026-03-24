@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 // GET /api/batches/[id]/sections - Get sections for a batch
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
