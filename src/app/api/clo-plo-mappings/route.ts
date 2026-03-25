@@ -21,24 +21,28 @@ export async function GET(request: NextRequest) {
         clo: {
           include: {
             course: {
-              include: {
-                programs: true,
-              },
+              include: { programMappings: { include: { program: true } } },
             },
           },
         },
-        plo: {
-          include: {
-            program: true,
-          },
-        },
+        plo: { include: { program: true } },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, data: mappings });
+    const data = mappings.map((m) => ({
+      ...m,
+      clo: {
+        ...m.clo,
+        course: {
+          ...m.clo.course,
+          programs: m.clo.course.programMappings.map((pm) => pm.program),
+          programMappings: undefined,
+        },
+      },
+    }));
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error fetching CLO-PLO mappings:', error);
     return NextResponse.json(
@@ -74,16 +78,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Get CLO with its course and programs
-    const clo = await prisma.clos.findUnique({
+    const cloRaw = await prisma.clos.findUnique({
       where: { id: parseInt(cloId) },
       include: {
-        course: {
-          include: {
-            programs: true,
-          },
-        },
+        course: { include: { programMappings: { include: { program: true } } } },
       },
     });
+    const clo = cloRaw
+      ? {
+          ...cloRaw,
+          course: {
+            ...cloRaw.course,
+            programs: cloRaw.course.programMappings.map((m) => m.program),
+          },
+        }
+      : null;
 
     if (!clo) {
       return NextResponse.json(

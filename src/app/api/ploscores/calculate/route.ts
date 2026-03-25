@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const courseOfferings = await prisma.courseofferings.findMany({
       where: {
         semesterId: sid,
-        course: { programs: { some: { id: pid } } },
+        course: { programMappings: { some: { A: pid } } },
       },
       include: {
         course: {

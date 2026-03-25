@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
     const courseOfferingsRaw = await prisma.courseofferings.findMany({
       where: {
         semesterId: sid,
-        course: { programs: { some: { id: pid } } },
+        course: { programMappings: { some: { A: pid } } },
       },
       select: {
         id: true,
@@ -374,7 +374,7 @@ export async function POST(request: NextRequest) {
     const allOfferings = await prisma.courseofferings.findMany({
       where: {
         semesterId: sid,
-        course: { programs: { some: { id: pid } } },
+        course: { programMappings: { some: { A: pid } } },
       },
       include: {
         course: {

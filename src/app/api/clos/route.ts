@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       include: {
         course: {
           include: {
-            programs: true,
+            programMappings: { include: { program: true } },
           },
         },
       },
@@ -29,7 +29,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: clos });
+    const data = clos.map((clo) => ({
+      ...clo,
+      course: {
+        ...clo.course,
+        programs: clo.course.programMappings.map((m) => m.program),
+        programMappings: undefined,
+      },
+    }));
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error fetching CLOs:', error);
     return NextResponse.json(

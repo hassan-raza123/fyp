@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
             semester: { select: { id: true, name: true } },
             course: {
               include: {
-                programs: { select: { id: true, name: true, code: true } },
+                programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
               },
             },
           },
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 
     sections.forEach((section) => {
       const { course, semester } = section.courseOffering;
-      course.programs.forEach((program) => {
+      course.programMappings.map((m) => m.program).forEach((program) => {
         if (!programsMap.has(program.id)) {
           programsMap.set(program.id, program);
         }
@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
     const courseOfferingsRaw = await prisma.courseofferings.findMany({
       where: {
         semesterId: sid,
-        course: { programs: { some: { id: pid } } },
+        course: { programMappings: { some: { A: pid } } },
       },
       select: {
         id: true,

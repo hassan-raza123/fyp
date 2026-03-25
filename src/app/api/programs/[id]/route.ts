@@ -43,7 +43,7 @@ export async function GET(
         _count: {
           select: {
             students: true,
-            courses: true,
+            courseMappings: true,
           },
         },
       },
@@ -76,7 +76,7 @@ export async function GET(
         },
         stats: {
           students: program._count.students,
-          courses: program._count.courses,
+          courses: program._count.courseMappings,
         },
       },
     });
@@ -208,7 +208,7 @@ export async function PUT(
         _count: {
           select: {
             students: true,
-            courses: true,
+            courseMappings: true,
           },
         },
       },
@@ -231,7 +231,7 @@ export async function PUT(
         },
         stats: {
           students: program._count.students,
-          courses: program._count.courses,
+          courses: program._count.courseMappings,
         },
       },
     });
@@ -294,7 +294,7 @@ export async function DELETE(
         _count: {
           select: {
             students: true,
-            courses: true,
+            courseMappings: true,
           },
         },
       },
@@ -311,14 +311,14 @@ export async function DELETE(
     }
 
     // Check for dependencies
-    if (program._count.students > 0 || program._count.courses > 0) {
+    if (program._count.students > 0 || program._count.courseMappings > 0) {
       return NextResponse.json(
         {
           success: false,
           error: 'Cannot delete program with active students or courses',
           details: {
             students: program._count.students,
-            courses: program._count.courses,
+            courses: program._count.courseMappings,
           },
         },
         { status: 400 }

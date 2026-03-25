@@ -11,7 +11,7 @@ type ProgramWithCounts = Prisma.programsGetPayload<{
     _count: {
       select: {
         students: true;
-        courses: true;
+        courseMappings: true;
       };
     };
   };
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               students: true,
-              courses: true,
+              courseMappings: true,
             },
           },
         },
@@ -89,8 +89,8 @@ export async function GET(request: NextRequest) {
     const transformedPrograms = programs.map((program) => ({
       ...program,
       _count: {
-        ...program._count,
-        courses: program._count.courses,
+        students: program._count.students,
+        courses: program._count.courseMappings,
       },
     }));
 
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
         _count: {
           select: {
             students: true,
-            courses: true,
+            courseMappings: true,
           },
         },
       },
