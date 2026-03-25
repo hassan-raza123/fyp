@@ -61,7 +61,7 @@ export async function GET(
           },
         },
         courses_A: {
-          include: { courseA: { select: { id: true, code: true, name: true } } },
+          include: { courseB: { select: { id: true, code: true, name: true } } },
         },
         courseOfferings: {
           include: {
@@ -284,7 +284,7 @@ export async function PUT(
       },
       include: {
         department: { select: { id: true, name: true, code: true } },
-        courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
+        courses_A: { include: { courseB: { select: { id: true, code: true, name: true } } } },
         programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
         clos: {
           where: { status: 'active' },
@@ -297,7 +297,7 @@ export async function PUT(
       success: true,
       data: {
         ...course,
-        courses_A: course.courses_A.map((r: any) => r.courseA),
+        courses_A: course.courses_A.map((r: any) => r.courseB),
         programs: course.programMappings.map((r: any) => r.program),
         programMappings: undefined,
       },

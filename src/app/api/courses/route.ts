@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
         },
         courses_A: {
           include: {
-            courseA: { select: { id: true, code: true, name: true } },
+            courseB: { select: { id: true, code: true, name: true } },
           },
         },
         programMappings: {
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
 
     const transformedCourses = courses.map((c) => ({
       ...c,
-      courses_A: c.courses_A.map((r) => r.courseA),
+      courses_A: c.courses_A.map((r) => r.courseB),
       programs: c.programMappings.map((r) => r.program),
       programMappings: undefined,
     }));

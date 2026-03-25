@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       // courses_B = prerequisites OF this course (this course depends on these)
       courses_B: {
         include: {
-          courseB: {
+          courseA: {
             select: { id: true, code: true, name: true, creditHours: true, type: true, status: true },
           },
         },
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
-  return NextResponse.json({ success: true, data: course.courses_B.map((r: any) => r.courseB) });
+  return NextResponse.json({ success: true, data: course.courses_B.map((r: any) => r.courseA) });
 }
 
 // POST /api/courses/[id]/prerequisites — add a prerequisite
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   await prisma.courseprerequisites.create({
-    data: { A: courseId, B: parseInt(prerequisiteId) },
+    data: { A: parseInt(prerequisiteId), B: courseId },
   });
 
   const prerequisite = await prisma.courses.findUnique({
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   }
 
   await prisma.courseprerequisites.delete({
-    where: { A_B: { A: courseId, B: parseInt(prerequisiteId) } },
+    where: { A_B: { A: parseInt(prerequisiteId), B: courseId } },
   });
 
   return NextResponse.json({ success: true, message: 'Prerequisite removed' });

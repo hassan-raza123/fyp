@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
                     department: true,
                     courses_A: {
                       include: {
-                        courseA: { select: { id: true, code: true, name: true } },
+                        courseB: { select: { id: true, code: true, name: true } },
                       },
                     },
                   },
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       if (!courseMap.has(course.id)) {
         courseMap.set(course.id, {
           ...course,
-          courses_A: (course.courses_A || []).map((r: any) => r.courseA),
+          courses_A: (course.courses_A || []).map((r: any) => r.courseB),
           sections: [],
           currentSection: section.name,
           currentInstructor: facultyName,
