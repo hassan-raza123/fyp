@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     // Check authentication
-    const { success, user, error } = await requireAuth(request);
+    const { success, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -72,7 +72,7 @@ export async function POST(
 ) {
   try {
     // Check authentication
-    const { success, user, error } = await requireAuth(request);
+    const { success, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -156,184 +156,6 @@ export async function POST(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create PLO',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT /api/programs/[id]/plos/[ploId]
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; ploId: string }> }
-) {
-  try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { id, ploId: ploIdParam } = await params;
-    const programId = parseInt(id);
-    const ploId = parseInt(ploIdParam);
-
-    if (isNaN(programId) || isNaN(ploId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid program or PLO ID' },
-        { status: 400 }
-      );
-    }
-
-    // Check if PLO exists
-    const existingPLO = await prisma.plos.findFirst({
-      where: {
-        id: ploId,
-        programId,
-      },
-    });
-
-    if (!existingPLO) {
-      return NextResponse.json(
-        { success: false, error: 'PLO not found' },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    const { code, description, bloomLevel, status } = body;
-
-    // Check if new code already exists for this program
-    if (code && code !== existingPLO.code) {
-      const codeExists = await prisma.plos.findFirst({
-        where: {
-          programId,
-          code,
-          id: { not: ploId },
-        },
-      });
-
-      if (codeExists) {
-        return NextResponse.json(
-          { success: false, error: 'PLO code already exists for this program' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Update PLO
-    const plo = await prisma.plos.update({
-      where: { id: ploId },
-      data: {
-        code,
-        description,
-        bloomLevel,
-        status: status as plo_status,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'PLO updated successfully',
-      data: plo,
-    });
-  } catch (error) {
-    console.error('Error updating PLO:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to update PLO',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/programs/[id]/plos/[ploId]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; ploId: string }> }
-) {
-  try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { id, ploId: ploIdParam } = await params;
-    const programId = parseInt(id);
-    const ploId = parseInt(ploIdParam);
-
-    if (isNaN(programId) || isNaN(ploId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid program or PLO ID' },
-        { status: 400 }
-      );
-    }
-
-    // Check if PLO exists
-    const existingPLO = await prisma.plos.findFirst({
-      where: {
-        id: ploId,
-        programId,
-      },
-      include: {
-        _count: {
-          select: {
-            cloMappings: true,
-            ploAttainments: true,
-          },
-        },
-      },
-    });
-
-    if (!existingPLO) {
-      return NextResponse.json(
-        { success: false, error: 'PLO not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check for dependencies
-    if (
-      existingPLO._count.cloMappings > 0 ||
-      existingPLO._count.ploAttainments > 0
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete PLO with existing CLO mappings or attainments',
-          details: {
-            cloMappings: existingPLO._count.cloMappings,
-            ploAttainments: existingPLO._count.ploAttainments,
-          },
-        },
-        { status: 400 }
-      );
-    }
-
-    // Delete PLO
-    await prisma.plos.delete({
-      where: { id: ploId },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'PLO deleted successfully',
-    });
-  } catch (error) {
-    console.error('Error deleting PLO:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete PLO',
       },
       { status: 500 }
     );

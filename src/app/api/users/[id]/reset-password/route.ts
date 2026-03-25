@@ -6,10 +6,11 @@ import { sendPasswordResetEmail } from '@/lib/email-utils';
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
