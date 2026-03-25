@@ -158,9 +158,9 @@ export async function GET(request: NextRequest) {
       where.status = status as course_status;
     }
     if (programId && programId !== 'all') {
-      where.programs = {
+      where.programMappings = {
         some: {
-          id: parseInt(programId),
+          A: parseInt(programId),
         },
       };
     }
@@ -183,17 +183,13 @@ export async function GET(request: NextRequest) {
           },
         },
         courses_A: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
+          include: {
+            courseA: { select: { id: true, code: true, name: true } },
           },
         },
-        programs: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
+        programMappings: {
+          include: {
+            program: { select: { id: true, name: true, code: true } },
           },
         },
         clos: {
@@ -209,9 +205,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const transformedCourses = courses.map((c) => ({
+      ...c,
+      courses_A: c.courses_A.map((r) => r.courseA),
+      programs: c.programMappings.map((r) => r.program),
+      programMappings: undefined,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: courses,
+      data: transformedCourses,
       pagination: {
         total,
         page,
@@ -319,60 +322,34 @@ export async function POST(request: NextRequest) {
           connect: { id: currentDepartmentId }, // Always use current department from settings
         },
         courses_A: prerequisites
-          ? {
-              connect: prerequisites.map((id) => ({ id })),
-            }
+          ? { create: prerequisites.map((B) => ({ B })) }
           : undefined,
-        programs: programIds
-          ? {
-              connect: programIds.map((id) => ({ id })),
-            }
+        programMappings: programIds
+          ? { create: programIds.map((A) => ({ A })) }
           : undefined,
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        courses_A: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
-        },
-        programs: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
+        department: { select: { id: true, name: true, code: true } },
+        courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
+        programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
         clos: {
-          where: {
-            status: 'active',
-          },
-          select: {
-            id: true,
-            code: true,
-            description: true,
-          },
+          where: { status: 'active' },
+          select: { id: true, code: true, description: true },
         },
       },
     });
 
-    console.log(
-      'Course created successfully:',
-      JSON.stringify(course, null, 2)
-    );
+    console.log('Course created successfully:', JSON.stringify(course, null, 2));
 
     // Return success response
     return NextResponse.json({
       success: true,
-      data: course,
+      data: {
+        ...course,
+        courses_A: course.courses_A.map((r) => r.courseA),
+        programs: course.programMappings.map((r) => r.program),
+        programMappings: undefined,
+      },
       message: 'Course created successfully',
     });
   } catch (error) {
@@ -460,62 +437,44 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Update course
+    // Update course — for explicit m2m, clear and recreate junction rows
+    if (prerequisites !== undefined) {
+      await prisma.courseprerequisites.deleteMany({ where: { A: id } });
+    }
+    if (programIds !== undefined) {
+      await prisma.programcourses.deleteMany({ where: { B: id } });
+    }
+
     const course = await prisma.courses.update({
       where: { id },
       data: {
         ...updateData,
         courses_A: prerequisites
-          ? {
-              set: [], // Clear existing prerequisites
-              connect: prerequisites.map((id) => ({ id })),
-            }
+          ? { create: prerequisites.map((B) => ({ B })) }
           : undefined,
-        programs: programIds
-          ? {
-              set: [], // Clear existing program mappings
-              connect: programIds.map((id) => ({ id })),
-            }
+        programMappings: programIds
+          ? { create: programIds.map((A) => ({ A })) }
           : undefined,
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        courses_A: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
-        },
-        programs: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
+        department: { select: { id: true, name: true, code: true } },
+        courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
+        programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
         clos: {
-          where: {
-            status: 'active',
-          },
-          select: {
-            id: true,
-            code: true,
-            description: true,
-          },
+          where: { status: 'active' },
+          select: { id: true, code: true, description: true },
         },
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: course,
+      data: {
+        ...course,
+        courses_A: course.courses_A.map((r) => r.courseA),
+        programs: course.programMappings.map((r) => r.program),
+        programMappings: undefined,
+      },
       message: 'Course updated successfully',
     });
   } catch (error) {

@@ -16,16 +16,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       id: true,
       code: true,
       name: true,
-      // courses_A = courses that THIS course is a prerequisite FOR (other courses depend on this)
       // courses_B = prerequisites OF this course (this course depends on these)
       courses_B: {
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          creditHours: true,
-          type: true,
-          status: true,
+        include: {
+          courseB: {
+            select: { id: true, code: true, name: true, creditHours: true, type: true, status: true },
+          },
         },
       },
     },
@@ -33,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
-  return NextResponse.json({ success: true, data: course.courses_B });
+  return NextResponse.json({ success: true, data: course.courses_B.map((r: any) => r.courseB) });
 }
 
 // POST /api/courses/[id]/prerequisites — add a prerequisite
@@ -57,14 +53,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'A course cannot be its own prerequisite' }, { status: 400 });
   }
 
-  // Use Prisma implicit many-to-many connect
-  await prisma.courses.update({
-    where: { id: courseId },
-    data: {
-      courses_B: {
-        connect: { id: parseInt(prerequisiteId) },
-      },
-    },
+  await prisma.courseprerequisites.create({
+    data: { A: courseId, B: parseInt(prerequisiteId) },
   });
 
   const prerequisite = await prisma.courses.findUnique({
@@ -92,13 +82,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return NextResponse.json({ error: 'prerequisiteId is required' }, { status: 400 });
   }
 
-  await prisma.courses.update({
-    where: { id: courseId },
-    data: {
-      courses_B: {
-        disconnect: { id: parseInt(prerequisiteId) },
-      },
-    },
+  await prisma.courseprerequisites.delete({
+    where: { A_B: { A: courseId, B: parseInt(prerequisiteId) } },
   });
 
   return NextResponse.json({ success: true, message: 'Prerequisite removed' });

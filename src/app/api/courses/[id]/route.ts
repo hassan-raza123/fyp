@@ -61,11 +61,7 @@ export async function GET(
           },
         },
         courses_A: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
+          include: { courseA: { select: { id: true, code: true, name: true } } },
         },
         courseOfferings: {
           include: {
@@ -96,12 +92,8 @@ export async function GET(
             code: 'asc',
           },
         },
-        programs: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
+        programMappings: {
+          include: { program: { select: { id: true, name: true, code: true } } },
         },
       },
     });
@@ -167,8 +159,8 @@ export async function GET(
         type: transformedCourse.type,
         status: transformedCourse.status,
         department: transformedCourse.department,
-        prerequisites: transformedCourse.courses_A || [],
-        programs: transformedCourse.programs || [],
+        prerequisites: (transformedCourse.courses_A || []).map((r: any) => r.courseA),
+        programs: (transformedCourse.programMappings || []).map((r: any) => r.program),
         stats: {
           clos: transformedCourse.clos?.length || 0,
           offerings: transformedCourse.courseOfferings?.length || 0,
@@ -272,61 +264,43 @@ export async function PUT(
 
     const { prerequisites, programIds, ...updateData } = validatedData;
 
+    if (prerequisites !== undefined) {
+      await prisma.courseprerequisites.deleteMany({ where: { A: id } });
+    }
+    if (programIds !== undefined) {
+      await prisma.programcourses.deleteMany({ where: { B: id } });
+    }
+
     const course = await prisma.courses.update({
       where: { id },
       data: {
         ...updateData,
         courses_A: prerequisites
-          ? {
-              set: [], // Clear existing prerequisites
-              connect: prerequisites.map((id) => ({ id })),
-            }
+          ? { create: prerequisites.map((B) => ({ B })) }
           : undefined,
-        programs: programIds
-          ? {
-              set: [], // Clear existing program mappings
-              connect: programIds.map((id) => ({ id })),
-            }
+        programMappings: programIds
+          ? { create: programIds.map((A) => ({ A })) }
           : undefined,
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        courses_A: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
-        },
-        programs: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
+        department: { select: { id: true, name: true, code: true } },
+        courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
+        programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
         clos: {
-          where: {
-            status: 'active',
-          },
-          select: {
-            id: true,
-            code: true,
-            description: true,
-          },
+          where: { status: 'active' },
+          select: { id: true, code: true, description: true },
         },
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: course,
+      data: {
+        ...course,
+        courses_A: course.courses_A.map((r: any) => r.courseA),
+        programs: course.programMappings.map((r: any) => r.program),
+        programMappings: undefined,
+      },
       message: 'Course updated successfully',
     });
   } catch (error) {

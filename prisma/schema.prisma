@@ -44,7 +44,6 @@ model roles {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   userRoles   userroles[]
-  permissions permissions[] @relation("permissiontorole")
 }
 
 model permissions {
@@ -53,7 +52,6 @@ model permissions {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  roles       roles[]  @relation("permissiontorole")
 }
 
 model userroles {
@@ -107,7 +105,7 @@ model programs {
   peos             peos[]
   department       departments      @relation(fields: [departmentId], references: [id])
   students         students[]
-  courses            courses[]              @relation("programtocourse")
+  courseMappings     programcourses[]
   curriculum         program_curriculum[]
   surveys            surveys[]              @relation("ProgramSurveys")
   graduationCriteria graduation_criteria?
@@ -132,10 +130,9 @@ model courses {
   llos            llos[]
   courseOfferings courseofferings[]
   department      departments       @relation(fields: [departmentId], references: [id])
-  courses_A       courses[]         @relation("courseprerequisites")
-  courses_B       courses[]         @relation("courseprerequisites")
-  faculties       faculties[]       @relation("facultycourses")
-  programs        programs[]        @relation("programtocourse")
+  courses_A       courseprerequisites[] @relation("CourseIsPrerequisiteOf")
+  courses_B       courseprerequisites[] @relation("CourseHasPrerequisite")
+  programMappings programcourses[]
   curriculum      program_curriculum[]
 
   @@index([departmentId])
@@ -242,8 +239,6 @@ model faculties {
   sections         sections[]
   evaluatedResults studentassessmentresults[] @relation("ResultEvaluator")
   gradesCalculated studentgrades[]            @relation("GradeCalculator")
-  courses          courses[]                  @relation("facultycourses")
-
   @@index([departmentId])
 }
 
@@ -1215,6 +1210,30 @@ model rubric_criteria {
   rubric         rubrics  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
 
   @@index([rubricId])
+}
+
+// ─── Explicit junction tables (replaces implicit m2m — Aiven requires PK) ─────
+
+model courseprerequisites {
+  A       Int
+  B       Int
+  courseA courses @relation("CourseIsPrerequisiteOf", fields: [A], references: [id], onDelete: Cascade)
+  courseB courses @relation("CourseHasPrerequisite", fields: [B], references: [id], onDelete: Cascade)
+
+  @@id([A, B])
+  @@index([B])
+  @@map("_courseprerequisites")
+}
+
+model programcourses {
+  A       Int
+  B       Int
+  program programs @relation(fields: [A], references: [id], onDelete: Cascade)
+  course  courses  @relation(fields: [B], references: [id], onDelete: Cascade)
+
+  @@id([A, B])
+  @@index([B])
+  @@map("_programtocourse")
 }
 
 // ─── Bloom's Domain ───────────────────────────────────────────────────────────
