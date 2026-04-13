@@ -98,12 +98,10 @@ export async function POST(request: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(request);
     if (!success) {
-      console.log('Auth failed:', error);
       return NextResponse.json({ error }, { status: 401 });
     }
 
     const body = await request.json();
-    console.log('Received request body:', body);
     let {
       title,
       description,
@@ -120,11 +118,8 @@ export async function POST(request: NextRequest) {
     if (normalizedType === 'exam') {
       normalizedType = 'mid_exam'; // Map 'exam' to 'mid_exam'
     }
-    console.log('Mapped/Normalized assessment type:', normalizedType);
-
     // Validate assessment type
     if (!validAssessmentTypes.includes(normalizedType)) {
-      console.log('Invalid assessment type received:', normalizedType);
       return NextResponse.json(
         {
           error: 'Invalid assessment type',
@@ -142,7 +137,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!faculty) {
-      console.log('Faculty not found for userId:', user?.userId);
       return NextResponse.json({ error: 'Faculty not found' }, { status: 404 });
     }
 
