@@ -490,6 +490,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/faculty/results/plo-attainments',
         },
         {
+          id: 'result-sheet',
+          label: 'Result Sheet',
+          icon: FileSpreadsheet,
+          href: '/faculty/results/result-sheet',
+        },
+        {
           id: 'academic-records',
           label: 'Academic Records',
           icon: FileSpreadsheet,
