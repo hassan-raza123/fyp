@@ -197,7 +197,6 @@ export default function FacultyPage() {
           phoneNumber: data.data.user?.phone_number || '',
           status: (facultyStatus === 'active' || facultyStatus === 'inactive' ? facultyStatus : 'active') as 'active' | 'inactive',
         });
-        console.log('Edit faculty data loaded:', data.data);
       } else {
         throw new Error(data.error || 'Failed to fetch faculty');
       }
@@ -836,7 +835,6 @@ export default function FacultyPage() {
                 <Select
                   value={editFaculty.status || 'active'}
                   onValueChange={(value: 'active' | 'inactive') => {
-                    console.log('Status changed to:', value);
                     setEditFaculty({ ...editFaculty, status: value });
                   }}
                   disabled={isUpdating}

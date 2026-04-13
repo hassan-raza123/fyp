@@ -691,25 +691,78 @@ const CLOAttainmentsPage = () => {
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-4">
-          {selectedCourseData && (
+          {selectedCourseData ? (
             <div className="space-y-4">
+              {/* Trend Analysis */}
               <div className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <div className="p-4 border-b border-card-border">
                   <h3 className="text-sm font-semibold text-primary-text">Trend Analysis</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">CLO attainment % across semesters</p>
                 </div>
                 <div className="p-4">
-                  <p className="text-xs text-secondary-text">Historical trend analysis coming soon...</p>
+                  {cloDetails && cloDetails.attainments.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <LineChart data={cloDetails.attainments.map((a) => ({
+                        semester: a.semester,
+                        attainment: parseFloat(a.attainmentPercent.toFixed(1)),
+                        threshold: a.threshold,
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#333' : '#eee'} />
+                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <Tooltip
+                          contentStyle={{ background: isDarkMode ? '#1e1e2e' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          formatter={(value: number, name: string) => [`${value}%`, name === 'attainment' ? 'Attainment' : 'Threshold']}
+                        />
+                        <Line type="monotone" dataKey="attainment" stroke={primaryColor} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="attainment" />
+                        <Line type="monotone" dataKey="threshold" stroke="#f97316" strokeWidth={1.5} strokeDasharray="5 5" dot={false} name="threshold" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="py-10 text-center text-xs text-secondary-text">
+                      {cloDetails ? 'No historical attainment data available for this CLO.' : 'Select a CLO from the Dashboard tab to view trend analysis.'}
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {/* Section Comparison */}
               <div className="rounded-lg border border-card-border bg-card overflow-hidden">
                 <div className="p-4 border-b border-card-border">
-                  <h3 className="text-sm font-semibold text-primary-text">Section Comparison</h3>
+                  <h3 className="text-sm font-semibold text-primary-text">Section-wise Comparison</h3>
+                  <p className="text-xs text-secondary-text mt-0.5">Students achieved vs total per semester offering</p>
                 </div>
                 <div className="p-4">
-                  <p className="text-xs text-secondary-text">Section-wise comparison coming soon...</p>
+                  {cloDetails && cloDetails.attainments.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={cloDetails.attainments.map((a) => ({
+                        semester: a.semester,
+                        achieved: a.studentsAchieved,
+                        notAchieved: a.totalStudents - a.studentsAchieved,
+                        total: a.totalStudents,
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#333' : '#eee'} />
+                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <Tooltip
+                          contentStyle={{ background: isDarkMode ? '#1e1e2e' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          formatter={(value: number, name: string) => [value, name === 'achieved' ? 'Achieved' : 'Not Achieved']}
+                        />
+                        <Bar dataKey="achieved" stackId="a" fill="#22c55e" name="achieved" radius={[0, 0, 0, 0]} />
+                        <Bar dataKey="notAchieved" stackId="a" fill="#ef4444" name="notAchieved" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="py-10 text-center text-xs text-secondary-text">
+                      {cloDetails ? 'No attainment data available for comparison.' : 'Select a CLO from the Dashboard tab to view section comparison.'}
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-card-border bg-card py-12 text-center text-xs text-secondary-text">
+              Select a course to view analysis.
             </div>
           )}
         </TabsContent>

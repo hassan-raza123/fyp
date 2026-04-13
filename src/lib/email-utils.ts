@@ -125,7 +125,6 @@ export async function sendAdminAssignmentEmail(
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Admin assignment email sent successfully to ${email}`);
   } catch (error) {
     console.error('Error sending admin assignment email:', error);
     throw error;
@@ -176,7 +175,6 @@ export async function sendOTPEmail(email: string, otp: string): Promise<void> {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`OTP email sent successfully to ${email}`);
   } catch (error) {
     console.error('Error sending OTP email:', error);
     throw error;
@@ -235,7 +233,6 @@ export async function sendPasswordResetEmail(
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Password reset email sent successfully to ${email}`);
   } catch (error) {
     console.error('Error sending password reset email:', error);
     throw error;
@@ -327,7 +324,6 @@ export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Survey invitation email sent successfully to ${to}`);
   } catch (error) {
     console.error(`Error sending survey invitation to ${to}:`, error);
     throw error;
@@ -437,7 +433,6 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
       transporter.sendMail(supportMailOptions),
       transporter.sendMail(userMailOptions),
     ]);
-    console.log(`Contact emails sent successfully for ${email}`);
   } catch (error) {
     console.error('Error sending contact emails:', error);
     throw error;

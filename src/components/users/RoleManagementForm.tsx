@@ -155,8 +155,6 @@ export default function RoleManagementForm({
           break;
       }
 
-      console.log('Submitting form with data:', requestBody);
-
       const response = await fetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         headers: {
