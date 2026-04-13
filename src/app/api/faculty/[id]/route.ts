@@ -395,8 +395,6 @@ export async function DELETE(
       );
     }
 
-    console.log(`Processing DELETE for faculty ID: ${facultyId}`);
-
     // Check if faculty exists
     const existingFaculty = await prisma.faculties.findUnique({
       where: { id: facultyId },
@@ -423,14 +421,6 @@ export async function DELETE(
       }
     }
 
-    console.log(
-      `Found faculty: ${JSON.stringify({
-        id: existingFaculty.id,
-        userId: existingFaculty.userId,
-        departmentId: existingFaculty.departmentId,
-      })}`
-    );
-
     // Store information we'll need
     const departmentId = existingFaculty.departmentId;
 
@@ -455,7 +445,6 @@ export async function DELETE(
           where: { id: existingFaculty.departmentId },
           data: { adminId: null },
         });
-        console.log('Removed as department head');
       } catch (deptError) {
         console.error('Error removing as department head:', deptError);
         // Continue even if this fails
@@ -469,7 +458,6 @@ export async function DELETE(
           userId: userId,
         },
       });
-      console.log('Deleted all user roles');
     } catch (roleError) {
       console.error('Error deleting user roles:', roleError);
       // Continue even if this fails
@@ -480,7 +468,6 @@ export async function DELETE(
       await prisma.faculties.delete({
         where: { id: facultyId },
       });
-      console.log('Successfully deleted faculty record');
     } catch (deleteError) {
       console.error('Error deleting faculty:', deleteError);
       return NextResponse.json(

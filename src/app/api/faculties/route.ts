@@ -104,8 +104,6 @@ export async function GET(request: NextRequest) {
         department: faculty.department,
       }));
 
-    console.log('Found faculties:', faculties.length);
-
     return NextResponse.json({
       success: true,
       data: faculties,

@@ -233,8 +233,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Course POST request received');
-
     // Check authentication and authorization
     const { requireAuth } = await import('@/lib/auth');
     const { success, user } = await requireAuth(request);
@@ -255,10 +253,7 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    console.log('Request body:', JSON.stringify(body, null, 2));
-
     const validatedData = createCourseSchema.parse(body);
-    console.log('Validated data:', JSON.stringify(validatedData, null, 2));
 
     // Check if course code already exists
     const existingCourse = await prisma.courses.findUnique({
@@ -266,7 +261,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingCourse) {
-      console.log('Course code already exists:', validatedData.code);
       return NextResponse.json(
         { success: false, error: 'Course code already exists' },
         { status: 400 }
@@ -278,11 +272,6 @@ export async function POST(request: NextRequest) {
       validatedData.theoryHours + validatedData.labHours !==
       validatedData.creditHours
     ) {
-      console.log('Invalid hours configuration:', {
-        theoryHours: validatedData.theoryHours,
-        labHours: validatedData.labHours,
-        creditHours: validatedData.creditHours,
-      });
       return NextResponse.json(
         {
           success: false,
@@ -310,9 +299,6 @@ export async function POST(request: NextRequest) {
     // Extract prerequisites and programIds from validated data
     const { prerequisites, programIds, ...courseData } =
       validatedData;
-    console.log('Course data to create:', JSON.stringify(courseData, null, 2));
-    console.log('Prerequisites:', prerequisites);
-    console.log('Program IDs:', programIds);
 
     // Create the course with related data (always use current department from settings)
     const course = await prisma.courses.create({
@@ -338,8 +324,6 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-
-    console.log('Course created successfully:', JSON.stringify(course, null, 2));
 
     // Return success response
     return NextResponse.json({

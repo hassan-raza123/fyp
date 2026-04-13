@@ -239,6 +239,7 @@ model faculties {
   sections         sections[]
   evaluatedResults studentassessmentresults[] @relation("ResultEvaluator")
   gradesCalculated studentgrades[]            @relation("GradeCalculator")
+  preferences      faculty_preferences?
   @@index([departmentId])
 }
 
@@ -264,6 +265,7 @@ model students {
   studentsections   studentsections[]
   transcripts       transcripts[]
   surveyResponses   survey_responses[]
+  preferences       student_preferences?
 
   @@index([departmentId])
   @@index([programId])
@@ -754,6 +756,31 @@ model Settings {
   obe           Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model faculty_preferences {
+  id                      Int       @id @default(autoincrement())
+  facultyId               Int       @unique
+  notificationPreferences Json
+  displayPreferences      Json
+  teachingPreferences     Json
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  faculty                 faculties @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+
+  @@index([facultyId])
+}
+
+model student_preferences {
+  id                      Int      @id @default(autoincrement())
+  studentId               Int      @unique
+  notificationPreferences Json
+  displayPreferences      Json
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  student                 students @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 enum user_status {

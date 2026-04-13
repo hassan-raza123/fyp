@@ -21,6 +21,19 @@ const updatePreferencesSchema = z.object({
     .optional(),
 });
 
+const defaultNotifications = {
+  emailNotifications: true,
+  assessmentReminders: true,
+  gradeNotifications: true,
+  systemUpdates: true,
+};
+
+const defaultDisplay = {
+  gradeDisplayFormat: 'both',
+  dateFormat: 'MM/DD/YYYY',
+  defaultView: 'dashboard',
+};
+
 // GET - Get student preferences
 export async function GET(request: NextRequest) {
   try {
@@ -32,27 +45,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get preferences from user record or return defaults
-    // In a real implementation, you might store these in a separate preferences table
-    // For now, we'll return defaults
+    const stored = await prisma.student_preferences.findUnique({
+      where: { studentId: student.id },
+    });
+
     const preferences = {
-      notificationPreferences: {
-        emailNotifications: true,
-        assessmentReminders: true,
-        gradeNotifications: true,
-        systemUpdates: true,
-      },
-      displayPreferences: {
-        gradeDisplayFormat: 'both' as const,
-        dateFormat: 'MM/DD/YYYY',
-        defaultView: 'dashboard',
-      },
+      notificationPreferences: (stored?.notificationPreferences as object) ?? defaultNotifications,
+      displayPreferences: (stored?.displayPreferences as object) ?? defaultDisplay,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: preferences,
-    });
+    return NextResponse.json({ success: true, data: preferences });
   } catch (error) {
     console.error('Error fetching student preferences:', error);
     return NextResponse.json(
@@ -76,14 +78,43 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = updatePreferencesSchema.parse(body);
 
-    // In a real implementation, you would store preferences in a separate table
-    // For now, we'll just return success
-    // TODO: Create a student_preferences table to store these settings
+    // Fetch existing preferences to merge with defaults
+    const existing = await prisma.student_preferences.findUnique({
+      where: { studentId: student.id },
+    });
+
+    const mergedNotifications = {
+      ...defaultNotifications,
+      ...((existing?.notificationPreferences as object) ?? {}),
+      ...(validatedData.notificationPreferences ?? {}),
+    };
+
+    const mergedDisplay = {
+      ...defaultDisplay,
+      ...((existing?.displayPreferences as object) ?? {}),
+      ...(validatedData.displayPreferences ?? {}),
+    };
+
+    const saved = await prisma.student_preferences.upsert({
+      where: { studentId: student.id },
+      create: {
+        studentId: student.id,
+        notificationPreferences: mergedNotifications,
+        displayPreferences: mergedDisplay,
+      },
+      update: {
+        notificationPreferences: mergedNotifications,
+        displayPreferences: mergedDisplay,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Preferences updated successfully',
-      data: validatedData,
+      data: {
+        notificationPreferences: saved.notificationPreferences,
+        displayPreferences: saved.displayPreferences,
+      },
     });
   } catch (error) {
     console.error('Error updating student preferences:', error);
@@ -99,4 +130,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

@@ -23,6 +23,26 @@ const updatePreferencesSchema = z.object({
   }).optional(),
 });
 
+const defaultNotifications = {
+  emailNotifications: true,
+  assessmentReminders: true,
+  gradeNotifications: true,
+  systemUpdates: true,
+};
+
+const defaultDisplay = {
+  gradeDisplayFormat: 'both',
+  dateFormat: 'MM/DD/YYYY',
+  defaultView: 'dashboard',
+};
+
+const defaultTeaching = {
+  defaultAssessmentType: 'quiz',
+  defaultWeightage: 10,
+  cloCalculationThreshold: 60,
+  autoCalculateGrades: false,
+};
+
 // GET - Get faculty preferences
 export async function GET(request: NextRequest) {
   try {
@@ -34,31 +54,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get preferences from faculty record or return defaults
+    const stored = await prisma.faculty_preferences.findUnique({
+      where: { facultyId: faculty.id },
+    });
+
     const preferences = {
-      notificationPreferences: {
-        emailNotifications: true,
-        assessmentReminders: true,
-        gradeNotifications: true,
-        systemUpdates: true,
-      },
-      displayPreferences: {
-        gradeDisplayFormat: 'both' as const,
-        dateFormat: 'MM/DD/YYYY',
-        defaultView: 'dashboard',
-      },
-      teachingPreferences: {
-        defaultAssessmentType: 'quiz',
-        defaultWeightage: 10,
-        cloCalculationThreshold: 60,
-        autoCalculateGrades: false,
-      },
+      notificationPreferences: (stored?.notificationPreferences as object) ?? defaultNotifications,
+      displayPreferences: (stored?.displayPreferences as object) ?? defaultDisplay,
+      teachingPreferences: (stored?.teachingPreferences as object) ?? defaultTeaching,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: preferences,
-    });
+    return NextResponse.json({ success: true, data: preferences });
   } catch (error) {
     console.error('Error fetching faculty preferences:', error);
     return NextResponse.json(
@@ -82,14 +88,52 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = updatePreferencesSchema.parse(body);
 
-    // In a real implementation, you would store preferences in a separate table
-    // For now, we'll just return success
-    // TODO: Create a faculty_preferences table to store these settings
+    // Fetch existing preferences to merge with defaults
+    const existing = await prisma.faculty_preferences.findUnique({
+      where: { facultyId: faculty.id },
+    });
+
+    const mergedNotifications = {
+      ...defaultNotifications,
+      ...((existing?.notificationPreferences as object) ?? {}),
+      ...(validatedData.notificationPreferences ?? {}),
+    };
+
+    const mergedDisplay = {
+      ...defaultDisplay,
+      ...((existing?.displayPreferences as object) ?? {}),
+      ...(validatedData.displayPreferences ?? {}),
+    };
+
+    const mergedTeaching = {
+      ...defaultTeaching,
+      ...((existing?.teachingPreferences as object) ?? {}),
+      ...(validatedData.teachingPreferences ?? {}),
+    };
+
+    const saved = await prisma.faculty_preferences.upsert({
+      where: { facultyId: faculty.id },
+      create: {
+        facultyId: faculty.id,
+        notificationPreferences: mergedNotifications,
+        displayPreferences: mergedDisplay,
+        teachingPreferences: mergedTeaching,
+      },
+      update: {
+        notificationPreferences: mergedNotifications,
+        displayPreferences: mergedDisplay,
+        teachingPreferences: mergedTeaching,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Preferences updated successfully',
-      data: validatedData,
+      data: {
+        notificationPreferences: saved.notificationPreferences,
+        displayPreferences: saved.displayPreferences,
+        teachingPreferences: saved.teachingPreferences,
+      },
     });
   } catch (error) {
     console.error('Error updating faculty preferences:', error);
@@ -105,4 +149,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

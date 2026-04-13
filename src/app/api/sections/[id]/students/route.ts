@@ -8,12 +8,9 @@ export async function POST(
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    console.log('--- POST /api/sections/[id]/students called ---');
     // Check authentication
     const { success, user, error } = await requireAuth(request);
-    console.log('Auth result:', { success, user, error });
     if (!success) {
-      console.log('Auth failed');
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -29,11 +26,9 @@ export async function POST(
     }
 
     const body = await request.json();
-    console.log('Received body:', body); // Debug log
     const { studentId } = body;
 
     if (!studentId || isNaN(Number(studentId)) || Number(studentId) <= 0) {
-      console.log('Invalid studentId:', studentId);
       return NextResponse.json(
         {
           success: false,
@@ -47,9 +42,7 @@ export async function POST(
     // Await params for Next.js 14+
     const { id } = await context.params;
     const sectionId = parseInt(id);
-    console.log('Section ID:', sectionId);
     if (isNaN(sectionId) || sectionId <= 0) {
-      console.log('Invalid sectionId:', id);
       return NextResponse.json(
         {
           success: false,
@@ -72,10 +65,7 @@ export async function POST(
         batch: true,
       },
     });
-    console.log('Section found:', !!section, section);
-
     if (!section) {
-      console.log('Section not found');
       return NextResponse.json(
         { success: false, error: 'Section not found' },
         { status: 404 }
@@ -84,7 +74,6 @@ export async function POST(
 
     // Check if section is full
     if (section._count.studentsections >= section.maxStudents) {
-      console.log('Section is full');
       return NextResponse.json(
         { success: false, error: 'Section is full' },
         { status: 400 }
@@ -98,10 +87,7 @@ export async function POST(
         batch: true,
       },
     });
-    console.log('Student found:', !!student, student);
-
     if (!student) {
-      console.log('Student not found');
       return NextResponse.json(
         { success: false, error: 'Student not found' },
         { status: 404 }
@@ -110,7 +96,6 @@ export async function POST(
 
     // Check if student belongs to the same batch as the section
     if (student.batchId !== section.batchId) {
-      console.log('Student batch mismatch:', student.batchId, section.batchId);
       return NextResponse.json(
         { success: false, error: 'Student does not belong to this batch' },
         { status: 400 }
@@ -125,14 +110,7 @@ export async function POST(
         status: 'active',
       },
     });
-    console.log(
-      'Existing enrollment:',
-      !!existingEnrollment,
-      existingEnrollment
-    );
-
     if (existingEnrollment) {
-      console.log('Student already enrolled');
       return NextResponse.json(
         {
           success: false,
@@ -178,7 +156,6 @@ export async function POST(
       });
 
       if (existingCourseEnrollment) {
-        console.log('Student already enrolled in another section of the same course');
         return NextResponse.json(
           {
             success: false,
@@ -235,8 +212,6 @@ export async function POST(
         },
       },
     });
-    console.log('Student added to section:', studentSection);
-
     // Send notification to faculty about enrollment change
     if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
       const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');
@@ -271,12 +246,9 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    console.log('--- DELETE /api/sections/[id]/students called ---');
     // Check authentication
     const { success, user, error } = await requireAuth(request);
-    console.log('Auth result:', { success, user, error });
     if (!success) {
-      console.log('Auth failed');
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -293,10 +265,8 @@ export async function DELETE(
 
     const body = await request.json();
     const { studentId } = body;
-    console.log('Received studentId:', studentId);
 
     if (!studentId || isNaN(Number(studentId)) || Number(studentId) <= 0) {
-      console.log('Invalid studentId:', studentId);
       return NextResponse.json(
         {
           success: false,
@@ -310,9 +280,7 @@ export async function DELETE(
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
     const sectionId = parseInt(resolvedParams.id);
-    console.log('Section ID:', sectionId);
     if (isNaN(sectionId) || sectionId <= 0) {
-      console.log('Invalid sectionId:', resolvedParams.id);
       return NextResponse.json(
         {
           success: false,
@@ -330,10 +298,7 @@ export async function DELETE(
         sectionId: sectionId,
       },
     });
-    console.log('Enrollment found:', !!enrollment, enrollment);
-
     if (!enrollment) {
-      console.log('Enrollment not found');
       return NextResponse.json(
         { success: false, error: 'Student is not enrolled in this section' },
         { status: 404 }
@@ -371,8 +336,6 @@ export async function DELETE(
         id: enrollment.id,
       },
     });
-    console.log('Student removed from section:', enrollment.id);
-
     // Send notification to faculty about enrollment change
     if (sectionWithDetails?.faculty?.user?.id && sectionWithDetails?.courseOffering?.course?.code) {
       const { notifyStudentEnrollmentChange } = await import('@/lib/notification-utils');

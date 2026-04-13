@@ -178,7 +178,6 @@ export async function POST(request: NextRequest) {
     // Send welcome email with credentials
     try {
       // Implement email sending logic here
-      console.log('Welcome email would be sent here');
     } catch (emailError) {
       console.error('Failed to send welcome email:', emailError);
     }

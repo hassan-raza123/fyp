@@ -69,8 +69,6 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    console.log('Fetching batches with conditions:', where);
-
     // Execute the query using Prisma
     const batches = await prisma.batches.findMany({
       where,
@@ -98,8 +96,6 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
-
-    console.log('Found batches:', batches.length);
 
     return NextResponse.json({
       success: true,

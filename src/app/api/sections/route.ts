@@ -177,10 +177,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    console.log('Received request body:', body);
-
     const validatedData = createSectionSchema.parse(body);
-    console.log('Validated data:', validatedData);
 
     // Check if course offering exists
     const courseOffering = await prisma.courseofferings.findUnique({

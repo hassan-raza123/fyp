@@ -119,8 +119,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('1. Starting program creation process');
-
     // Check authentication and role
     const authResult = await requireRole(request, ['admin']);
     if (!authResult.success || !authResult.user) {
@@ -137,7 +135,6 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-      console.log('4. Request body:', body);
     } catch (e) {
       console.error('Failed to parse request body:', e);
       return NextResponse.json(
@@ -161,7 +158,6 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name?.trim()) {
-      console.log('5. Validation failed: name missing');
       return NextResponse.json(
         {
           success: false,
@@ -171,7 +167,6 @@ export async function POST(request: NextRequest) {
       );
     }
     if (!code?.trim()) {
-      console.log('6. Validation failed: code missing');
       return NextResponse.json(
         {
           success: false,
@@ -181,7 +176,6 @@ export async function POST(request: NextRequest) {
       );
     }
     if (!departmentId) {
-      console.log('7. Validation failed: departmentId missing');
       return NextResponse.json(
         {
           success: false,
@@ -195,7 +189,6 @@ export async function POST(request: NextRequest) {
       isNaN(Number(totalCreditHours)) ||
       Number(totalCreditHours) <= 0
     ) {
-      console.log('8. Validation failed: invalid totalCreditHours');
       return NextResponse.json(
         {
           success: false,
@@ -205,7 +198,6 @@ export async function POST(request: NextRequest) {
       );
     }
     if (!duration || isNaN(Number(duration)) || Number(duration) <= 0) {
-      console.log('9. Validation failed: invalid duration');
       return NextResponse.json(
         {
           success: false,
@@ -217,7 +209,6 @@ export async function POST(request: NextRequest) {
 
     // Validate status
     if (!Object.values(programs_status).includes(status as programs_status)) {
-      console.log('10. Validation failed: invalid status');
       return NextResponse.json(
         {
           success: false,
@@ -228,11 +219,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if department exists
-    console.log('11. Checking department:', departmentId);
     const department = await prisma.departments.findUnique({
       where: { id: Number(departmentId) },
     });
-    console.log('12. Department check result:', department);
 
     if (!department) {
       return NextResponse.json(

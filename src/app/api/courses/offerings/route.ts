@@ -81,8 +81,6 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    console.log('Fetching course offerings with conditions:', where);
-
     // Execute the query using Prisma
     const [offerings, total] = await Promise.all([
       prisma.courseofferings.findMany({
@@ -121,8 +119,6 @@ export async function GET(request: NextRequest) {
       }),
       prisma.courseofferings.count({ where }),
     ]);
-
-    console.log('Found course offerings:', offerings.length);
 
     return NextResponse.json({
       success: true,
