@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Download, Upload, ArrowLeft, Loader2, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Table,
   TableBody,
@@ -252,26 +253,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div 
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          ></div>
-          <p className="text-xs text-secondary-text">
-            Loading...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted) return <PageLoading message="Loading..." />;
 
   return (
     <div className="space-y-4">

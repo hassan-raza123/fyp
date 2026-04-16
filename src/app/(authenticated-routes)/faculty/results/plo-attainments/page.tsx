@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { PLOAttainments } from '@/components/assessments/PLOAttainments';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, GraduationCap } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Select,
   SelectContent,
@@ -66,7 +67,7 @@ const PLOAttainmentsPage = () => {
     fetchFilters();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

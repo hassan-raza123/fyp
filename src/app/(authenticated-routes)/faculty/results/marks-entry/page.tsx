@@ -41,6 +41,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface Section {
   id: number;
@@ -590,7 +591,7 @@ const MarksEntryPage = () => {
 
   const detectedOutliers = outliers;
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

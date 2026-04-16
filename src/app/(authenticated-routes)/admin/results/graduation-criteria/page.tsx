@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Table,
   TableBody,
@@ -184,19 +185,7 @@ function GraduationCriteriaContent() {
     }
   };
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: primaryColor, borderTopColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading graduation criteria...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading graduation criteria..." />;
 
   const configured = data.filter((r) => r.criteria !== null).length;
   const total = data.length;

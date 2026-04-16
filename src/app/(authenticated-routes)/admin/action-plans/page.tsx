@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -357,7 +358,7 @@ export default function ActionPlansPage() {
     ? courseOfferings.filter((co) => String(co.semester?.name) || true)
     : courseOfferings;
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-5">

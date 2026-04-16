@@ -21,6 +21,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageHeader } from '@/components/ui/page-header';
 
 interface Settings {
   system: {
@@ -145,37 +147,21 @@ export default function SettingsPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div 
-          className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2'
-          style={{
-            borderTopColor: 'var(--blue)',
-            borderBottomColor: 'var(--blue)',
-            borderRightColor: 'transparent',
-            borderLeftColor: 'transparent',
-          }}
-        ></div>
-      </div>
-    );
+    return <PageLoading message="Loading settings..." />;
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold text-primary-text'>
-            System Settings
-          </h1>
-          <p className='text-secondary-text'>
-            Configure your application settings
-          </p>
-        </div>
-        <Button onClick={handleSave}>
-          <Save className='w-4 h-4 mr-2' />
-          Save Changes
-        </Button>
-      </div>
+    <div className='space-y-4'>
+      <PageHeader
+        title="System Settings"
+        subtitle="Configure your application settings"
+        action={
+          <Button onClick={handleSave} size="sm">
+            <Save className='w-3.5 h-3.5 mr-1.5' />
+            Save Changes
+          </Button>
+        }
+      />
 
       <div className='grid gap-6'>
         {/* System Settings */}

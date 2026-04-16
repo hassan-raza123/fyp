@@ -46,6 +46,7 @@ import {
   ListChecks,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -396,7 +397,7 @@ const ResultEvaluationPage = () => {
     );
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

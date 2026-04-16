@@ -24,6 +24,8 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageError } from '@/components/ui/page-error';
 import { Plus, Search, Filter, School, AlertCircle, Eye, Edit, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -346,62 +348,9 @@ export default function ProgramsPage() {
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div 
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          ></div>
-          <p className="text-xs text-secondary-text">
-            Loading programs...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading programs..." />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="text-center">
-          <AlertCircle 
-            className="w-16 h-16 mx-auto mb-4" 
-            style={{ color: 'var(--error)' }}
-          />
-          <div 
-            className="text-sm font-semibold mb-2"
-            style={{ color: 'var(--error)' }}
-          >
-            Error
-          </div>
-          <div className="text-xs text-secondary-text mb-4">{error}</div>
-          <button
-            onClick={() => fetchPrograms()}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-            style={{
-              backgroundColor: primaryColor,
-              color: 'white',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColorDark;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColor;
-            }}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <PageError message={error} onRetry={() => fetchPrograms()} />;
 
   return (
     <div className="space-y-4">

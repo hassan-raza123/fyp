@@ -12,6 +12,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -241,7 +242,7 @@ export default function CurriculumPage() {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-5">

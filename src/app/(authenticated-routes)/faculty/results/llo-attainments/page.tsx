@@ -41,6 +41,7 @@ import {
   FlaskConical,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { format } from 'date-fns';
 import {
   BarChart,
@@ -233,7 +234,7 @@ const LLOAttainmentsPage = () => {
       }))
     : [];
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

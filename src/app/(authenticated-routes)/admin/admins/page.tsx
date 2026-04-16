@@ -22,6 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
@@ -327,26 +328,7 @@ export default function AdminsPage() {
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div 
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          ></div>
-          <p className="text-xs text-secondary-text">
-            Loading admins...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading admins..." />;
 
   return (
     <div className="space-y-4">

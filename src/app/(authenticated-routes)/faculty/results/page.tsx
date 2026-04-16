@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageLoading } from '@/components/ui/page-loading';
 
 export default function ResultsPage() {
   const { resolvedTheme } = useTheme();
@@ -79,7 +80,7 @@ export default function ResultsPage() {
     { href: '/faculty/results/plo-attainments', label: 'Calculate PLOs', icon: BookOpen },
   ];
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

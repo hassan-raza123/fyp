@@ -17,6 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface CourseOffering {
   id: number;
@@ -193,7 +194,7 @@ const MarksEntryPage = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

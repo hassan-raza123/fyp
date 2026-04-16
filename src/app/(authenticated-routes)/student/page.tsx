@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageError } from '@/components/ui/page-error';
 import {
   BookOpen,
   Calendar,
@@ -302,28 +304,8 @@ export default function StudentDashboard() {
     fetchData();
   }, []);
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="p-6 text-center text-red-500">{error}</div>;
-  }
+  if (!mounted || loading) return <PageLoading message="Loading dashboard..." />;
+  if (error) return <PageError message={error} />;
 
   if (!data) {
     return null;

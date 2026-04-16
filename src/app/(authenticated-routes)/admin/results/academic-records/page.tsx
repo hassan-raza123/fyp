@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   LineChart,
   Line,
@@ -200,7 +201,7 @@ export default function AcademicRecordsPage() {
     toast.success('Exported successfully');
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

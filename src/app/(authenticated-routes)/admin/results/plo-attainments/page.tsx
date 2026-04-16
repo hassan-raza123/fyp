@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PageLoading } from '@/components/ui/page-loading';
 import { GraduationCap, TrendingUp, BarChart3 } from 'lucide-react';
 import { PLOAttainments } from '@/components/assessments/PLOAttainments';
 import { useTheme } from 'next-themes';
@@ -156,24 +157,7 @@ const PLOAttainmentsPage = () => {
     fetchTrends();
   }, [selectedProgram, activeTab]);
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading PLO Attainments...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading PLO Attainments..." />;
 
   return (
     <div className="space-y-4">

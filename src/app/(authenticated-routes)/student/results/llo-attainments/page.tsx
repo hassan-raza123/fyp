@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { FlaskConical, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import {
   Table,
@@ -180,7 +181,7 @@ const StudentLLOAttainmentsPage = () => {
       threshold: a.classAttainment?.threshold ?? 60,
     })) ?? [];
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

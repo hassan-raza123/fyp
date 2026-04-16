@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Info, Trophy, ChevronDown, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react';
 import {
   BarChart,
@@ -151,7 +152,7 @@ function PEOAttainmentsContent() {
       achieved: (p.avgAttainment as number) >= p.threshold,
     }));
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

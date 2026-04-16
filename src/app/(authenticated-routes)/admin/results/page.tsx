@@ -12,6 +12,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageLoading } from '@/components/ui/page-loading';
 
 export default function ResultsPage() {
   const { resolvedTheme } = useTheme();
@@ -26,7 +27,7 @@ export default function ResultsPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   const quickActions = [
     { href: '/admin/results/clo-attainments', label: 'Calculate CLOs', icon: Target },

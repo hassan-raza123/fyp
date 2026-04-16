@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { ShieldCheck, Plus, Edit2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -184,35 +185,26 @@ export default function PassFailCriteriaPage() {
   const availableOfferings = courseOfferings.filter((o) => !existingOfferingIds.has(o.id));
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="p-2 rounded-lg"
-            style={{ backgroundColor: iconBgColor }}
+    <div className="space-y-4">
+      <PageHeader
+        title="Pass/Fail Criteria"
+        subtitle="Set minimum pass percentage thresholds per course offering"
+        action={
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
           >
-            <ShieldCheck className="h-6 w-6" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">Pass/Fail Criteria</h1>
-            <p className="text-xs text-secondary-text">
-              Set minimum pass percentage thresholds per course offering
-            </p>
-          </div>
-        </div>
-        <Button
-          onClick={() => setCreateOpen(true)}
-          style={{ backgroundColor: primaryColor }}
-          className="text-white hover:opacity-90"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Set Criteria
-        </Button>
-      </div>
+            <Plus className="h-3.5 w-3.5" />
+            Set Criteria
+          </button>
+        }
+      />
 
       {/* Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-card-border overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <div className="h-6 w-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: primaryColor, borderTopColor: 'transparent' }} />

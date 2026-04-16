@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Info, ChevronDown, ChevronRight, CheckCircle, AlertTriangle, Brain } from 'lucide-react';
 import {
   BarChart,
@@ -152,7 +153,7 @@ function BloomAnalysisContent() {
         .map(([name, value]) => ({ name, value }))
     : [];
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

@@ -23,6 +23,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -196,21 +198,19 @@ export default function CourseCLOsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <PageLoading message="Loading CLOs..." />;
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex justify-between items-center mb-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>
-            CLOs for {course?.name} ({course?.code})
-          </h1>
-          <p className='text-gray-500'>Manage CLOs for this course</p>
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className='w-4 h-4 mr-2' /> Add CLO
-        </Button>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title={course ? `CLOs — ${course.name} (${course.code})` : 'CLOs'}
+        subtitle="Manage course learning outcomes"
+        action={
+          <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add CLO
+          </Button>
+        }
+      />
       <Card>
         <Table>
           <TableHeader>

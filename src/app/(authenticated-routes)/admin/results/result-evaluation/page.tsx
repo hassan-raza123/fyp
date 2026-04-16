@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface CourseOffering {
   id: number;
@@ -266,7 +267,7 @@ const ResultEvaluationPage = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

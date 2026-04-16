@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Metadata } from 'next';
 import { AssessmentItemForm } from '@/components/assessments/AssessmentItemForm';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function AssessmentItemsPage() {
   const params = useParams();
@@ -76,7 +75,7 @@ export default function AssessmentItemsPage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <PageLoading message="Loading assessment items..." />;
   }
 
   if (!assessment) {
@@ -84,14 +83,12 @@ export default function AssessmentItemsPage() {
   }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button variant='ghost' size='icon' onClick={() => router.back()}>
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
-        <h1 className='text-3xl font-bold'>Assessment Items</h1>
-      </div>
-      <div className='max-w-2xl'>
+    <div className="space-y-4">
+      <PageHeader
+        title="Assessment Items"
+        subtitle={assessment.title ? `Items for: ${assessment.title}` : 'Manage assessment items'}
+      />
+      <div className="max-w-2xl">
         <AssessmentItemForm
           assessmentId={
             typeof params.id === 'string'

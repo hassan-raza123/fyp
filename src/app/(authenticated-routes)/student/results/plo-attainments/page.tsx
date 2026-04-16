@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { GraduationCap, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react';
 import {
   Table,
@@ -203,7 +204,7 @@ const PLOAttainmentsPage = () => {
     );
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   const getComparisonIcon = (
     studentPercent: number,

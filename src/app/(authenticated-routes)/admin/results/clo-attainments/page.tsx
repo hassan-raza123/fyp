@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface Section {
   id: number;
@@ -72,26 +73,7 @@ const CLOAttainmentsPage = () => {
     (section) => section.id.toString() === selectedSection
   );
 
-  if (!mounted) return null;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading CLO Attainments...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading CLO Attainments..." />;
 
   return (
     <div className="space-y-4">

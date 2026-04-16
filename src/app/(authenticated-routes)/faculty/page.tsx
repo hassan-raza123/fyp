@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageError } from '@/components/ui/page-error';
 import {
   Users,
   GraduationCap,
@@ -259,44 +261,8 @@ export default function FacultyOverview() {
     fetchData();
   }, []);
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
-              borderBottomColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <AlertCircle
-            className="w-16 h-16 mx-auto mb-4"
-            style={{ color: 'var(--error)' }}
-          />
-          <div
-            className="text-sm font-semibold mb-2"
-            style={{ color: 'var(--error)' }}
-          >
-            Error
-          </div>
-          <div className="text-xs text-secondary-text">{error}</div>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading dashboard..." />;
+  if (error) return <PageError message={error} />;
 
   if (!data) {
     return null;

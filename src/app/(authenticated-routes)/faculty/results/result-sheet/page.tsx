@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { TableIcon, Printer, RefreshCw, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface SectionOption {
   id: number;
@@ -133,7 +134,7 @@ const ResultSheetPage = () => {
     window.print();
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   // Group assessments by type for column headers
   const assessments = sheetData?.assessments ?? [];

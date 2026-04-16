@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Dialog,
   DialogContent,
@@ -286,24 +287,7 @@ function PEOPLOMappingsPageContent() {
   const getPLOBadgeColor = (index: number) =>
     PLO_BADGE_COLORS[index % PLO_BADGE_COLORS.length];
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted) return <PageLoading message="Loading PEO-PLO Mappings..." />;
 
   const selectedProgramData = programs.find((p) => p.id.toString() === selectedProgram);
 

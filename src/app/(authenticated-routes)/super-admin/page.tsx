@@ -28,6 +28,8 @@ import {
   Cell,
 } from 'recharts';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageError } from '@/components/ui/page-error';
 import { Button } from '@/components/ui/button';
 
 interface DashboardData {
@@ -181,29 +183,11 @@ export default function SuperAdminDashboard() {
   };
 
   if (!mounted || dashboardLoading || analyticsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-10 h-10 border-2 border-primary dark:border-secondary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Loading dashboard...
-          </p>
-        </div>
-      </div>
-      );
+    return <PageLoading message="Loading dashboard..." fullScreen={false} />;
   }
 
   if (!dashboardData || !analyticsData) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] bg-page">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Failed to load dashboard data
-          </p>
-        </div>
-      </div>
-    );
+    return <PageError message="Failed to load dashboard data" fullScreen={false} />;
   }
 
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
@@ -219,8 +203,8 @@ export default function SuperAdminDashboard() {
       {/* Header - Modern & Compact */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-primary-text">
-            <div 
+          <h1 className="text-lg font-bold flex items-center gap-2.5 text-primary-text">
+            <div
               className="p-2 rounded-lg"
               style={{
                 background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,

@@ -5,7 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, Trash2, Loader2 } from 'lucide-react';
+import { Download, Trash2, Loader2 } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
@@ -125,19 +127,15 @@ export default function ReportViewPage() {
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading report..." />;
   }
 
   if (!report) {
     return (
-      <div className="container mx-auto py-10">
+      <div className="flex items-center justify-center min-h-[50vh] bg-page">
         <div className="text-center">
-          <p className="text-muted-foreground">Report not found</p>
-          <Button onClick={() => router.push('/admin/reports')} className="mt-4">
+          <p className="text-sm text-secondary-text mb-3">Report not found</p>
+          <Button onClick={() => router.push('/admin/reports')} className="text-xs h-8">
             Back to Reports
           </Button>
         </div>
@@ -146,39 +144,31 @@ export default function ReportViewPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/admin/reports')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{report.title}</h1>
-            <p className="text-muted-foreground">OBE Report Details</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          {report.filePath && (
-            <Button
-              variant="outline"
-              onClick={() => window.open(report.filePath || '', '_blank')}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Download
+    <div className="space-y-4">
+      <PageHeader
+        title={report.title}
+        subtitle="OBE Report Details"
+        action={
+          <div className="flex gap-2">
+            {report.filePath && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(report.filePath || '', '_blank')}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </Button>
+            )}
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
             </Button>
-          )}
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Report Information</CardTitle>

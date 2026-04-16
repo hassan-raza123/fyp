@@ -13,6 +13,7 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -185,7 +186,7 @@ export default function GraduationTrackerPage() {
   const notEligible = students.filter((s) => !s.isEligible && s.assessedPlos > 0).length;
   const notAssessed = students.filter((s) => s.assessedPlos === 0).length;
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-5">

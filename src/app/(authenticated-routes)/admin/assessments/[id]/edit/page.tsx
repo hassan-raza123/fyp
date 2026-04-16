@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { EditAssessmentForm } from '@/components/assessments/EditAssessmentForm';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function EditAssessmentPage() {
   const params = useParams();
@@ -60,7 +60,7 @@ export default function EditAssessmentPage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <PageLoading message="Loading assessment..." />;
   }
 
   if (!assessment) {
@@ -68,14 +68,12 @@ export default function EditAssessmentPage() {
   }
 
   return (
-    <div className='container mx-auto py-6'>
-      <div className='flex items-center gap-4 mb-6'>
-        <Button variant='ghost' size='icon' onClick={() => router.back()}>
-          <ArrowLeft className='h-4 w-4' />
-        </Button>
-        <h1 className='text-3xl font-bold'>Edit Assessment</h1>
-      </div>
-      <div className='max-w-2xl'>
+    <div className="space-y-4">
+      <PageHeader
+        title="Edit Assessment"
+        subtitle={assessment.title || 'Update assessment details'}
+      />
+      <div className="max-w-2xl">
         <EditAssessmentForm
           assessment={assessment}
           onSubmit={handleSubmit}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -208,24 +209,7 @@ export default function StudentNotificationsPage() {
   const gradeNotifications = notifications.filter((n) => n.type === 'grade')
     .length;
 
-  if (!mounted || (loading && notifications.length === 0)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading notifications...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || (loading && notifications.length === 0)) return <PageLoading message="Loading notifications..." />;
 
   return (
     <div className="space-y-4">

@@ -21,6 +21,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { format } from 'date-fns';
 import { notification_type } from '@prisma/client';
 
@@ -149,7 +150,7 @@ export default function FacultyNotificationsPage() {
     return true;
   });
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

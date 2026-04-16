@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Calculator, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 
 interface CourseOffering {
@@ -215,7 +216,7 @@ export default function LLOAttainmentsPage() {
       ? ((attainedCount / llos.length) * 100).toFixed(1)
       : '0';
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

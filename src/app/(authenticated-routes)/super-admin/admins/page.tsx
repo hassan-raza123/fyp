@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck, Key } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
@@ -491,19 +492,7 @@ export default function SuperAdminAdminsPage() {
   const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
 
   if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center space-y-3">
-          <div 
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: primaryColor }}
-          />
-          <p className="text-sm text-secondary-text">
-            Loading admins...
-          </p>
-        </div>
-      </div>
-    );
+    return <PageLoading message="Loading admins..." fullScreen={false} />;
   }
 
   return (
@@ -511,8 +500,8 @@ export default function SuperAdminAdminsPage() {
       {/* Header - Modern & Compact */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-primary-text">
-            <div 
+          <h1 className="text-lg font-bold flex items-center gap-2.5 text-primary-text">
+            <div
               className="p-2 rounded-lg"
               style={{
                 background: `linear-gradient(135deg, ${primaryColor}, ${primaryColorDark})`,

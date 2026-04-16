@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { ResultAnalytics } from '@/components/assessments/ResultAnalytics';
 import { BarChart3 } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Select,
   SelectContent,
@@ -73,7 +74,7 @@ const AnalyticsPage = () => {
       .finally(() => setLoading(false));
   }, [selectedSection]);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

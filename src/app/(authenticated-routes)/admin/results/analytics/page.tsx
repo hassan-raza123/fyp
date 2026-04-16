@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface Section {
   id: number;
@@ -112,7 +113,7 @@ const AnalyticsPage = () => {
     fetchAssessments();
   }, [selectedSection, sections]);
 
-  if (!mounted) return null;
+  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">
