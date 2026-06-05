@@ -364,23 +364,15 @@ export default function ProgramsPage() {
             Manage academic programs and their details
           </p>
         </div>
-        <button 
+        <Button
+          size="sm"
           onClick={() => setShowCreateModal(true)}
-          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-          style={{
-            backgroundColor: iconBgColor,
-            color: primaryColor,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = iconBgColor;
-          }}
+          className="h-8 text-xs gap-1.5 hover:opacity-80"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
         >
           <Plus className="w-3.5 h-3.5" />
           Create Program
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -455,57 +447,21 @@ export default function ProgramsPage() {
                   <TableCell>{getStatusBadge(program.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <button
-                        onClick={() => handleViewProgram(program)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
-                      >
+                      <Button size="sm" onClick={() => handleViewProgram(program)}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}>
                         <Eye className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() => handleEditProgram(program)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
-                      >
+                      </Button>
+                      <Button size="sm" onClick={() => handleEditProgram(program)}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}>
                         <Edit className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedProgram(program);
-                          setShowDeleteDialog(true);
-                        }}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: 'var(--error-opacity-10)',
-                          color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
-                        }}
-                      >
+                      </Button>
+                      <Button size="sm" onClick={() => { setSelectedProgram(program); setShowDeleteDialog(true); }}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}>
                         <Trash2 className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -518,57 +474,21 @@ export default function ProgramsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: page === 1 
-                ? 'var(--gray-100)' 
-                : iconBgColor,
-              color: page === 1 ? 'var(--gray-500)' : primaryColor,
-            }}
-            onMouseEnter={(e) => {
-              if (page !== 1) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (page !== 1) {
-                e.currentTarget.style.backgroundColor = iconBgColor;
-              }
-            }}
-          >
+          <Button size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+            className="h-8 text-xs gap-1.5 hover:opacity-80 disabled:opacity-50"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}>
             <ChevronLeft className="w-3.5 h-3.5" />
             Previous
-          </button>
+          </Button>
           <span className="text-xs text-secondary-text px-2">
             Page {page} of {totalPages}
           </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: page === totalPages 
-                ? 'var(--gray-100)' 
-                : iconBgColor,
-              color: page === totalPages ? 'var(--gray-500)' : primaryColor,
-            }}
-            onMouseEnter={(e) => {
-              if (page !== totalPages) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (page !== totalPages) {
-                e.currentTarget.style.backgroundColor = iconBgColor;
-              }
-            }}
-          >
+          <Button size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            className="h-8 text-xs gap-1.5 hover:opacity-80 disabled:opacity-50"
+            style={{ backgroundColor: iconBgColor, color: primaryColor }}>
             Next
             <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 

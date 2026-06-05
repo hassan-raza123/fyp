@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -589,24 +590,7 @@ const AnalyticsPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading analytics...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoading message="Loading analytics..." fullScreen={false} />;
 
   if (!data) {
     return (

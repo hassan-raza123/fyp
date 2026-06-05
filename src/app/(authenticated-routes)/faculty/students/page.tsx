@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Table,
   TableBody,
@@ -186,24 +187,7 @@ export default function StudentsPage() {
     }
   };
 
-  if (loading && students.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading students...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading && students.length === 0) return <PageLoading message="Loading students..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

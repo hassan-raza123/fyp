@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { AssessmentItemForm } from '@/components/assessments/AssessmentItemForm';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -241,19 +242,7 @@ export default function AssessmentItemsPage() {
     }
   };
 
-  if (!mounted || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || isLoading) return <PageLoading message="Loading items..." fullScreen={false} />;
 
   if (!assessment) {
     return notFound();

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -291,16 +292,7 @@ export default function SectionDetailsPage() {
     },
   });
 
-  if (!mounted || section === null) {
-    return (
-      <div className='flex items-center justify-center min-h-[50vh] bg-page'>
-        <div className='flex flex-col items-center gap-3'>
-          <Loader2 className='w-8 h-8 animate-spin text-primary-text' style={{ color: primaryColor }} />
-          <p className='text-xs text-secondary-text'>Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || section === null) return <PageLoading message="Loading section..." fullScreen={false} />;
 
   if (!section) {
     return (

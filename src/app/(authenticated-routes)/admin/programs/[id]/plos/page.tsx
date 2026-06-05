@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Table,
   TableBody,
@@ -227,21 +228,7 @@ export default function PLOsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
+  if (!mounted || loading) return <PageLoading message="Loading PLOs..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

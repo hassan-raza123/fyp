@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -499,24 +500,7 @@ const GradeManagementPage = () => {
       )
     : [];
 
-  if (loading && courseOfferings.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading grades...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading && courseOfferings.length === 0) return <PageLoading message="Loading grades..." fullScreen={false} />;
 
   const btnStyle = (disabled?: boolean) => ({
     backgroundColor: iconBgColor,

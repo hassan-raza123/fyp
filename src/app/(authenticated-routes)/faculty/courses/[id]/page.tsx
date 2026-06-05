@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
@@ -146,20 +147,7 @@ export default function CourseDetailsPage() {
     }
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading course details...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoading message="Loading course details..." fullScreen={false} />;
 
   // Error state
   if (error) {

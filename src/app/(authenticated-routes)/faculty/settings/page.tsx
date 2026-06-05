@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -229,19 +230,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading settings..." fullScreen={false} />;
 
   return (
     <div className="space-y-4">

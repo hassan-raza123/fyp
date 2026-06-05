@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -478,16 +479,7 @@ export default function StudentDetailsPage() {
     addSection.mutate(values);
   }
 
-  if (!mounted || loading) {
-    return (
-      <div className='flex items-center justify-center min-h-[50vh] bg-page'>
-        <div className='flex flex-col items-center gap-3'>
-          <Loader2 className='h-8 w-8 animate-spin text-primary-text' style={{ color: primaryColor }} />
-          <p className='text-xs text-secondary-text'>Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading student details..." fullScreen={false} />;
 
   if (!student) {
     return (

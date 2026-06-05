@@ -712,12 +712,7 @@ export default function PEOPLOMappingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-screen bg-page">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin border-blue-500" />
-            <p className="text-xs text-secondary-text">Loading...</p>
-          </div>
-        </div>
+        <PageLoading message="Loading PEO-PLO Mappings..." />
       }
     >
       <PEOPLOMappingsPageContent />

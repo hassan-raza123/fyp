@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -130,24 +131,7 @@ export default function CoursesPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{
-              borderTopColor: primaryColor,
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: 'transparent',
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading courses...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoading message="Loading courses..." fullScreen={false} />;
 
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'

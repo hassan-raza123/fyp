@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Grid3X3, AlertTriangle, Info } from 'lucide-react';
 import {
   Select,
@@ -314,24 +315,7 @@ function PLOCoverageMatrixContent() {
   const coverageCount = (ploId: number): number =>
     matrixRows.filter((row) => ploId in row.ploMapping).length;
 
-  if (!mounted || loadingPrograms) {
-    return (
-      <div className="flex items-center justify-center min-h-[40vh] bg-page">
-        <div className="flex flex-col items-center space-y-3">
-          <div
-            className="w-10 h-10 border-2 rounded-full animate-spin"
-            style={{
-              borderTopColor: 'transparent',
-              borderBottomColor: primaryColor,
-              borderRightColor: 'transparent',
-              borderLeftColor: primaryColor,
-            }}
-          />
-          <p className="text-xs text-secondary-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loadingPrograms) return <PageLoading message="Loading PLO Coverage Matrix..." fullScreen={false} />;
 
   const selectedProgramData = programs.find(
     (p) => p.id.toString() === selectedProgram
@@ -709,9 +693,7 @@ export default function PLOCoverageMatrixPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin border-blue-500" />
-        </div>
+        <PageLoading message="Loading..." fullScreen={false} />
       }
     >
       <PLOCoverageMatrixContent />

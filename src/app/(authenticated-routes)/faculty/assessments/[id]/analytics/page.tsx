@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { PageLoading } from '@/components/ui/page-loading';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import {
@@ -105,19 +106,7 @@ export default function AssessmentAnalyticsPage() {
     }
   };
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] bg-page">
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin"
-            style={{ borderTopColor: primaryColor, borderRightColor: 'transparent', borderBottomColor: primaryColor, borderLeftColor: 'transparent' }}
-          />
-          <p className="text-xs text-secondary-text">Loading analytics...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!mounted || loading) return <PageLoading message="Loading analytics..." fullScreen={false} />;
 
   if (!data) {
     return (

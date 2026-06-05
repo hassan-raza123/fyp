@@ -389,23 +389,15 @@ export default function CoursesPage() {
             Manage academic courses and their details
           </p>
         </div>
-        <button 
+        <Button
+          size="sm"
           onClick={() => setShowCreateModal(true)}
-          className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
-          style={{
-            backgroundColor: iconBgColor,
-            color: primaryColor,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = iconBgColor;
-          }}
+          className="h-8 text-xs gap-1.5 hover:opacity-80"
+          style={{ backgroundColor: iconBgColor, color: primaryColor }}
         >
           <Plus className="w-3.5 h-3.5" />
           Create Course
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -488,57 +480,33 @@ export default function CoursesPage() {
                   <TableCell>{getStatusBadge(course.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => handleViewCourse(course)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
                       >
                         <Eye className="w-3 h-3" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="sm"
                         onClick={() => handleEditCourse(course)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: iconBgColor,
-                          color: primaryColor,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = iconBgColor;
-                        }}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: iconBgColor, color: primaryColor }}
                       >
                         <Edit className="w-3 h-3" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="sm"
                         onClick={() => {
                           setSelectedCourse(course);
                           setShowDeleteDialog(true);
                         }}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{
-                          backgroundColor: 'var(--error-opacity-10)',
-                          color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
-                        }}
+                        className="h-7 w-7 p-0 hover:opacity-80"
+                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
                       >
                         <Trash2 className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
