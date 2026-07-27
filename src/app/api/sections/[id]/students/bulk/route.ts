@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { authorize, canAccessSection, forbidden } from '@/lib/authz';
+import { checkPrerequisites } from '@/lib/obe';
 
 // POST /api/sections/[id]/students/bulk - Add multiple students to a section
 export async function POST(
@@ -179,6 +180,31 @@ export async function POST(
         { success: false, error: errors.join('. ') },
         { status: 400 }
       );
+    }
+
+    // Prerequisites must be cleared before enrolling. `overridePrerequisites`
+    // lets an admin enroll anyway (transfer credit, departmental waiver), but
+    // the override has to be deliberate rather than the default.
+    if (!body.overridePrerequisites) {
+      const blocked = await checkPrerequisites(
+        section.courseOffering.courseId,
+        students.map((s) => s.id)
+      );
+
+      if (blocked.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `${blocked.length} student(s) have not passed the prerequisites for ${section.courseOffering.course.code}.`,
+            code: 'PREREQUISITES_NOT_MET',
+            details: blocked.map((b) => ({
+              rollNumber: b.rollNumber,
+              missing: b.missing.map((m) => m.courseCode),
+            })),
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Enroll all students

@@ -877,3 +877,85 @@ export async function buildTranscriptSnapshot(
         : 0,
   };
 }
+
+// ─── Prerequisites ───────────────────────────────────────────────────────────
+
+export interface PrerequisiteCheck {
+  studentId: number;
+  rollNumber: string;
+  missing: Array<{ courseId: number; courseCode: string; reason: string }>;
+}
+
+/**
+ * Check which students have not satisfied a course's prerequisites.
+ *
+ * `courseprerequisites` was previously stored and editable but never consulted,
+ * so a student could be enrolled into a course without having passed what it
+ * builds on — which defeats the point of sequencing the curriculum.
+ *
+ * A prerequisite counts as satisfied when the student holds a countable grade
+ * for it with gpaPoints > 0 (i.e. they passed; an F produces a grade row too).
+ */
+export async function checkPrerequisites(
+  courseId: number,
+  studentIds: number[]
+): Promise<PrerequisiteCheck[]> {
+  if (studentIds.length === 0) return [];
+
+  const prerequisites = await prisma.courseprerequisites.findMany({
+    where: { A: courseId },
+    select: { B: true, courseB: { select: { id: true, code: true } } },
+  });
+
+  if (prerequisites.length === 0) return [];
+
+  const prerequisiteIds = prerequisites.map((p) => p.B);
+
+  const passed = await prisma.studentgrades.findMany({
+    where: {
+      studentId: { in: studentIds },
+      status: { in: [...COUNTABLE_GRADE_STATUSES] },
+      gpaPoints: { gt: 0 },
+      courseOffering: { courseId: { in: prerequisiteIds } },
+    },
+    select: {
+      studentId: true,
+      courseOffering: { select: { courseId: true } },
+    },
+  });
+
+  const passedByStudent = new Map<number, Set<number>>();
+  for (const grade of passed) {
+    const set = passedByStudent.get(grade.studentId) ?? new Set<number>();
+    set.add(grade.courseOffering.courseId);
+    passedByStudent.set(grade.studentId, set);
+  }
+
+  const students = await prisma.students.findMany({
+    where: { id: { in: studentIds } },
+    select: { id: true, rollNumber: true },
+  });
+
+  const results: PrerequisiteCheck[] = [];
+
+  for (const student of students) {
+    const cleared = passedByStudent.get(student.id) ?? new Set<number>();
+    const missing = prerequisites
+      .filter((p) => !cleared.has(p.B))
+      .map((p) => ({
+        courseId: p.courseB.id,
+        courseCode: p.courseB.code,
+        reason: 'Not passed',
+      }));
+
+    if (missing.length > 0) {
+      results.push({
+        studentId: student.id,
+        rollNumber: student.rollNumber,
+        missing,
+      });
+    }
+  }
+
+  return results;
+}

@@ -242,3 +242,116 @@ export async function notifyReportGenerated(
   );
 }
 
+
+/**
+ * Alert students who are falling behind in a course offering.
+ *
+ * At-risk students were already computed for the faculty dashboards but nobody
+ * told the students themselves. Early warning is the point of tracking
+ * attainment during a semester rather than after it.
+ *
+ * A student is at risk when their aggregate percentage across evaluated
+ * assessments is below the course offering's pass threshold.
+ */
+export async function notifyAtRiskStudents(
+  courseOfferingId: number,
+  options: { thresholdOverride?: number } = {}
+): Promise<{ notified: number; threshold: number }> {
+  const offering = await prisma.courseofferings.findUnique({
+    where: { id: courseOfferingId },
+    select: {
+      id: true,
+      course: { select: { code: true, name: true } },
+      passfailcriteria: { select: { minPassPercent: true } },
+      sections: {
+        where: { status: 'active' },
+        select: {
+          studentsections: {
+            where: { status: 'active' },
+            select: {
+              student: { select: { id: true, userId: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!offering) return { notified: 0, threshold: 0 };
+
+  const threshold =
+    options.thresholdOverride ?? offering.passfailcriteria?.minPassPercent ?? 50;
+
+  // studentId -> userId, deduped across sections
+  const studentUsers = new Map<number, number>();
+  for (const section of offering.sections) {
+    for (const enrolment of section.studentsections) {
+      studentUsers.set(enrolment.student.id, enrolment.student.userId);
+    }
+  }
+
+  if (studentUsers.size === 0) return { notified: 0, threshold };
+
+  const results = await prisma.studentassessmentresults.findMany({
+    where: {
+      studentId: { in: Array.from(studentUsers.keys()) },
+      status: { in: ['evaluated', 'published'] },
+      assessment: { courseOfferingId },
+    },
+    select: { studentId: true, obtainedMarks: true, totalMarks: true },
+  });
+
+  const totals = new Map<number, { obtained: number; total: number }>();
+  for (const result of results) {
+    const entry = totals.get(result.studentId) ?? { obtained: 0, total: 0 };
+    entry.obtained += result.obtainedMarks;
+    entry.total += result.totalMarks;
+    totals.set(result.studentId, entry);
+  }
+
+  const atRisk: Array<{ userId: number; percentage: number }> = [];
+  for (const [studentId, totalsForStudent] of totals.entries()) {
+    // Students with nothing evaluated yet are not "at risk", just unassessed
+    if (totalsForStudent.total <= 0) continue;
+
+    const percentage = (totalsForStudent.obtained / totalsForStudent.total) * 100;
+    if (percentage < threshold) {
+      const userId = studentUsers.get(studentId);
+      if (userId) atRisk.push({ userId, percentage });
+    }
+  }
+
+  await Promise.all(
+    atRisk.map(({ userId, percentage }) =>
+      createNotification(
+        userId,
+        `Performance alert: ${offering.course.code}`,
+        `Your current aggregate in ${offering.course.code} (${offering.course.name}) is ${percentage.toFixed(1)}%, below the ${threshold}% pass threshold. Please contact your instructor to discuss support options.`,
+        notification_type.alert
+      )
+    )
+  );
+
+  return { notified: atRisk.length, threshold };
+}
+
+/**
+ * Notify faculty and department admins that an outcome missed its target, so a
+ * corrective action plan can be raised.
+ */
+export async function notifyOutcomeBelowTarget(
+  courseCode: string,
+  outcomeCode: string,
+  attainmentPercent: number,
+  targetPercent: number,
+  recipientUserIds: number[]
+) {
+  if (recipientUserIds.length === 0) return null;
+
+  return createNotificationsForUsers(
+    recipientUserIds,
+    `${outcomeCode} below target in ${courseCode}`,
+    `${outcomeCode} attained ${attainmentPercent.toFixed(1)}% against a target of ${targetPercent}%. An action plan is required to close the loop.`,
+    notification_type.alert
+  );
+}

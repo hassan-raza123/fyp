@@ -156,12 +156,43 @@ export async function POST(req: NextRequest) {
     });
 
     if (courseOfferingWithCourse) {
-      const { notifyCLOAttainmentCalculated } = await import('@/lib/notification-utils');
+      const {
+        notifyCLOAttainmentCalculated,
+        notifyAtRiskStudents,
+        notifyOutcomeBelowTarget,
+      } = await import('@/lib/notification-utils');
+
       await notifyCLOAttainmentCalculated(
         courseOfferingWithCourse.course.code,
         calculatedAttainments.length,
         facultyId
       );
+
+      // Warn students who are behind while the semester can still be salvaged
+      await notifyAtRiskStudents(courseOfferingId);
+
+      // Flag CLOs that missed their target so an action plan can be raised
+      const faculty = await prisma.faculties.findUnique({
+        where: { id: facultyId },
+        select: { userId: true },
+      });
+
+      if (faculty) {
+        const missed = calculatedAttainments.filter(
+          (a): a is NonNullable<typeof a> => a !== null && a.isAchieved === false
+        );
+
+        for (const attainment of missed) {
+          const clo = clos.find((c) => c.id === attainment.cloId);
+          await notifyOutcomeBelowTarget(
+            courseOfferingWithCourse.course.code,
+            clo?.code ?? `CLO ${attainment.cloId}`,
+            attainment.attainmentPercent,
+            attainment.targetThreshold ?? 0,
+            [faculty.userId]
+          );
+        }
+      }
     }
 
     const auth = await requireAuth(req);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { checkPrerequisites } from '@/lib/obe';
 import { requireAuth } from '@/lib/auth';
 
 // POST /api/sections/[id]/students - Add a student to a section
@@ -190,6 +191,29 @@ export async function POST(
         },
       },
     });
+
+    // Prerequisites must be cleared first. `overridePrerequisites` allows a
+    // deliberate admin waiver (transfer credit, departmental approval).
+    if (!body?.overridePrerequisites && sectionWithDetails?.courseOffering) {
+      const blocked = await checkPrerequisites(
+        sectionWithDetails.courseOffering.courseId,
+        [parseInt(studentId)]
+      );
+
+      if (blocked.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Student has not passed the prerequisites for ${sectionWithDetails.courseOffering.course.code}: ${blocked[0].missing
+              .map((m) => m.courseCode)
+              .join(', ')}.`,
+            code: 'PREREQUISITES_NOT_MET',
+            details: blocked[0].missing,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Add student to section
     const studentSection = await prisma.studentsections.create({

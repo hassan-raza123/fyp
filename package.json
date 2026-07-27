@@ -15,7 +15,8 @@
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "db:setup": "prisma generate && prisma db push && prisma db seed",
-    "db:reset": "prisma migrate reset --force && prisma db seed"
+    "db:reset": "prisma migrate reset --force && prisma db seed",
+    "backfill:repeats": "node prisma/backfill-repeat-grades.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
