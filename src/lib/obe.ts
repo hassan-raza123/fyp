@@ -1,0 +1,476 @@
+import { prisma } from './prisma';
+
+/**
+ * Shared OBE calculation logic.
+ *
+ * The attainment chain is PEO ← PLO ← CLO/LLO ← assessment item ← marks.
+ * Two distinct measures exist and must not be conflated:
+ *
+ *  - **Cohort attainment** (`closattainments`, `llosattainments`,
+ *    `ploattainments.directAttainment`): the percentage of *students* who
+ *    achieved an outcome. This is what accreditation reports quote.
+ *
+ *  - **Individual attainment** (`ploscores`): one student's weighted mark
+ *    percentage for a PLO. This drives per-student graduation tracking.
+ *
+ * Both are derived here so the two never drift apart.
+ */
+
+// ─── Thresholds ──────────────────────────────────────────────────────────────
+
+/** Fallback performance threshold when a course offering has no criteria row. */
+export const DEFAULT_PERFORMANCE_THRESHOLD = 60;
+
+/** Fallback PLO attainment threshold when a program has no graduation criteria. */
+export const DEFAULT_PLO_THRESHOLD = 50;
+
+export interface OutcomeThresholds {
+  /** % of marks a student must score to have achieved the outcome */
+  performance: number;
+  /** % of students that must achieve it for the outcome itself to be attained */
+  target: number | null;
+}
+
+/**
+ * Resolve both thresholds for a course offering.
+ *
+ * `minCloAttainmentPercent` / `minLloAttainmentPercent` are the target
+ * thresholds. They are optional: when unset, attainment is reported as a
+ * number without an achieved/not-achieved verdict.
+ */
+export async function resolveThresholds(
+  courseOfferingId: number,
+  kind: 'clo' | 'llo',
+  overridePerformance?: number
+): Promise<OutcomeThresholds> {
+  const criteria = await prisma.passfailcriteria.findUnique({
+    where: { courseOfferingId },
+    select: {
+      minPassPercent: true,
+      minCloAttainmentPercent: true,
+      minLloAttainmentPercent: true,
+    },
+  });
+
+  return {
+    performance:
+      overridePerformance ??
+      criteria?.minPassPercent ??
+      DEFAULT_PERFORMANCE_THRESHOLD,
+    target:
+      (kind === 'clo'
+        ? criteria?.minCloAttainmentPercent
+        : criteria?.minLloAttainmentPercent) ?? null,
+  };
+}
+
+// ─── Cohort attainment ───────────────────────────────────────────────────────
+
+export interface CohortAttainment {
+  /** Students with an evaluated result — the denominator */
+  totalStudents: number;
+  studentsAchieved: number;
+  /** Enrolled students with no evaluated result yet */
+  unassessedStudents: number;
+  attainmentPercent: number;
+  isAchieved: boolean | null;
+}
+
+/**
+ * Compute cohort attainment from per-student performance.
+ *
+ * Students without an evaluated result are **excluded from the denominator**
+ * rather than counted as failures. Counting them as failures silently
+ * understates attainment whenever marks entry is still in progress, which is
+ * indistinguishable from a genuinely poor result. They are reported separately
+ * as `unassessedStudents` so a partial calculation is visible.
+ */
+export function computeCohortAttainment(
+  performanceByStudent: Map<number, { obtained: number; total: number }>,
+  enrolledStudentCount: number,
+  thresholds: OutcomeThresholds
+): CohortAttainment {
+  let studentsAchieved = 0;
+
+  for (const perf of performanceByStudent.values()) {
+    const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
+    if (percentage >= thresholds.performance) studentsAchieved++;
+  }
+
+  const totalStudents = performanceByStudent.size;
+  const attainmentPercent =
+    totalStudents > 0 ? (studentsAchieved / totalStudents) * 100 : 0;
+
+  return {
+    totalStudents,
+    studentsAchieved,
+    unassessedStudents: Math.max(0, enrolledStudentCount - totalStudents),
+    attainmentPercent,
+    isAchieved:
+      thresholds.target === null
+        ? null
+        : attainmentPercent >= thresholds.target,
+  };
+}
+
+// ─── Weighted averaging ──────────────────────────────────────────────────────
+
+export interface WeightedContribution {
+  attainment: number;
+  weight: number;
+}
+
+/**
+ * Weighted mean, ignoring zero total weight. Used for CLO/LLO → PLO and
+ * PLO → PEO roll-ups so every level aggregates the same way.
+ */
+export function weightedAverage(
+  contributions: WeightedContribution[]
+): number | null {
+  const totalWeight = contributions.reduce((sum, c) => sum + c.weight, 0);
+  if (totalWeight <= 0) return null;
+  const weightedSum = contributions.reduce(
+    (sum, c) => sum + c.attainment * c.weight,
+    0
+  );
+  return weightedSum / totalWeight;
+}
+
+// ─── Indirect (survey) attainment ────────────────────────────────────────────
+
+export interface SurveyForAttainment {
+  questions: Array<{
+    ploId: number | null;
+    ratingScale: number;
+    answers: Array<{ ratingValue: number | null }>;
+  }>;
+  _count: { responses: number };
+}
+
+/**
+ * Accumulate weighted survey ratings into a per-PLO map.
+ *
+ * Each question is normalised by its own `ratingScale` rather than a hardcoded
+ * 5, so surveys on different scales can be mixed without corrupting the result.
+ */
+export function accumulateSurveyRatings(
+  surveys: SurveyForAttainment[],
+  indirectByPlo: Map<number, { sumPercent: number; count: number }>
+): void {
+  for (const survey of surveys) {
+    const responseCount = survey._count.responses;
+    if (responseCount === 0) continue;
+
+    for (const q of survey.questions) {
+      if (!q.ploId) continue;
+
+      const scale = q.ratingScale > 0 ? q.ratingScale : 5;
+      const ratings = q.answers
+        .filter((a) => a.ratingValue !== null)
+        .map((a) => a.ratingValue as number);
+      if (ratings.length === 0) continue;
+
+      const avgRating = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+      const percent = (avgRating / scale) * 100;
+
+      const existing = indirectByPlo.get(q.ploId) ?? {
+        sumPercent: 0,
+        count: 0,
+      };
+      indirectByPlo.set(q.ploId, {
+        sumPercent: existing.sumPercent + percent * responseCount,
+        count: existing.count + responseCount,
+      });
+    }
+  }
+}
+
+/** Convert the accumulator into a ploId → percentage map. */
+export function finaliseIndirectAttainment(
+  indirectByPlo: Map<number, { sumPercent: number; count: number }>
+): Map<number, number> {
+  const result = new Map<number, number>();
+  for (const [ploId, data] of indirectByPlo.entries()) {
+    if (data.count <= 0) continue;
+    result.set(ploId, Math.round((data.sumPercent / data.count) * 10) / 10);
+  }
+  return result;
+}
+
+// ─── Per-student PLO scores ──────────────────────────────────────────────────
+
+export interface PloScoreRecord {
+  studentId: number;
+  ploId: number;
+  courseOfferingId: number;
+  obtainedMarks: number;
+  totalMarks: number;
+  percentage: number;
+}
+
+/**
+ * Compute per-student PLO scores for one course offering.
+ *
+ * Assessment item marks are scaled by the CLO→PLO (or LLO→PLO) mapping weight.
+ * Ignoring the weight would let a CLO mapped at 0.2 contribute as much as one
+ * mapped at 1.0, contradicting the weighting used for cohort attainment.
+ */
+export async function computePloScoresForOffering(offering: {
+  id: number;
+  course: {
+    clos: Array<{ id: number; ploMappings: Array<{ ploId: number; weight: number }> }>;
+    llos: Array<{ id: number; ploMappings: Array<{ ploId: number; weight: number }> }>;
+  };
+  sections: Array<{ studentsections: Array<{ studentId: number }> }>;
+  assessments: Array<{
+    assessmentItems: Array<{
+      id: number;
+      marks: number;
+      cloId: number | null;
+      lloId: number | null;
+    }>;
+  }>;
+}): Promise<PloScoreRecord[]> {
+  // outcome id → [{ ploId, weight }]
+  const cloToPlos = new Map<number, Array<{ ploId: number; weight: number }>>();
+  for (const clo of offering.course.clos) {
+    cloToPlos.set(clo.id, clo.ploMappings);
+  }
+  const lloToPlos = new Map<number, Array<{ ploId: number; weight: number }>>();
+  for (const llo of offering.course.llos) {
+    lloToPlos.set(llo.id, llo.ploMappings);
+  }
+
+  // itemId → [{ ploId, weight }], plus the item's max marks
+  const itemToPlos = new Map<number, Array<{ ploId: number; weight: number }>>();
+  const itemMarks = new Map<number, number>();
+
+  for (const assessment of offering.assessments) {
+    for (const item of assessment.assessmentItems) {
+      const mappings: Array<{ ploId: number; weight: number }> = [];
+      if (item.cloId !== null) mappings.push(...(cloToPlos.get(item.cloId) ?? []));
+      if (item.lloId !== null) mappings.push(...(lloToPlos.get(item.lloId) ?? []));
+      if (mappings.length > 0) {
+        itemToPlos.set(item.id, mappings);
+        itemMarks.set(item.id, item.marks);
+      }
+    }
+  }
+
+  if (itemToPlos.size === 0) return [];
+
+  const studentIdSet = new Set<number>();
+  for (const section of offering.sections) {
+    for (const ss of section.studentsections) studentIdSet.add(ss.studentId);
+  }
+  if (studentIdSet.size === 0) return [];
+
+  const studentIds = Array.from(studentIdSet);
+
+  const itemResults = await prisma.studentassessmentitemresults.findMany({
+    where: {
+      assessmentItemId: { in: Array.from(itemToPlos.keys()) },
+      studentResult: {
+        studentId: { in: studentIds },
+        status: { in: ['evaluated', 'published'] },
+      },
+    },
+    select: {
+      assessmentItemId: true,
+      obtainedMarks: true,
+      studentResult: { select: { studentId: true } },
+    },
+  });
+
+  // Only count items the student actually has a result for; seeding totals for
+  // every enrolled student would score un-assessed students as zero.
+  const scoreMap = new Map<string, { obtained: number; total: number }>();
+
+  for (const result of itemResults) {
+    const studentId = result.studentResult.studentId;
+    const maxMarks = itemMarks.get(result.assessmentItemId) ?? 0;
+
+    for (const { ploId, weight } of itemToPlos.get(result.assessmentItemId) ?? []) {
+      const key = `${studentId}_${ploId}`;
+      const existing = scoreMap.get(key) ?? { obtained: 0, total: 0 };
+      existing.obtained += result.obtainedMarks * weight;
+      existing.total += maxMarks * weight;
+      scoreMap.set(key, existing);
+    }
+  }
+
+  const records: PloScoreRecord[] = [];
+  for (const [key, score] of scoreMap.entries()) {
+    if (score.total <= 0) continue;
+    const [studentIdStr, ploIdStr] = key.split('_');
+    records.push({
+      studentId: Number(studentIdStr),
+      ploId: Number(ploIdStr),
+      courseOfferingId: offering.id,
+      obtainedMarks: Math.round(score.obtained * 100) / 100,
+      totalMarks: Math.round(score.total * 100) / 100,
+      percentage: Math.round((score.obtained / score.total) * 1000) / 10,
+    });
+  }
+
+  return records;
+}
+
+/** Persist PLO score records, returning how many rows were written. */
+export async function savePloScores(
+  records: PloScoreRecord[],
+  semesterName: string
+): Promise<number> {
+  await Promise.all(
+    records.map((r) =>
+      prisma.ploscores.upsert({
+        where: {
+          studentId_courseOfferingId_ploId: {
+            studentId: r.studentId,
+            courseOfferingId: r.courseOfferingId,
+            ploId: r.ploId,
+          },
+        },
+        update: {
+          obtainedMarks: r.obtainedMarks,
+          totalMarks: r.totalMarks,
+          percentage: r.percentage,
+          semesterName,
+          calculatedAt: new Date(),
+        },
+        create: {
+          studentId: r.studentId,
+          courseOfferingId: r.courseOfferingId,
+          ploId: r.ploId,
+          obtainedMarks: r.obtainedMarks,
+          totalMarks: r.totalMarks,
+          percentage: r.percentage,
+          semesterName,
+        },
+      })
+    )
+  );
+  return records.length;
+}
+
+/**
+ * Aggregate a student's PLO score across several course offerings.
+ *
+ * Marks are summed rather than taking the best offering. Taking the maximum
+ * lets one strong course mask weak performance everywhere else and
+ * systematically inflates reported attainment.
+ */
+export function aggregatePloScores(
+  records: Array<{ ploId: number; obtainedMarks: number; totalMarks: number }>
+): Map<number, { obtained: number; total: number; percentage: number }> {
+  const byPlo = new Map<number, { obtained: number; total: number; percentage: number }>();
+
+  for (const record of records) {
+    const existing = byPlo.get(record.ploId) ?? {
+      obtained: 0,
+      total: 0,
+      percentage: 0,
+    };
+    existing.obtained += record.obtainedMarks;
+    existing.total += record.totalMarks;
+    byPlo.set(record.ploId, existing);
+  }
+
+  for (const value of byPlo.values()) {
+    value.percentage =
+      value.total > 0
+        ? Math.round((value.obtained / value.total) * 1000) / 10
+        : 0;
+  }
+
+  return byPlo;
+}
+
+// ─── GPA ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Recompute and persist a student's semester GPA and cumulative GPA from their
+ * finalised grades.
+ *
+ * Both tables are read by the graduation tracker and the admin dashboards; if
+ * nothing writes them, `cumulativegpa` stays empty and every student is
+ * reported as ineligible to graduate regardless of performance.
+ */
+export async function recalculateStudentGpa(studentId: number): Promise<{
+  cumulativeGPA: number;
+  totalCreditHours: number;
+  semestersUpdated: number;
+}> {
+  const grades = await prisma.studentgrades.findMany({
+    where: { studentId, status: { in: ['active', 'final'] } },
+    select: {
+      creditHours: true,
+      qualityPoints: true,
+      courseOffering: { select: { semesterId: true } },
+    },
+  });
+
+  // Group by semester
+  const bySemester = new Map<number, { credits: number; points: number }>();
+  for (const grade of grades) {
+    const semesterId = grade.courseOffering.semesterId;
+    const existing = bySemester.get(semesterId) ?? { credits: 0, points: 0 };
+    existing.credits += grade.creditHours;
+    existing.points += grade.qualityPoints;
+    bySemester.set(semesterId, existing);
+  }
+
+  for (const [semesterId, totals] of bySemester.entries()) {
+    const semesterGPA =
+      totals.credits > 0
+        ? Math.round((totals.points / totals.credits) * 100) / 100
+        : 0;
+
+    await prisma.semestergpa.upsert({
+      where: { studentId_semesterId: { studentId, semesterId } },
+      update: {
+        totalQualityPoints: totals.points,
+        totalCreditHours: totals.credits,
+        semesterGPA,
+        calculatedAt: new Date(),
+      },
+      create: {
+        studentId,
+        semesterId,
+        totalQualityPoints: totals.points,
+        totalCreditHours: totals.credits,
+        semesterGPA,
+      },
+    });
+  }
+
+  const totalCreditHours = grades.reduce((s, g) => s + g.creditHours, 0);
+  const totalQualityPoints = grades.reduce((s, g) => s + g.qualityPoints, 0);
+  const cumulativeGPA =
+    totalCreditHours > 0
+      ? Math.round((totalQualityPoints / totalCreditHours) * 100) / 100
+      : 0;
+
+  await prisma.cumulativegpa.upsert({
+    where: { studentId },
+    update: {
+      totalQualityPoints,
+      totalCreditHours,
+      cumulativeGPA,
+      completedSemesters: bySemester.size,
+    },
+    create: {
+      studentId,
+      totalQualityPoints,
+      totalCreditHours,
+      cumulativeGPA,
+      completedSemesters: bySemester.size,
+    },
+  });
+
+  return {
+    cumulativeGPA,
+    totalCreditHours,
+    semestersUpdated: bySemester.size,
+  };
+}

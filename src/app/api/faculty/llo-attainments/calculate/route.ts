@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit-log';
+import {
+  resolveThresholds,
+  computeCohortAttainment,
+  type OutcomeThresholds,
+} from '@/lib/obe';
 
 // Lab assessment types — only these contribute to LLO attainments
 const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
@@ -61,12 +66,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve threshold: use request value → pass/fail criteria minPassPercent → default 60
-    const criteria = await prisma.passfailcriteria.findUnique({
-      where: { courseOfferingId: courseOfferingId },
-      select: { minPassPercent: true },
-    });
-    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
+    // Resolve both the per-student performance threshold and the cohort target.
+    const thresholds = await resolveThresholds(courseOfferingId, 'llo', threshold);
+    const effectiveThreshold = thresholds.performance;
 
     const sectionIds = courseOffering.sections.map((s) => s.id);
 
@@ -77,9 +79,9 @@ export async function POST(req: NextRequest) {
     });
 
     const studentIds = [...new Set(studentSections.map((ss) => ss.studentId))];
-    const totalStudents = studentIds.length;
+    const enrolledStudents = studentIds.length;
 
-    if (totalStudents === 0) {
+    if (enrolledStudents === 0) {
       return NextResponse.json(
         { success: false, error: 'No students found in your sections for this course offering' },
         { status: 400 }
@@ -139,8 +141,8 @@ export async function POST(req: NextRequest) {
           courseOfferingId,
           labAssessmentIds,
           studentIds,
-          totalStudents,
-          effectiveThreshold,
+          enrolledStudents,
+          thresholds,
           facultyId
         )
       )
@@ -156,8 +158,9 @@ export async function POST(req: NextRequest) {
         sectionId: sectionId ?? null,
         lloId: lloId ?? null,
         facultyId,
-        threshold: effectiveThreshold,
-        totalStudents,
+        performanceThreshold: effectiveThreshold,
+        targetThreshold: thresholds.target,
+        enrolledStudents,
         calculated: saved.length,
         skipped,
       });
@@ -186,8 +189,8 @@ async function calculateLLOAttainment(
   courseOfferingId: number,
   labAssessmentIds: number[],
   studentIds: number[],
-  totalStudents: number,
-  threshold: number,
+  enrolledStudents: number,
+  thresholds: OutcomeThresholds,
   facultyId: number
 ) {
   // Get assessment items mapped to this LLO from lab assessments.
@@ -237,50 +240,42 @@ async function calculateLLOAttainment(
     perf.total += result.assessmentItem.marks;
   });
 
-  // Count students who reached the threshold
-  let studentsAchieved = 0;
-  studentPerformance.forEach((perf) => {
-    const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
-    if (percentage >= threshold) studentsAchieved++;
-  });
+  // Students with no evaluated lab result are excluded from the denominator
+  // rather than being counted as failures.
+  const cohort = computeCohortAttainment(
+    studentPerformance,
+    enrolledStudents,
+    thresholds
+  );
 
-  const attainmentPercent = totalStudents > 0 ? (studentsAchieved / totalStudents) * 100 : 0;
+  const data = {
+    totalStudents: cohort.totalStudents,
+    studentsAchieved: cohort.studentsAchieved,
+    unassessedStudents: cohort.unassessedStudents,
+    threshold: thresholds.performance,
+    targetThreshold: thresholds.target,
+    attainmentPercent: cohort.attainmentPercent,
+    isAchieved: cohort.isAchieved,
+    status: 'active' as const,
+  };
 
-  // Upsert the attainment record
-  const existing = await prisma.llosattainments.findUnique({
+  return prisma.llosattainments.upsert({
     where: {
       lloId_courseOfferingId: {
         lloId: llo.id,
         courseOfferingId: courseOfferingId,
       },
     },
+    update: {
+      ...data,
+      calculatedAt: new Date(),
+      calculatedBy: facultyId,
+    },
+    create: {
+      lloId: llo.id,
+      courseOfferingId: courseOfferingId,
+      ...data,
+      calculatedBy: facultyId,
+    },
   });
-
-  if (existing) {
-    return prisma.llosattainments.update({
-      where: { id: existing.id },
-      data: {
-        totalStudents,
-        studentsAchieved,
-        threshold,
-        attainmentPercent,
-        calculatedAt: new Date(),
-        calculatedBy: facultyId,
-        status: 'active',
-      },
-    });
-  } else {
-    return prisma.llosattainments.create({
-      data: {
-        lloId: llo.id,
-        courseOfferingId: courseOfferingId,
-        totalStudents,
-        studentsAchieved,
-        threshold,
-        attainmentPercent,
-        calculatedBy: facultyId,
-        status: 'active',
-      },
-    });
-  }
 }

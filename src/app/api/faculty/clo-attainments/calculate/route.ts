@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit-log';
+import {
+  resolveThresholds,
+  computeCohortAttainment,
+  type OutcomeThresholds,
+} from '@/lib/obe';
 
 // POST - Calculate CLO attainments for a course offering or specific CLO
 export async function POST(req: NextRequest) {
@@ -53,12 +58,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve threshold: use request value → pass/fail criteria minPassPercent → default 60
-    const criteria = await prisma.passfailcriteria.findUnique({
-      where: { courseOfferingId: courseOfferingId },
-      select: { minPassPercent: true },
-    });
-    const effectiveThreshold: number = threshold ?? criteria?.minPassPercent ?? 60;
+    // Resolve both thresholds: the performance threshold a student must clear,
+    // and the target threshold the cohort must clear for the CLO to be attained.
+    const thresholds = await resolveThresholds(courseOfferingId, 'clo', threshold);
+    const effectiveThreshold = thresholds.performance;
 
     // Use ALL sections for student collection (course-offering-wide attainment)
     const sectionIds = courseOffering.sections.map((s) => s.id);
@@ -76,8 +79,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const studentIds = studentSections.map((ss) => ss.studentId);
-    const totalStudents = new Set(studentIds).size;
+    const studentIds = [...new Set(studentSections.map((ss) => ss.studentId))];
+    const enrolledStudents = studentIds.length;
 
     // Get CLOs to calculate
     const clos = await prisma.clos.findMany({
@@ -133,8 +136,8 @@ export async function POST(req: NextRequest) {
           courseOfferingId,
           assessments,
           studentIds,
-          totalStudents,
-          effectiveThreshold,
+          enrolledStudents,
+          thresholds,
           facultyId
         )
       )
@@ -168,14 +171,17 @@ export async function POST(req: NextRequest) {
         sectionId: sectionId ?? null,
         cloId: cloId ?? null,
         facultyId,
-        threshold: effectiveThreshold,
-        totalStudents,
+        performanceThreshold: effectiveThreshold,
+        targetThreshold: thresholds.target,
+        enrolledStudents,
         results: calculatedAttainments
           .filter((a): a is NonNullable<typeof a> => a !== null)
           .map((a) => ({
             cloId: a.cloId,
             attainmentPercent: a.attainmentPercent,
             studentsAchieved: a.studentsAchieved,
+            unassessedStudents: a.unassessedStudents,
+            isAchieved: a.isAchieved,
           })),
       });
     }
@@ -199,8 +205,8 @@ async function calculateCLOAttainment(
   courseOfferingId: number,
   assessments: any[],
   studentIds: number[],
-  totalStudents: number,
-  threshold: number,
+  enrolledStudents: number,
+  thresholds: OutcomeThresholds,
   facultyId: number
 ) {
   // Get assessment items for this CLO
@@ -275,54 +281,41 @@ async function calculateCLOAttainment(
     perf.total += itemResult.assessmentItem.marks;
   });
 
-  // Calculate how many students achieved the threshold
-  let studentsAchieved = 0;
-  studentCLOPerformance.forEach((perf) => {
-    const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
-    if (percentage >= threshold) {
-      studentsAchieved++;
-    }
-  });
+  // Students with no evaluated result are excluded from the denominator and
+  // reported separately, rather than being silently counted as failures.
+  const cohort = computeCohortAttainment(
+    studentCLOPerformance,
+    enrolledStudents,
+    thresholds
+  );
 
-  // Calculate overall attainment percentage
-  const attainmentPercent =
-    totalStudents > 0 ? (studentsAchieved / totalStudents) * 100 : 0;
+  const data = {
+    totalStudents: cohort.totalStudents,
+    studentsAchieved: cohort.studentsAchieved,
+    unassessedStudents: cohort.unassessedStudents,
+    threshold: thresholds.performance,
+    targetThreshold: thresholds.target,
+    attainmentPercent: cohort.attainmentPercent,
+    isAchieved: cohort.isAchieved,
+  };
 
-  // Check if attainment already exists
-  const existing = await prisma.closattainments.findUnique({
+  return await prisma.closattainments.upsert({
     where: {
       cloId_courseOfferingId: {
         cloId: clo.id,
         courseOfferingId: courseOfferingId,
       },
     },
+    update: {
+      ...data,
+      calculatedAt: new Date(),
+      calculatedBy: facultyId,
+    },
+    create: {
+      cloId: clo.id,
+      courseOfferingId: courseOfferingId,
+      ...data,
+      calculatedBy: facultyId,
+    },
   });
-
-  if (existing) {
-    // Update existing
-    return await prisma.closattainments.update({
-      where: { id: existing.id },
-      data: {
-        totalStudents,
-        studentsAchieved,
-        threshold,
-        attainmentPercent,
-        calculatedAt: new Date(),
-        calculatedBy: facultyId,
-      },
-    });
-  } else {
-    // Create new
-    return await prisma.closattainments.create({
-      data: {
-        cloId: clo.id,
-        courseOfferingId: courseOfferingId,
-        totalStudents,
-        studentsAchieved,
-        threshold,
-        attainmentPercent,
-        calculatedBy: facultyId,
-      },
-    });
-  }
 }

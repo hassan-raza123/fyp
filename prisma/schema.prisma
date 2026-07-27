@@ -372,10 +372,20 @@ model closattainments {
   id                Int               @id @default(autoincrement())
   cloId             Int
   courseOfferingId  Int
+  /// Students with an evaluated result — the denominator of attainmentPercent
   totalStudents     Int
   studentsAchieved  Int
+  /// Students enrolled but with no evaluated result yet (excluded from the
+  /// denominator, surfaced so partial calculations are visible)
+  unassessedStudents Int              @default(0)
+  /// Performance threshold: % a student must score to have achieved the CLO
   threshold         Float             @default(50)
   attainmentPercent Float
+  /// Target threshold: % of students that must achieve the CLO for the CLO
+  /// itself to count as attained (from passfailcriteria.minCloAttainmentPercent)
+  targetThreshold   Float?
+  /// attainmentPercent >= targetThreshold. Null when no target is configured.
+  isAchieved        Boolean?
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
   status            attainment_status @default(active)
@@ -408,10 +418,18 @@ model llosattainments {
   id                Int               @id @default(autoincrement())
   lloId             Int
   courseOfferingId  Int
+  /// Students with an evaluated result — the denominator of attainmentPercent
   totalStudents     Int
   studentsAchieved  Int
+  /// Students enrolled but with no evaluated result yet
+  unassessedStudents Int              @default(0)
+  /// Performance threshold: % a student must score to have achieved the LLO
   threshold         Float             @default(50)
   attainmentPercent Float
+  /// Target threshold from passfailcriteria.minLloAttainmentPercent
+  targetThreshold   Float?
+  /// attainmentPercent >= targetThreshold. Null when no target is configured.
+  isAchieved        Boolean?
   calculatedAt      DateTime          @default(now())
   calculatedBy      Int
   status            attainment_status @default(active)
@@ -430,12 +448,16 @@ model ploattainments {
   ploId             Int
   programId         Int
   semesterId        Int
+  /// Students who actually have a score for THIS PLO — not every student in the
+  /// program. A PLO covered by one course must not be divided by the whole cohort.
   totalStudents     Int
   studentsAchieved  Int
   threshold         Float             @default(50)
   attainmentPercent  Float
   directAttainment   Float?
   indirectAttainment Float?
+  /// attainmentPercent >= threshold
+  isAchieved         Boolean?
   calculatedAt       DateTime          @default(now())
   calculatedBy       Int
   status             attainment_status @default(active)
@@ -1037,6 +1059,10 @@ model survey_questions {
   ploId        Int?
   question     String
   questionType survey_question_type @default(rating)
+  /// Maximum value of the rating scale for this question. Indirect attainment
+  /// is rating/ratingScale, so a hardcoded 5 silently corrupts any survey that
+  /// uses a different scale.
+  ratingScale  Int                  @default(5)
   orderIndex   Int                  @default(0)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
@@ -1060,6 +1086,9 @@ model survey_responses {
   answers         survey_answers[]
 
   @@unique([surveyId, studentId])
+  /// External respondents (employers/alumni) have no studentId; without this the
+  /// duplicate check is a race between findFirst and create.
+  @@unique([surveyId, respondentEmail])
   @@index([surveyId])
   @@index([studentId])
 }
@@ -1207,6 +1236,10 @@ model peoplomappings {
   id        Int      @id @default(autoincrement())
   peoId     Int
   ploId     Int
+  /// Relative contribution of this PLO to the PEO, matching how
+  /// cloplomappings/lloplomappings are weighted. Defaults to 1 so existing
+  /// rows keep behaving as an unweighted average.
+  weight    Float    @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   peo       peos     @relation(fields: [peoId], references: [id], onDelete: Cascade)
