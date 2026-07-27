@@ -84,6 +84,10 @@ function createUserData(user: any, userType: AllRoles): UserData {
     firstName: user.first_name,
     lastName: user.last_name,
     role: userType,
+    // Must match the login route: admins and faculty receive their token from
+    // here after OTP, so omitting the flag would let every non-student account
+    // skip the forced password change entirely.
+    mustChangePassword: user.must_change_password === true,
   };
 
   if (userType === 'student' && user.student) {

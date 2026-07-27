@@ -74,6 +74,11 @@ export async function POST(request: NextRequest) {
       where: { id: user.userId },
       data: {
         password_hash: hashedPassword,
+        // Clearing the flag is what releases the account: the proxy holds
+        // a flagged user on /change-password, so updating the hash without
+        // this would trap them there permanently.
+        must_change_password: false,
+        password_changed_at: new Date(),
         updatedAt: new Date(),
       },
     });

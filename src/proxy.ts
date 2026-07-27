@@ -217,13 +217,12 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    // While a temporary password is in force, only the endpoints needed to
-    // replace it (and to sign out) are reachable.
-    if (
-      mustChangePasswordApi &&
-      !path.startsWith('/api/auth/') &&
-      !path.endsWith('/change-password')
-    ) {
+    // While a temporary password is in force, only the auth endpoints are
+    // reachable. The forced flow must go through /api/auth/change-password
+    // specifically, because that is the one route that re-issues the token —
+    // the role-specific routes clear the database flag but leave the caller
+    // holding a stale token that would keep redirecting them here.
+    if (mustChangePasswordApi && !path.startsWith('/api/auth/')) {
       return NextResponse.json(
         {
           error: 'You must change your password before using the system.',
