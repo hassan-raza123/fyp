@@ -78,6 +78,7 @@ export async function GET(
           questionId: q.id,
           question: q.question,
           questionType: q.questionType,
+          ratingScale: q.ratingScale,
           plo: q.plo,
           totalAnswers: answers.length,
           avgRating: avgRating !== null ? Math.round(avgRating * 100) / 100 : null,
@@ -87,20 +88,23 @@ export async function GET(
       })
     );
 
-    // Per-PLO indirect attainment estimate (avg rating / 5 * 100)
+    // Per-PLO indirect attainment estimate. Each question is normalised by its
+    // own rating scale before averaging, so questions on different scales can be
+    // grouped under the same PLO without distorting the result.
     const ploAttainments: { ploCode: string; estimatedAttainment: number }[] = [];
     const ploGroups = new Map<string, number[]>();
     for (const qr of questionResults) {
       if (qr.plo && qr.avgRating !== null) {
         if (!ploGroups.has(qr.plo.code)) ploGroups.set(qr.plo.code, []);
-        ploGroups.get(qr.plo.code)!.push(qr.avgRating);
+        const scale = qr.ratingScale > 0 ? qr.ratingScale : 5;
+        ploGroups.get(qr.plo.code)!.push((qr.avgRating / scale) * 100);
       }
     }
-    for (const [code, ratings] of ploGroups.entries()) {
-      const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+    for (const [code, percents] of ploGroups.entries()) {
+      const avg = percents.reduce((s, v) => s + v, 0) / percents.length;
       ploAttainments.push({
         ploCode: code,
-        estimatedAttainment: Math.round((avg / 5) * 100 * 10) / 10,
+        estimatedAttainment: Math.round(avg * 10) / 10,
       });
     }
 
