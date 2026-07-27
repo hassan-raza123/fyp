@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { buildTranscriptSnapshot } from '@/lib/obe';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { transcript_type, transcript_status } from '@prisma/client';
 import { z } from 'zod';
@@ -158,10 +159,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate total CGPA and credit hours
-    const cumulativeGPA = student.cumulativeGPA;
-    const totalCGPA = cumulativeGPA?.cumulativeGPA || null;
-    const totalCreditHours = cumulativeGPA?.totalCreditHours || null;
+    // Capture the full transcript body now. Storing only a CGPA and rebuilding
+    // the rest on demand meant an already-issued official transcript changed
+    // whenever a grade was later corrected.
+    const snapshot = await buildTranscriptSnapshot(
+      validatedData.studentId,
+      validatedData.semesterId ?? null
+    );
 
     const transcript = await prisma.transcripts.create({
       data: {
@@ -169,8 +173,9 @@ export async function POST(request: NextRequest) {
         semesterId: validatedData.semesterId,
         transcriptType: validatedData.transcriptType,
         isOfficial: validatedData.isOfficial,
-        totalCGPA,
-        totalCreditHours,
+        totalCGPA: snapshot.cgpa,
+        totalCreditHours: snapshot.totalCreditHours,
+        data: snapshot as unknown as Prisma.InputJsonValue,
         generatedBy: user.userId,
         status: transcript_status.generated,
       },

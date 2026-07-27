@@ -16,6 +16,9 @@ const getJwtSecret = () => {
   return new TextEncoder().encode(secret);
 };
 
+// Where a user with a temporary password is forced to go
+const CHANGE_PASSWORD_PATH = '/change-password';
+
 // Auth routes that should redirect to dashboard if user is logged in
 const authRoutes = [
   '/login',
@@ -86,6 +89,9 @@ async function verifyToken(token: string) {
 
     // Ensure userId is converted to string for header
     const userId = payload.userId ? String(payload.userId) : '';
+    const userData = payload.userData as
+      | { mustChangePassword?: boolean }
+      | undefined;
 
     return {
       isValid: true,
@@ -93,6 +99,7 @@ async function verifyToken(token: string) {
       userId: userId,
       email: payload.email as string,
       userData: payload.userData,
+      mustChangePassword: userData?.mustChangePassword === true,
     };
   } catch {
     // Invalid/expired or wrong-secret token – caller will clear cookie
@@ -102,6 +109,7 @@ async function verifyToken(token: string) {
       userId: '',
       email: '',
       userData: null,
+      mustChangePassword: false,
     };
   }
 }
@@ -193,14 +201,35 @@ export async function proxy(request: NextRequest) {
     }
 
     // Verify token for API routes
-    const { isValid, userRole, userId, email, userData } = await verifyToken(
-      token
-    );
+    const {
+      isValid,
+      userRole,
+      userId,
+      email,
+      userData,
+      mustChangePassword: mustChangePasswordApi,
+    } = await verifyToken(token);
 
     if (!isValid || !userRole) {
       return NextResponse.json(
         { error: 'Invalid or expired authentication token' },
         { status: 401 }
+      );
+    }
+
+    // While a temporary password is in force, only the endpoints needed to
+    // replace it (and to sign out) are reachable.
+    if (
+      mustChangePasswordApi &&
+      !path.startsWith('/api/auth/') &&
+      !path.endsWith('/change-password')
+    ) {
+      return NextResponse.json(
+        {
+          error: 'You must change your password before using the system.',
+          code: 'PASSWORD_CHANGE_REQUIRED',
+        },
+        { status: 403 }
       );
     }
 
@@ -250,10 +279,16 @@ export async function proxy(request: NextRequest) {
   }
 
   // Verify token
-  const { isValid, userRole } = await verifyToken(token);
+  const { isValid, userRole, mustChangePassword } = await verifyToken(token);
 
   if (!isValid || !userRole) {
     return createLoginRedirect(request, `Invalid token for route: ${path}`);
+  }
+
+  // An account still holding an admin-issued temporary password may go nowhere
+  // except the change-password screen.
+  if (mustChangePassword && path !== CHANGE_PASSWORD_PATH) {
+    return NextResponse.redirect(new URL(CHANGE_PASSWORD_PATH, request.url));
   }
 
   // At this point, userRole is guaranteed to be a string (not null)

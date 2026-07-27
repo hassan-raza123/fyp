@@ -728,3 +728,152 @@ export function scoreFromRubric(
     perCriterion,
   };
 }
+
+// ─── Transcript snapshots ────────────────────────────────────────────────────
+
+export interface TranscriptCourse {
+  courseCode: string;
+  courseName: string;
+  creditHours: number;
+  grade: string;
+  gpaPoints: number;
+  percentage: number;
+  isRepeat: boolean;
+  attemptNumber: number;
+}
+
+export interface TranscriptSemester {
+  semesterId: number;
+  semesterName: string;
+  courses: TranscriptCourse[];
+  creditHours: number;
+  qualityPoints: number;
+  gpa: number;
+}
+
+export interface TranscriptSnapshot {
+  generatedAt: string;
+  student: {
+    id: number;
+    rollNumber: string;
+    name: string;
+    program: string | null;
+    batch: string | null;
+  };
+  semesters: TranscriptSemester[];
+  totalCreditHours: number;
+  totalQualityPoints: number;
+  cgpa: number;
+}
+
+/**
+ * Build a transcript snapshot from a student's countable grades.
+ *
+ * An official transcript must be a fixed record of what was true when it was
+ * issued. Storing only a CGPA figure and recomputing the rest on demand means a
+ * later grade correction silently rewrites an already-issued document.
+ */
+export async function buildTranscriptSnapshot(
+  studentId: number,
+  semesterId?: number | null
+): Promise<TranscriptSnapshot> {
+  const student = await prisma.students.findUnique({
+    where: { id: studentId },
+    select: {
+      id: true,
+      rollNumber: true,
+      user: { select: { first_name: true, last_name: true } },
+      program: { select: { name: true, code: true } },
+      batch: { select: { name: true } },
+    },
+  });
+
+  if (!student) {
+    throw new Error(`Student ${studentId} not found`);
+  }
+
+  const grades = await prisma.studentgrades.findMany({
+    where: {
+      studentId,
+      status: { in: [...COUNTABLE_GRADE_STATUSES] },
+      ...(semesterId ? { courseOffering: { semesterId } } : {}),
+    },
+    select: {
+      creditHours: true,
+      qualityPoints: true,
+      gpaPoints: true,
+      grade: true,
+      percentage: true,
+      isRepeat: true,
+      attemptNumber: true,
+      courseOffering: {
+        select: {
+          semesterId: true,
+          semester: { select: { name: true } },
+          course: { select: { code: true, name: true } },
+        },
+      },
+    },
+    orderBy: { courseOffering: { semesterId: 'asc' } },
+  });
+
+  const bySemester = new Map<number, TranscriptSemester>();
+
+  for (const grade of grades) {
+    const sid = grade.courseOffering.semesterId;
+    let entry = bySemester.get(sid);
+    if (!entry) {
+      entry = {
+        semesterId: sid,
+        semesterName: grade.courseOffering.semester.name,
+        courses: [],
+        creditHours: 0,
+        qualityPoints: 0,
+        gpa: 0,
+      };
+      bySemester.set(sid, entry);
+    }
+
+    entry.courses.push({
+      courseCode: grade.courseOffering.course.code,
+      courseName: grade.courseOffering.course.name,
+      creditHours: grade.creditHours,
+      grade: grade.grade,
+      gpaPoints: grade.gpaPoints,
+      percentage: grade.percentage,
+      isRepeat: grade.isRepeat,
+      attemptNumber: grade.attemptNumber,
+    });
+    entry.creditHours += grade.creditHours;
+    entry.qualityPoints += grade.qualityPoints;
+  }
+
+  const semesters = Array.from(bySemester.values()).map((s) => ({
+    ...s,
+    gpa:
+      s.creditHours > 0
+        ? Math.round((s.qualityPoints / s.creditHours) * 100) / 100
+        : 0,
+  }));
+
+  const totalCreditHours = grades.reduce((sum, g) => sum + g.creditHours, 0);
+  const totalQualityPoints = grades.reduce((sum, g) => sum + g.qualityPoints, 0);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    student: {
+      id: student.id,
+      rollNumber: student.rollNumber,
+      name: `${student.user.first_name} ${student.user.last_name}`,
+      program: student.program ? `${student.program.code} - ${student.program.name}` : null,
+      batch: student.batch?.name ?? null,
+    },
+    semesters,
+    totalCreditHours,
+    totalQualityPoints,
+    cgpa:
+      totalCreditHours > 0
+        ? Math.round((totalQualityPoints / totalCreditHours) * 100) / 100
+        : 0,
+  };
+}

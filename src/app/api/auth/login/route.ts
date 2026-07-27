@@ -71,6 +71,9 @@ function createUserData(user: any, userType: AllRoles): UserData {
     firstName: user.first_name,
     lastName: user.last_name,
     role: userType,
+    // Drives the forced password change: the proxy keeps the user on
+    // /change-password until they replace their temporary credential.
+    mustChangePassword: user.must_change_password === true,
   };
 
   if (userType === 'student' && user.student) {

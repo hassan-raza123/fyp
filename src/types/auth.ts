@@ -57,6 +57,8 @@ export interface LoginRequest {
 }
 
 export interface UserData {
+  /** True while the account still has an admin-issued temporary password */
+  mustChangePassword?: boolean;
   id: number;
   email: string;
   firstName: string | null;
