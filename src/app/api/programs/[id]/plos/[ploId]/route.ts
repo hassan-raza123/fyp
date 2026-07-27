@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 
 export async function GET(
   req: NextRequest,
@@ -38,13 +39,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
-  const auth = await requireAuth(req);
-  if (!auth.success) {
-    return NextResponse.json(
-      { success: false, error: auth.error },
-      { status: 401 }
-    );
-  }
+  const auth = await authorize(req, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
   const { id, ploId: ploIdParam } = await params;
   const programId = parseInt(id);
   const ploId = parseInt(ploIdParam);
@@ -83,13 +79,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; ploId: string }> }
 ) {
-  const auth = await requireAuth(req);
-  if (!auth.success) {
-    return NextResponse.json(
-      { success: false, error: auth.error },
-      { status: 401 }
-    );
-  }
+  const auth = await authorize(req, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
   const { id, ploId: ploIdParam } = await params;
   const programId = parseInt(id);
   const ploId = parseInt(ploIdParam);

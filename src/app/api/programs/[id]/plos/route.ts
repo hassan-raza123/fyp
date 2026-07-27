@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 import { plo_status } from '@prisma/client';
 
 // GET /api/programs/[id]/plos
@@ -9,14 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // PLOs are program-level configuration: admins only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { id } = await params;
     const programId = parseInt(id);
