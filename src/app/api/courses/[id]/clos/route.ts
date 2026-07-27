@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authorize, canManageCourse, forbidden } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // All roles may read a course's CLOs — students are shown course outcomes.
+    const auth = await authorize(req, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const courseId = parseInt(id);
 
@@ -38,6 +49,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const courseId = parseInt(id);
     if (isNaN(courseId)) {
@@ -45,6 +59,10 @@ export async function POST(
         { success: false, error: 'Invalid course id' },
         { status: 400 }
       );
+    }
+
+    if (!(await canManageCourse(req, auth.user, courseId))) {
+      return forbidden('You do not have access to this course').response;
     }
 
     const { code, description, bloomLevel, status } = await req.json();
@@ -58,6 +76,14 @@ export async function POST(
 
     const clo = await prisma.clos.create({
       data: { code, description, bloomLevel, status, courseId },
+    });
+
+    await writeAuditLog(req, auth.user, 'clo.create', {
+      cloId: clo.id,
+      courseId,
+      code,
+      description,
+      bloomLevel,
     });
 
     return NextResponse.json({ success: true, data: clo });

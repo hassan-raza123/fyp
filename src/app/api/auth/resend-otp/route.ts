@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { randomInt } from 'crypto';
 import { z } from 'zod';
 import { sendOTPEmail } from '@/lib/email-utils';
+// Use the shared client: instantiating PrismaClient per module opens a separate
+// connection pool on every serverless instance and exhausts DB connections.
+import { prisma } from '@/lib/prisma';
+import { consumeRateLimit, getClientIp } from '@/lib/rate-limit';
 
-const prisma = new PrismaClient();
+// Resend limits — this endpoint sends email, so it is also a spam vector
+const RESEND_WINDOW = 15 * 60 * 1000; // 15 minutes
+const MAX_RESENDS_PER_EMAIL = 5;
+const MAX_RESENDS_PER_IP = 20;
 
 const resendOTPSchema = z.object({
   email: z
@@ -19,8 +26,10 @@ const resendOTPSchema = z.object({
   }),
 });
 
+// Math.random() is not cryptographically secure and its output is predictable
+// from prior values — an OTP must come from a CSPRNG, matching the login route.
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
 
@@ -46,6 +55,35 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, userType } = validationResult.data;
+
+    const [emailLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        key: `resend-otp:${email}`,
+        limit: MAX_RESENDS_PER_EMAIL,
+        windowMs: RESEND_WINDOW,
+      }),
+      consumeRateLimit({
+        key: `resend-otp-ip:${getClientIp(request)}`,
+        limit: MAX_RESENDS_PER_IP,
+        windowMs: RESEND_WINDOW,
+      }),
+    ]);
+
+    if (!emailLimit.allowed || !ipLimit.allowed) {
+      const retryAfter = Math.max(
+        emailLimit.retryAfterSeconds,
+        ipLimit.retryAfterSeconds
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many code requests. Please try again in ${Math.ceil(
+            retryAfter / 60
+          )} minute(s).`,
+        },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
 
     // Check if user exists
     const user = await prisma.users.findUnique({

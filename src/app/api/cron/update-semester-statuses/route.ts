@@ -35,9 +35,20 @@ async function updateSemesterStatus(semesterId: number) {
 
 export async function GET(request: Request) {
   try {
-    // Verify the request is from a trusted source (e.g., cron job)
+    // Verify the request is from a trusted source (e.g., cron job).
+    // The secret must be configured: without this guard an unset CRON_SECRET
+    // would make the comparison `Bearer undefined`, which any caller can send.
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      console.error('CRON_SECRET is not configured; refusing cron request.');
+      return NextResponse.json(
+        { success: false, error: 'Cron endpoint is not configured' },
+        { status: 503 }
+      );
+    }
+
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

@@ -1,12 +1,26 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {
+  authorize,
+  canAccessStudent,
+  canAccessSection,
+  forbidden,
+} from '@/lib/authz';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
     const studentId = parseInt(params.id);
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('sectionId');
@@ -18,9 +32,26 @@ export async function GET(
       );
     }
 
+    const parsedSectionId = parseInt(sectionId);
+    if (isNaN(parsedSectionId)) {
+      return NextResponse.json({ error: 'Invalid section ID' }, { status: 400 });
+    }
+
+    // Two independent checks: the caller must be allowed to see this student's
+    // records *and* to see this section. A student passes only for their own
+    // records in a section they are enrolled in.
+    const [allowedStudent, allowedSection] = await Promise.all([
+      canAccessStudent(request, auth.user, studentId),
+      canAccessSection(request, auth.user, parsedSectionId),
+    ]);
+
+    if (!allowedStudent || !allowedSection) {
+      return forbidden('You do not have access to these results').response;
+    }
+
     // Get the section's course offering ID
     const section = await prisma.sections.findUnique({
-      where: { id: parseInt(sectionId) },
+      where: { id: parsedSectionId },
       select: { courseOfferingId: true },
     });
 

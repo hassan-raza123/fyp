@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authorize, canAccessSection, forbidden } from '@/lib/authz';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    // Staff only: this returns every student's marks for the section, so a
+    // student must never reach it (they read their own results elsewhere).
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
     const resolvedParams = params instanceof Promise ? await params : params;
     const sectionId = parseInt(resolvedParams.id);
 
@@ -14,6 +20,10 @@ export async function GET(
         { error: 'Invalid section ID' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessSection(req, auth.user, sectionId))) {
+      return forbidden('You do not have access to this section').response;
     }
 
     const results = await prisma.studentassessmentresults.findMany({

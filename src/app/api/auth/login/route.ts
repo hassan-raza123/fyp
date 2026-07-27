@@ -4,6 +4,11 @@ import { randomInt } from 'crypto';
 const bcrypt = require('bcryptjs');
 import { sendOTPEmail } from '@/lib/email-utils';
 import { createToken } from '@/lib/auth';
+import {
+  consumeRateLimit,
+  resetRateLimit,
+  getClientIp,
+} from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
@@ -15,10 +20,10 @@ import {
   TokenPayload,
 } from '@/types/auth';
 
-// Rate limiting setup
-const rateLimit = new Map<string, number[]>();
+// Rate limiting: per-account and per-IP, both persisted (see lib/rate-limit.ts)
 const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
-const MAX_OTP_REQUESTS = 10;
+const MAX_ATTEMPTS_PER_EMAIL = 10;
+const MAX_ATTEMPTS_PER_IP = 30; // higher, so shared campus NAT does not lock out
 
 const loginSchema = z.object({
   email: z
@@ -116,26 +121,39 @@ export async function POST(request: NextRequest) {
 
     const { email, password, userType } = validationResult.data;
 
-    // Check rate limit
-    const now = Date.now();
-    const userRequests = rateLimit.get(email) || [];
-    const recentRequests = userRequests.filter(
-      (time: number) => now - time < RATE_LIMIT_WINDOW
-    );
+    // Rate limit before touching credentials, on both the account and the
+    // source IP, so neither a single account nor a single host can be hammered.
+    const emailKey = `login:${email}`;
+    const ipKey = `login-ip:${getClientIp(request)}`;
 
-    if (recentRequests.length >= MAX_OTP_REQUESTS) {
+    const [emailLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        key: emailKey,
+        limit: MAX_ATTEMPTS_PER_EMAIL,
+        windowMs: RATE_LIMIT_WINDOW,
+      }),
+      consumeRateLimit({
+        key: ipKey,
+        limit: MAX_ATTEMPTS_PER_IP,
+        windowMs: RATE_LIMIT_WINDOW,
+      }),
+    ]);
+
+    if (!emailLimit.allowed || !ipLimit.allowed) {
+      const retryAfter = Math.max(
+        emailLimit.retryAfterSeconds,
+        ipLimit.retryAfterSeconds
+      );
       return NextResponse.json(
         {
           success: false,
-          message: 'Too many OTP requests. Please try again later.',
+          message: `Too many login attempts. Please try again in ${Math.ceil(
+            retryAfter / 60
+          )} minute(s).`,
         },
-        { status: 429 }
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
-
-    // Add current request to rate limit
-    recentRequests.push(now);
-    rateLimit.set(email, recentRequests);
 
     const user = await prisma.users.findFirst({
       where: {
@@ -177,6 +195,10 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Credentials are valid — clear the per-account counter so a user who
+    // mistyped a few times is not penalised after a successful sign-in.
+    await resetRateLimit(emailKey);
 
     // Get user roles
     const userRoles = user.userrole?.role?.name

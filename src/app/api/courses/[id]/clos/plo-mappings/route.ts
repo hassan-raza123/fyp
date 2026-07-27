@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authorize } from '@/lib/authz';
 
 export async function GET(
   req: NextRequest,
@@ -7,6 +8,14 @@ export async function GET(
 ) {
   const params = await _params;
   try {
+    const auth = await authorize(req, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
     const courseId = await Promise.resolve(parseInt(params.id));
 
     if (isNaN(courseId)) {

@@ -1,18 +1,31 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authorize, canAccessSection, forbidden } from '@/lib/authz';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
     const sectionId = parseInt(params.id);
     if (isNaN(sectionId)) {
       return NextResponse.json(
         { error: 'Invalid section ID' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessSection(request, auth.user, sectionId))) {
+      return forbidden('You do not have access to this section').response;
     }
 
     const section = await prisma.sections.findUnique({

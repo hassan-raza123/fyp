@@ -11,7 +11,17 @@ import {
   TokenPayload,
 } from '@/types/auth';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
+import {
+  consumeRateLimit,
+  resetRateLimit,
+  getClientIp,
+} from '@/lib/rate-limit';
 const bcrypt = require('bcryptjs');
+
+// OTP guessing limits
+const OTP_ATTEMPT_WINDOW = 10 * 60 * 1000; // 10 minutes
+const MAX_OTP_ATTEMPTS = 5; // per account
+const MAX_OTP_ATTEMPTS_PER_IP = 20;
 
 const verifyOTPSchema = z.object({
   email: z
@@ -130,6 +140,38 @@ export async function POST(
 
     const { email, userType, otp } = validationResult.data;
 
+    // A 6-digit OTP is only 1,000,000 combinations, so unlimited guesses would
+    // make it trivially brute-forceable. Cap attempts per account and per IP.
+    const otpKey = `verify-otp:${email}`;
+    const [otpLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        key: otpKey,
+        limit: MAX_OTP_ATTEMPTS,
+        windowMs: OTP_ATTEMPT_WINDOW,
+      }),
+      consumeRateLimit({
+        key: `verify-otp-ip:${getClientIp(request)}`,
+        limit: MAX_OTP_ATTEMPTS_PER_IP,
+        windowMs: OTP_ATTEMPT_WINDOW,
+      }),
+    ]);
+
+    if (!otpLimit.allowed || !ipLimit.allowed) {
+      const retryAfter = Math.max(
+        otpLimit.retryAfterSeconds,
+        ipLimit.retryAfterSeconds
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many verification attempts. Please request a new code and try again in ${Math.ceil(
+            retryAfter / 60
+          )} minute(s).`,
+        },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     // Get the OTP from the database
     const user = await prisma.users.findFirst({
       where: {
@@ -246,6 +288,9 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    // Correct code — clear the attempt counter for this account
+    await resetRateLimit(otpKey);
 
     // Mark OTP as used
     await prisma.otps.update({

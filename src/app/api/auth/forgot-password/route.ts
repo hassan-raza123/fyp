@@ -3,6 +3,12 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email-utils';
 import { prisma } from '@/lib/prisma';
+import { consumeRateLimit, getClientIp } from '@/lib/rate-limit';
+
+// Password reset request limits — this endpoint sends email
+const RESET_WINDOW = 15 * 60 * 1000; // 15 minutes
+const MAX_RESETS_PER_EMAIL = 3;
+const MAX_RESETS_PER_IP = 15;
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -36,17 +42,48 @@ export async function POST(request: NextRequest) {
 
     const { email } = validationResult.data;
 
+    const [emailLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        key: `forgot-password:${email}`,
+        limit: MAX_RESETS_PER_EMAIL,
+        windowMs: RESET_WINDOW,
+      }),
+      consumeRateLimit({
+        key: `forgot-password-ip:${getClientIp(request)}`,
+        limit: MAX_RESETS_PER_IP,
+        windowMs: RESET_WINDOW,
+      }),
+    ]);
+
+    if (!emailLimit.allowed || !ipLimit.allowed) {
+      const retryAfter = Math.max(
+        emailLimit.retryAfterSeconds,
+        ipLimit.retryAfterSeconds
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Too many password reset requests. Please try again in ${Math.ceil(
+            retryAfter / 60
+          )} minute(s).`,
+        },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     // Find user by email
     const user = await prisma.users.findUnique({
       where: { email },
     });
 
+    // Always answer the same way whether or not the account exists. Saying "no
+    // account found" turns this endpoint into a way to enumerate which email
+    // addresses are registered.
     if (!user) {
-      // Return error if user not found
       return NextResponse.json({
-        success: false,
+        success: true,
         message:
-          'No account found with this email address. Please check your email or register for a new account.',
+          'If an account exists for that email address, password reset instructions have been sent.',
       });
     }
 
