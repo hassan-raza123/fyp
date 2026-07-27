@@ -667,3 +667,64 @@ export async function findUnattainedOutcomes(
 
   return results.sort((a, b) => a.attainmentPercent - b.attainmentPercent);
 }
+
+// ─── Rubrics ─────────────────────────────────────────────────────────────────
+
+/** Fraction of an item's marks awarded at each rubric level. */
+export const RUBRIC_LEVEL_FRACTIONS = {
+  excellent: 1.0,
+  good: 0.75,
+  satisfactory: 0.5,
+  unsatisfactory: 0.25,
+} as const;
+
+export type RubricLevel = keyof typeof RUBRIC_LEVEL_FRACTIONS;
+
+export interface RubricCriterionScore {
+  criterionId: number;
+  level: RubricLevel;
+  comment?: string;
+}
+
+/**
+ * Convert rubric level selections into a mark for one assessment item.
+ *
+ * Each criterion contributes a share of the item's marks proportional to its
+ * weight, scaled by the level awarded. This is what makes a rubric more than
+ * documentation: the mark is *derived* from the criteria rather than typed in
+ * alongside them, so the two can never disagree.
+ */
+export function scoreFromRubric(
+  itemMarks: number,
+  criteria: Array<{ id: number; weight: number }>,
+  scores: RubricCriterionScore[]
+): { obtainedMarks: number; perCriterion: Array<{ criterionId: number; level: RubricLevel; awardedMarks: number }> } {
+  const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
+  if (totalWeight <= 0) {
+    return { obtainedMarks: 0, perCriterion: [] };
+  }
+
+  const scoreByCriterion = new Map(scores.map((s) => [s.criterionId, s.level]));
+  const perCriterion: Array<{ criterionId: number; level: RubricLevel; awardedMarks: number }> = [];
+  let obtained = 0;
+
+  for (const criterion of criteria) {
+    const level = scoreByCriterion.get(criterion.id);
+    if (!level) continue;
+
+    const criterionMarks = (criterion.weight / totalWeight) * itemMarks;
+    const awarded = criterionMarks * RUBRIC_LEVEL_FRACTIONS[level];
+
+    obtained += awarded;
+    perCriterion.push({
+      criterionId: criterion.id,
+      level,
+      awardedMarks: Math.round(awarded * 100) / 100,
+    });
+  }
+
+  return {
+    obtainedMarks: Math.round(obtained * 100) / 100,
+    perCriterion,
+  };
+}

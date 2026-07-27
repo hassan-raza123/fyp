@@ -20,6 +20,21 @@ import {
 } from '@/components/ui/dialog';
 import { obe_report_type, report_status } from '@prisma/client';
 
+interface ReportSection {
+  heading: string;
+  note?: string;
+  columns: string[];
+  rows: (string | number | null)[][];
+}
+
+interface ReportPayload {
+  reportType: obe_report_type;
+  generatedAt: string;
+  summary: Record<string, string | number | null>;
+  sections: ReportSection[];
+  warnings: string[];
+}
+
 interface OBEReport {
   id: number;
   reportType: obe_report_type;
@@ -28,6 +43,7 @@ interface OBEReport {
   status: report_status;
   generatedAt: string;
   filePath: string | null;
+  data: ReportPayload | null;
   program: {
     id: number;
     name: string;
@@ -130,6 +146,78 @@ export default function ReportViewPage() {
     return <PageLoading message="Loading report..." />;
   }
 
+  const handleExportCsv = () => {
+    if (!report?.data) return;
+    const lines: string[] = [report.title];
+    for (const [key, value] of Object.entries(report.data.summary)) {
+      lines.push(`${key},${value ?? ''}`);
+    }
+    for (const section of report.data.sections) {
+      lines.push('', section.heading, section.columns.join(','));
+      for (const row of section.rows) {
+        lines.push(
+          row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')
+        );
+      }
+    }
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${report.title.replace(/\s+/g, '_')}.csv`;
+    link.click();
+    toast.success('Report exported as CSV');
+  };
+
+  const handleExportPdf = async () => {
+    if (!report?.data) return;
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16);
+    doc.text(report.title, 14, 16);
+    doc.setFontSize(10);
+    doc.text(
+      [
+        report.program ? `Program: ${report.program.code} - ${report.program.name}` : '',
+        report.semester ? `Semester: ${report.semester.name}` : '',
+        `Generated: ${format(new Date(report.generatedAt), 'PPP')}`,
+      ]
+        .filter(Boolean)
+        .join('   |   '),
+      14,
+      23
+    );
+
+    let cursorY = 30;
+    const summaryEntries = Object.entries(report.data.summary);
+    if (summaryEntries.length > 0) {
+      autoTable(doc, {
+        startY: cursorY,
+        head: [['Summary', 'Value']],
+        body: summaryEntries.map(([k, v]) => [k, String(v ?? '')]),
+        styles: { fontSize: 8 },
+      });
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+    }
+
+    for (const section of report.data.sections) {
+      if (section.rows.length === 0) continue;
+      autoTable(doc, {
+        startY: cursorY,
+        head: [section.columns],
+        body: section.rows.map((r) => r.map((c) => String(c ?? ''))),
+        styles: { fontSize: 7 },
+        headStyles: { fillColor: [124, 58, 237] },
+        didDrawPage: () => undefined,
+      });
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+    }
+
+    doc.save(`${report.title.replace(/\s+/g, '_')}.pdf`);
+    toast.success('Report exported as PDF');
+  };
+
   if (!report) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] bg-page">
@@ -150,15 +238,17 @@ export default function ReportViewPage() {
         subtitle="OBE Report Details"
         action={
           <div className="flex gap-2">
-            {report.filePath && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open(report.filePath || '', '_blank')}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download
-              </Button>
+            {report.data && report.data.sections.length > 0 && (
+              <>
+                <Button variant="outline" size="sm" onClick={handleExportCsv}>
+                  <Download className="mr-2 h-4 w-4" />
+                  CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExportPdf}>
+                  <Download className="mr-2 h-4 w-4" />
+                  PDF
+                </Button>
+              </>
             )}
             <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -255,6 +345,95 @@ export default function ReportViewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* The report itself. Without this the page showed only metadata and the
+          "generated" report had no content anywhere. */}
+      {report.data && (
+        <div className="space-y-6 mt-6">
+          {report.data.warnings.length > 0 && (
+            <Card className="border-yellow-300 dark:border-yellow-800">
+              <CardHeader>
+                <CardTitle className="text-sm">Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc pl-5 space-y-1">
+                  {report.data.warnings.map((w, i) => (
+                    <li key={i} className="text-sm text-muted-foreground">
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {Object.keys(report.data.summary).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(report.data.summary).map(([key, value]) => (
+                    <div key={key}>
+                      <p className="text-sm text-muted-foreground">{key}</p>
+                      <p className="text-lg font-semibold">{value ?? 'N/A'}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {report.data.sections.map((section) => (
+            <Card key={section.heading}>
+              <CardHeader>
+                <CardTitle>{section.heading}</CardTitle>
+                {section.note && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {section.note}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                {section.rows.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No data available for this section.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          {section.columns.map((col) => (
+                            <th
+                              key={col}
+                              className="text-left py-2 px-3 font-medium whitespace-nowrap"
+                            >
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.rows.map((row, i) => (
+                          <tr key={i} className="border-b last:border-0">
+                            {row.map((cell, j) => (
+                              <td key={j} className="py-2 px-3 align-top">
+                                {cell ?? '—'}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>

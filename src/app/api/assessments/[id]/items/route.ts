@@ -43,7 +43,7 @@ export async function POST(
     if (locked) return locked;
 
     const data = await req.json();
-    const { questionNo, description, marks, cloId, lloId } = data;
+    const { questionNo, description, marks, cloId, lloId, rubricId } = data;
 
     // Validate: must have either cloId (theory) or lloId (lab), not both, not neither
     const hasClo = cloId !== undefined && cloId !== null && cloId !== '';
@@ -84,6 +84,8 @@ export async function POST(
       marks,
       ...(hasClo && { cloId: Number(cloId) }),
       ...(hasLlo && { lloId: Number(lloId) }),
+      // Optional: when set, the item is scored via /assessment-results/[id]/rubric-score
+      ...(rubricId ? { rubricId: Number(rubricId) } : {}),
     };
 
     const assessmentItem = await prisma.assessmentitems.create({

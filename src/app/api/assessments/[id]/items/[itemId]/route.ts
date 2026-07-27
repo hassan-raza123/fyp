@@ -31,7 +31,7 @@ export async function PUT(
     if (!auth.ok) return auth.response;
 
     const data = await req.json();
-    const { questionNo, description, marks, cloId, lloId } = data;
+    const { questionNo, description, marks, cloId, lloId, rubricId } = data;
 
     const itemId = parseInt(params.itemId);
     if (isNaN(itemId)) {
@@ -85,6 +85,10 @@ export async function PUT(
         // Set the active mapping and explicitly clear the other
         cloId: hasClo ? Number(cloId) : null,
         lloId: hasLlo ? Number(lloId) : null,
+        // undefined leaves the existing rubric untouched; null detaches it
+        ...(rubricId === undefined
+          ? {}
+          : { rubricId: rubricId === null ? null : Number(rubricId) }),
       },
       include: {
         clo: true,

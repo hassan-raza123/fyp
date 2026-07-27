@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
-import { obe_report_type, report_status } from '@prisma/client';
+import { Prisma, obe_report_type, report_status } from '@prisma/client';
+import { generateReportPayload } from '@/lib/obe-report';
 import { z } from 'zod';
 
 const createReportSchema = z.object({
@@ -138,6 +139,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Build the report body now and snapshot it, so the report stays
+    // reproducible even after attainments are later recalculated. Previously
+    // this endpoint stored only metadata and the report had no content at all.
+    const payload = await generateReportPayload(
+      validatedData.reportType,
+      validatedData.programId ?? null,
+      validatedData.semesterId ?? null
+    );
+
     const report = await prisma.obereports.create({
       data: {
         reportType: validatedData.reportType,
@@ -146,6 +156,7 @@ export async function POST(request: NextRequest) {
         title: validatedData.title,
         description: validatedData.description,
         generatedBy: user.userId,
+        data: payload as unknown as Prisma.InputJsonValue,
         status: report_status.generated,
       },
       include: {
