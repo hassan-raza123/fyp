@@ -1,5 +1,11 @@
 {
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=4096"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/update-semester-statuses",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

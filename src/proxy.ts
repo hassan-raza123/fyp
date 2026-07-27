@@ -3,11 +3,18 @@ import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 
-// Use same secret resolution as auth.ts so sign and verify always match
-const getJwtSecret = () =>
-  new TextEncoder().encode(
-    process.env.JWT_SECRET || 'your-strong-secret-key-for-development-12345'
-  );
+// Use same secret resolution as auth.ts so sign and verify always match.
+// No fallback: an unset JWT_SECRET must fail rather than silently fall back to
+// a publicly known value that anyone could use to forge tokens.
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      'JWT_SECRET environment variable is missing or shorter than 32 characters.'
+    );
+  }
+  return new TextEncoder().encode(secret);
+};
 
 // Auth routes that should redirect to dashboard if user is logged in
 const authRoutes = [
@@ -17,10 +24,18 @@ const authRoutes = [
   '/verify-otp',
 ];
 
-// Public web routes that don't require authentication
-const publicWebRoutes = ['/', '/features', '/about', '/contact'];
+// Public web routes that don't require authentication.
+// `/surveys/<token>` is the external survey page used by employers and alumni,
+// who have no account — the token in the URL is the credential.
+const publicWebRoutes = [
+  '/',
+  '/features',
+  '/about',
+  '/contact',
+  '/surveys',
+];
 
-// Public API routes that don't require authentication
+// Public API routes that don't require authentication (exact match)
 const publicApiRoutes = [
   '/api/auth/login',
   '/api/auth/forgot-password',
@@ -29,7 +44,24 @@ const publicApiRoutes = [
   '/api/auth/verify',
   '/api/auth/resend-otp',
   '/api/contact',
+  // External (token-authenticated) survey submission — see note above
+  '/api/surveys/respond-public',
+  // Cron endpoint: authenticates itself with CRON_SECRET, not a session cookie
+  '/api/cron/update-semester-statuses',
 ];
+
+// Public API routes matched by pattern, for dynamic segments
+const publicApiRoutePatterns = [
+  /^\/api\/surveys\/\d+\/public$/,
+  /^\/api\/surveys\/\d+\/external-respond$/,
+];
+
+function isPublicApiRoute(path: string): boolean {
+  return (
+    publicApiRoutes.includes(path) ||
+    publicApiRoutePatterns.some((pattern) => pattern.test(path))
+  );
+}
 
 // Function to get user's dashboard based on role
 function getUserDashboard(role: string): string {
@@ -148,7 +180,7 @@ export async function proxy(request: NextRequest) {
   // Handle API routes
   if (path.startsWith('/api/')) {
     // Allow public API routes
-    if (publicApiRoutes.includes(path)) {
+    if (isPublicApiRoute(path)) {
       return NextResponse.next();
     }
 

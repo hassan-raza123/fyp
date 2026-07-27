@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authorize, canManageCourse, forbidden } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // GET /api/clos/[id]
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Students may read CLOs (they are shown course outcomes), so all roles pass
+    // here; write operations below are restricted to staff.
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
     const { id: idParam } = await params;
     const id = parseInt(idParam);
     if (isNaN(id)) {
@@ -52,6 +64,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
     const { id: idParam } = await params;
     const id = parseInt(idParam);
     if (isNaN(id)) {
@@ -95,6 +110,18 @@ export async function PUT(
       );
     }
 
+    // Must be allowed to manage both the CLO's current course and the target
+    // course, otherwise a CLO could be moved into a course out of reach.
+    const allowedOnCurrent = await canManageCourse(
+      req,
+      auth.user,
+      existingCLO.courseId
+    );
+    const allowedOnTarget = await canManageCourse(req, auth.user, courseId);
+    if (!allowedOnCurrent || !allowedOnTarget) {
+      return forbidden('You do not have access to this course').response;
+    }
+
     const duplicateCLO = await prisma.clos.findFirst({
       where: { code, courseId, id: { not: id } },
     });
@@ -115,6 +142,19 @@ export async function PUT(
       },
     });
 
+    await writeAuditLog(req, auth.user, 'clo.update', {
+      cloId: id,
+      courseId,
+      before: {
+        code: existingCLO.code,
+        description: existingCLO.description,
+        courseId: existingCLO.courseId,
+        bloomLevel: existingCLO.bloomLevel,
+        status: existingCLO.status,
+      },
+      after: { code, description, courseId, bloomLevel, status },
+    });
+
     return NextResponse.json({ success: true, data: updatedCLO });
   } catch (error) {
     console.error('Error updating CLO:', error);
@@ -127,10 +167,13 @@ export async function PUT(
 
 // DELETE /api/clos/[id]
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
     const { id: idParam } = await params;
     const id = parseInt(idParam);
     if (isNaN(id)) {
@@ -142,7 +185,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'CLO not found' }, { status: 404 });
     }
 
+    if (!(await canManageCourse(req, auth.user, existingCLO.courseId))) {
+      return forbidden('You do not have access to this course').response;
+    }
+
     await prisma.clos.delete({ where: { id } });
+
+    await writeAuditLog(req, auth.user, 'clo.delete', {
+      cloId: id,
+      courseId: existingCLO.courseId,
+      code: existingCLO.code,
+      description: existingCLO.description,
+    });
 
     return NextResponse.json({ message: 'CLO deleted successfully' });
   } catch (error) {

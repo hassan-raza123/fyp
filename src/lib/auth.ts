@@ -25,9 +25,33 @@ declare module 'next-auth' {
 // JWT Token Functions
 // ============================================================================
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-strong-secret-key-for-development-12345'
-);
+/**
+ * Resolve the JWT signing secret.
+ *
+ * There is deliberately no fallback value: a hardcoded default would let a
+ * production deploy with a missing env var sign tokens with a publicly known
+ * secret, which anyone could forge. Failing loudly at startup is the safe
+ * behaviour.
+ */
+function resolveJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error(
+      'JWT_SECRET environment variable is not set. Set it to a random string of at least 32 characters.'
+    );
+  }
+
+  if (secret.length < 32) {
+    throw new Error(
+      'JWT_SECRET must be at least 32 characters long.'
+    );
+  }
+
+  return new TextEncoder().encode(secret);
+}
+
+const JWT_SECRET = resolveJwtSecret();
 
 /**
  * Create JWT token from payload

@@ -748,6 +748,26 @@ model otps {
   @@index([expiresAt])
 }
 
+/// Rate-limit counters for auth endpoints.
+/// Stored in the database rather than in process memory because serverless
+/// deployments run many isolated instances, where an in-memory counter is
+/// effectively no limit at all.
+model rate_limits {
+  id          Int      @id @default(autoincrement())
+  /// Composite bucket key, e.g. "login:user@example.com" or "login-ip:1.2.3.4"
+  key         String   @unique
+  attempts    Int      @default(0)
+  /// Start of the current counting window
+  windowStart DateTime @default(now())
+  /// Set when a bucket is locked out until a point in time
+  blockedUntil DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([windowStart])
+  @@index([blockedUntil])
+}
+
 model Settings {
   id            Int      @id @default(1)
   system        Json
