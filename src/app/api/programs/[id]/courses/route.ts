@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 
 export async function GET(
   request: NextRequest,
@@ -9,10 +8,13 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
 
     const programCourses = await prisma.program_curriculum.findMany({
       where: { programId: parseInt(params.id) },
@@ -43,26 +45,9 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: parseInt(session.user.id) },
-      include: { userrole: { include: { role: true } } },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const userRoles = user.userrole ? [user.userrole.role.name] : [];
-    const allowedRoles = ['admin'];
-
-    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    // Mapping courses into a program is curriculum configuration: admins only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { courseId, semester, isCore, creditHours } = body;
@@ -141,26 +126,9 @@ export async function PUT(
 ) {
   const params = await _params;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: parseInt(session.user.id) },
-      include: { userrole: { include: { role: true } } },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const userRoles = user.userrole ? [user.userrole.role.name] : [];
-    const allowedRoles = ['admin'];
-
-    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    // Mapping courses into a program is curriculum configuration: admins only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { courseId, semester, isCore, creditHours } = body;
@@ -217,26 +185,9 @@ export async function DELETE(
 ) {
   const params = await _params;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: parseInt(session.user.id) },
-      include: { userrole: { include: { role: true } } },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const userRoles = user.userrole ? [user.userrole.role.name] : [];
-    const allowedRoles = ['admin'];
-
-    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    // Mapping courses into a program is curriculum configuration: admins only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');

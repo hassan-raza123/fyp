@@ -2,17 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 
 // GET /api/admin/llo-attainments
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const courseOfferingId = searchParams.get('courseOfferingId');

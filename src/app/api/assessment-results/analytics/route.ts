@@ -1,16 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessSection, forbidden } from '@/lib/authz';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json(
-        { error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Staff only — this aggregates every student's marks in the section.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('sectionId');
@@ -21,6 +17,10 @@ export async function GET(request: Request) {
         { error: 'Missing required parameters' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessSection(request, auth.user, parseInt(sectionId)))) {
+      return forbidden('You do not have access to this section').response;
     }
 
     // Get all results for the section and assessment
