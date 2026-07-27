@@ -113,7 +113,10 @@ interface CLODetails {
     sections: Array<{ id: number; name: string }>;
     totalStudents: number;
     studentsAchieved: number;
+    unassessedStudents: number;
     threshold: number;
+    targetThreshold: number | null;
+    isAchieved: boolean | null;
     attainmentPercent: number;
     status: string;
     calculatedAt: string;
@@ -557,10 +560,13 @@ const CLOAttainmentsPage = () => {
                       <TableRow>
                         <TableHead>Semester</TableHead>
                         <TableHead>Section</TableHead>
-                        <TableHead>Total Students</TableHead>
-                        <TableHead>Students Achieved</TableHead>
+                        <TableHead>Assessed</TableHead>
+                        <TableHead>Achieved</TableHead>
+                        <TableHead>Not Assessed</TableHead>
                         <TableHead>Attainment %</TableHead>
-                        <TableHead>Threshold</TableHead>
+                        <TableHead>Pass Threshold</TableHead>
+                        <TableHead>Target</TableHead>
+                        <TableHead>Verdict</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Calculated At</TableHead>
                       </TableRow>
@@ -575,6 +581,15 @@ const CLOAttainmentsPage = () => {
                           <TableCell>{attainment.totalStudents}</TableCell>
                           <TableCell>{attainment.studentsAchieved}</TableCell>
                           <TableCell>
+                            {attainment.unassessedStudents > 0 ? (
+                              <span className="text-yellow-600 dark:text-yellow-400">
+                                {attainment.unassessedStudents}
+                              </span>
+                            ) : (
+                              0
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <div className="flex items-center gap-2">
                               <Progress
                                 value={attainment.attainmentPercent}
@@ -584,6 +599,28 @@ const CLOAttainmentsPage = () => {
                             </div>
                           </TableCell>
                           <TableCell>{attainment.threshold}%</TableCell>
+                          <TableCell>
+                            {attainment.targetThreshold === null
+                              ? '—'
+                              : `${attainment.targetThreshold}%`}
+                          </TableCell>
+                          <TableCell>
+                            {attainment.isAchieved === null ? (
+                              <span className="text-xs text-muted-foreground">
+                                No target set
+                              </span>
+                            ) : (
+                              <Badge
+                                className={
+                                  attainment.isAchieved
+                                    ? 'bg-[var(--success-green)] text-white text-[10px]'
+                                    : 'bg-[var(--error)] text-white text-[10px]'
+                                }
+                              >
+                                {attainment.isAchieved ? 'Achieved' : 'Not achieved'}
+                              </Badge>
+                            )}
+                          </TableCell>
                           <TableCell>
                             {getStatusBadge(attainment.status)}
                           </TableCell>

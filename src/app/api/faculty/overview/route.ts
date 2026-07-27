@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isOutcomeAttained } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -234,7 +235,7 @@ export async function GET(request: NextRequest) {
     // Calculate overall CLO attainment percentage
     const totalCLOs = cloAttainments.length;
     const attainedCLOs = cloAttainments.filter(
-      (clo) => clo.attainmentPercent >= clo.threshold
+      (clo) => isOutcomeAttained(clo)
     ).length;
     const overallCLOAttainment =
       totalCLOs > 0 ? (attainedCLOs / totalCLOs) * 100 : 0;

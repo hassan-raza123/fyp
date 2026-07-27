@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isOutcomeAttained } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -105,7 +106,7 @@ export async function GET(req: NextRequest) {
         // Calculate overall statistics
         const totalCLOs = clos.length;
         const attainedCLOs = attainments.filter(
-          (a) => a.attainmentPercent >= a.threshold
+          (a) => isOutcomeAttained(a)
         ).length;
         const averageAttainment =
           attainments.length > 0
@@ -132,7 +133,7 @@ export async function GET(req: NextRequest) {
               threshold: latestAttainment?.threshold ?? 60,
               status:
                 latestAttainment &&
-                latestAttainment.attainmentPercent >= latestAttainment.threshold
+                isOutcomeAttained(latestAttainment)
                   ? 'attained'
                   : latestAttainment
                   ? 'not_attained'

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { attainmentVerdict } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -256,7 +257,7 @@ export async function GET(
           cloDescription: ca.clo.description,
           attainmentPercent: ca.attainmentPercent,
           threshold: ca.threshold,
-          status: ca.attainmentPercent >= ca.threshold ? 'attained' : 'not_attained',
+          status: attainmentVerdict(ca),
         });
       }
     });

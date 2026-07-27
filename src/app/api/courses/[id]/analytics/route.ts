@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isOutcomeAttained } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -257,7 +258,7 @@ export async function GET(
           : 0,
       attainedCLOs:
         cloAttainments.filter(
-          (ca) => ca.attainmentPercent >= ca.threshold
+          (ca) => isOutcomeAttained(ca)
         ).length,
       totalCLOs: cloAttainments.length,
     };

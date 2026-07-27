@@ -342,10 +342,20 @@ export async function GET(
           })),
           totalStudents: a.totalStudents,
           studentsAchieved: a.studentsAchieved,
+          unassessedStudents: a.unassessedStudents,
           threshold: a.threshold,
+          targetThreshold: a.targetThreshold,
+          isAchieved: a.isAchieved,
           attainmentPercent: a.attainmentPercent,
+          // `threshold` is the mark a *student* must score; `attainmentPercent`
+          // is the share of students who did. Comparing them measures two
+          // different things — the verdict belongs against targetThreshold.
           status:
-            a.attainmentPercent >= a.threshold ? 'attained' : 'not_attained',
+            a.isAchieved === null
+              ? 'no_target'
+              : a.isAchieved
+                ? 'attained'
+                : 'not_attained',
           calculatedAt: a.calculatedAt.toISOString(),
         })),
         assessmentBreakdown,

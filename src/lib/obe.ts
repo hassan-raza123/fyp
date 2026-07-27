@@ -959,3 +959,48 @@ export async function checkPrerequisites(
 
   return results;
 }
+
+// ─── Attainment verdicts ─────────────────────────────────────────────────────
+
+export interface AttainmentVerdictInput {
+  attainmentPercent: number;
+  /** Mark a *student* must score — NOT comparable to attainmentPercent */
+  threshold: number;
+  /** Share of students that must achieve the outcome */
+  targetThreshold?: number | null;
+  isAchieved?: boolean | null;
+}
+
+export type AttainmentVerdict = 'attained' | 'not_attained' | 'no_target';
+
+/**
+ * Decide whether an outcome was attained.
+ *
+ * `threshold` and `attainmentPercent` measure different things: the first is the
+ * mark a single student must reach, the second is the percentage of students who
+ * reached it. Comparing them — as several read paths used to — comes out with a
+ * number that means nothing. The verdict belongs against `targetThreshold`.
+ *
+ * `isAchieved` is stored at calculation time and wins when present. Rows written
+ * before that column existed fall back to `targetThreshold`, and report
+ * `no_target` when no target was ever configured.
+ */
+export function attainmentVerdict(
+  record: AttainmentVerdictInput
+): AttainmentVerdict {
+  if (record.isAchieved === true) return 'attained';
+  if (record.isAchieved === false) return 'not_attained';
+
+  if (record.targetThreshold === null || record.targetThreshold === undefined) {
+    return 'no_target';
+  }
+
+  return record.attainmentPercent >= record.targetThreshold
+    ? 'attained'
+    : 'not_attained';
+}
+
+/** Convenience: true only for a definite `attained` verdict. */
+export function isOutcomeAttained(record: AttainmentVerdictInput): boolean {
+  return attainmentVerdict(record) === 'attained';
+}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { attainmentVerdict } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -218,7 +219,7 @@ export async function GET(
           studentsAchieved: a.studentsAchieved,
           threshold: a.threshold,
           attainmentPercent: a.attainmentPercent,
-          status: a.attainmentPercent >= a.threshold ? 'attained' : 'not_attained',
+          status: attainmentVerdict(a),
           calculatedAt: a.calculatedAt.toISOString(),
         })),
         assessmentBreakdown,
