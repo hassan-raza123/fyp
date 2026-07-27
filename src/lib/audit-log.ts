@@ -39,7 +39,11 @@ export type AuditAction =
   | 'clo_plo_mapping.update'
   | 'clo_plo_mapping.delete'
   | 'assessment_item.update'
-  | 'assessment_item.delete';
+  | 'assessment_item.delete'
+  // closing the loop
+  | 'action_plan.auto_create'
+  // reports
+  | 'report.generate';
 
 /**
  * Record an audited action. Never throws — a failure to write the audit row

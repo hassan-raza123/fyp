@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { COUNTABLE_GRADE_STATUSES } from '@/lib/obe';
 import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
     const grades = await prisma.studentgrades.findMany({
       where: {
         studentId: studentId,
-        status: 'active',
+        status: { in: [...COUNTABLE_GRADE_STATUSES] },
       },
       include: {
         courseOffering: {

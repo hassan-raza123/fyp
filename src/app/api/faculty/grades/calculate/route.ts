@@ -338,6 +338,43 @@ async function createOrUpdateGrade(
     orderBy: { attemptNumber: 'desc' },
   });
 
+  // Repeats: the same course taken again is a *different* course offering, so
+  // without this the student would carry two live grade rows for one course and
+  // both would count towards CGPA. Earlier attempts are marked superseded and
+  // excluded from GPA; only the latest attempt stays active.
+  const courseId = (
+    await prisma.courseofferings.findUnique({
+      where: { id: courseOfferingId },
+      select: { courseId: true },
+    })
+  )?.courseId;
+
+  let attemptNumber = existing?.attemptNumber ?? 1;
+  let isRepeat = existing?.isRepeat ?? false;
+
+  if (!existing && courseId) {
+    const priorAttempts = await prisma.studentgrades.findMany({
+      where: {
+        studentId,
+        component: 'combined',
+        courseOffering: { courseId },
+        courseOfferingId: { not: courseOfferingId },
+      },
+      select: { id: true, attemptNumber: true },
+      orderBy: { attemptNumber: 'desc' },
+    });
+
+    if (priorAttempts.length > 0) {
+      attemptNumber = (priorAttempts[0].attemptNumber ?? 1) + 1;
+      isRepeat = true;
+
+      await prisma.studentgrades.updateMany({
+        where: { id: { in: priorAttempts.map((p) => p.id) } },
+        data: { status: 'superseded' },
+      });
+    }
+  }
+
   if (existing) {
     // Update existing grade
     return await prisma.studentgrades.update({
@@ -367,6 +404,8 @@ async function createOrUpdateGrade(
         gpaPoints,
         creditHours,
         qualityPoints,
+        attemptNumber,
+        isRepeat,
         calculatedBy: facultyId,
       },
     });

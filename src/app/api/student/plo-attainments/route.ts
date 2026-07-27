@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { aggregatePloScores, weightedAverage } from '@/lib/obe';
 import { getStudentFromRequest } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
 
@@ -39,6 +40,15 @@ export async function GET(request: NextRequest) {
       select: { minPloAttainmentPercent: true },
     });
     const ploThreshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
+
+    // The student's own PLO attainment, aggregated across every course offering
+    // that contributed to it — identical to what the graduation tracker reads.
+    const studentPloScores = aggregatePloScores(
+      await prisma.ploscores.findMany({
+        where: { studentId: student.id },
+        select: { ploId: true, obtainedMarks: true, totalMarks: true },
+      })
+    );
 
     // Fetch PLOs with both CLO and LLO mappings
     const plos = await prisma.plos.findMany({
@@ -246,29 +256,24 @@ export async function GET(request: NextRequest) {
         ),
       }));
 
-      // Weighted average across all outcomes (CLOs + LLOs) for student and class
-      const allContributions = [
-        ...contributingClos.map((c) => ({
-          studentAtt: c.studentAttainment,
-          classAtt: c.classAttainment,
-          weight: c.weight,
-        })),
-        ...contributingLlos.map((l) => ({
-          studentAtt: l.studentAttainment,
-          classAtt: l.classAttainment,
-          weight: l.weight,
-        })),
-      ];
+      // The student's own PLO figure comes from `ploscores` — the same source
+      // the graduation tracker uses. Deriving it separately here produced a
+      // different number for the same student on two different screens.
+      const studentAgg = studentPloScores.get(plo.id);
+      const studentPLOAttainment = studentAgg?.percentage ?? null;
 
-      const totalWeight = allContributions.reduce((s, c) => s + c.weight, 0);
-      const studentPLOAttainment =
-        totalWeight > 0
-          ? allContributions.reduce((s, c) => s + c.studentAtt * c.weight, 0) / totalWeight
-          : 0;
-      const classPLOAttainment =
-        totalWeight > 0
-          ? allContributions.reduce((s, c) => s + c.classAtt * c.weight, 0) / totalWeight
-          : 0;
+      // The class figure stays a weighted roll-up of calculated CLO/LLO
+      // attainments, but outcomes that have not been calculated are skipped
+      // rather than treated as zero, which used to drag the average down.
+      const classContributions = [
+        ...contributingClos
+          .filter((c) => latestCLOAttainments.has(c.cloId))
+          .map((c) => ({ attainment: c.classAttainment, weight: c.weight })),
+        ...contributingLlos
+          .filter((l) => latestLLOAttainments.has(l.lloId))
+          .map((l) => ({ attainment: l.classAttainment, weight: l.weight })),
+      ];
+      const classPLOAttainment = weightedAverage(classContributions);
 
       const threshold = ploThreshold;
 
@@ -277,12 +282,30 @@ export async function GET(request: NextRequest) {
         ploCode: plo.code,
         description: plo.description,
         studentAttainment: {
-          percentage: parseFloat(studentPLOAttainment.toFixed(2)),
-          status: studentPLOAttainment >= threshold ? 'attained' : 'not_attained',
+          percentage:
+            studentPLOAttainment === null
+              ? null
+              : parseFloat(studentPLOAttainment.toFixed(2)),
+          obtainedMarks: studentAgg?.obtained ?? null,
+          totalMarks: studentAgg?.total ?? null,
+          status:
+            studentPLOAttainment === null
+              ? 'not_assessed'
+              : studentPLOAttainment >= threshold
+                ? 'attained'
+                : 'not_attained',
         },
         classAttainment: {
-          percentage: parseFloat(classPLOAttainment.toFixed(2)),
-          status: classPLOAttainment >= threshold ? 'attained' : 'not_attained',
+          percentage:
+            classPLOAttainment === null
+              ? null
+              : parseFloat(classPLOAttainment.toFixed(2)),
+          status:
+            classPLOAttainment === null
+              ? 'not_assessed'
+              : classPLOAttainment >= threshold
+                ? 'attained'
+                : 'not_attained',
         },
         threshold,
         contributingClos,

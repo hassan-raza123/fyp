@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorize, canAccessStudent, forbidden } from '@/lib/authz';
-import { aggregatePloScores, recalculateStudentGpa } from '@/lib/obe';
+import {
+  aggregatePloScores,
+  countRequiredCourses,
+  COUNTABLE_GRADE_STATUSES,
+} from '@/lib/obe';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize(request, [
@@ -118,17 +122,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const notAssessedPlos = ploStatus.filter((p) => p.score === null).length;
   const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
 
-  // Recompute GPA from finalised grades rather than trusting a stale row.
-  // Nothing else wrote `cumulativegpa`, so reading it alone left cgpa null and
-  // made every student permanently ineligible.
-  const { cumulativeGPA: cgpa } = await recalculateStudentGpa(studentId);
+  // Derive CGPA from the student's countable grades. A GET must not write, so
+  // this reads the same source `recalculateStudentGpa` persists from rather
+  // than triggering a recalculation on every page load. The stored
+  // `cumulativegpa` row is refreshed when grades are calculated.
+  const countableGrades = await prisma.studentgrades.findMany({
+    where: { studentId, status: { in: [...COUNTABLE_GRADE_STATUSES] } },
+    select: { creditHours: true, qualityPoints: true },
+  });
+  const totalCredits = countableGrades.reduce((s, g) => s + g.creditHours, 0);
+  const totalPoints = countableGrades.reduce((s, g) => s + g.qualityPoints, 0);
+  const cgpa =
+    totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100) / 100 : 0;
 
   // Courses the student has passed (an F carries no quality points but still
   // produces a grade row, so completion is judged on gpaPoints)
   const passedCourses = await prisma.studentgrades.count({
     where: {
       studentId,
-      status: { in: ['active', 'final'] },
+      status: { in: [...COUNTABLE_GRADE_STATUSES] },
       gpaPoints: { gt: 0 },
     },
   });
@@ -136,19 +148,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     where: { studentId, status: { in: ['active', 'final'] } },
   });
 
-  // Courses the curriculum requires. `program_curriculum` is the real
-  // curriculum (it carries isRequired and semesterSlot); `programcourses` is a
-  // plain junction that also contains electives, so counting it would demand
-  // that a student pass every elective too. Fall back to it only when no
-  // curriculum has been defined yet.
-  let requiredCourses = await prisma.program_curriculum.count({
-    where: { programId: student.programId, isRequired: true },
-  });
-  if (requiredCourses === 0) {
-    requiredCourses = await prisma.programcourses.count({
-      where: { A: student.programId },
-    });
-  }
+  // Courses the curriculum requires (see resolveProgramCourseIds for why this
+  // must not read either table directly).
+  const requiredCourses = await countRequiredCourses(student.programId);
 
   const allCoursesComplete =
     !requireAllCourses ||

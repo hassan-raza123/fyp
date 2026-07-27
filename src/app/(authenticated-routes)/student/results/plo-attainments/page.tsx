@@ -68,12 +68,12 @@ interface PLOAttainment {
   ploCode: string;
   description: string;
   studentAttainment: {
-    percentage: number;
-    status: 'attained' | 'not_attained';
+    percentage: number | null;
+    status: 'attained' | 'not_attained' | 'not_assessed';
   };
   classAttainment: {
-    percentage: number;
-    status: 'attained' | 'not_attained';
+    percentage: number | null;
+    status: 'attained' | 'not_attained' | 'not_assessed';
   };
   threshold: number;
   contributingClos: ContributingCLO[];
@@ -94,6 +94,18 @@ interface PLOAttainmentsData {
     progressPercentage: number;
   };
   ploAttainments: PLOAttainment[];
+}
+
+// A PLO with no evaluated marks yet has no percentage; render it as such
+// rather than as 0%, which would read like a real (failing) score.
+function formatPercent(value: number | null, digits = 2): string {
+  return value === null ? 'N/A' : `${value.toFixed(digits)}%`;
+}
+
+function statusLabel(status: string): string {
+  if (status === 'attained') return 'Attained';
+  if (status === 'not_assessed') return 'Not Assessed';
+  return 'Not Attained';
 }
 
 const PLOAttainmentsPage = () => {
@@ -196,10 +208,20 @@ const PLOAttainmentsPage = () => {
     fetchPLOAttainments();
   }, [selectedProgram, selectedSemester]);
 
-  const getStatusBadge = (status: 'attained' | 'not_attained') => {
+  const getStatusBadge = (
+    status: 'attained' | 'not_attained' | 'not_assessed'
+  ) => {
+    // A PLO with no marks yet is neither attained nor failed
+    const className =
+      status === 'attained'
+        ? 'bg-[var(--success-green)] text-white'
+        : status === 'not_assessed'
+          ? 'bg-[var(--gray-500)] text-white'
+          : 'bg-[var(--error)] text-white';
+
     return (
-      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
-        {status === 'attained' ? 'Attained' : 'Not Attained'}
+      <Badge className={`${className} text-[10px] px-1.5 py-0.5`}>
+        {statusLabel(status)}
       </Badge>
     );
   };
@@ -235,9 +257,9 @@ const PLOAttainmentsPage = () => {
     const rows = data.ploAttainments.map((plo) => [
       plo.ploCode,
       plo.description,
-      plo.studentAttainment.percentage.toFixed(2),
-      plo.classAttainment.percentage.toFixed(2),
-      plo.studentAttainment.status === 'attained' ? 'Attained' : 'Not Attained',
+      formatPercent(plo.studentAttainment.percentage),
+      formatPercent(plo.classAttainment.percentage),
+      statusLabel(plo.studentAttainment.status),
       plo.threshold.toString(),
     ]);
 
@@ -462,7 +484,7 @@ const PLOAttainmentsPage = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-primary-text">
-                        {plo.studentAttainment.percentage.toFixed(1)}%
+                        {formatPercent(plo.studentAttainment.percentage, 1)}
                       </div>
                       <div className="mt-1">
                         {getStatusBadge(plo.studentAttainment.status)}
@@ -475,31 +497,40 @@ const PLOAttainmentsPage = () => {
                     <div>
                       <p className="text-[10px] text-muted-text">Your Attainment</p>
                       <p className="text-sm font-semibold text-primary-text">
-                        {plo.studentAttainment.percentage.toFixed(1)}%
+                        {formatPercent(plo.studentAttainment.percentage, 1)}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-text">Class Average</p>
                       <p className="text-sm font-semibold text-primary-text">
-                        {plo.classAttainment.percentage.toFixed(1)}%
+                        {formatPercent(plo.classAttainment.percentage, 1)}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-text">Comparison</p>
                       <div className="flex items-center gap-2 mt-1">
-                        {getComparisonIcon(
-                          plo.studentAttainment.percentage,
-                          plo.classAttainment.percentage
-                        )}
-                        <span className="text-xs text-primary-text">
-                          {plo.studentAttainment.percentage >
-                          plo.classAttainment.percentage
-                            ? 'Above Average'
-                            : plo.studentAttainment.percentage <
+                        {plo.studentAttainment.percentage === null ||
+                        plo.classAttainment.percentage === null ? (
+                          <span className="text-xs text-muted-text">
+                            Not assessed yet
+                          </span>
+                        ) : (
+                          <>
+                            {getComparisonIcon(
+                              plo.studentAttainment.percentage,
                               plo.classAttainment.percentage
-                            ? 'Below Average'
-                            : 'At Average'}
-                        </span>
+                            )}
+                            <span className="text-xs text-primary-text">
+                              {plo.studentAttainment.percentage >
+                              plo.classAttainment.percentage
+                                ? 'Above Average'
+                                : plo.studentAttainment.percentage <
+                                  plo.classAttainment.percentage
+                                ? 'Below Average'
+                                : 'At Average'}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

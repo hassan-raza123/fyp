@@ -524,17 +524,22 @@ model assessmentitems {
   marks              Float
   cloId              Int?
   lloId              Int?
+  /// Optional rubric used to score this item. When set, evaluation records a
+  /// per-criterion breakdown instead of a single opaque mark.
+  rubricId           Int?
   createdAt          DateTime                       @default(now())
   updatedAt          DateTime                       @updatedAt
   assessment         assessments                    @relation(fields: [assessmentId], references: [id])
   clo                clos?                          @relation(fields: [cloId], references: [id])
   llo                llos?                          @relation(fields: [lloId], references: [id])
+  rubric             rubrics?                       @relation(fields: [rubricId], references: [id])
   studentItemResults studentassessmentitemresults[]
 
   @@unique([assessmentId, questionNo])
   @@index([assessmentId])
   @@index([cloId])
   @@index([lloId])
+  @@index([rubricId])
 }
 
 model studentassessmentresults {
@@ -573,6 +578,7 @@ model studentassessmentitemresults {
   updatedAt                 DateTime                 @updatedAt
   assessmentItem            assessmentitems          @relation(fields: [assessmentItemId], references: [id])
   studentResult             studentassessmentresults @relation(fields: [studentAssessmentResultId], references: [id])
+  rubricScores              rubric_scores[]
 
   @@unique([studentAssessmentResultId, assessmentItemId])
   @@index([studentAssessmentResultId])
@@ -682,6 +688,9 @@ model obereports {
   description String?
   generatedBy Int
   generatedAt DateTime        @default(now())
+  /// The generated report itself: attainment tables and summary figures,
+  /// snapshotted at generation time so a report stays reproducible.
+  data        Json?
   filePath    String?
   status      report_status   @default(generated)
   generator   users           @relation("ReportGenerator", fields: [generatedBy], references: [id])
@@ -1161,7 +1170,9 @@ enum curriculum_category {
 
 model action_plans {
   id               Int                @id @default(autoincrement())
-  courseOfferingId Int
+  /// Null for program-level plans: a PLO shortfall spans several courses, so
+  /// it cannot be attributed to one offering.
+  courseOfferingId Int?
   ploId            Int
   cloId            Int?
   lloId            Int?
@@ -1182,7 +1193,7 @@ model action_plans {
   createdBy        Int
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  courseOffering   courseofferings    @relation(fields: [courseOfferingId], references: [id])
+  courseOffering   courseofferings?   @relation(fields: [courseOfferingId], references: [id])
   plo              plos               @relation(fields: [ploId], references: [id])
   clo              clos?              @relation(fields: [cloId], references: [id])
   llo              llos?              @relation(fields: [lloId], references: [id])
@@ -1270,10 +1281,39 @@ model rubrics {
   clo              clos?            @relation(fields: [cloId], references: [id])
   llo              llos?            @relation(fields: [lloId], references: [id])
   criteria         rubric_criteria[]
+  assessmentItems  assessmentitems[]
 
   @@index([courseOfferingId])
   @@index([cloId])
   @@index([lloId])
+}
+
+/// One criterion's score for one student's assessment item. Present only when
+/// the item is scored with a rubric.
+model rubric_scores {
+  id                Int                          @id @default(autoincrement())
+  itemResultId      Int
+  criterionId       Int
+  /// Level awarded: excellent | good | satisfactory | unsatisfactory
+  level             rubric_level
+  /// Marks contributed by this criterion after weighting
+  awardedMarks      Float
+  comment           String?                      @db.Text
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+  itemResult        studentassessmentitemresults @relation(fields: [itemResultId], references: [id], onDelete: Cascade)
+  criterion         rubric_criteria              @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+
+  @@unique([itemResultId, criterionId])
+  @@index([itemResultId])
+  @@index([criterionId])
+}
+
+enum rubric_level {
+  excellent
+  good
+  satisfactory
+  unsatisfactory
 }
 
 model rubric_criteria {
@@ -1288,6 +1328,7 @@ model rubric_criteria {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   rubric         rubrics  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  scores         rubric_scores[]
 
   @@index([rubricId])
 }

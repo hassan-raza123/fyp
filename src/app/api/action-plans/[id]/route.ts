@@ -68,9 +68,11 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
 
     if (!plan) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const isFacultyInOffering = plan.courseOffering.sections.some(
-      (s) => s.facultyId === facultyId
-    );
+    // Program-level plans have no course offering, so no faculty owns them —
+    // those are for admins to maintain.
+    const isFacultyInOffering =
+      plan.courseOffering?.sections.some((s) => s.facultyId === facultyId) ??
+      false;
     if (!isFacultyInOffering) {
       return NextResponse.json(
         { error: 'You can only update action plans for your own courses' },

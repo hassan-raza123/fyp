@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
     const grades = await prisma.studentgrades.findMany({
       where: {
         studentId: studentId,
-        status: 'active',
+        // Superseded rows are earlier attempts at a repeated course; counting
+        // them would double the credit hours for that course on the transcript.
+        status: { in: ['active', 'final'] },
       },
       include: {
         courseOffering: {

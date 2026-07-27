@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { COUNTABLE_GRADE_STATUSES } from '@/lib/obe';
 import { getStudentIdFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {
       studentId: studentId,
-      status: 'active',
+      status: { in: [...COUNTABLE_GRADE_STATUSES] },
     };
 
     if (courseOfferingId) {

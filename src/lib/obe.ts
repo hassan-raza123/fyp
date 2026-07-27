@@ -74,6 +74,8 @@ export interface CohortAttainment {
   unassessedStudents: number;
   attainmentPercent: number;
   isAchieved: boolean | null;
+  /** False when no student had an evaluated result, so the figures mean nothing */
+  hasData: boolean;
 }
 
 /**
@@ -98,8 +100,22 @@ export function computeCohortAttainment(
   }
 
   const totalStudents = performanceByStudent.size;
-  const attainmentPercent =
-    totalStudents > 0 ? (studentsAchieved / totalStudents) * 100 : 0;
+
+  // With nobody assessed there is no attainment to report. Returning 0% with
+  // isAchieved=false would look like a genuine result in an accreditation
+  // report rather than "not calculable yet".
+  if (totalStudents === 0) {
+    return {
+      totalStudents: 0,
+      studentsAchieved: 0,
+      unassessedStudents: enrolledStudentCount,
+      attainmentPercent: 0,
+      isAchieved: null,
+      hasData: false,
+    };
+  }
+
+  const attainmentPercent = (studentsAchieved / totalStudents) * 100;
 
   return {
     totalStudents,
@@ -110,6 +126,7 @@ export function computeCohortAttainment(
       thresholds.target === null
         ? null
         : attainmentPercent >= thresholds.target,
+    hasData: true,
   };
 }
 
@@ -386,6 +403,17 @@ export function aggregatePloScores(
   return byPlo;
 }
 
+// ─── Grades ──────────────────────────────────────────────────────────────────
+
+/**
+ * Grade statuses that count towards GPA, transcripts and progress.
+ *
+ * `superseded` is deliberately excluded: those rows are earlier attempts at a
+ * repeated course. Counting them would double the course's credit hours and let
+ * a failed first attempt drag down the CGPA the repeat was meant to replace.
+ */
+export const COUNTABLE_GRADE_STATUSES = ['active', 'final'] as const;
+
 // ─── GPA ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -401,8 +429,11 @@ export async function recalculateStudentGpa(studentId: number): Promise<{
   totalCreditHours: number;
   semestersUpdated: number;
 }> {
+  // 'superseded' rows are earlier attempts at a repeated course. Including them
+  // would count the same course's credit hours twice and let a failed first
+  // attempt drag down a CGPA the repeat was meant to replace.
   const grades = await prisma.studentgrades.findMany({
-    where: { studentId, status: { in: ['active', 'final'] } },
+    where: { studentId, status: { in: [...COUNTABLE_GRADE_STATUSES] } },
     select: {
       creditHours: true,
       qualityPoints: true,
@@ -432,6 +463,8 @@ export async function recalculateStudentGpa(studentId: number): Promise<{
         totalQualityPoints: totals.points,
         totalCreditHours: totals.credits,
         semesterGPA,
+        // Distinguishes a refreshed figure from a first calculation
+        status: 'recalculated',
         calculatedAt: new Date(),
       },
       create: {
@@ -473,4 +506,164 @@ export async function recalculateStudentGpa(studentId: number): Promise<{
     totalCreditHours,
     semestersUpdated: bySemester.size,
   };
+}
+
+// ─── Curriculum ──────────────────────────────────────────────────────────────
+
+/**
+ * Resolve the courses that belong to a program.
+ *
+ * Two structures exist: `program_curriculum` (the real curriculum — it carries
+ * `semesterSlot`, `courseCategory` and `isRequired`) and `programcourses` (a
+ * plain many-to-many junction). They are not kept in sync, so anything that
+ * needs "the program's courses" must go through here rather than picking one
+ * arbitrarily and silently disagreeing with the rest of the system.
+ *
+ * `program_curriculum` wins when it has entries; `programcourses` is the
+ * fallback for programs whose curriculum has not been defined yet.
+ */
+export async function resolveProgramCourseIds(
+  programId: number,
+  options: { requiredOnly?: boolean } = {}
+): Promise<number[]> {
+  const curriculum = await prisma.program_curriculum.findMany({
+    where: {
+      programId,
+      ...(options.requiredOnly ? { isRequired: true } : {}),
+    },
+    select: { courseId: true },
+  });
+
+  if (curriculum.length > 0) {
+    return curriculum.map((c) => c.courseId);
+  }
+
+  const junction = await prisma.programcourses.findMany({
+    where: { A: programId },
+    select: { B: true },
+  });
+  return junction.map((j) => j.B);
+}
+
+/** Count of courses a student must pass to complete the program. */
+export async function countRequiredCourses(programId: number): Promise<number> {
+  const ids = await resolveProgramCourseIds(programId, { requiredOnly: true });
+  return ids.length;
+}
+
+// ─── Closing the loop ────────────────────────────────────────────────────────
+
+export interface UnattainedOutcome {
+  kind: 'clo' | 'llo' | 'plo';
+  outcomeId: number;
+  code: string;
+  description: string;
+  attainmentPercent: number;
+  threshold: number;
+  courseOfferingId?: number;
+  courseCode?: string;
+  ploId?: number;
+}
+
+/**
+ * Find outcomes that fell short of their target for a program + semester.
+ *
+ * This is what makes "closing the loop" actionable: without it an admin has to
+ * read every attainment table by hand to notice which outcomes need an action
+ * plan. Only outcomes with real data and a configured target are reported —
+ * an uncalculated outcome is not a failing one.
+ */
+export async function findUnattainedOutcomes(
+  programId: number,
+  semesterId: number
+): Promise<UnattainedOutcome[]> {
+  const results: UnattainedOutcome[] = [];
+
+  const cloAttainments = await prisma.closattainments.findMany({
+    where: {
+      isAchieved: false,
+      totalStudents: { gt: 0 },
+      courseOffering: {
+        semesterId,
+        course: { programMappings: { some: { A: programId } } },
+      },
+    },
+    select: {
+      cloId: true,
+      courseOfferingId: true,
+      attainmentPercent: true,
+      targetThreshold: true,
+      clo: { select: { code: true, description: true } },
+      courseOffering: { select: { course: { select: { code: true } } } },
+    },
+  });
+
+  for (const a of cloAttainments) {
+    results.push({
+      kind: 'clo',
+      outcomeId: a.cloId,
+      code: a.clo.code,
+      description: a.clo.description,
+      attainmentPercent: a.attainmentPercent,
+      threshold: a.targetThreshold ?? 0,
+      courseOfferingId: a.courseOfferingId,
+      courseCode: a.courseOffering.course.code,
+    });
+  }
+
+  const lloAttainments = await prisma.llosattainments.findMany({
+    where: {
+      isAchieved: false,
+      totalStudents: { gt: 0 },
+      courseOffering: {
+        semesterId,
+        course: { programMappings: { some: { A: programId } } },
+      },
+    },
+    select: {
+      lloId: true,
+      courseOfferingId: true,
+      attainmentPercent: true,
+      targetThreshold: true,
+      llo: { select: { code: true, description: true } },
+      courseOffering: { select: { course: { select: { code: true } } } },
+    },
+  });
+
+  for (const a of lloAttainments) {
+    results.push({
+      kind: 'llo',
+      outcomeId: a.lloId,
+      code: a.llo.code,
+      description: a.llo.description,
+      attainmentPercent: a.attainmentPercent,
+      threshold: a.targetThreshold ?? 0,
+      courseOfferingId: a.courseOfferingId,
+      courseCode: a.courseOffering.course.code,
+    });
+  }
+
+  const ploAttainments = await prisma.ploattainments.findMany({
+    where: { programId, semesterId, isAchieved: false, totalStudents: { gt: 0 } },
+    select: {
+      ploId: true,
+      attainmentPercent: true,
+      threshold: true,
+      plo: { select: { code: true, description: true } },
+    },
+  });
+
+  for (const a of ploAttainments) {
+    results.push({
+      kind: 'plo',
+      outcomeId: a.ploId,
+      ploId: a.ploId,
+      code: a.plo.code,
+      description: a.plo.description,
+      attainmentPercent: a.attainmentPercent,
+      threshold: a.threshold,
+    });
+  }
+
+  return results.sort((a, b) => a.attainmentPercent - b.attainmentPercent);
 }
