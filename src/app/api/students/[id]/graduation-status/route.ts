@@ -136,10 +136,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     where: { studentId, status: { in: ['active', 'final'] } },
   });
 
-  // Courses the curriculum requires for this program
-  const requiredCourses = await prisma.programcourses.count({
-    where: { A: student.programId },
+  // Courses the curriculum requires. `program_curriculum` is the real
+  // curriculum (it carries isRequired and semesterSlot); `programcourses` is a
+  // plain junction that also contains electives, so counting it would demand
+  // that a student pass every elective too. Fall back to it only when no
+  // curriculum has been defined yet.
+  let requiredCourses = await prisma.program_curriculum.count({
+    where: { programId: student.programId, isRequired: true },
   });
+  if (requiredCourses === 0) {
+    requiredCourses = await prisma.programcourses.count({
+      where: { A: student.programId },
+    });
+  }
 
   const allCoursesComplete =
     !requireAllCourses ||
