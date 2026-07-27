@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isOutcomeAttained } from '@/lib/obe';
+import { isOutcomeAttained, attainmentVerdict } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 
@@ -242,7 +242,7 @@ export async function GET(request: NextRequest) {
 
     // Get courses with low CLO attainment (< threshold)
     const lowAttainmentCourses = cloAttainments
-      .filter((clo) => clo.attainmentPercent < clo.threshold)
+      .filter((clo) => attainmentVerdict(clo) === 'not_attained')
       .map((clo) => ({
         courseCode: clo.courseOffering.course.code,
         courseName: clo.courseOffering.course.name,

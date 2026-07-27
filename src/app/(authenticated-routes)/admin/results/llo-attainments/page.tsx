@@ -59,12 +59,25 @@ interface LLOAttainment {
   totalStudents: number;
   studentsAchieved: number;
   threshold: number;
+  // `threshold` is the mark a student must score; the attained/not-attained
+  // verdict belongs against targetThreshold, which the server now stores.
+  targetThreshold?: number | null;
+  isAchieved?: boolean | null;
   attainmentPercent: number;
   calculatedAt: string;
   status: string;
   llo: LLO;
   courseOffering: CourseOffering;
 }
+
+// Mirrors attainmentVerdict in lib/obe.ts. Comparing attainmentPercent (share of
+// students) against threshold (marks a student needs) mixes two different units.
+const isAttained = (a: LLOAttainment): boolean | null => {
+  if (a.isAchieved === true) return true;
+  if (a.isAchieved === false) return false;
+  if (a.targetThreshold === null || a.targetThreshold === undefined) return null;
+  return a.attainmentPercent >= a.targetThreshold;
+};
 
 export default function LLOAttainmentsPage() {
   const { resolvedTheme } = useTheme();
@@ -181,7 +194,14 @@ export default function LLOAttainmentsPage() {
   };
 
   const getStatusBadge = (attainment: LLOAttainment) => {
-    const attained = attainment.attainmentPercent >= attainment.threshold;
+    const attained = isAttained(attainment);
+    if (attained === null) {
+      return (
+        <Badge className="text-[10px] px-1.5 py-0.5 bg-[var(--gray-500)] text-white" variant="secondary">
+          No Target
+        </Badge>
+      );
+    }
     return (
       <Badge
         className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-white' : 'bg-[var(--error)] text-white'}`}
@@ -193,7 +213,7 @@ export default function LLOAttainmentsPage() {
   };
 
   const getTrendIcon = (attainment: LLOAttainment) => {
-    return attainment.attainmentPercent >= attainment.threshold ? (
+    return isAttained(attainment) === true ? (
       <TrendingUp className="w-3.5 h-3.5" style={{ color: 'var(--success-green)' }} />
     ) : (
       <TrendingDown className="w-3.5 h-3.5" style={{ color: 'var(--error)' }} />
@@ -204,9 +224,7 @@ export default function LLOAttainmentsPage() {
     (co) => co.id.toString() === selectedCourseOffering
   );
 
-  const attainedCount = attainments.filter(
-    (a) => a.attainmentPercent >= a.threshold
-  ).length;
+  const attainedCount = attainments.filter((a) => isAttained(a) === true).length;
   const avgAttainment =
     attainments.length > 0
       ? (attainments.reduce((sum, a) => sum + a.attainmentPercent, 0) / attainments.length).toFixed(1)
