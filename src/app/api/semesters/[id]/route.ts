@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { semester_status } from '@prisma/client';
 import { requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 
 export async function GET(
   request: NextRequest,
@@ -87,14 +88,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Semesters are academic-calendar configuration: staff only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
@@ -213,14 +210,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Semesters are academic-calendar configuration: staff only.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessSection, forbidden } from '@/lib/authz';
 
 // POST /api/sections/[id]/students/bulk - Add multiple students to a section
 export async function POST(
@@ -8,14 +9,10 @@ export async function POST(
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Enrolling students into a section is a staff action.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const body = await request.json();
     const { studentIds } = body;
@@ -36,6 +33,10 @@ export async function POST(
         { success: false, error: 'Section ID is invalid' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessSection(request, user, sectionId))) {
+      return forbidden('You do not have access to this section').response;
     }
 
     // Get section details

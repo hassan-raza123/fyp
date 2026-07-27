@@ -1,17 +1,67 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canManageCourseOffering,
+  assertResultsUnlocked,
+  forbidden,
+} from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
+import { TokenPayload } from '@/types/auth';
+
+/**
+ * Resolve the assessment and confirm the caller may manage its course offering.
+ * Returns either the offering id or the response to send back.
+ */
+async function requireAssessmentAccess(
+  request: NextRequest,
+  user: TokenPayload,
+  assessmentId: number
+): Promise<{ ok: true; courseOfferingId: number } | { ok: false; response: NextResponse }> {
+  const assessment = await prisma.assessments.findUnique({
+    where: { id: assessmentId },
+    select: { courseOfferingId: true },
+  });
+
+  if (!assessment) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: 'Assessment not found' },
+        { status: 404 }
+      ),
+    };
+  }
+
+  if (
+    !(await canManageCourseOffering(request, user, assessment.courseOfferingId))
+  ) {
+    return {
+      ok: false,
+      response: forbidden('You do not have access to this course offering')
+        .response,
+    };
+  }
+
+  return { ok: true, courseOfferingId: assessment.courseOfferingId };
+}
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    const access = await requireAssessmentAccess(
+      request,
+      auth.user,
+      parseInt(params.id)
+    );
+    if (!access.ok) return access.response;
 
     const body = await request.json();
     const { title, description, dueDate, totalMarks, instructions, weightage } = body;
@@ -67,15 +117,20 @@ export async function PUT(
 }
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    const access = await requireAssessmentAccess(
+      request,
+      auth.user,
+      parseInt(params.id)
+    );
+    if (!access.ok) return access.response;
 
     const body = await request.json();
     const { status } = body;
@@ -108,17 +163,30 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const assessmentId = parseInt(params.id);
+
+    const access = await requireAssessmentAccess(
+      request,
+      auth.user,
+      assessmentId
+    );
+    if (!access.ok) return access.response;
+
+    // This cascade destroys every student's marks for the assessment, so it is
+    // blocked once the offering's results are locked.
+    const locked = await assertResultsUnlocked(
+      auth.user,
+      access.courseOfferingId
+    );
+    if (locked) return locked;
 
     // Get all assessment item IDs for this assessment
     const items = await prisma.assessmentitems.findMany({
@@ -126,6 +194,11 @@ export async function DELETE(
       select: { id: true },
     });
     const itemIds = items.map((i) => i.id);
+
+    // Capture what is about to be destroyed, for the audit trail
+    const destroyedResults = await prisma.studentassessmentresults.count({
+      where: { assessmentId },
+    });
 
     // Delete in correct cascade order within a transaction
     await prisma.$transaction([
@@ -146,6 +219,13 @@ export async function DELETE(
         where: { id: assessmentId },
       }),
     ]);
+
+    await writeAuditLog(request, auth.user, 'result.delete', {
+      assessmentId,
+      courseOfferingId: access.courseOfferingId,
+      deletedItemCount: itemIds.length,
+      deletedStudentResultCount: destroyedResults,
+    });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

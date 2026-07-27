@@ -1,17 +1,46 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canManageCourseOffering,
+  assertResultsUnlocked,
+  forbidden,
+} from '@/lib/authz';
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(req as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    const assessment = await prisma.assessments.findUnique({
+      where: { id: parseInt(params.id) },
+      select: { courseOfferingId: true },
+    });
+
+    if (!assessment) {
+      return NextResponse.json(
+        { error: 'Assessment not found' },
+        { status: 404 }
+      );
     }
+
+    if (
+      !(await canManageCourseOffering(req, auth.user, assessment.courseOfferingId))
+    ) {
+      return forbidden('You do not have access to this course offering')
+        .response;
+    }
+
+    const locked = await assertResultsUnlocked(
+      auth.user,
+      assessment.courseOfferingId
+    );
+    if (locked) return locked;
 
     const data = await req.json();
     const { questionNo, description, marks, cloId, lloId } = data;
