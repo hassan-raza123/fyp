@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { PageLoading } from '@/components/ui/page-loading';
 import { format } from 'date-fns';
 import {
   Table,

@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { PageLoading } from '@/components/ui/page-loading';
 import { Plus, Edit, Trash2, GraduationCap, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
