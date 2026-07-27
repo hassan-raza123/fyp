@@ -63,7 +63,7 @@ interface PLOStatus {
   ploCode: string;
   description: string;
   bloomLevel: string | null;
-  bestScore: number | null;
+  score: number | null;
   attained: boolean;
   threshold: number;
   attempts: { courseCode: string; semesterName: string; percentage: number }[];
@@ -467,12 +467,12 @@ export default function GraduationTrackerPage() {
                   {detail.ploStatus.map((plo) => (
                     <div
                       key={plo.ploId}
-                      className={`rounded-lg border p-3 ${plo.attained ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/10' : plo.bestScore === null ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-950/10' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/10'}`}
+                      className={`rounded-lg border p-3 ${plo.attained ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/10' : plo.score === null ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-950/10' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/10'}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs font-bold ${plo.attained ? 'text-emerald-700 dark:text-emerald-400' : plo.bestScore === null ? 'text-yellow-700 dark:text-yellow-400' : 'text-red-700 dark:text-red-400'}`}>
+                            <span className={`text-xs font-bold ${plo.attained ? 'text-emerald-700 dark:text-emerald-400' : plo.score === null ? 'text-yellow-700 dark:text-yellow-400' : 'text-red-700 dark:text-red-400'}`}>
                               {plo.ploCode}
                             </span>
                             {plo.bloomLevel && (
@@ -493,10 +493,10 @@ export default function GraduationTrackerPage() {
                           )}
                         </div>
                         <div className="text-right flex-shrink-0">
-                          {plo.bestScore !== null ? (
+                          {plo.score !== null ? (
                             <>
                               <p className={`text-sm font-bold ${plo.attained ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
-                                {plo.bestScore.toFixed(1)}%
+                                {plo.score.toFixed(1)}%
                               </p>
                               <p className="text-[9px] text-secondary-text">Threshold: {plo.threshold}%</p>
                             </>

@@ -69,11 +69,29 @@ export async function POST(
       );
     }
 
-    // Validate ratings
+    // Validate each rating against its own question's scale, so a survey using
+    // a scale other than 1-5 is neither wrongly rejected nor silently accepted.
+    const questionScales = new Map(
+      (
+        await prisma.survey_questions.findMany({
+          where: { surveyId: survey.id },
+          select: { id: true, ratingScale: true },
+        })
+      ).map((q) => [q.id, q.ratingScale])
+    );
+
     for (const a of answers) {
-      if (a.ratingValue !== undefined && (a.ratingValue < 1 || a.ratingValue > 5)) {
+      if (a.ratingValue === undefined || a.ratingValue === null) continue;
+      const scale = questionScales.get(a.questionId);
+      if (scale === undefined) {
         return NextResponse.json(
-          { success: false, error: `Rating for question ${a.questionId} must be between 1 and 5.` },
+          { success: false, error: `Question ${a.questionId} does not belong to this survey.` },
+          { status: 400 }
+        );
+      }
+      if (a.ratingValue < 1 || a.ratingValue > scale) {
+        return NextResponse.json(
+          { success: false, error: `Rating for question ${a.questionId} must be between 1 and ${scale}.` },
           { status: 400 }
         );
       }

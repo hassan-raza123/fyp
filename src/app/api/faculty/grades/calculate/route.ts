@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit-log';
+import { recalculateStudentGpa } from '@/lib/obe';
 
 // POST - Calculate grades for a course offering
 export async function POST(req: NextRequest) {
@@ -128,6 +129,41 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Without a grade scale every lookup falls through to 'F' with 0 GPA
+    // points, which silently fails an entire cohort. Refuse instead.
+    const studentsMissingScale = uniqueStudentIds.filter(
+      (id) => (studentGradeScales.get(id) ?? []).length === 0
+    );
+    if (studentsMissingScale.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'No grade scale is configured for this program. Configure a grade scale before calculating grades.',
+          details: { studentsAffected: studentsMissingScale.length },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Assessment weightages should describe the whole course. If they sum to
+    // less than 100 the weighted average is normalised over a partial course
+    // and every grade comes out inflated, so surface it rather than hide it.
+    const totalWeightage = assessments.reduce(
+      (sum, a) => sum + (a.weightage || 0),
+      0
+    );
+    if (totalWeightage > 0 && Math.abs(totalWeightage - 100) > 0.01) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Assessment weightages for this course offering total ${totalWeightage}%, not 100%. Adjust them before calculating grades.`,
+          details: { totalWeightage },
+        },
+        { status: 400 }
+      );
+    }
+
     // Get course credit hours (default to 3 if not available)
     const creditHours = courseOffering.course.creditHours || 3;
 
@@ -147,6 +183,12 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // Grades feed semester/cumulative GPA, which the graduation tracker reads.
+    // Recompute here so those tables are never left stale or empty.
+    await Promise.all(
+      uniqueStudentIds.map((studentId) => recalculateStudentGpa(studentId))
+    );
+
     // Send notification to faculty
     const { notifyGradeCalculationCompleted } = await import('@/lib/notification-utils');
     await notifyGradeCalculationCompleted(
@@ -154,6 +196,17 @@ export async function POST(req: NextRequest) {
       calculatedGrades.length,
       facultyId
     );
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'grade.calculate', {
+        courseOfferingId,
+        sectionId: sectionId ?? null,
+        facultyId,
+        totalWeightage,
+        studentCount: calculatedGrades.length,
+      });
+    }
 
     return NextResponse.json({
       success: true,

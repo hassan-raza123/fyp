@@ -77,6 +77,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // A CLO's weights across all the PLOs it maps to represent how its
+    // contribution is divided, so they must not exceed 1 in total.
+    const existingWeights = await prisma.cloplomappings.aggregate({
+      where: { cloId: parseInt(cloId), ploId: { not: parseInt(ploId) } },
+      _sum: { weight: true },
+    });
+    const otherWeight = existingWeights._sum.weight ?? 0;
+    if (otherWeight + Number(weight) > 1.0001) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Total mapping weight for this CLO would be ${(otherWeight + Number(weight)).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
+          usedWeight: otherWeight,
+          remainingWeight: Math.max(0, 1 - otherWeight),
+        },
+        { status: 400 }
+      );
+    }
+
     // Get CLO with its course and programs
     const cloRaw = await prisma.clos.findUnique({
       where: { id: parseInt(cloId) },

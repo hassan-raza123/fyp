@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { aggregatePloScores } from '@/lib/obe';
 import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -72,16 +73,26 @@ export async function GET(request: NextRequest) {
   const studentIds = students.map((s) => s.id);
   const allScores = await prisma.ploscores.findMany({
     where: { studentId: { in: studentIds } },
-    select: { studentId: true, ploId: true, percentage: true },
+    select: { studentId: true, ploId: true, obtainedMarks: true, totalMarks: true },
   });
 
-  // Group best score per student per PLO
-  const bestScoreMap = new Map<string, number>(); // key: `${studentId}_${ploId}`
+  // Aggregate marks per student per PLO across every contributing offering.
+  // Taking the best offering instead would let one strong course hide weak
+  // performance in the rest, inflating who appears eligible to graduate.
+  const scoresByStudent = new Map<
+    number,
+    Array<{ ploId: number; obtainedMarks: number; totalMarks: number }>
+  >();
   for (const score of allScores) {
-    const key = `${score.studentId}_${score.ploId}`;
-    const existing = bestScoreMap.get(key) ?? -1;
-    if (score.percentage > existing) {
-      bestScoreMap.set(key, score.percentage);
+    const list = scoresByStudent.get(score.studentId) ?? [];
+    list.push(score);
+    scoresByStudent.set(score.studentId, list);
+  }
+
+  const ploScoreMap = new Map<string, number>(); // `${studentId}_${ploId}` → %
+  for (const [studentId, records] of scoresByStudent.entries()) {
+    for (const [ploId, agg] of aggregatePloScores(records).entries()) {
+      ploScoreMap.set(`${studentId}_${ploId}`, agg.percentage);
     }
   }
 
@@ -92,10 +103,10 @@ export async function GET(request: NextRequest) {
     const plos = plosByProgram.get(student.programId) ?? [];
     const totalPlos = plos.length;
     const attainedPlos = plos.filter((plo) => {
-      const best = bestScoreMap.get(`${student.id}_${plo.id}`) ?? -1;
-      return best >= threshold;
+      const score = ploScoreMap.get(`${student.id}_${plo.id}`) ?? -1;
+      return score >= threshold;
     }).length;
-    const assessedPlos = plos.filter((plo) => bestScoreMap.has(`${student.id}_${plo.id}`)).length;
+    const assessedPlos = plos.filter((plo) => ploScoreMap.has(`${student.id}_${plo.id}`)).length;
     const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
     const cgpa = student.cumulativeGPA?.cumulativeGPA ?? null;
     const isEligible =

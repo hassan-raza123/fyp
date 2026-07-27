@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
+import { computePloScoresForOffering, savePloScores } from '@/lib/obe';
 
 /**
  * POST /api/ploscores/calculate
@@ -9,20 +11,18 @@ import { requireAuth } from '@/lib/auth';
  * in a given program + semester. This populates the `ploscores` table which
  * the graduation tracker and student graduation-status routes depend on.
  *
- * Must be called AFTER CLO/LLO attainments have been calculated, because
- * it reads studentassessmentitemresults that are evaluated/published.
+ * Must be called AFTER marks have been evaluated, because it reads
+ * studentassessmentitemresults with status evaluated/published.
+ *
+ * The calculation itself lives in `lib/obe.ts` and is shared with
+ * POST /api/plo-attainments, so the two endpoints can never disagree.
  *
  * Body: { programId: number, semesterId: number }
  */
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!['admin', 'super_admin'].includes(user.role)) {
-      return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { programId, semesterId } = body;
@@ -46,9 +46,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Semester not found' }, { status: 404 });
     }
 
-    const semesterName = semesterRecord.name;
-
-    // Get all course offerings for this program + semester
     const courseOfferings = await prisma.courseofferings.findMany({
       where: {
         semesterId: sid,
@@ -60,13 +57,15 @@ export async function POST(request: NextRequest) {
             id: true,
             clos: {
               where: { status: 'active' },
-              include: {
+              select: {
+                id: true,
                 ploMappings: { select: { ploId: true, weight: true } },
               },
             },
             llos: {
               where: { status: 'active' },
-              include: {
+              select: {
+                id: true,
                 ploMappings: { select: { ploId: true, weight: true } },
               },
             },
@@ -96,141 +95,18 @@ export async function POST(request: NextRequest) {
     let totalSaved = 0;
 
     for (const offering of courseOfferings) {
-      // Build map: assessmentItemId → set of ploIds (via clo or llo mapping)
-      const cloToPlos = new Map<number, number[]>();
-      for (const clo of offering.course.clos) {
-        cloToPlos.set(clo.id, clo.ploMappings.map((m) => m.ploId));
-      }
-
-      const lloToPlos = new Map<number, number[]>();
-      for (const llo of offering.course.llos) {
-        lloToPlos.set(llo.id, llo.ploMappings.map((m) => m.ploId));
-      }
-
-      // Collect all assessment items and their PLO mappings
-      const itemToPlos = new Map<number, number[]>(); // itemId → ploIds
-      const itemMarks = new Map<number, number>();     // itemId → max marks
-
-      for (const assessment of offering.assessments) {
-        for (const item of assessment.assessmentItems) {
-          itemMarks.set(item.id, item.marks);
-          const ploIds: number[] = [];
-          if (item.cloId !== null) {
-            const mapped = cloToPlos.get(item.cloId) ?? [];
-            ploIds.push(...mapped);
-          }
-          if (item.lloId !== null) {
-            const mapped = lloToPlos.get(item.lloId) ?? [];
-            ploIds.push(...mapped);
-          }
-          if (ploIds.length > 0) {
-            itemToPlos.set(item.id, ploIds);
-          }
-        }
-      }
-
-      if (itemToPlos.size === 0) continue; // No mapped items in this offering
-
-      // Collect all unique student IDs enrolled in this offering's sections
-      const studentIdSet = new Set<number>();
-      for (const section of offering.sections) {
-        for (const ss of section.studentsections) {
-          studentIdSet.add(ss.studentId);
-        }
-      }
-
-      if (studentIdSet.size === 0) continue;
-
-      const studentIds = Array.from(studentIdSet);
-      const allItemIds = Array.from(itemToPlos.keys());
-
-      // Fetch student item results (evaluated or published only)
-      const itemResults = await prisma.studentassessmentitemresults.findMany({
-        where: {
-          assessmentItemId: { in: allItemIds },
-          studentResult: {
-            studentId: { in: studentIds },
-            status: { in: ['evaluated', 'published'] },
-          },
-        },
-        select: {
-          assessmentItemId: true,
-          obtainedMarks: true,
-          studentResult: { select: { studentId: true } },
-        },
-      });
-
-      // Aggregate per student per PLO: { obtained, total }
-      // Map key: `${studentId}_${ploId}`
-      const scoreMap = new Map<string, { obtained: number; total: number }>();
-
-      // First seed total marks from all mapped items for each student × PLO
-      for (const studentId of studentIds) {
-        for (const [itemId, ploIds] of itemToPlos.entries()) {
-          const marks = itemMarks.get(itemId) ?? 0;
-          for (const ploId of ploIds) {
-            const key = `${studentId}_${ploId}`;
-            const existing = scoreMap.get(key) ?? { obtained: 0, total: 0 };
-            existing.total += marks;
-            scoreMap.set(key, existing);
-          }
-        }
-      }
-
-      // Add obtained marks from actual results
-      for (const result of itemResults) {
-        const studentId = result.studentResult.studentId;
-        const ploIds = itemToPlos.get(result.assessmentItemId) ?? [];
-        for (const ploId of ploIds) {
-          const key = `${studentId}_${ploId}`;
-          const existing = scoreMap.get(key);
-          if (existing) {
-            existing.obtained += result.obtainedMarks;
-          }
-        }
-      }
-
-      // Upsert ploscores for each student × PLO combination that has total > 0
-      const upsertOps: Promise<unknown>[] = [];
-      for (const [key, score] of scoreMap.entries()) {
-        if (score.total === 0) continue;
-        const [studentIdStr, ploIdStr] = key.split('_');
-        const studentId = Number(studentIdStr);
-        const ploId = Number(ploIdStr);
-        const percentage = Math.round((score.obtained / score.total) * 1000) / 10;
-
-        upsertOps.push(
-          prisma.ploscores.upsert({
-            where: {
-              studentId_courseOfferingId_ploId: {
-                studentId,
-                courseOfferingId: offering.id,
-                ploId,
-              },
-            },
-            update: {
-              obtainedMarks: score.obtained,
-              totalMarks: score.total,
-              percentage,
-              semesterName,
-              calculatedAt: new Date(),
-            },
-            create: {
-              studentId,
-              courseOfferingId: offering.id,
-              ploId,
-              obtainedMarks: score.obtained,
-              totalMarks: score.total,
-              percentage,
-              semesterName,
-            },
-          })
-        );
-      }
-
-      await Promise.all(upsertOps);
-      totalSaved += upsertOps.length;
+      const records = await computePloScoresForOffering(offering);
+      if (records.length === 0) continue;
+      totalSaved += await savePloScores(records, semesterRecord.name);
     }
+
+    await writeAuditLog(request, auth.user, 'attainment.plo_calculate', {
+      scope: 'ploscores',
+      programId: pid,
+      semesterId: sid,
+      recordsSaved: totalSaved,
+      courseOfferingsProcessed: courseOfferings.length,
+    });
 
     return NextResponse.json({
       success: true,

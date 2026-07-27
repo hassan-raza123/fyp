@@ -367,11 +367,17 @@ export async function POST(request: NextRequest) {
             id: true,
             clos: {
               where: { status: 'active' },
-              include: { ploMappings: { select: { ploId: true } } },
+              select: {
+                id: true,
+                ploMappings: { select: { ploId: true, weight: true } },
+              },
             },
             llos: {
               where: { status: 'active' },
-              include: { ploMappings: { select: { ploId: true } } },
+              select: {
+                id: true,
+                ploMappings: { select: { ploId: true, weight: true } },
+              },
             },
           },
         },
@@ -495,167 +501,72 @@ export async function POST(request: NextRequest) {
     });
     const semesterName = semesterRecord?.name ?? '';
 
-    // ── Calculate ploscores BEFORE ploattainments upsert ─────────────────────
-    // We do this first so we can derive accurate studentsAchieved per PLO
-    // from real per-student data instead of backwards-calculating from %.
-    //
-    // semesterBestPloScores tracks the best percentage each student achieved
-    // for each PLO across all course offerings in this semester.
-    const semesterBestPloScores = new Map<string, number>(); // `${studentId}_${ploId}` → best%
+    // Ratings are normalised per question scale by accumulateSurveyRatings
+    const indirectAttainmentByPloId = finaliseIndirectAttainment(indirectByPlo);
+
+    // ── Per-student PLO scores ────────────────────────────────────────────────
+    // Computed before the aggregate upsert so studentsAchieved comes from real
+    // per-student data. Mapping weights are applied inside the shared helper.
+    const allPloScoreRecords: Array<{
+      studentId: number;
+      ploId: number;
+      obtainedMarks: number;
+      totalMarks: number;
+    }> = [];
     let ploScoresSaved = 0;
 
     try {
       for (const offering of allOfferings) {
-        // Build item → PLO mappings (via CLO or LLO)
-        const cloToPlos = new Map<number, number[]>();
-        for (const clo of offering.course.clos) {
-          cloToPlos.set(clo.id, clo.ploMappings.map((m) => m.ploId));
-        }
-        const lloToPlos = new Map<number, number[]>();
-        for (const llo of offering.course.llos) {
-          lloToPlos.set(llo.id, llo.ploMappings.map((m) => m.ploId));
-        }
-
-        const itemToPlos = new Map<number, number[]>();
-        const itemMarksMap = new Map<number, number>();
-        for (const assessment of offering.assessments) {
-          for (const item of assessment.assessmentItems) {
-            itemMarksMap.set(item.id, item.marks);
-            const ploIds: number[] = [];
-            if (item.cloId !== null) ploIds.push(...(cloToPlos.get(item.cloId) ?? []));
-            if (item.lloId !== null) ploIds.push(...(lloToPlos.get(item.lloId) ?? []));
-            if (ploIds.length > 0) itemToPlos.set(item.id, ploIds);
-          }
-        }
-
-        if (itemToPlos.size === 0) continue;
-
-        const studentIdSet = new Set<number>();
-        for (const section of offering.sections) {
-          for (const ss of section.studentsections) {
-            studentIdSet.add(ss.studentId);
-          }
-        }
-        if (studentIdSet.size === 0) continue;
-
-        const offeringStudentIds = Array.from(studentIdSet);
-        const allItemIds = Array.from(itemToPlos.keys());
-
-        const itemResults = await prisma.studentassessmentitemresults.findMany({
-          where: {
-            assessmentItemId: { in: allItemIds },
-            studentResult: {
-              studentId: { in: offeringStudentIds },
-              status: { in: ['evaluated', 'published'] },
-            },
-          },
-          select: {
-            assessmentItemId: true,
-            obtainedMarks: true,
-            studentResult: { select: { studentId: true } },
-          },
-        });
-
-        // Seed total marks per student × PLO
-        const scoreMap = new Map<string, { obtained: number; total: number }>();
-        for (const studentId of offeringStudentIds) {
-          for (const [itemId, ploIds] of itemToPlos.entries()) {
-            const marks = itemMarksMap.get(itemId) ?? 0;
-            for (const ploId of ploIds) {
-              const key = `${studentId}_${ploId}`;
-              const existing = scoreMap.get(key) ?? { obtained: 0, total: 0 };
-              existing.total += marks;
-              scoreMap.set(key, existing);
-            }
-          }
-        }
-
-        // Add obtained marks from evaluated results
-        for (const result of itemResults) {
-          const studentId = result.studentResult.studentId;
-          for (const ploId of itemToPlos.get(result.assessmentItemId) ?? []) {
-            const existing = scoreMap.get(`${studentId}_${ploId}`);
-            if (existing) existing.obtained += result.obtainedMarks;
-          }
-        }
-
-        // Upsert ploscores + track semester-best per student × PLO
-        const upsertOps: Promise<unknown>[] = [];
-        for (const [key, score] of scoreMap.entries()) {
-          if (score.total === 0) continue;
-          const [studentIdStr, ploIdStr] = key.split('_');
-          const sId = Number(studentIdStr);
-          const pId = Number(ploIdStr);
-          const pct = Math.round((score.obtained / score.total) * 1000) / 10;
-
-          // Keep the best percentage across multiple offerings for the same PLO this semester
-          const semKey = `${sId}_${pId}`;
-          const existingBest = semesterBestPloScores.get(semKey) ?? -1;
-          if (pct > existingBest) semesterBestPloScores.set(semKey, pct);
-
-          upsertOps.push(
-            prisma.ploscores.upsert({
-              where: {
-                studentId_courseOfferingId_ploId: {
-                  studentId: sId,
-                  courseOfferingId: offering.id,
-                  ploId: pId,
-                },
-              },
-              update: {
-                obtainedMarks: score.obtained,
-                totalMarks: score.total,
-                percentage: pct,
-                semesterName,
-                calculatedAt: new Date(),
-              },
-              create: {
-                studentId: sId,
-                courseOfferingId: offering.id,
-                ploId: pId,
-                obtainedMarks: score.obtained,
-                totalMarks: score.total,
-                percentage: pct,
-                semesterName,
-              },
-            })
-          );
-        }
-        await Promise.all(upsertOps);
-        ploScoresSaved += upsertOps.length;
+        const records = await computePloScoresForOffering(offering);
+        if (records.length === 0) continue;
+        ploScoresSaved += await savePloScores(records, semesterName);
+        allPloScoreRecords.push(...records);
       }
     } catch (scoreError) {
       console.error('[POST_PLO_ATTAINMENTS] ploscores calculation failed:', scoreError);
     }
 
-    // ── Count studentsAchieved per PLO from actual per-student ploscores data ──
-    // A student is counted as "achieved" for a PLO if their best score in any
-    // course offering this semester meets the PLO attainment threshold.
-    const studentsAchievedByPlo = new Map<number, number>(); // ploId → student count
-    for (const [key, bestPct] of semesterBestPloScores.entries()) {
-      const ploId = Number(key.split('_')[1]);
-      if (bestPct >= ploThreshold) {
-        studentsAchievedByPlo.set(ploId, (studentsAchievedByPlo.get(ploId) ?? 0) + 1);
+    // ── Per-PLO cohort counts from those scores ───────────────────────────────
+    // A student's PLO score aggregates marks across every contributing offering
+    // rather than taking their best one, so a single strong course cannot mask
+    // weak performance elsewhere.
+    const scoresByStudent = new Map<
+      number,
+      Array<{ ploId: number; obtainedMarks: number; totalMarks: number }>
+    >();
+    for (const record of allPloScoreRecords) {
+      const list = scoresByStudent.get(record.studentId) ?? [];
+      list.push(record);
+      scoresByStudent.set(record.studentId, list);
+    }
+
+    // ploId → { assessed, achieved }. `assessed` is the count of students who
+    // actually have a score for THAT PLO — dividing by the whole cohort would
+    // understate any PLO that only one course contributes to.
+    const ploCohort = new Map<number, { assessed: number; achieved: number }>();
+    for (const records of scoresByStudent.values()) {
+      for (const [ploId, agg] of aggregatePloScores(records).entries()) {
+        const entry = ploCohort.get(ploId) ?? { assessed: 0, achieved: 0 };
+        entry.assessed += 1;
+        if (agg.percentage >= ploThreshold) entry.achieved += 1;
+        ploCohort.set(ploId, entry);
       }
     }
+
 
     // ── Upsert aggregate PLO attainment records ────────────────────────────────
     const saved = await Promise.all(
       plos.map((plo) => {
         const directAttainment = directByPlo.get(plo.id) ?? 0;
-        const indirectRaw = indirectByPlo.get(plo.id);
-        const indirectAttainment =
-          indirectRaw && indirectRaw.count > 0
-            ? Math.round((indirectRaw.sumRating / indirectRaw.count / 5) * 100 * 10) / 10
-            : null;
+        const indirectAttainment = indirectAttainmentByPloId.get(plo.id) ?? null;
 
         const attainmentPercent =
           indirectAttainment !== null
             ? directWeight * directAttainment + indirectWeight * indirectAttainment
             : directAttainment;
 
-        // Use actual student count derived from ploscores (not a backwards approximation)
-        const studentsAchieved = studentsAchievedByPlo.get(plo.id) ?? 0;
+        // Denominator is students assessed against THIS PLO, not the whole cohort
+        const cohort = ploCohort.get(plo.id) ?? { assessed: 0, achieved: 0 };
 
         return prisma.ploattainments.upsert({
           where: {
@@ -669,9 +580,10 @@ export async function POST(request: NextRequest) {
             attainmentPercent,
             directAttainment,
             indirectAttainment,
-            totalStudents,
-            studentsAchieved,
+            totalStudents: cohort.assessed,
+            studentsAchieved: cohort.achieved,
             threshold: ploThreshold,
+            isAchieved: attainmentPercent >= ploThreshold,
             calculatedAt: new Date(),
             calculatedBy: auth.user!.userId,
             status: 'active',
@@ -683,9 +595,10 @@ export async function POST(request: NextRequest) {
             attainmentPercent,
             directAttainment,
             indirectAttainment,
-            totalStudents,
-            studentsAchieved,
+            totalStudents: cohort.assessed,
+            studentsAchieved: cohort.achieved,
             threshold: ploThreshold,
+            isAchieved: attainmentPercent >= ploThreshold,
             calculatedBy: auth.user!.userId,
           },
         });

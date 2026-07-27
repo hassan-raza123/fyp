@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
+import { weightedAverage } from '@/lib/obe';
 
 /**
  * GET /api/peo-attainments?programId=&semesterId=
@@ -51,7 +52,9 @@ export async function GET(request: NextRequest) {
       where: { programId: pid, status: { not: 'archived' } },
       include: {
         ploMappings: {
-          include: {
+          select: {
+            ploId: true,
+            weight: true,
             plo: {
               select: { id: true, code: true, description: true },
             },
@@ -101,16 +104,23 @@ export async function GET(request: NextRequest) {
         ploId: m.ploId,
         ploCode: m.plo.code,
         ploDescription: m.plo.description,
+        weight: m.weight,
         attainmentPercent: ploAttainmentMap.get(m.ploId) ?? null,
       }));
 
       const withData = mappedPLOs.filter((p) => p.attainmentPercent !== null);
-      let avgAttainment: number | null = null;
-      if (withData.length > 0) {
-        avgAttainment =
-          withData.reduce((sum, p) => sum + (p.attainmentPercent as number), 0) / withData.length;
-        avgAttainment = Math.round(avgAttainment * 100) / 100;
-      }
+
+      // Weighted, matching how CLO/LLO roll up into a PLO. An unweighted mean
+      // would give a PLO that barely relates to the PEO the same influence as
+      // its primary contributor.
+      const weighted = weightedAverage(
+        withData.map((p) => ({
+          attainment: p.attainmentPercent as number,
+          weight: p.weight,
+        }))
+      );
+      const avgAttainment =
+        weighted === null ? null : Math.round(weighted * 100) / 100;
 
       return {
         peoId: peo.id,

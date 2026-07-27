@@ -111,6 +111,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // An LLO's weights across all its PLO mappings divide its contribution, so
+    // they must not exceed 1 in total (mirrors the CLO-PLO rule).
+    const existingWeights = await prisma.lloplomappings.aggregate({
+      where: { lloId: parseInt(lloId), ploId: { not: parseInt(ploId) } },
+      _sum: { weight: true },
+    });
+    const otherWeight = existingWeights._sum.weight ?? 0;
+    if (otherWeight + Number(weight) > 1.0001) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Total mapping weight for this LLO would be ${(otherWeight + Number(weight)).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
+          usedWeight: otherWeight,
+          remainingWeight: Math.max(0, 1 - otherWeight),
+        },
+        { status: 400 }
+      );
+    }
+
     // Get current department ID
     const departmentId = await getCurrentDepartmentId(request);
     if (!departmentId) {

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {
+  accumulateSurveyRatings,
+  finaliseIndirectAttainment,
+} from '@/lib/obe';
 import { getFacultyIdFromRequest } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
 
@@ -208,7 +212,7 @@ export async function GET(req: NextRequest) {
     const offeringIds = courseOfferingsRaw.map((co) => co.id);
 
     // Indirect attainment: course-exit surveys
-    const indirectByPlo = new Map<number, { sumRating: number; count: number }>();
+    const indirectByPlo = new Map<number, { sumPercent: number; count: number }>();
 
     if (offeringIds.length > 0) {
       const courseExitSurveys = await prisma.surveys.findMany({
@@ -216,7 +220,11 @@ export async function GET(req: NextRequest) {
         include: {
           questions: {
             where: { ploId: { not: null } },
-            include: { answers: { select: { ratingValue: true } } },
+            select: {
+              ploId: true,
+              ratingScale: true,
+              answers: { select: { ratingValue: true } },
+            },
           },
           _count: { select: { responses: true } },
         },
@@ -229,21 +237,7 @@ export async function GET(req: NextRequest) {
         return s._count.responses / enrolled >= minSurveyResponseRate;
       });
 
-      for (const survey of validSurveys) {
-        const responseCount = survey._count.responses;
-        if (responseCount === 0) continue;
-        for (const q of survey.questions) {
-          if (!q.ploId) continue;
-          const ratings = q.answers.filter((a) => a.ratingValue !== null).map((a) => a.ratingValue as number);
-          if (ratings.length === 0) continue;
-          const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
-          const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
-          indirectByPlo.set(q.ploId, {
-            sumRating: existing.sumRating + avg * responseCount,
-            count: existing.count + responseCount,
-          });
-        }
-      }
+      accumulateSurveyRatings(validSurveys, indirectByPlo);
     }
 
     // Program-level surveys
@@ -256,7 +250,11 @@ export async function GET(req: NextRequest) {
       include: {
         questions: {
           where: { ploId: { not: null } },
-          include: { answers: { select: { ratingValue: true } } },
+          select: {
+            ploId: true,
+            ratingScale: true,
+            answers: { select: { ratingValue: true } },
+          },
         },
         _count: { select: { responses: true } },
       },
@@ -267,28 +265,10 @@ export async function GET(req: NextRequest) {
       return s._count.responses / totalStudents >= minSurveyResponseRate;
     });
 
-    for (const survey of validProgramSurveys) {
-      const responseCount = survey._count.responses;
-      if (responseCount === 0) continue;
-      for (const q of survey.questions) {
-        if (!q.ploId) continue;
-        const ratings = q.answers.filter((a) => a.ratingValue !== null).map((a) => a.ratingValue as number);
-        if (ratings.length === 0) continue;
-        const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
-        const existing = indirectByPlo.get(q.ploId) ?? { sumRating: 0, count: 0 };
-        indirectByPlo.set(q.ploId, {
-          sumRating: existing.sumRating + avg * responseCount,
-          count: existing.count + responseCount,
-        });
-      }
-    }
+    accumulateSurveyRatings(validProgramSurveys, indirectByPlo);
 
-    // Convert indirect map to percentage (avg_rating / 5 × 100)
-    const indirectAttainmentByPloId = new Map<number, number>();
-    for (const [ploId, data] of indirectByPlo.entries()) {
-      const avgRating = data.count > 0 ? data.sumRating / data.count : 0;
-      indirectAttainmentByPloId.set(ploId, Math.round((avgRating / 5) * 100 * 10) / 10);
-    }
+    // Ratings are normalised per question scale by accumulateSurveyRatings
+    const indirectAttainmentByPloId = finaliseIndirectAttainment(indirectByPlo);
 
     // Combine direct + indirect
     const ploAttainments = plos.map((plo) => {

@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessStudent, forbidden } from '@/lib/authz';
+import { aggregatePloScores, recalculateStudentGpa } from '@/lib/obe';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  const auth = await authorize(request, [
+    'super_admin',
+    'admin',
+    'faculty',
+    'student',
+  ]);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const studentId = parseInt(id);
 
-  // Only admin or the student themselves
-  if (user?.role === 'student' && user.userId !== studentId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (Number.isNaN(studentId)) {
+    return NextResponse.json({ error: 'Invalid student ID' }, { status: 400 });
+  }
+
+  // `userId` (users table) and `studentId` (students table) are different keys —
+  // comparing them directly denied students their own record and could match an
+  // unrelated one. canAccessStudent resolves the student row from the token.
+  if (!(await canAccessStudent(request, auth.user, studentId))) {
+    return forbidden('You do not have access to this student').response;
   }
 
   // Get student with program info
@@ -30,10 +42,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // Fetch program's graduation criteria for the threshold
   const graduationCriteria = await prisma.graduation_criteria.findUnique({
     where: { programId: student.programId },
-    select: { minPloAttainmentPercent: true, minCGPA: true },
+    select: {
+      minPloAttainmentPercent: true,
+      minCGPA: true,
+      requireAllCourses: true,
+    },
   });
   const threshold = graduationCriteria?.minPloAttainmentPercent ?? 50;
   const minCGPA = graduationCriteria?.minCGPA ?? 2.0;
+  const requireAllCourses = graduationCriteria?.requireAllCourses ?? true;
 
   // Get all active PLOs for this program
   const plos = await prisma.plos.findMany({
@@ -57,62 +74,82 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     orderBy: { calculatedAt: 'desc' },
   });
 
-  // Group scores by PLO — pick the best score per PLO across all offerings
-  const ploScoreMap = new Map<
-    number,
-    { bestScore: number; attempts: { courseCode: string; semesterName: string; percentage: number }[] }
-  >();
+  // Aggregate marks across every contributing offering rather than taking the
+  // student's best one — a single strong course must not mask weak performance
+  // in every other course that contributes to the same PLO.
+  const aggregated = aggregatePloScores(ploScores);
 
+  const attemptsByPlo = new Map<
+    number,
+    { courseCode: string; semesterName: string; percentage: number }[]
+  >();
   for (const score of ploScores) {
-    const existing = ploScoreMap.get(score.ploId);
-    const attempt = {
+    const list = attemptsByPlo.get(score.ploId) ?? [];
+    list.push({
       courseCode: score.courseOffering.course.code,
       semesterName: score.courseOffering.semester.name,
       percentage: score.percentage,
-    };
-    if (!existing) {
-      ploScoreMap.set(score.ploId, { bestScore: score.percentage, attempts: [attempt] });
-    } else {
-      existing.attempts.push(attempt);
-      if (score.percentage > existing.bestScore) {
-        existing.bestScore = score.percentage;
-      }
-    }
+    });
+    attemptsByPlo.set(score.ploId, list);
   }
 
   // Build PLO completion status using the program-specific threshold
   const ploStatus = plos.map((plo) => {
-    const scoreData = ploScoreMap.get(plo.id);
-    const bestScore = scoreData?.bestScore ?? null;
-    const attained = bestScore !== null && bestScore >= threshold;
+    const agg = aggregated.get(plo.id);
+    const score = agg?.percentage ?? null;
+    const attained = score !== null && score >= threshold;
 
     return {
       ploId: plo.id,
       ploCode: plo.code,
       description: plo.description,
       bloomLevel: plo.bloomLevel,
-      bestScore,
+      score,
+      obtainedMarks: agg?.obtained ?? null,
+      totalMarks: agg?.total ?? null,
       attained,
       threshold,
-      attempts: scoreData?.attempts ?? [],
+      attempts: attemptsByPlo.get(plo.id) ?? [],
     };
   });
 
   const totalPlos = plos.length;
   const attainedPlos = ploStatus.filter((p) => p.attained).length;
-  const notAssessedPlos = ploStatus.filter((p) => p.bestScore === null).length;
+  const notAssessedPlos = ploStatus.filter((p) => p.score === null).length;
   const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
-  const cgpa = student.cumulativeGPA?.cumulativeGPA ?? null;
-  const isEligible =
-    totalPlos > 0 &&
-    attainedPlos === totalPlos &&
-    cgpa !== null &&
-    cgpa >= minCGPA;
 
-  // Count completed courses
+  // Recompute GPA from finalised grades rather than trusting a stale row.
+  // Nothing else wrote `cumulativegpa`, so reading it alone left cgpa null and
+  // made every student permanently ineligible.
+  const { cumulativeGPA: cgpa } = await recalculateStudentGpa(studentId);
+
+  // Courses the student has passed (an F carries no quality points but still
+  // produces a grade row, so completion is judged on gpaPoints)
+  const passedCourses = await prisma.studentgrades.count({
+    where: {
+      studentId,
+      status: { in: ['active', 'final'] },
+      gpaPoints: { gt: 0 },
+    },
+  });
   const completedGrades = await prisma.studentgrades.count({
     where: { studentId, status: { in: ['active', 'final'] } },
   });
+
+  // Courses the curriculum requires for this program
+  const requiredCourses = await prisma.programcourses.count({
+    where: { A: student.programId },
+  });
+
+  const allCoursesComplete =
+    !requireAllCourses ||
+    (requiredCourses > 0 && passedCourses >= requiredCourses);
+
+  const isEligible =
+    totalPlos > 0 &&
+    attainedPlos === totalPlos &&
+    cgpa >= minCGPA &&
+    allCoursesComplete;
 
   return NextResponse.json({
     success: true,
@@ -135,6 +172,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         isEligible,
         threshold,
         minCGPA,
+        requireAllCourses,
+        requiredCourses,
+        passedCourses,
+        allCoursesComplete,
       },
       ploStatus,
     },
