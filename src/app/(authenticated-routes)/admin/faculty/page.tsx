@@ -23,7 +23,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -570,7 +569,7 @@ export default function FacultyPage() {
             </div>
             <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
               <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
-                <strong>Note:</strong> A user account will be created automatically with default password: <strong>{getDefaultPassword('faculty')}</strong>.
+                <strong>Note:</strong> A user account will be created automatically with a randomly generated password, which is shown once after creation and emailed to the user. They must change it on first sign-in.
                 Faculty member can login and change their password.
               </p>
             </div>

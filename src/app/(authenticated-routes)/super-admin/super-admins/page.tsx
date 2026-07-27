@@ -24,7 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageLoading } from '@/components/ui/page-loading';
-import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -359,8 +358,12 @@ export default function SuperAdminsPage() {
         throw new Error(data.error || 'Failed to reset password');
       }
 
-      const resetPassword = data.data?.defaultPassword || getDefaultPassword('super_admin');
-      toast.success(`Password reset successfully! Default password: ${resetPassword}`);
+      const resetPassword = data.data?.defaultPassword ?? null;
+      toast.success(
+        resetPassword
+          ? `Password reset. Temporary password (shown once): ${resetPassword}`
+          : 'Password reset. The new password has been emailed to the user.'
+      );
       setShowResetPasswordDialog(false);
       setSelectedSuperAdmin(null);
     } catch (error) {
@@ -710,7 +713,7 @@ export default function SuperAdminsPage() {
             </div>
             <div className="rounded-lg p-4 bg-blue-500/10 border border-blue-500/20">
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                <strong>Note:</strong> The default password will be <code className="bg-blue-500/20 px-1 rounded">{getDefaultPassword('super_admin')}</code>. 
+                <strong>Note:</strong> A random password is generated and emailed to the user; it is shown once here after creation. 
                 The user will receive an email with login credentials.
               </p>
             </div>
@@ -993,7 +996,7 @@ export default function SuperAdminsPage() {
                   ? `${selectedSuperAdmin.user.first_name} ${selectedSuperAdmin.user.last_name}`
                   : 'this super admin'}
               </span>
-              ? The password will be reset to the role-based default password (<code className="bg-card/50 px-1 rounded">{getDefaultPassword('super_admin')}</code> for super admins) and an email will be sent to the user.
+              ? The password will be reset to a newly generated random password and emailed to the user. They must change it on next sign-in.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

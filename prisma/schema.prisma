@@ -20,6 +20,10 @@ model users {
   status              user_status      @default(active)
   last_login          DateTime?
   email_verified      Boolean          @default(false)
+  /// Set when an account is created or an admin resets the password. The user
+  /// cannot use the app until they choose their own password.
+  must_change_password Boolean         @default(false)
+  password_changed_at  DateTime?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   auditlogs              auditlogs[]
@@ -712,6 +716,10 @@ model transcripts {
   isOfficial       Boolean           @default(false)
   generatedBy      Int
   generatedAt      DateTime          @default(now())
+  /// The transcript body — semesters, courses, grades and GPAs — captured at
+  /// generation time. An official transcript must not change when grades are
+  /// later recalculated.
+  data             Json?
   filePath         String?
   status           transcript_status @default(generated)
   generator        users             @relation("TranscriptGenerator", fields: [generatedBy], references: [id])

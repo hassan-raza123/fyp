@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { getDefaultPassword } from './password-utils';
 
 // Application name - update this if project name changes
 const APPLICATION_NAME = 'EduTrack - OBE Management System';
@@ -32,14 +31,15 @@ export async function sendAdminAssignmentEmail(
 ): Promise<void> {
   const { email, firstName, lastName, departmentName, departmentCode, loginUrl, password, role } = data;
   
-  // Use provided password or generate role-based password
-  let defaultPassword = password;
-  if (!defaultPassword && role) {
-    defaultPassword = getDefaultPassword(role);
-  } else if (!defaultPassword) {
-    // Fallback for admin (most common case)
-    defaultPassword = getDefaultPassword('admin');
+  // The caller must supply the password it actually set on the account. There
+  // is no role-based fallback any more: guessing one here would email a
+  // credential that does not match the stored hash.
+  if (!password) {
+    throw new Error(
+      'sendAdminAssignmentEmail requires the password that was set on the account'
+    );
   }
+  const defaultPassword = password;
   const username = email.split('@')[0];
   const loginLink = loginUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`;
 

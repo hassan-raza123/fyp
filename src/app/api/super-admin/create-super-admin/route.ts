@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
-import { getDefaultPassword } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 // POST /api/super-admin/create-super-admin - Create super admin user
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password (use role-based default password)
-    const defaultPassword = getDefaultPassword('super_admin');
+    const defaultPassword = generateTemporaryPassword();
     const hashedPassword = await hash(defaultPassword, 12);
 
     // Generate username from email
@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
           email,
           username,
           password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
           first_name,
           last_name,
           phone_number: phone_number || null,

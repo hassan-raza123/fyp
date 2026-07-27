@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { parse } from 'csv-parse/sync';
 import { hash } from 'bcryptjs';
-import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 // Helper function to resolve department name to ID
 async function resolveDepartmentId(nameOrId: string): Promise<number> {
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get role-based default password if not provided
-        const passwordToUse = record.password || getDefaultPasswordByRoleName(record.role);
+        const passwordToUse = record.password || generateTemporaryPassword();
         const hashedPassword = await hash(passwordToUse, 12);
 
         // Create user
@@ -198,6 +198,8 @@ export async function POST(request: NextRequest) {
             email: record.email,
             username: record.email.split('@')[0], // Generate username from email
             password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
             status: 'active',
             email_verified: false,
             updatedAt: new Date(),

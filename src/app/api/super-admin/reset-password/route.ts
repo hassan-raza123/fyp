@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
-import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 // POST /api/super-admin/reset-password - Reset password for any user (admin or super admin)
 export async function POST(request: NextRequest) {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use role-based default password if not provided
-    const passwordToSet = newPassword || (userRole ? getDefaultPasswordByRoleName(userRole) : 'User@2025');
+    const passwordToSet = newPassword || generateTemporaryPassword();
 
     // Hash password
     const hashedPassword = await hash(passwordToSet, 12);
@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
       where: { id: parseInt(userId) },
       data: {
         password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
         updatedAt: new Date(),
       },
     });

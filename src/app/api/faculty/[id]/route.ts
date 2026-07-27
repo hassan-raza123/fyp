@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { faculty_status } from '@prisma/client';
 import { sendAdminAssignmentEmail } from '@/lib/email-utils';
-import { getDefaultPasswordByRoleName } from '@/lib/password-utils';
+import { hash } from 'bcryptjs';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 interface UserRole {
   role: {
@@ -314,7 +315,20 @@ export async function PUT(
     if (departmentChanged && updatedFaculty.department) {
       try {
         const userRole = existingFaculty.user.userrole?.role?.name || 'admin';
-        const rolePassword = getDefaultPasswordByRoleName(userRole);
+
+        // Actually set the credential we are about to email. This previously
+        // sent the role's shared default, which happened to match the stored
+        // password; with per-user passwords the email would otherwise quote a
+        // password the account does not have.
+        const rolePassword = generateTemporaryPassword();
+        await prisma.users.update({
+          where: { id: updatedFaculty.user.id },
+          data: {
+            password_hash: await hash(rolePassword, 12),
+            must_change_password: true,
+          },
+        });
+
         await sendAdminAssignmentEmail({
           email: updatedFaculty.user.email,
           firstName: updatedFaculty.user.first_name,

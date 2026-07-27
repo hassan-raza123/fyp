@@ -24,7 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Users, UserCheck, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageLoading } from '@/components/ui/page-loading';
-import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -443,8 +442,12 @@ export default function SuperAdminAdminsPage() {
         throw new Error(data.error || 'Failed to reset password');
       }
 
-      const resetPassword = data.data?.defaultPassword || getDefaultPassword('admin');
-      toast.success(`Password reset successfully! Default password: ${resetPassword}`);
+      const resetPassword = data.data?.defaultPassword ?? null;
+      toast.success(
+        resetPassword
+          ? `Password reset. Temporary password (shown once): ${resetPassword}`
+          : 'Password reset. The new password has been emailed to the user.'
+      );
       setShowResetPasswordDialog(false);
       setSelectedAdmin(null);
     } catch (error) {
@@ -1222,7 +1225,7 @@ export default function SuperAdminAdminsPage() {
                   ? `${selectedAdmin.user.first_name} ${selectedAdmin.user.last_name}`
                   : 'this admin'}
               </span>
-              ? The password will be reset to the role-based default password (<code className="bg-card/50 px-1 rounded">{getDefaultPassword('admin')}</code> for admins) and an email will be sent to the user.
+              ? The password will be reset to a newly generated random password and emailed to the user. They must change it on next sign-in.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

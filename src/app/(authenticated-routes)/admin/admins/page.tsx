@@ -23,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Trash2, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageLoading } from '@/components/ui/page-loading';
-import { getDefaultPassword } from '@/lib/password-utils';
 import {
   Dialog,
   DialogContent,
@@ -554,7 +553,7 @@ export default function AdminsPage() {
             </div>
             <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
               <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
-                <strong>Note:</strong> A user account will be created automatically with default password: <strong>{getDefaultPassword('admin')}</strong>.
+                <strong>Note:</strong> A user account will be created automatically with a randomly generated password, which is shown once after creation and emailed to the user. They must change it on first sign-in.
                 Admin user can login and change their password.
               </p>
             </div>

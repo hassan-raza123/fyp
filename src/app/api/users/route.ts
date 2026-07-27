@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
 import { requireAuth } from '@/lib/auth';
-import { getDefaultPassword } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 // GET /api/users - Get all users
 export async function GET(request: NextRequest) {
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     // Hash password (use provided password or role-based default)
     // Note: If password is not provided, we use a generic default since role is assigned later
     // The calling code should provide the appropriate role-based password
-    const defaultPassword = password || getDefaultPassword('admin'); // Default to admin since this route is admin-only
+    const defaultPassword = password || generateTemporaryPassword();
     const hashedPassword = await hash(defaultPassword, 12);
 
     // Generate username from email
@@ -164,6 +164,8 @@ export async function POST(request: NextRequest) {
         email,
         username,
         password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
         first_name,
         last_name,
         phone_number: phone_number || null,

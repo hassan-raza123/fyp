@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
-import { getDefaultPassword } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 import { z } from 'zod';
 
 const createFacultySchema = z.object({
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password (use role-based default password)
-    const defaultPassword = getDefaultPassword('faculty');
+    const defaultPassword = generateTemporaryPassword();
     const hashedPassword = await hash(defaultPassword, 12);
 
     // Generate username from email
@@ -200,6 +200,8 @@ export async function POST(request: NextRequest) {
           email: validatedData.email,
           username,
           password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
           first_name: validatedData.first_name,
           last_name: validatedData.last_name,
           phone_number: validatedData.phone_number || null,

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { getDefaultPassword } from '@/lib/password-utils';
+import { generateTemporaryPassword } from '@/lib/password-utils';
 
 const createStudentSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -363,7 +363,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultPassword = getDefaultPassword('student');
+    const defaultPassword = generateTemporaryPassword();
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     // Create user with student role
@@ -373,6 +373,8 @@ export async function POST(request: NextRequest) {
         last_name: lastName,
         email,
         password_hash: hashedPassword,
+        // Temporary credential: the user must set their own before using the app
+        must_change_password: true,
         userrole: {
           create: {
             roleId: studentRole.id,
