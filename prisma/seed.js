@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
@@ -52,7 +53,13 @@ async function clearDatabase() {
 async function seedDatabase() {
   console.log('🌱 Seeding basic data...');
 
-  const defaultPassword = await bcrypt.hash('11223344', 10);
+  // The seeded super admin gets a random password, printed once below.
+  // A committed literal such as '11223344' means every deployment that runs the
+  // seed ships with a publicly known super-admin credential.
+  // Set SEED_ADMIN_PASSWORD to choose your own instead.
+  const plainPassword =
+    process.env.SEED_ADMIN_PASSWORD || crypto.randomBytes(9).toString('base64url');
+  const defaultPassword = await bcrypt.hash(plainPassword, 12);
 
   // 1. Create Roles
   // Note: We create all roles (super_admin, admin, faculty, student) even though we only create an admin user
@@ -107,8 +114,17 @@ async function seedDatabase() {
       last_name: 'Admin',
       status: 'active',
       email_verified: true,
+      // Forces the operator to replace the generated password on first sign-in
+      must_change_password: true,
     },
   });
+
+  console.log('');
+  console.log('  ────────────────────────────────────────────────');
+  console.log('   Super admin password (shown once):', plainPassword);
+  console.log('   You will be asked to change it on first sign-in.');
+  console.log('  ────────────────────────────────────────────────');
+  console.log('');
 
   // Get super_admin role
   const superAdminRole = await prisma.roles.findUnique({

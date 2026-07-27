@@ -31,15 +31,12 @@ export async function sendAdminAssignmentEmail(
 ): Promise<void> {
   const { email, firstName, lastName, departmentName, departmentCode, loginUrl, password, role } = data;
   
-  // The caller must supply the password it actually set on the account. There
-  // is no role-based fallback any more: guessing one here would email a
-  // credential that does not match the stored hash.
-  if (!password) {
-    throw new Error(
-      'sendAdminAssignmentEmail requires the password that was set on the account'
-    );
-  }
-  const defaultPassword = password;
+  // A password is included only when the caller actually set one. There is no
+  // role-based fallback: guessing one here would email a credential that does
+  // not match the stored hash. Assigning an *existing* admin to a department
+  // legitimately has no password to send — they keep their own — so that case
+  // gets the same email without the credentials block.
+  const includeCredentials = Boolean(password);
   const username = email.split('@')[0];
   const loginLink = loginUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`;
 
@@ -81,15 +78,25 @@ export async function sendAdminAssignmentEmail(
               <p style="color: #111827; margin: 0; font-size: 16px; font-weight: 600; font-family: monospace; background: #F3F4F6; padding: 8px; border-radius: 4px;">${username}</p>
             </div>
 
-            <div>
-              <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">Default Password:</p>
-              <p style="color: #111827; margin: 0; font-size: 16px; font-weight: 600; font-family: monospace; background: #F3F4F6; padding: 8px; border-radius: 4px;">${defaultPassword}</p>
-            </div>
+            ${
+              includeCredentials
+                ? `<div>
+              <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">Temporary Password:</p>
+              <p style="color: #111827; margin: 0; font-size: 16px; font-weight: 600; font-family: monospace; background: #F3F4F6; padding: 8px; border-radius: 4px;">${password}</p>
+            </div>`
+                : `<div>
+              <p style="color: #6B7280; margin: 0; font-size: 13px;">Sign in with your existing password.</p>
+            </div>`
+            }
           </div>
 
           <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <p style="color: #92400E; margin: 0; font-size: 14px; line-height: 1.5;">
-              <strong>⚠️ Security Notice:</strong> Please change your password immediately after your first login for security purposes.
+              <strong>⚠️ Security Notice:</strong> ${
+                includeCredentials
+                  ? 'This is a temporary password. You will be asked to choose your own the first time you sign in.'
+                  : 'Never share your password with anyone.'
+              }
             </p>
           </div>
 

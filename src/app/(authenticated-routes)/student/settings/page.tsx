@@ -189,8 +189,17 @@ export default function SettingsPage() {
         return;
       }
 
-      if (passwordForm.newPassword.length < 6) {
-        toast.error('Password must be at least 6 characters long');
+      // Must mirror validatePasswordStrength on the server
+      const pwd = passwordForm.newPassword;
+      if (
+        pwd.length < 8 ||
+        !/[A-Z]/.test(pwd) ||
+        !/[a-z]/.test(pwd) ||
+        !/[0-9]/.test(pwd)
+      ) {
+        toast.error(
+          'Password must be at least 8 characters and include an uppercase letter, a lowercase letter and a number'
+        );
         return;
       }
 
@@ -205,7 +214,10 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error('Failed to change password');
       const result = await response.json();
       if (result.success) {
-        toast.success('Password changed successfully');
+        toast.success('Password changed. Please sign in again.');
+        // The server cleared the auth cookie, so this session is over
+        window.location.href = '/login';
+        return;
         setPasswordForm({
           currentPassword: '',
           newPassword: '',

@@ -136,7 +136,10 @@ export default function SuperAdminProfilePage() {
       if (!response.ok) throw new Error('Failed to change password');
       const result = await response.json();
       if (result.success) {
-        toast.success('Password changed successfully');
+        toast.success('Password changed. Please sign in again.');
+        // The server cleared the auth cookie, so this session is over
+        window.location.href = '/login';
+        return;
         setPasswordForm({
           currentPassword: '',
           newPassword: '',
