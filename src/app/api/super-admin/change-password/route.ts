@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validatePasswordStrength } from '@/lib/password-utils';
+import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { hash, compare } from 'bcryptjs';
@@ -67,6 +69,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password
+    // One shared policy for every place a user picks a password, so a weak
+    // rule in one route cannot undercut the others.
+    const strength = validatePasswordStrength(newPassword);
+    if (!strength.valid) {
+      return NextResponse.json(
+        { success: false, error: strength.errors.join('. '), errors: strength.errors },
+        { status: 400 }
+      );
+    }
+
     const hashedPassword = await hash(newPassword, 12);
 
     // Update password
@@ -83,10 +95,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    // Changing a password ends the current session: the existing token was
+    // issued against the old credential (and may still carry a stale
+    // must_change_password flag), so the user signs in again with the new one.
+    const response = NextResponse.json({
       success: true,
-      message: 'Password changed successfully',
+      message: 'Password changed successfully. Please sign in again.',
+      data: { requiresReauth: true },
     });
+    response.cookies.set(AUTH_TOKEN_COOKIE, '', {
+      path: COOKIE_OPTIONS.path,
+      maxAge: 0,
+      httpOnly: COOKIE_OPTIONS.httpOnly,
+      sameSite: COOKIE_OPTIONS.sameSite,
+      secure: COOKIE_OPTIONS.secure,
+    });
+    return response;
   } catch (error) {
     console.error('Error changing password:', error);
     return NextResponse.json(

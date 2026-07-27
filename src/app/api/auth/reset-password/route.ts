@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validatePasswordStrength } from '@/lib/password-utils';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -68,6 +69,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash the new password
+    // One shared policy for every place a user picks a password, so a weak
+    // rule in one route cannot undercut the others.
+    const strength = validatePasswordStrength(password);
+    if (!strength.valid) {
+      return NextResponse.json(
+        { success: false, error: strength.errors.join('. '), errors: strength.errors },
+        { status: 400 }
+      );
+    }
+
     const hashedPassword = await hash(password, 12);
 
     // Update user's password
