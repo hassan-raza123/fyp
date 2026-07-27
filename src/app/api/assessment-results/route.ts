@@ -1,21 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canAccessSection,
+  canAccessStudent,
+  forbidden,
+} from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Staff only: this reads other students' marks. Students have dedicated
+    // endpoints under /api/student/* that are scoped to themselves.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const studentId = searchParams.get('studentId');
     const sectionId = searchParams.get('sectionId');
     const assessmentId = searchParams.get('assessmentId');
+
+    // A caller must be scoped to something they own, otherwise this would
+    // return every result in the system.
+    if (!studentId && !sectionId && !assessmentId) {
+      return NextResponse.json(
+        { success: false, error: 'A studentId, sectionId or assessmentId filter is required' },
+        { status: 400 }
+      );
+    }
+
+    if (sectionId && !(await canAccessSection(request, auth.user, parseInt(sectionId)))) {
+      return forbidden('You do not have access to this section').response;
+    }
+
+    if (studentId && !(await canAccessStudent(request, auth.user, parseInt(studentId)))) {
+      return forbidden('You do not have access to this student').response;
+    }
 
     const where: any = {};
     if (studentId) {
@@ -87,15 +107,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json(
-        { error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Staff only — entering marks is never a student action.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { sectionId, marks } = body;
@@ -105,6 +121,10 @@ export async function POST(request: Request) {
         { error: 'Invalid request data' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessSection(request, auth.user, Number(sectionId)))) {
+      return forbidden('You do not have access to this section').response;
     }
 
     if (marks.length === 0) {
@@ -210,6 +230,17 @@ export async function POST(request: Request) {
       }
 
       return createdResults;
+    });
+
+    await writeAuditLog(request, auth.user, 'marks.bulk_entry', {
+      sectionId: Number(sectionId),
+      studentCount: results.length,
+      entries: results.map((r) => ({
+        studentId: r.studentId,
+        assessmentId: r.assessmentId,
+        obtainedMarks: r.obtainedMarks,
+        totalMarks: r.totalMarks,
+      })),
     });
 
     return NextResponse.json({

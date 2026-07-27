@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // PATCH - Evaluate a student result (update marks, remarks, status)
 export async function PATCH(
@@ -65,6 +66,24 @@ export async function PATCH(
     if (result.assessment.conductedBy !== facultyId) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Respect the results lock — evaluation rewrites the marks that feed CLO
+    // attainment, so it must stop once results are locked.
+    const offering = await prisma.assessments.findUnique({
+      where: { id: result.assessment.id },
+      select: { courseOffering: { select: { id: true, isResultsLocked: true } } },
+    });
+
+    if (offering?.courseOffering?.isResultsLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Results are locked for this course offering. Contact your department admin to unlock.',
+        },
         { status: 403 }
       );
     }
@@ -162,6 +181,30 @@ export async function PATCH(
         },
       },
     });
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'result.evaluate', {
+        resultId,
+        studentId: result.studentId,
+        assessmentId: result.assessment.id,
+        courseOfferingId: offering?.courseOffering?.id,
+        facultyId,
+        adjustmentReason: adjustmentReason ?? null,
+        before: {
+          obtainedMarks: result.obtainedMarks,
+          totalMarks: result.totalMarks,
+          status: result.status,
+          remarks: result.remarks,
+        },
+        after: {
+          obtainedMarks: updatedResult?.obtainedMarks,
+          totalMarks: updatedResult?.totalMarks,
+          status: updatedResult?.status,
+          remarks: updatedResult?.remarks,
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

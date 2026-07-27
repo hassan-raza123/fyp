@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // POST - Bulk submit or lock grades
 export async function POST(req: NextRequest) {
@@ -76,6 +77,22 @@ export async function POST(req: NextRequest) {
         })
       )
     );
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'grade.bulk_submit', {
+        action,
+        facultyId,
+        newStatus,
+        gradeCount: updatedGrades.length,
+        changes: grades.map((g) => ({
+          gradeId: g.id,
+          studentId: g.studentId,
+          courseOfferingId: g.courseOfferingId,
+          previousStatus: g.status,
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,

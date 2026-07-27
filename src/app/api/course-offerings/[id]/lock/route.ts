@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 /**
  * PATCH /api/course-offerings/[id]/lock
@@ -60,6 +61,13 @@ export async function PATCH(
         lockedAt: true,
       },
     });
+
+    await writeAuditLog(
+      request,
+      user,
+      nowLocked ? 'offering.lock' : 'offering.unlock',
+      { courseOfferingId, lockedAt: updated.lockedAt }
+    );
 
     return NextResponse.json({
       success: true,

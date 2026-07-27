@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // POST - Calculate grades for a course offering
 export async function POST(req: NextRequest) {

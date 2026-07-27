@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // POST - Bulk evaluate multiple student results
 export async function POST(req: NextRequest) {
@@ -81,6 +82,23 @@ export async function POST(req: NextRequest) {
         })
       )
     );
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'result.bulk_evaluate', {
+        action: action ?? 'update',
+        facultyId,
+        resultCount: updatedResults.length,
+        finalStatus: finalStatus ?? null,
+        remarks: remarks ?? null,
+        changes: results.map((before) => ({
+          resultId: before.id,
+          studentId: before.studentId,
+          assessmentId: before.assessment.id,
+          previousStatus: before.status,
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,

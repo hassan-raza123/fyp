@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // POST - Calculate CLO attainments for a course offering or specific CLO
 export async function POST(req: NextRequest) {
@@ -158,6 +159,25 @@ export async function POST(req: NextRequest) {
         calculatedAttainments.length,
         facultyId
       );
+    }
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'attainment.clo_calculate', {
+        courseOfferingId,
+        sectionId: sectionId ?? null,
+        cloId: cloId ?? null,
+        facultyId,
+        threshold: effectiveThreshold,
+        totalStudents,
+        results: calculatedAttainments
+          .filter((a): a is NonNullable<typeof a> => a !== null)
+          .map((a) => ({
+            cloId: a.cloId,
+            attainmentPercent: a.attainmentPercent,
+            studentsAchieved: a.studentsAchieved,
+          })),
+      });
     }
 
     return NextResponse.json({

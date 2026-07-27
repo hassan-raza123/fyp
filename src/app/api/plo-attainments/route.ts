@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 import { plo_status } from '@prisma/client';
 
 interface ContributingCLO {
@@ -698,6 +699,21 @@ export async function POST(request: NextRequest) {
         });
       })
     );
+
+    await writeAuditLog(request, auth.user, 'attainment.plo_calculate', {
+      programId: pid,
+      semesterId: sid,
+      directWeight,
+      indirectWeight,
+      ploCount: saved.length,
+      ploScoresSaved,
+      results: saved.map((p) => ({
+        ploId: p.ploId,
+        attainmentPercent: p.attainmentPercent,
+        directAttainment: p.directAttainment,
+        indirectAttainment: p.indirectAttainment,
+      })),
+    });
 
     return NextResponse.json({
       success: true,

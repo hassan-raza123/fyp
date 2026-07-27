@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { assessmentitems } from '@prisma/client';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 export async function POST(request: NextRequest) {
   try {
@@ -167,6 +168,21 @@ export async function POST(request: NextRequest) {
 
       return createdResults;
     });
+
+    const auth = await requireAuth(request);
+    if (auth.success && auth.user) {
+      await writeAuditLog(request, auth.user, 'marks.bulk_entry', {
+        assessmentId,
+        sectionId,
+        facultyId,
+        studentCount: results.length,
+        entries: results.map((r) => ({
+          studentId: r.studentId,
+          obtainedMarks: r.obtainedMarks,
+          totalMarks: r.totalMarks,
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // GET - Fetch existing marks for students in a section for an assessment
 export async function GET(
@@ -227,6 +228,25 @@ export async function POST(
       );
     }
 
+    // Respect the course offering's results lock. The bulk endpoints already
+    // check this; without the same check here the lock could be bypassed simply
+    // by posting to this route instead.
+    const offering = await prisma.courseofferings.findUnique({
+      where: { id: assessment.courseOfferingId },
+      select: { isResultsLocked: true },
+    });
+
+    if (offering?.isResultsLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Results are locked for this course offering. Contact your department admin to unlock.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Validate marks
     const validationErrors: string[] = [];
     for (const studentMark of marks) {
@@ -340,6 +360,24 @@ export async function POST(
 
       return savedResults;
     });
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'marks.bulk_entry', {
+        assessmentId,
+        sectionId,
+        courseOfferingId: assessment.courseOfferingId,
+        facultyId,
+        isDraft,
+        studentCount: results.length,
+        entries: results.map((r) => ({
+          studentId: r.studentId,
+          obtainedMarks: r.obtainedMarks,
+          totalMarks: r.totalMarks,
+          status: r.status,
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,

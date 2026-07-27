@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFacultyIdFromRequest } from '@/lib/auth';
+import { getFacultyIdFromRequest, requireAuth } from '@/lib/auth';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // Lab assessment types — only these contribute to LLO attainments
 const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
@@ -147,6 +148,20 @@ export async function POST(req: NextRequest) {
 
     const saved = calculatedAttainments.filter(Boolean);
     const skipped = llos.length - saved.length;
+
+    const auth = await requireAuth(req);
+    if (auth.success && auth.user) {
+      await writeAuditLog(req, auth.user, 'attainment.llo_calculate', {
+        courseOfferingId,
+        sectionId: sectionId ?? null,
+        lloId: lloId ?? null,
+        facultyId,
+        threshold: effectiveThreshold,
+        totalStudents,
+        calculated: saved.length,
+        skipped,
+      });
+    }
 
     return NextResponse.json({
       success: true,
