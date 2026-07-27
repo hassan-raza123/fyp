@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { buildTranscriptSnapshot } from '@/lib/obe';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
-import { transcript_type, transcript_status } from '@prisma/client';
+import { Prisma, transcript_type, transcript_status } from '@prisma/client';
 import { z } from 'zod';
 
 const createTranscriptSchema = z.object({
