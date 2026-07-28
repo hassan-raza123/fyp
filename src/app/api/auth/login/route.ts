@@ -10,6 +10,7 @@ import {
   getClientIp,
 } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
+import { captureOtp } from '@/lib/e2e-otp-store';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
   AdminRole,
@@ -112,6 +113,9 @@ function generateOTP(): string {
  * logged to the server console so local development works without SMTP.
  */
 async function deliverOTP(email: string, otp: string): Promise<boolean> {
+  // Inert unless E2E_TEST_MODE is on; lets end-to-end tests complete the OTP step
+  captureOtp(email, otp);
+
   try {
     await sendOTPEmail(email, otp);
     return true;

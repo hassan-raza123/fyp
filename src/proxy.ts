@@ -51,6 +51,8 @@ const publicApiRoutes = [
   '/api/surveys/respond-public',
   // Cron endpoint: authenticates itself with CRON_SECRET, not a session cookie
   '/api/cron/update-semester-statuses',
+  // Test-only OTP readback; the route itself 404s unless E2E_TEST_MODE is on
+  '/api/e2e/otp',
 ];
 
 // Public API routes matched by pattern, for dynamic segments

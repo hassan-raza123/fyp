@@ -5,6 +5,7 @@ import { sendOTPEmail } from '@/lib/email-utils';
 // Use the shared client: instantiating PrismaClient per module opens a separate
 // connection pool on every serverless instance and exhausts DB connections.
 import { prisma } from '@/lib/prisma';
+import { captureOtp } from '@/lib/e2e-otp-store';
 import { consumeRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Resend limits — this endpoint sends email, so it is also a spam vector
@@ -122,7 +123,18 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send OTP via email
-    await sendOTPEmail(email, otp);
+    // Inert unless E2E_TEST_MODE is on
+    captureOtp(email, otp);
+
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (mailError) {
+      // The code is already stored; a mail outage must not 500 the request
+      console.error(`Failed to email OTP to ${email}:`, mailError);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[dev] OTP for ${email} is ${otp} — email is not configured.`);
+      }
+    }
 
     return NextResponse.json({
       success: true,
