@@ -129,7 +129,7 @@ export async function PUT(
         );
       }
 
-      if (course.departmentId !== departmentId) {
+      if (departmentId !== null && course.departmentId !== departmentId) {
         return NextResponse.json(
           { success: false, error: 'Course does not belong to current department' },
           { status: 403 }

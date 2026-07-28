@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     const where: any = {
-      program: { departmentId },
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(departmentId !== null ? { program: { departmentId } } : {}),
     };
     if (programId) where.programId = parseInt(programId);
     if (semesterId) where.semesterId = parseInt(semesterId);
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
-      if (program.departmentId !== departmentId) {
+      if (departmentId !== null && program.departmentId !== departmentId) {
         return NextResponse.json(
           { success: false, error: 'Program does not belong to your department' },
           { status: 403 }

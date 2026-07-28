@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     const where: any = {
-      student: { departmentId },
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(departmentId !== null ? { student: { departmentId } } : {}),
     };
     if (studentId) where.studentId = parseInt(studentId);
     if (semesterId) where.semesterId = parseInt(semesterId);
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (student.departmentId !== departmentId) {
+    if (departmentId !== null && student.departmentId !== departmentId) {
       return NextResponse.json(
         { success: false, error: 'Student does not belong to your department' },
         { status: 403 }

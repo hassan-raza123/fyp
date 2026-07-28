@@ -8,7 +8,11 @@ export async function GET(request: NextRequest) {
   if (!success) return NextResponse.json({ error }, { status: 401 });
 
   // Admin sees all plans; faculty sees only plans for their course offerings
-  if (user?.role !== 'admin' && user?.role !== 'faculty') {
+  if (
+    user?.role !== 'admin' &&
+    user?.role !== 'faculty' &&
+    user?.role !== 'super_admin'
+  ) {
     return NextResponse.json({ error: 'Admins and faculty only' }, { status: 403 });
   }
 
@@ -58,7 +62,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 

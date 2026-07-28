@@ -66,8 +66,9 @@ export async function GET(request: NextRequest) {
     // Filter by department
     const filteredMappings = mappings.filter(
       (mapping) =>
-        mapping.llo.course.departmentId === departmentId &&
-        mapping.plo.program.departmentId === departmentId
+        (departmentId === null ||
+          (mapping.llo.course.departmentId === departmentId &&
+            mapping.plo.program.departmentId === departmentId))
     );
 
     return NextResponse.json({ success: true, data: filteredMappings });

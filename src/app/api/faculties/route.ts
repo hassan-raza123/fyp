@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Only admins can access this endpoint
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
     // Always filter by current department
     const whereClause: any = {
       status: 'active',
-      departmentId: currentDepartmentId,
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(currentDepartmentId !== null ? { departmentId: currentDepartmentId } : {}),
     };
 
     // Fetch all faculties for the department
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only admins can create faculty
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
@@ -139,6 +140,23 @@ export async function POST(request: NextRequest) {
     // the system; see resolveDepartmentScope.
     const departmentIdScope = await resolveDepartmentScope(request, user!);
     if (departmentIdScope.error) return departmentIdScope.error;
+
+
+    const body = await request.json();
+
+    // Validate request body
+    const validationResult = createFacultySchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: validationResult.error.errors[0]?.message || 'Validation failed',
+        },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validationResult.data;
 
     // A faculty member must belong to a department. A super_admin has none of
     // their own, so the target department has to come from the request.
@@ -158,22 +176,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const body = await request.json();
-
-    // Validate request body
-    const validationResult = createFacultySchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: validationResult.error.errors[0]?.message || 'Validation failed',
-        },
-        { status: 400 }
-      );
-    }
-
-    const validatedData = validationResult.data;
 
     // Check if email already exists
     const existingUser = await prisma.users.findUnique({

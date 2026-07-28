@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
     const departmentId = departmentIdScope.departmentId;
 
     const where: any = {
-      course: {
-        departmentId: departmentId,
-      },
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(departmentId !== null ? { course: { departmentId } } : {}),
     };
 
     if (courseId) {
@@ -103,7 +102,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (course.departmentId !== departmentId) {
+    // super_admin (departmentId null) may work across departments
+    if (departmentId !== null && course.departmentId !== departmentId) {
       return NextResponse.json(
         { success: false, error: 'Course does not belong to current department' },
         { status: 403 }
