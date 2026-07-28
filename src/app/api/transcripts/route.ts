@@ -16,7 +16,10 @@ const createTranscriptSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (
+      !success ||
+      (user?.role !== 'admin' && user?.role !== 'super_admin')
+    ) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -105,7 +108,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (
+      !success ||
+      (user?.role !== 'admin' && user?.role !== 'super_admin')
+    ) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
