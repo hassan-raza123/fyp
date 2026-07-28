@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
@@ -10,7 +11,7 @@ import { getCurrentDepartmentId } from '@/lib/auth';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request);
+    const { success, user, error } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
@@ -18,24 +19,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Department not assigned. Please contact super admin.',
-        },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'active';
 
-    const where: { course: { departmentId: number }; status?: any } = {
-      course: {
-        departmentId,
-      },
+    const where: { course?: { departmentId: number }; status?: any } = {
+      // Unscoped for super_admin, department-scoped for everyone else
+      ...(departmentId !== null ? { course: { departmentId } } : {}),
     };
     if (status) {
       where.status = status;

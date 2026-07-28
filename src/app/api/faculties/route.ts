@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
@@ -34,14 +35,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get department ID directly from token (fast, no database query)
-    const currentDepartmentId = await getDepartmentIdFromRequest(request);
-    
-    if (!currentDepartmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const currentDepartmentIdScope = await resolveDepartmentScope(request, user!);
+    if (currentDepartmentIdScope.error) return currentDepartmentIdScope.error;
+    const currentDepartmentId = currentDepartmentIdScope.departmentId;
 
     // Always filter by current department
     const whereClause: any = {
@@ -137,10 +135,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current user's department
-    const departmentId = await getDepartmentIdFromRequest(request);
-    if (!departmentId) {
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+
+    // A faculty member must belong to a department. A super_admin has none of
+    // their own, so the target department has to come from the request.
+    const departmentId =
+      departmentIdScope.departmentId ??
+      (typeof (validatedData as { departmentId?: number }).departmentId === 'number'
+        ? (validatedData as { departmentId?: number }).departmentId!
+        : null);
+
+    if (departmentId === null) {
       return NextResponse.json(
-        { success: false, error: 'Department not assigned. Please contact super admin to assign a department to your account.' },
+        {
+          success: false,
+          error:
+            'departmentId is required when creating faculty as a super admin.',
+        },
         { status: 400 }
       );
     }

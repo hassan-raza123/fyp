@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
@@ -6,7 +7,7 @@ import { getCurrentDepartmentId } from '@/lib/auth';
 // GET /api/llo-plo-mappings
 export async function GET(request: NextRequest) {
   try {
-    const { success } = await requireAuth(request);
+    const { success, user } = await requireAuth(request);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -19,13 +20,11 @@ export async function GET(request: NextRequest) {
     const ploId = searchParams.get('ploId');
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     const where: any = {};
     if (lloId) where.lloId = parseInt(lloId);
@@ -131,13 +130,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     // Get LLO with its course
     const llo = await prisma.llos.findUnique({

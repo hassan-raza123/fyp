@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
@@ -27,13 +28,11 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId');
 
     // Get current department ID for filtering
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     const where: any = {
       course: {
@@ -86,13 +85,11 @@ export async function POST(request: NextRequest) {
     const validatedData = createLLOSchema.parse(body);
 
     // Get current department ID
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     // Check if course exists and belongs to department
     const course = await prisma.courses.findUnique({

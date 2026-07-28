@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { Prisma, obe_report_type, report_status } from '@prisma/client';
@@ -24,13 +25,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get admin's department to scope results
-    const departmentId = await getDepartmentIdFromRequest(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not found for your account' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
@@ -97,13 +96,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get admin's department to scope access
-    const departmentId = await getDepartmentIdFromRequest(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not found for your account' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const departmentIdScope = await resolveDepartmentScope(request, user!);
+    if (departmentIdScope.error) return departmentIdScope.error;
+    const departmentId = departmentIdScope.departmentId;
 
     const body = await request.json();
     const validatedData = createReportSchema.parse(body);

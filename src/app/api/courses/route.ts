@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma, course_type, course_status } from '@prisma/client';
@@ -89,19 +90,15 @@ export async function GET(request: NextRequest) {
     const programId = searchParams.get('programId');
 
     // Get current department ID from authenticated user
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Department not assigned. Please contact super admin.',
-        },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department and must not be scoped out of
+    // the system; see resolveDepartmentScope.
+    const currentDepartmentIdScope = await resolveDepartmentScope(request, user!);
+    if (currentDepartmentIdScope.error) return currentDepartmentIdScope.error;
+    const currentDepartmentId = currentDepartmentIdScope.departmentId;
 
     const where: Prisma.coursesWhereInput = {
-      departmentId: currentDepartmentId, // Always filter by current department
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(currentDepartmentId !== null ? { departmentId: currentDepartmentId } : {}),
     };
 
     // If user is faculty, only show courses assigned to them via sections
@@ -284,13 +281,24 @@ export async function POST(request: NextRequest) {
     // Import getCurrentDepartmentId
     const { getCurrentDepartmentId } = await import('@/lib/auth');
 
-    // Get current department ID from authenticated user (override any departmentId from form)
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
+    // A course must belong to a department. Departmental roles get their own;
+    // a super_admin has none, so they must name the target department.
+    const scope = await resolveDepartmentScope(request, user!);
+    if (scope.error) return scope.error;
+
+    const bodyDepartmentId =
+      typeof (validatedData as { departmentId?: number }).departmentId === 'number'
+        ? (validatedData as { departmentId?: number }).departmentId!
+        : null;
+
+    const currentDepartmentId = scope.departmentId ?? bodyDepartmentId;
+
+    if (currentDepartmentId === null) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Department not assigned. Please contact super admin.',
+          error:
+            'departmentId is required when creating a course as a super admin.',
         },
         { status: 400 }
       );

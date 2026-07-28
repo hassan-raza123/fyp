@@ -276,3 +276,58 @@ export async function assertResultsUnlocked(
 }
 
 export { forbidden, unauthorized };
+
+/**
+ * Resolve the department a request should be scoped to.
+ *
+ * A `super_admin` deliberately belongs to no department — they oversee all of
+ * them — so scoping does not apply to them. Routes that simply demanded a
+ * department id rejected super admins outright, which locked the highest
+ * privilege role out of most of the system.
+ *
+ * Returns:
+ *   - `{ scoped: false }`             → super_admin, apply no department filter
+ *   - `{ scoped: true, departmentId }`→ filter by this department
+ *   - `{ error }`                     → the caller has no department assigned
+ */
+export async function resolveDepartmentScope(
+  request: NextRequest,
+  user: TokenPayload
+): Promise<
+  | { scoped: false; departmentId: null; error?: undefined }
+  | { scoped: true; departmentId: number; error?: undefined }
+  | { scoped: false; departmentId: null; error: NextResponse }
+> {
+  if (user.role === 'super_admin') {
+    return { scoped: false, departmentId: null };
+  }
+
+  const departmentId = await getDepartmentIdFromRequest(request);
+
+  if (!departmentId) {
+    return {
+      scoped: false,
+      departmentId: null,
+      error: NextResponse.json(
+        {
+          success: false,
+          error: 'Department not assigned. Please contact super admin.',
+        },
+        { status: 400 }
+      ),
+    };
+  }
+
+  return { scoped: true, departmentId };
+}
+
+/**
+ * Build a Prisma `where` fragment for department scoping.
+ * Empty for super_admin, `{ departmentId }` otherwise.
+ */
+export function departmentFilter(
+  departmentId: number | null,
+  field = 'departmentId'
+): Record<string, number> {
+  return departmentId === null ? {} : { [field]: departmentId };
+}
