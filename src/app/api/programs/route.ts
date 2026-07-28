@@ -23,7 +23,10 @@ type ProgramWithCounts = Prisma.programsGetPayload<{
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and role
+    // super_admin was missing, so the highest-privilege role could not list
+    // programs at all.
     const { success, user, error } = await requireRole(request, [
+      'super_admin',
       'admin',
       'faculty',
       'student',
@@ -44,9 +47,15 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
-    // Get current department ID from authenticated user
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
+    // Get current department ID from authenticated user.
+    // A super_admin is deliberately not attached to any department — they
+    // oversee all of them — so department scoping does not apply to them.
+    const isSuperAdmin = user?.role === 'super_admin';
+    const currentDepartmentId = isSuperAdmin
+      ? null
+      : await getCurrentDepartmentId(request);
+
+    if (!isSuperAdmin && !currentDepartmentId) {
       return NextResponse.json(
         { success: false, error: 'Department not assigned. Please contact super admin.' },
         { status: 400 }
@@ -54,7 +63,8 @@ export async function GET(request: NextRequest) {
     }
 
     const where: any = {
-      departmentId: currentDepartmentId, // Always filter by current department
+      // Scoped for departmental roles; unscoped for super_admin
+      ...(currentDepartmentId ? { departmentId: currentDepartmentId } : {}),
     };
     if (status) where.status = status;
     if (search) {

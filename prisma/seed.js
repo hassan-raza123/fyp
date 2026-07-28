@@ -148,7 +148,7 @@ async function seedDatabase() {
   console.log('✅ Database seeded successfully!');
   console.log('\n📝 Super Admin Login Credentials:');
   console.log('Email:    hassan.officialmail00@gmail.com');
-  console.log('Password: 11223344');
+  console.log('Password:', plainPassword, '(shown once — you must change it at first sign-in)');
   console.log('Role:     super_admin');
   console.log(
     '\n💡 Note: Super Admin can create departments and assign admins to departments.'

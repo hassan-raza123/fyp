@@ -54,7 +54,7 @@ export async function POST(
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = await requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['super_admin', 'admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
@@ -161,7 +161,7 @@ export async function DELETE(
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = await requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['super_admin', 'admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }

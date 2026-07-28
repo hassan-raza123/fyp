@@ -101,6 +101,31 @@ function generateOTP(): string {
 }
 
 
+/**
+ * Send the OTP without letting a mail failure abort the login.
+ *
+ * The code is already persisted by the time this runs, so throwing here turned
+ * a mail outage — or simply unconfigured SMTP in local development — into a 500
+ * that made admin and faculty sign-in impossible with no usable diagnostic.
+ *
+ * Returns true when the mail went out. Outside production the code is also
+ * logged to the server console so local development works without SMTP.
+ */
+async function deliverOTP(email: string, otp: string): Promise<boolean> {
+  try {
+    await sendOTPEmail(email, otp);
+    return true;
+  } catch (error) {
+    console.error(`Failed to email OTP to ${email}:`, error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `[dev] OTP for ${email} is ${otp} — email delivery is not configured.`
+      );
+    }
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -273,17 +298,19 @@ export async function POST(request: NextRequest) {
       });
 
       // Send OTP via email
-      await sendOTPEmail(email, otp);
+      const otpDelivered = await deliverOTP(email, otp);
 
       return NextResponse.json({
         success: true,
-        message: 'OTP sent successfully. Please check your email.',
+        message: otpDelivered
+          ? 'OTP sent successfully. Please check your email.'
+          : 'Could not send the verification email. Contact your administrator.',
         data: {
           redirectTo: '/verify-otp',
           email: email,
           // Frontend ko bhi effective role bhejte hain (admin / super_admin)
           userType: effectiveAdminRole,
-          otpSent: true,
+          otpSent: otpDelivered,
         },
       });
     }
@@ -328,16 +355,18 @@ export async function POST(request: NextRequest) {
       });
 
       // Send OTP via email
-      await sendOTPEmail(email, otp);
+      const otpDelivered = await deliverOTP(email, otp);
 
       return NextResponse.json({
         success: true,
-        message: 'OTP sent successfully. Please check your email.',
+        message: otpDelivered
+          ? 'OTP sent successfully. Please check your email.'
+          : 'Could not send the verification email. Contact your administrator.',
         data: {
           redirectTo: '/verify-otp',
           email: email,
           userType: userType,
-          otpSent: true,
+          otpSent: otpDelivered,
         },
       });
     }
@@ -383,7 +412,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Send OTP via email
-        await sendOTPEmail(email, otp);
+        const otpDelivered = await deliverOTP(email, otp);
 
         return NextResponse.json({
           success: true,
@@ -392,7 +421,7 @@ export async function POST(request: NextRequest) {
             redirectTo: '/verify-otp',
             email: email,
             userType: userType,
-            otpSent: true,
+            otpSent: otpDelivered,
           },
         });
       }

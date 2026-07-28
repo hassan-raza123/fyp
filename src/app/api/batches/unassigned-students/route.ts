@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
-    const roleResult = await requireRole(request, ['admin']);
+    const roleResult = await requireRole(request, ['super_admin', 'admin']);
     if (!roleResult.success) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
