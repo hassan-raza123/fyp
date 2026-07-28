@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomInt } from 'crypto';
+import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { sendOTPEmail } from '@/lib/email-utils';
 // Use the shared client: instantiating PrismaClient per module opens a separate
@@ -116,11 +117,20 @@ export async function POST(request: NextRequest) {
       AND isUsed = false
     `;
 
-    // Save OTP to database
-    await prisma.$executeRaw`
-      INSERT INTO otps (email, userType, code, expiresAt, isUsed, updatedAt)
-      VALUES (${email}, ${userType}, ${otp}, ${expiresAt}, false, NOW())
-    `;
+    // Save OTP to database.
+    // The code must be hashed: verify-otp checks it with bcrypt.compare, so a
+    // plaintext row can never match and every resent code was rejected.
+    const hashedOTP = await hash(otp, 10);
+
+    await prisma.otps.create({
+      data: {
+        email,
+        userType,
+        code: hashedOTP,
+        expiresAt,
+        isUsed: false,
+      },
+    });
 
     // Send OTP via email
     // Inert unless E2E_TEST_MODE is on
