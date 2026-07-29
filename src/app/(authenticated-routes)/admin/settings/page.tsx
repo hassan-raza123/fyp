@@ -115,7 +115,29 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error('Failed to fetch settings');
       const data = await response.json();
       if (data.success && data.data) {
-        setSettings(data.data);
+        // Merge over the defaults rather than replacing them. The stored row is
+        // JSON and may predate a field or omit a section; assigning it wholesale
+        // left nested objects undefined and crashed the page on first render.
+        setSettings((current) => ({
+          system: { ...current.system, ...(data.data.system ?? {}) },
+          email: { ...current.email, ...(data.data.email ?? {}) },
+          notifications: {
+            ...current.notifications,
+            ...(data.data.notifications ?? {}),
+            channels: {
+              ...current.notifications.channels,
+              ...(data.data.notifications?.channels ?? {}),
+            },
+          },
+          obe: {
+            ...current.obe,
+            ...(data.data.obe ?? {}),
+            mappingStrengthWeights: {
+              ...current.obe?.mappingStrengthWeights,
+              ...(data.data.obe?.mappingStrengthWeights ?? {}),
+            },
+          },
+        }));
       }
     } catch (error) {
       toast.error('Failed to load settings');

@@ -16,7 +16,12 @@
     "db:seed": "prisma db seed",
     "db:setup": "prisma generate && prisma db push && prisma db seed",
     "db:reset": "prisma migrate reset --force && prisma db seed",
-    "backfill:repeats": "node prisma/backfill-repeat-grades.js"
+    "backfill:repeats": "node prisma/backfill-repeat-grades.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "db:test:reset": "dotenv -e .env.test -- prisma migrate deploy"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

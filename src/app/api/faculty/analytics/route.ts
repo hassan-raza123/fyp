@@ -505,12 +505,18 @@ function calculateAssessmentAnalytics(assessments: any[], results: any[]) {
     );
 
     if (assessmentResults.length === 0) {
+      // Every field the populated branch returns must appear here too. Omitting
+      // averagePercentage and totalStudents left the analytics page calling
+      // .toFixed() on undefined, which crashed the whole page for any
+      // assessment that had no results yet.
       return {
         assessmentId: assessment.id,
         title: assessment.title,
         type: assessment.type,
         difficulty: null,
         averageScore: null,
+        averagePercentage: null,
+        totalStudents: 0,
         itemAnalysis: [],
       };
     }
