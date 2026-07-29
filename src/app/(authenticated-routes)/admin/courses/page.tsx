@@ -621,7 +621,7 @@ export default function CoursesPage() {
                     });
                   }}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="create_type" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -638,7 +638,7 @@ export default function CoursesPage() {
                   value={newCourse.status}
                   onValueChange={(value: course_status) => setNewCourse({ ...newCourse, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -982,7 +982,7 @@ export default function CoursesPage() {
                     value={editCourse.status}
                     onValueChange={(value: course_status) => setEditCourse({ ...editCourse, status: value })}
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">

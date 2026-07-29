@@ -298,6 +298,7 @@ export default function CourseCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='bloomLevel'>Bloom's Taxonomy Level</Label>
               <select
+                id='bloomLevel'
                 className='border rounded px-2 py-1'
                 value={formData.bloomLevel}
                 onChange={(e) =>
@@ -315,6 +316,7 @@ export default function CourseCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='status'>Status</Label>
               <select
+                id='status'
                 className='border rounded px-2 py-1'
                 value={formData.status}
                 onChange={(e) =>
@@ -372,6 +374,7 @@ export default function CourseCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='edit-bloomLevel'>Bloom's Taxonomy Level</Label>
               <select
+                id='edit-bloomLevel'
                 className='border rounded px-2 py-1'
                 value={formData.bloomLevel}
                 onChange={(e) =>
@@ -389,6 +392,7 @@ export default function CourseCLOsPage() {
             <div className='grid gap-2'>
               <Label htmlFor='edit-status'>Status</Label>
               <select
+                id='edit-status'
                 className='border rounded px-2 py-1'
                 value={formData.status}
                 onChange={(e) =>

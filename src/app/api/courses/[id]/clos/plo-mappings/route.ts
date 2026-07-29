@@ -55,8 +55,13 @@ export async function GET(
             description: true,
           },
         },
+        // Prisma rejects `include` and `select` on the same relation, which made
+        // this query throw and the endpoint return 500 every time.
         plo: {
-          include: {
+          select: {
+            id: true,
+            code: true,
+            description: true,
             program: {
               select: {
                 id: true,
@@ -64,12 +69,6 @@ export async function GET(
                 code: true,
               },
             },
-          },
-          select: {
-            id: true,
-            code: true,
-            description: true,
-            program: true,
           },
         },
       },

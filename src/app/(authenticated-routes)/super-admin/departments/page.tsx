@@ -1013,7 +1013,7 @@ export default function SuperAdminDepartmentsPage() {
                 onValueChange={setSelectedAdminId}
                 disabled={loadingAdmins}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="admin" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select an admin user" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

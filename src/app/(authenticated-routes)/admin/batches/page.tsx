@@ -554,7 +554,7 @@ export default function BatchesPage() {
                 value={newBatch.programId}
                 onValueChange={(value) => setNewBatch({ ...newBatch, programId: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_programId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a program" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -607,7 +607,7 @@ export default function BatchesPage() {
                   value={newBatch.status}
                   onValueChange={(value: batches_status) => setNewBatch({ ...newBatch, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -894,7 +894,7 @@ export default function BatchesPage() {
                   value={editBatch.programId}
                   onValueChange={(value) => setEditBatch({ ...editBatch, programId: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_programId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select a program" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -946,7 +946,7 @@ export default function BatchesPage() {
                     value={editBatch.status}
                     onValueChange={(value: batches_status) => setEditBatch({ ...editBatch, status: value })}
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">

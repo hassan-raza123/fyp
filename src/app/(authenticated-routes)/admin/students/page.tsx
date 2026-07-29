@@ -757,7 +757,7 @@ export default function StudentsPage() {
                 }}
                 disabled={fetchingPrograms}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_programId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select program" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -782,7 +782,7 @@ export default function StudentsPage() {
                 }}
                 disabled={fetchingBatches || !newStudent.programId}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_batchId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select batch" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -800,7 +800,7 @@ export default function StudentsPage() {
                 value={newStudent.status}
                 onValueChange={(value: 'active' | 'inactive') => setNewStudent({ ...newStudent, status: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -1102,7 +1102,7 @@ export default function StudentsPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_programId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select program" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -1124,7 +1124,7 @@ export default function StudentsPage() {
                   value={editStudent.batchId}
                   onValueChange={(value) => setEditStudent({ ...editStudent, batchId: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_batchId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select batch" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -1142,7 +1142,7 @@ export default function StudentsPage() {
                   value={editStudent.status}
                   onValueChange={(value: 'active' | 'inactive') => setEditStudent({ ...editStudent, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

@@ -547,7 +547,7 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, courseId: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="course" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -592,7 +592,7 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, bloomLevel: value === "none" ? "" : value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -613,7 +613,7 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -704,7 +704,7 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, bloomLevel: value === "none" ? "" : value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -725,7 +725,7 @@ export default function AdminLLOsPage() {
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="edit-status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

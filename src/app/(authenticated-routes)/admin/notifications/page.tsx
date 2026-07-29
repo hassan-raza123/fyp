@@ -468,7 +468,7 @@ export default function NotificationsPage() {
                   setFormData({ ...formData, userId: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="userId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -489,7 +489,7 @@ export default function NotificationsPage() {
                   setFormData({ ...formData, type: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="type" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select notification type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

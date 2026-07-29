@@ -558,7 +558,7 @@ export default function FacultyPage() {
                 value={newFaculty.status}
                 onValueChange={(value: 'active' | 'inactive') => setNewFaculty({ ...newFaculty, status: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

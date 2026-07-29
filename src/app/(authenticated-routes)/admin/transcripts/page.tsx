@@ -491,7 +491,7 @@ export default function TranscriptsPage() {
                   setFormData({ ...formData, studentId: value })
                 }
               >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="studentId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -513,7 +513,7 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, transcriptType: value })
                   }
                 >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="transcriptType" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -532,7 +532,7 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select semester (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

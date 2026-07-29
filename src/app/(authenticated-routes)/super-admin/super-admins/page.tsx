@@ -931,7 +931,7 @@ export default function SuperAdminsPage() {
                     setEditSuperAdmin({ ...editSuperAdmin, status: value })
                   }
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

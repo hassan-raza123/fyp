@@ -568,7 +568,7 @@ export default function ProgramsPage() {
                 value={newProgram.status}
                 onValueChange={(value: programs_status) => setNewProgram({ ...newProgram, status: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -861,7 +861,7 @@ export default function ProgramsPage() {
                   value={editProgram.status}
                   onValueChange={(value: programs_status) => setEditProgram({ ...editProgram, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

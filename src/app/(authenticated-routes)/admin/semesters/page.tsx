@@ -572,7 +572,7 @@ export default function SemestersPage() {
                 value={newSemester.status}
                 onValueChange={(value: semester_status) => setNewSemester({ ...newSemester, status: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -825,7 +825,7 @@ export default function SemestersPage() {
                   value={editSemester.status}
                   onValueChange={(value: semester_status) => setEditSemester({ ...editSemester, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

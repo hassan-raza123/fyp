@@ -362,7 +362,7 @@ export default function PLOsPage() {
             <div className="grid gap-2">
               <Label htmlFor="bloomLevel" className="text-xs text-primary-text">Bloom&apos;s Taxonomy Level</Label>
               <Select value={formData.bloomLevel} onValueChange={(value) => setFormData({ ...formData, bloomLevel: value })}>
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -377,7 +377,7 @@ export default function PLOsPage() {
             <div className="grid gap-2">
               <Label htmlFor="status" className="text-xs text-primary-text">Status</Label>
               <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'archived') => setFormData({ ...formData, status: value })}>
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -442,7 +442,7 @@ export default function PLOsPage() {
             <div className="grid gap-2">
               <Label htmlFor="edit-bloomLevel" className="text-xs text-primary-text">Bloom&apos;s Taxonomy Level</Label>
               <Select value={formData.bloomLevel} onValueChange={(value) => setFormData({ ...formData, bloomLevel: value })}>
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -457,7 +457,7 @@ export default function PLOsPage() {
             <div className="grid gap-2">
               <Label htmlFor="edit-status" className="text-xs text-primary-text">Status</Label>
               <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'archived') => setFormData({ ...formData, status: value })}>
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="edit-status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

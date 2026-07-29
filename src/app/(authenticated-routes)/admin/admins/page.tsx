@@ -542,7 +542,7 @@ export default function AdminsPage() {
                 value={newAdmin.status}
                 onValueChange={(value: 'active' | 'inactive') => setNewAdmin({ ...newAdmin, status: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -804,7 +804,7 @@ export default function AdminsPage() {
                   value={editAdmin.status}
                   onValueChange={(value: 'active' | 'inactive') => setEditAdmin({ ...editAdmin, status: value })}
                 >
-                  <SelectTrigger className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

@@ -837,7 +837,7 @@ export default function SuperAdminAdminsPage() {
                   setNewAdmin({ ...newAdmin, departmentId: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="departmentId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a department (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -1132,7 +1132,7 @@ export default function SuperAdminAdminsPage() {
                       setEditAdmin({ ...editAdmin, departmentId: value === 'none' ? '' : value })
                     }
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger id="edit_departmentId" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select a department" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1159,7 +1159,7 @@ export default function SuperAdminAdminsPage() {
                       setEditAdmin({ ...editAdmin, status: value })
                     }
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">

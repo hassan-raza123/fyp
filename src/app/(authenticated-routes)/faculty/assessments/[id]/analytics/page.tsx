@@ -67,6 +67,11 @@ interface AnalyticsData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658'];
 
+// A number that has not been computed yet is not zero — render it as such
+// rather than crashing on .toFixed of null.
+const fmt = (value: number | null | undefined, digits = 1): string =>
+  value === null || value === undefined ? 'N/A' : value.toFixed(digits);
+
 export default function AssessmentAnalyticsPage() {
   const params = useParams();
   const router = useRouter();
@@ -141,13 +146,13 @@ export default function AssessmentAnalyticsPage() {
         <div className="rounded-lg border border-card-border bg-card p-4">
           <p className="text-xs font-medium text-secondary-text mb-1">Average Marks</p>
           <div className="text-lg font-bold text-primary-text">
-            {data.overall.averageMarks.toFixed(1)} / {data.overall.totalMarks}
+            {fmt(data.overall.averageMarks, 1)} / {data.overall.totalMarks}
           </div>
         </div>
         <div className="rounded-lg border border-card-border bg-card p-4">
           <p className="text-xs font-medium text-secondary-text mb-1">Average %</p>
           <div className="text-lg font-bold text-primary-text">
-            {data.overall.averagePercentage.toFixed(1)}%
+            {fmt(data.overall.averagePercentage, 1)}%
           </div>
         </div>
         <div className="rounded-lg border border-card-border bg-card p-4">
@@ -217,7 +222,7 @@ export default function AssessmentAnalyticsPage() {
                         ? (clo.totalObtained / (data.overall.totalStudents || 1)).toFixed(1)
                         : '0'}
                     </TableCell>
-                    <TableCell>{clo.averagePercentage.toFixed(1)}%</TableCell>
+                    <TableCell>{fmt(clo.averagePercentage, 1)}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -250,8 +255,8 @@ export default function AssessmentAnalyticsPage() {
                     <Badge variant="outline">{item.cloCode}</Badge>
                   </TableCell>
                   <TableCell>{item.totalMarks}</TableCell>
-                  <TableCell>{item.averageMarks.toFixed(1)}</TableCell>
-                  <TableCell>{item.averagePercentage.toFixed(1)}%</TableCell>
+                  <TableCell>{fmt(item.averageMarks, 1)}</TableCell>
+                  <TableCell>{fmt(item.averagePercentage, 1)}%</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -283,7 +288,7 @@ export default function AssessmentAnalyticsPage() {
                   <TableCell>
                     {result.obtainedMarks} / {result.totalMarks}
                   </TableCell>
-                  <TableCell>{result.percentage.toFixed(1)}%</TableCell>
+                  <TableCell>{fmt(result.percentage, 1)}%</TableCell>
                   <TableCell>
                     <Badge
                       variant={

@@ -605,7 +605,7 @@ function PEOsPageContent() {
                 value={formData.programId}
                 onValueChange={(value) => setFormData({ ...formData, programId: value })}
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="program" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder='Select program' />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -650,7 +650,7 @@ function PEOsPageContent() {
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -739,7 +739,7 @@ function PEOsPageContent() {
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger id="edit-status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

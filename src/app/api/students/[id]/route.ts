@@ -404,6 +404,13 @@ export async function GET(
                         code: true,
                       },
                     },
+                    // The detail page shows which semester each enrolment is in
+                    semester: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
                   },
                 },
               },
@@ -435,6 +442,10 @@ export async function GET(
       department: student.department,
       program: student.program,
       sections: student.studentsections.map((ss) => ss.section),
+      // The detail page lists enrolments (it needs the enrolment id and status,
+      // not just the section), so return them alongside the flattened sections.
+      // Omitting this left the page reading .length of undefined and crashing.
+      studentsections: student.studentsections,
     };
 
     return NextResponse.json({

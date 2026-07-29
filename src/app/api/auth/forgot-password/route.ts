@@ -104,17 +104,22 @@ export async function POST(request: NextRequest) {
     // Create reset URL
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
 
-    // Send reset email
+    // Send reset email. A failure here is logged but must not change the reply:
+    // answering differently for a known address than for an unknown one is
+    // exactly the user-enumeration leak the neutral message above prevents.
     try {
       await sendPasswordResetEmail(email, resetUrl);
     } catch (emailError) {
       console.error('Error sending password reset email:', emailError);
-      throw new Error('Failed to send password reset email');
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[dev] Password reset link for ${email}: ${resetUrl}`);
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Password reset instructions have been sent to your email.',
+      message:
+        'If an account exists for that email address, password reset instructions have been sent.',
     });
   } catch (error) {
     console.error('Forgot password error:', error);

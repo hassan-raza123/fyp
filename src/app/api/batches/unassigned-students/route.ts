@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         d.name as department_name,
         d.code as department_code
       FROM students s
-      JOIN user u ON s.userId = u.id
+      JOIN users u ON s.userId = u.id
       JOIN programs p ON s.programId = p.id
       JOIN departments d ON s.departmentId = d.id
       ${whereClause}

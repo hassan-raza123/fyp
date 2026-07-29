@@ -464,7 +464,7 @@ export default function ReportsPage() {
                   setFormData({ ...formData, reportType: value })
                 }
               >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="reportType" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -487,7 +487,7 @@ export default function ReportsPage() {
                     setFormData({ ...formData, programId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="programId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select program (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -508,7 +508,7 @@ export default function ReportsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select semester (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

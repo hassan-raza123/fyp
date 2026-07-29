@@ -620,7 +620,7 @@ export default function StudentDetailsPage() {
                         setFormData({ ...formData, departmentId: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="departmentId">
                         <SelectValue placeholder='Select department' />
                       </SelectTrigger>
                       <SelectContent>
@@ -645,7 +645,7 @@ export default function StudentDetailsPage() {
                       }
                       disabled={!formData.departmentId}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="programId">
                         <SelectValue placeholder='Select program' />
                       </SelectTrigger>
                       <SelectContent>
@@ -669,7 +669,7 @@ export default function StudentDetailsPage() {
                         setFormData({ ...formData, batchId: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="batchId">
                         <SelectValue placeholder='Select batch' />
                       </SelectTrigger>
                       <SelectContent>
@@ -690,7 +690,7 @@ export default function StudentDetailsPage() {
                         setFormData({ ...formData, status: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="status">
                         <SelectValue placeholder='Select status' />
                       </SelectTrigger>
                       <SelectContent>
