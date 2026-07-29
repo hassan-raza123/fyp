@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { statePath } from '../support/global-setup';
+import { statePath, readSeededIds } from '../support/global-setup';
 
 /**
  * Page smoke tests.
@@ -46,6 +46,8 @@ async function visit(page: Page, path: string) {
   expect(failures, `${path}:\n  ${failures.join('\n  ')}`).toHaveLength(0);
 }
 
+const ids = readSeededIds();
+
 type SmokeRole = 'student' | 'faculty' | 'admin' | 'superAdmin';
 
 const PAGES: Record<SmokeRole, string[]> = {
@@ -64,6 +66,13 @@ const PAGES: Record<SmokeRole, string[]> = {
     '/student/messages',
     '/student/surveys',
     '/student/settings',
+    // Detail pages, using seeded records
+    `/student/courses/${ids.theoryCourseId}`,
+    `/student/courses/${ids.theoryCourseId}/clos`,
+    `/student/courses/${ids.theoryCourseId}/analytics`,
+    `/student/courses/${ids.theoryCourseId}/offerings`,
+    `/student/assessments/${ids.assessmentId}`,
+    `/student/assessments/${ids.assessmentId}/items`,
   ],
   faculty: [
     '/faculty',
@@ -85,6 +94,15 @@ const PAGES: Record<SmokeRole, string[]> = {
     '/faculty/surveys',
     '/faculty/notifications',
     '/faculty/settings',
+    `/faculty/courses/${ids.theoryCourseId}`,
+    `/faculty/courses/${ids.theoryCourseId}/clos`,
+    `/faculty/courses/${ids.theoryCourseId}/analytics`,
+    `/faculty/courses/${ids.theoryCourseId}/offerings`,
+    `/faculty/sections/${ids.sectionId}`,
+    `/faculty/students/${ids.studentId}`,
+    `/faculty/assessments/${ids.assessmentId}`,
+    `/faculty/assessments/${ids.assessmentId}/items`,
+    `/faculty/assessments/${ids.assessmentId}/analytics`,
   ],
   admin: [
     '/admin',
@@ -126,6 +144,13 @@ const PAGES: Record<SmokeRole, string[]> = {
     '/admin/results/academic-records',
     '/admin/results/analytics',
     '/admin/results/result-evaluation',
+    '/admin/students/bulk-import',
+    `/admin/courses/${ids.theoryCourseId}/clos`,
+    `/admin/programs/${ids.programId}/plos`,
+    `/admin/batches/${ids.batchId}/students`,
+    `/admin/assessments/${ids.assessmentId}`,
+    `/admin/assessments/${ids.assessmentId}/edit`,
+    `/admin/assessments/${ids.assessmentId}/items`,
   ],
   superAdmin: [
     '/super-admin',
@@ -151,7 +176,7 @@ for (const [role, paths] of Object.entries(PAGES) as [SmokeRole, string[]][]) {
 test.describe('public pages', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  for (const path of ['/', '/login', '/forgot-password']) {
+  for (const path of ['/', '/login', '/forgot-password', '/reset-password', '/verify-otp']) {
     test(`${path} renders`, async ({ page }) => {
       await visit(page, path);
     });
