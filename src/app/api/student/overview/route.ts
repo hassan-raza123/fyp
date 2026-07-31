@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { COUNTABLE_GRADE_STATUSES } from '@/lib/obe';
 import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/auth';
+import { getStudentAttendance } from '@/lib/attendance';
 
 export async function GET(request: NextRequest) {
   try {
@@ -258,6 +259,32 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Attendance for the dashboard card. Surfaced here so a student sees a
+    // shortfall on the page they actually open, not only if they navigate to
+    // the attendance screen.
+    const attendanceCourses = await getStudentAttendance(studentId);
+    const assessedCourses = attendanceCourses.filter((c) => c.tally.hasData);
+
+    const attendance = {
+      overallPercent:
+        assessedCourses.length > 0
+          ? Math.round(
+              (assessedCourses.reduce(
+                (sum, c) => sum + c.tally.attendancePercent,
+                0
+              ) /
+                assessedCourses.length) *
+                10
+            ) / 10
+          : 0,
+      hasData: assessedCourses.length > 0,
+      coursesAtRisk: attendanceCourses.filter((c) => c.verdict === 'at_risk')
+        .length,
+      coursesIneligible: attendanceCourses.filter(
+        (c) => c.verdict === 'ineligible'
+      ).length,
+    };
+
     return NextResponse.json({
       success: true,
       data: {
@@ -283,6 +310,7 @@ export async function GET(request: NextRequest) {
         })),
         upcomingAssessments: upcomingAssessments.length,
         overdueAssessments: overdueAssessments.length,
+        attendance,
       },
     });
   } catch (error) {

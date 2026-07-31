@@ -28,6 +28,7 @@ import {
   Grid,
   Compass,
   Trophy,
+  CalendarCheck,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -209,6 +210,12 @@ const adminNavigation = [
         label: 'PLO Attainments',
         icon: TrendingUp,
         href: '/admin/results/plo-attainments',
+      },
+      {
+        id: 'attendance',
+        label: 'Attendance & Eligibility',
+        icon: CalendarCheck,
+        href: '/admin/attendance',
       },
       {
         id: 'pass-fail-criteria',
@@ -395,6 +402,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           icon: Users,
           href: '/faculty/students',
         },
+        {
+          id: 'attendance',
+          label: 'Attendance',
+          icon: CalendarCheck,
+          href: '/faculty/attendance',
+        },
       ],
     },
     {
@@ -497,6 +510,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'My Assessments',
           icon: ClipboardList,
           href: '/student/assessments',
+        },
+        {
+          id: 'attendance',
+          label: 'My Attendance',
+          icon: CalendarCheck,
+          href: '/student/attendance',
         },
         {
           id: 'results',

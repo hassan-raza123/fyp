@@ -34,6 +34,7 @@ interface Criterion {
   courseOfferingId: number;
   minPassPercent: number;
   minCloAttainmentPercent: number | null;
+  minAttendancePercent: number | null;
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
@@ -58,10 +59,12 @@ export default function PassFailCriteriaPage() {
     courseOfferingId: '',
     minPassPercent: '50',
     minCloAttainmentPercent: '',
+    minAttendancePercent: '',
   });
   const [editForm, setEditForm] = useState({
     minPassPercent: '50',
     minCloAttainmentPercent: '',
+    minAttendancePercent: '',
     status: 'active' as 'active' | 'inactive',
   });
 
@@ -111,6 +114,9 @@ export default function PassFailCriteriaPage() {
           minCloAttainmentPercent: createForm.minCloAttainmentPercent
             ? parseFloat(createForm.minCloAttainmentPercent)
             : null,
+          minAttendancePercent: createForm.minAttendancePercent
+            ? parseFloat(createForm.minAttendancePercent)
+            : null,
         }),
       });
       const data = await res.json();
@@ -124,7 +130,7 @@ export default function PassFailCriteriaPage() {
       }
       toast.success('Pass/Fail criteria set successfully');
       setCreateOpen(false);
-      setCreateForm({ courseOfferingId: '', minPassPercent: '50', minCloAttainmentPercent: '' });
+      setCreateForm({ courseOfferingId: '', minPassPercent: '50', minCloAttainmentPercent: '', minAttendancePercent: '' });
       loadData();
     } catch {
       toast.error('Failed to create criteria');
@@ -151,6 +157,9 @@ export default function PassFailCriteriaPage() {
           minCloAttainmentPercent: editForm.minCloAttainmentPercent
             ? parseFloat(editForm.minCloAttainmentPercent)
             : null,
+          minAttendancePercent: editForm.minAttendancePercent
+            ? parseFloat(editForm.minAttendancePercent)
+            : null,
           status: editForm.status,
         }),
       });
@@ -175,6 +184,7 @@ export default function PassFailCriteriaPage() {
     setEditForm({
       minPassPercent: String(criterion.minPassPercent),
       minCloAttainmentPercent: criterion.minCloAttainmentPercent != null ? String(criterion.minCloAttainmentPercent) : '',
+      minAttendancePercent: criterion.minAttendancePercent != null ? String(criterion.minAttendancePercent) : '',
       status: criterion.status,
     });
     setEditOpen(true);
@@ -223,6 +233,7 @@ export default function PassFailCriteriaPage() {
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Semester</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Min Pass %</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Min CLO %</th>
+                <th className="text-left px-4 py-3 font-medium text-secondary-text">Min Attendance %</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Set On</th>
                 <th className="text-left px-4 py-3 font-medium text-secondary-text">Actions</th>
@@ -248,6 +259,15 @@ export default function PassFailCriteriaPage() {
                       </span>
                     ) : (
                       <span className="text-xs text-secondary-text">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.minAttendancePercent != null ? (
+                      <span className="font-semibold" style={{ color: primaryColor }}>
+                        {c.minAttendancePercent}%
+                      </span>
+                    ) : (
+                      <span className="text-xs text-secondary-text">75% (default)</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -340,6 +360,21 @@ export default function PassFailCriteriaPage() {
                 If set, students must achieve at least this percentage in each individual CLO to pass.
               </p>
             </div>
+            <div className="space-y-1.5">
+              <Label>Minimum Attendance % (optional)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step={0.5}
+                value={createForm.minAttendancePercent}
+                onChange={(e) => setCreateForm((f) => ({ ...f, minAttendancePercent: e.target.value }))}
+                placeholder="e.g. 75 — leave blank to use the system default"
+              />
+              <p className="text-xs text-secondary-text">
+                Students below this are flagged as ineligible to sit the exam. Leave blank to fall back to the system-wide setting (75%).
+              </p>
+            </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
               <Button
@@ -392,6 +427,18 @@ export default function PassFailCriteriaPage() {
                   value={editForm.minCloAttainmentPercent}
                   onChange={(e) => setEditForm((f) => ({ ...f, minCloAttainmentPercent: e.target.value }))}
                   placeholder="Leave blank to skip CLO-level check"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Minimum Attendance % (optional)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  placeholder="e.g. 75 — blank uses the system default"
+                  value={editForm.minAttendancePercent}
+                  onChange={(e) => setEditForm((f) => ({ ...f, minAttendancePercent: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">

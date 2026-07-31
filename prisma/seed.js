@@ -11,6 +11,10 @@ async function clearDatabase() {
   await prisma.obereports.deleteMany();
   await prisma.transcripts.deleteMany();
   await prisma.notifications.deleteMany();
+  // Attendance records reference students, sessions reference sections — both
+  // must go before either of those is cleared.
+  await prisma.attendance_records.deleteMany();
+  await prisma.attendance_sessions.deleteMany();
   await prisma.studentassessmentitemresults.deleteMany();
   await prisma.studentassessmentresults.deleteMany();
   await prisma.assessmentitems.deleteMany();

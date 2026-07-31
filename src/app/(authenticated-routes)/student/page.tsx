@@ -20,6 +20,8 @@ import {
   User,
   Clock3,
   BookMarked,
+  CalendarCheck,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -198,6 +200,12 @@ interface StudentDashboardData {
     completedAssignments: number;
     pendingAssignments?: number;
   };
+  attendance?: {
+    overallPercent: number;
+    hasData: boolean;
+    coursesAtRisk: number;
+    coursesIneligible: number;
+  };
   courses: Array<{
     courseCode: string;
     courseName: string;
@@ -371,7 +379,42 @@ export default function StudentDashboard() {
             iconColor={iconColor}
           />
         )}
+        <StatCard
+          title='Attendance'
+          value={
+            data.attendance?.hasData
+              ? `${data.attendance.overallPercent}%`
+              : '—'
+          }
+          icon={<CalendarCheck className='w-6 h-6' />}
+          iconBgColor={iconBgColor}
+          iconColor={iconColor}
+        />
       </div>
+
+      {/* Attendance shortfall is shown on the dashboard because a student who
+          only opens this page would otherwise learn of it at exam time. */}
+      {data.attendance &&
+        (data.attendance.coursesIneligible > 0 ||
+          data.attendance.coursesAtRisk > 0) && (
+          <Link
+            href='/student/attendance'
+            className='flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 transition-colors hover:bg-amber-500/20'
+          >
+            <AlertTriangle className='mt-0.5 h-5 w-5 shrink-0 text-amber-600' />
+            <div className='text-sm'>
+              <p className='font-medium text-primary-text'>
+                {data.attendance.coursesIneligible > 0
+                  ? `Attendance below requirement in ${data.attendance.coursesIneligible} course(s)`
+                  : `Attendance close to the limit in ${data.attendance.coursesAtRisk} course(s)`}
+              </p>
+              <p className='mt-1 text-secondary-text'>
+                Falling below the required attendance can make you ineligible to
+                sit the exam. Tap to see the details.
+              </p>
+            </div>
+          </Link>
+        )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

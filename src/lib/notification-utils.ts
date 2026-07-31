@@ -355,3 +355,65 @@ export async function notifyOutcomeBelowTarget(
     notification_type.alert
   );
 }
+
+/**
+ * Warn students whose attendance has fallen below the exam-eligibility
+ * requirement in a section.
+ *
+ * Fired when a session is finalized, because that is the moment the percentage
+ * actually changes. Warning only at exam time would be useless — by then the
+ * student has no remaining classes with which to recover.
+ */
+export async function notifyAttendanceShortfall(sectionId: number) {
+  const { getSectionAttendanceSummary } = await import('./attendance');
+  const summary = await getSectionAttendanceSummary(sectionId);
+
+  const flagged = summary.students.filter(
+    (student) => student.verdict === 'ineligible' || student.verdict === 'at_risk'
+  );
+
+  if (flagged.length === 0) return { notified: 0 };
+
+  const section = await prisma.sections.findUnique({
+    where: { id: sectionId },
+    select: {
+      name: true,
+      courseOffering: {
+        select: { course: { select: { code: true, name: true } } },
+      },
+    },
+  });
+
+  if (!section) return { notified: 0 };
+
+  // Notifications address a user, not a student record.
+  const students = await prisma.students.findMany({
+    where: { id: { in: flagged.map((student) => student.studentId) } },
+    select: { id: true, userId: true },
+  });
+  const userIdByStudent = new Map(students.map((s) => [s.id, s.userId]));
+
+  const course = section.courseOffering.course;
+
+  await Promise.all(
+    flagged.map((student) => {
+      const userId = userIdByStudent.get(student.studentId);
+      if (!userId) return null;
+
+      const isShort = student.verdict === 'ineligible';
+
+      return createNotification(
+        userId,
+        isShort
+          ? `Attendance below requirement: ${course.code}`
+          : `Attendance warning: ${course.code}`,
+        isShort
+          ? `Your attendance in ${course.code} (${course.name}) is ${student.tally.attendancePercent}%, below the ${student.threshold}% required to sit the exam. Contact your instructor or the department office if this is due to approved leave.`
+          : `Your attendance in ${course.code} (${course.name}) is ${student.tally.attendancePercent}%, close to the ${student.threshold}% requirement. Missing further classes may make you ineligible to sit the exam.`,
+        notification_type.attendance
+      );
+    })
+  );
+
+  return { notified: flagged.length };
+}

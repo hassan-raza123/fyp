@@ -39,6 +39,7 @@ model users {
   lockedCourseOfferings  courseofferings[]  @relation("CourseOfferingLocker")
   surveysCreated         surveys[]          @relation("SurveyCreator")
   actionPlansCreated     action_plans[]     @relation("ActionPlanCreator")
+  eligibilityOverrides   studentsections[]  @relation("EligibilityOverrideSetter")
 }
 
 model roles {
@@ -221,6 +222,7 @@ model sections {
   courseOffering   courseofferings      @relation(fields: [courseOfferingId], references: [id])
   faculty          faculties?           @relation(fields: [facultyId], references: [id])
   studentsections  studentsections[]
+  attendanceSessions attendance_sessions[]
 
   @@index([courseOfferingId])
   @@index([facultyId])
@@ -244,6 +246,7 @@ model faculties {
   evaluatedResults studentassessmentresults[] @relation("ResultEvaluator")
   gradesCalculated studentgrades[]            @relation("GradeCalculator")
   preferences      faculty_preferences?
+  attendanceMarked attendance_sessions[]      @relation("AttendanceMarker")
   @@index([departmentId])
 }
 
@@ -270,6 +273,7 @@ model students {
   transcripts       transcripts[]
   surveyResponses   survey_responses[]
   preferences       student_preferences?
+  attendanceRecords attendance_records[]
 
   @@index([departmentId])
   @@index([programId])
@@ -282,13 +286,76 @@ model studentsections {
   sectionId      Int
   enrollmentDate DateTime              @default(now())
   status         studentsection_status @default(active)
+  /// Manual override of the attendance-derived exam eligibility verdict.
+  /// `none` means the computed attendance percentage decides. An admin sets
+  /// `eligible` to condone a shortfall (medical, official duty) or `ineligible`
+  /// to bar a student regardless of attendance. Stored per enrollment rather
+  /// than per student because eligibility is decided course by course.
+  eligibilityOverride exam_eligibility_override @default(none)
+  eligibilityRemarks  String?               @db.Text
+  eligibilitySetBy    Int?
+  eligibilitySetAt    DateTime?
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   section        sections              @relation(fields: [sectionId], references: [id])
   student        students              @relation(fields: [studentId], references: [id])
+  eligibilitySetByUser users?          @relation("EligibilityOverrideSetter", fields: [eligibilitySetBy], references: [id])
 
   @@unique([studentId, sectionId])
   @@index([sectionId])
+  @@index([studentId])
+  @@index([eligibilitySetBy])
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+
+/// One class meeting for a section.
+///
+/// Attendance is modelled as sessions rather than flat per-student rows so the
+/// denominator is knowable: a class that was held but left unmarked is visible,
+/// and a student is never counted absent for a class that never happened.
+/// `slot` separates a lecture from a lab held for the same section on the same
+/// day, which a single-record-per-day design cannot represent.
+model attendance_sessions {
+  id              Int                       @id @default(autoincrement())
+  sectionId       Int
+  date            DateTime                  @db.Date
+  /// 1 for the first meeting of the day, 2 for a second (e.g. lab after lecture)
+  slot            Int                       @default(1)
+  /// What was taught — carried into the course file for accreditation
+  topic           String?                   @db.Text
+  durationMinutes Int                       @default(60)
+  /// Only `finalized` sessions count towards attendance percentages. A session
+  /// left `open` is still being marked, and including it would manufacture
+  /// absences indistinguishable from genuine ones.
+  status          attendance_session_status @default(open)
+  markedBy        Int
+  finalizedAt     DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  section         sections                  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  marker          faculties                 @relation("AttendanceMarker", fields: [markedBy], references: [id])
+  records         attendance_records[]
+
+  @@unique([sectionId, date, slot])
+  @@index([sectionId])
+  @@index([markedBy])
+  @@index([date])
+}
+
+model attendance_records {
+  id        Int                 @id @default(autoincrement())
+  sessionId Int
+  studentId Int
+  status    attendance_status   @default(present)
+  remarks   String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  session   attendance_sessions @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student   students            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
   @@index([studentId])
 }
 
@@ -765,6 +832,10 @@ model passfailcriteria {
   minPassPercent          Float                   @default(50)
   minCloAttainmentPercent Float?
   minLloAttainmentPercent Float?
+  /// % of finalized sessions a student must attend to sit the exam. Optional:
+  /// when unset the system-wide default in Settings.obe applies, matching how
+  /// the CLO/LLO attainment targets fall back.
+  minAttendancePercent    Float?
   status                  passfailcriteria_status @default(active)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime
@@ -906,6 +977,29 @@ enum section_session_type {
   evening
 }
 
+enum attendance_status {
+  present
+  absent
+  /// Counts as present for eligibility, but tracked separately so persistent
+  /// lateness stays visible rather than being silently forgiven.
+  late
+  /// Approved leave (medical, official duty). Excluded from the denominator
+  /// entirely — neither present nor absent — so an approved absence cannot
+  /// push a student below the threshold.
+  excused
+}
+
+enum attendance_session_status {
+  open
+  finalized
+}
+
+enum exam_eligibility_override {
+  none
+  eligible
+  ineligible
+}
+
 enum studentsection_status {
   active
   inactive
@@ -1014,6 +1108,7 @@ enum notification_type {
   grade
   result
   assessment
+  attendance
 }
 
 enum obe_report_type {

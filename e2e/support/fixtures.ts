@@ -53,6 +53,8 @@ const prisma = new PrismaClient();
 export async function resetDatabase(): Promise<void> {
   // Order matters: children before parents
   const tables = [
+    'attendance_records',
+    'attendance_sessions',
     'rubric_scores',
     'rubric_criteria',
     'rubrics',

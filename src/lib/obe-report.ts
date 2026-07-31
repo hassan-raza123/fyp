@@ -1,6 +1,7 @@
 import { prisma } from './prisma';
 import { obe_report_type } from '@prisma/client';
 import { weightedAverage, findUnattainedOutcomes } from './obe';
+import { getSectionAttendanceSummary } from './attendance';
 
 /**
  * OBE report generation.
@@ -383,6 +384,72 @@ async function buildActionPlanSection(
  * whole PEO → PLO → CLO chain plus action plans, which is what an accreditation
  * visit actually asks for.
  */
+// ─── Attendance ──────────────────────────────────────────────────────────────
+
+/**
+ * Course-wise attendance for the semester.
+ *
+ * An accreditation course file is expected to evidence that the contact hours
+ * were actually delivered and attended, not only that outcomes were measured.
+ * Sections with no finalized session are listed too, so a course that never
+ * recorded attendance is visible rather than silently absent from the table.
+ */
+async function buildAttendanceSection(
+  programId: number,
+  semesterId: number
+): Promise<ReportSection> {
+  const sections = await prisma.sections.findMany({
+    where: {
+      courseOffering: {
+        semesterId,
+        course: { programMappings: { some: { A: programId } } },
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      courseOffering: {
+        select: { course: { select: { code: true, name: true } } },
+      },
+    },
+    orderBy: { id: 'asc' },
+  });
+
+  const rows: (string | number | null)[][] = [];
+
+  for (const section of sections) {
+    const summary = await getSectionAttendanceSummary(section.id);
+
+    rows.push([
+      section.courseOffering.course.code,
+      section.name,
+      summary.finalizedSessions,
+      summary.students.length,
+      summary.finalizedSessions > 0 ? `${summary.averageAttendance}%` : 'N/A',
+      `${summary.threshold}%`,
+      summary.defaulterCount,
+    ]);
+  }
+
+  return {
+    heading: 'Attendance & Exam Eligibility',
+    note:
+      'Average attendance is across finalized sessions only; sessions still open are excluded. ' +
+      'Approved (excused) absences are left out of each student’s denominator. ' +
+      'Below threshold counts students flagged ineligible before any condonation.',
+    columns: [
+      'Course',
+      'Section',
+      'Sessions Held',
+      'Students',
+      'Avg. Attendance',
+      'Required',
+      'Below Threshold',
+    ],
+    rows,
+  };
+}
+
 export async function generateReportPayload(
   reportType: obe_report_type,
   programId: number | null,
@@ -441,6 +508,7 @@ export async function generateReportPayload(
         await buildCloSection(programId, semesterId),
         await buildLloSection(programId, semesterId),
         await buildCourseWiseSection(programId, semesterId),
+        await buildAttendanceSection(programId, semesterId),
         await buildActionPlanSection(programId, semesterId)
       );
       break;

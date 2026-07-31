@@ -40,6 +40,14 @@ export type AuditAction =
   | 'clo_plo_mapping.delete'
   | 'assessment_item.update'
   | 'assessment_item.delete'
+  // attendance & exam eligibility
+  | 'attendance.session_create'
+  | 'attendance.session_update'
+  | 'attendance.session_delete'
+  | 'attendance.mark'
+  | 'attendance.finalize'
+  | 'attendance.reopen'
+  | 'eligibility.override'
   // closing the loop
   | 'action_plan.auto_create'
   // reports
