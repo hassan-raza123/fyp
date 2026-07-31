@@ -25,15 +25,11 @@ const marksEntrySchema = z.object({
         items: z
           .array(
             z.object({
-              assessmentItemId: z.coerce.number().int().positive().optional(),
+              itemId: z.coerce.number().int().positive(),
               marks: z.coerce
                 .number()
                 .finite('Marks must be a number')
                 .min(0, 'Marks cannot be negative'),
-              totalMarks: z.coerce
-                .number()
-                .finite('Total marks must be a number')
-                .positive('Total marks must be greater than zero'),
             })
           )
           .min(1, 'Each student needs at least one item'),
@@ -160,19 +156,36 @@ export async function POST(request: NextRequest) {
       return forbidden('You do not have access to this section').response;
     }
 
+    // The maximum for an item comes from the item itself, never from the
+    // request. A client that declares the denominator of its own grade can
+    // hand itself any percentage it likes.
+    const itemIds = [
+      ...new Set(marks.flatMap((m) => m.items.map((i) => i.itemId))),
+    ];
+    const itemRows = await prisma.assessmentitems.findMany({
+      where: { id: { in: itemIds } },
+      select: { id: true, marks: true },
+    });
+    const maxMarks = new Map(itemRows.map((i) => [i.id, i.marks]));
+
+    if (itemRows.length !== itemIds.length) {
+      return NextResponse.json(
+        { error: 'One or more assessment items do not exist' },
+        { status: 400 }
+      );
+    }
+
     // A mark above the item's own total is a data-entry slip that would push
     // the percentage past 100 and corrupt every attainment derived from it.
     for (const studentMark of marks) {
-      const over = studentMark.items.find(
-        (item) => item.marks > item.totalMarks
-      );
-      if (over) {
-        return NextResponse.json(
-          {
-            error: `Awarded ${over.marks} out of a maximum of ${over.totalMarks}`,
-          },
-          { status: 400 }
-        );
+      for (const item of studentMark.items) {
+        const max = maxMarks.get(item.itemId)!;
+        if (item.marks > max) {
+          return NextResponse.json(
+            { error: `Awarded ${item.marks} out of a maximum of ${max}` },
+            { status: 400 }
+          );
+        }
       }
     }
 
@@ -194,12 +207,13 @@ export async function POST(request: NextRequest) {
 
       for (const studentMark of marks) {
         // Calculate total marks and percentage
+        // Denominator from the stored items, numerator from the submission.
         const totalMarks = studentMark.items.reduce(
-          (sum: number, item: any) => sum + item.totalMarks,
+          (sum, item) => sum + (maxMarks.get(item.itemId) ?? 0),
           0
         );
         const obtainedMarks = studentMark.items.reduce(
-          (sum: number, item: any) => sum + item.marks,
+          (sum, item) => sum + item.marks,
           0
         );
         const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
@@ -253,7 +267,7 @@ export async function POST(request: NextRequest) {
               studentAssessmentResultId: result.id,
               assessmentItemId: item.itemId,
               obtainedMarks: item.marks,
-              totalMarks: item.totalMarks,
+              totalMarks: maxMarks.get(item.itemId) ?? 0,
             },
           });
         }
