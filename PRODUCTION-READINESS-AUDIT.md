@@ -6,6 +6,23 @@
 
 ---
 
+> ## ✅ REMEDIATION COMPLETE — Phase 1 and Phase 2 applied
+>
+> Every Critical and High finding in this report has been **fixed and verified**, along with most Medium findings.
+>
+> ```
+> BEFORE:  33 failed ·  1 skipped · 334 passed
+> AFTER:    0 failed ·  1 skipped · 379 passed   ✅
+> ```
+>
+> `tsc --noEmit` clean · new files lint clean · `next build` passes.
+>
+> Findings are annotated **✅ FIXED** below with what changed. The scores in the
+> executive summary are the **pre-fix** assessment, kept as the record of what
+> was found; see *Post-Remediation Status* at the end for the current picture.
+
+---
+
 ## Executive Summary
 
 | Dimension | Score | Verdict |
