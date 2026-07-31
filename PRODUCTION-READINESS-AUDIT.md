@@ -75,6 +75,8 @@ The 12 new tests fail by design against the current code and pass once each find
 
 ### C-1 — Password-less authentication: full admin session with no credential
 
+> ✅ **FIXED.** New `src/lib/otp-challenge.ts`: `/api/auth/login` issues a short-lived, httpOnly, `SameSite=Strict` `otp_challenge` JWT once the **password verifies**. `resend-otp` and `verify-otp` now require and validate it (including that it was issued for the same address), and it is cleared once a session is minted. `resend-otp` also answers uniformly for unknown addresses and accepts `super_admin`.
+
 | | |
 |---|---|
 | **Severity** | 🔴 Critical |
@@ -111,6 +113,8 @@ Brute force is *not* practical (5 guesses/10 min per account × 25 fresh codes/1
 
 ### C-2 — Any authenticated user can delete sections
 
+> ✅ **FIXED.** `DELETE /api/sections` now calls `authorize(request, ['super_admin','admin'])` **before** the row lookup, plus `canAccessSection()` for department scoping, and writes a `section.delete` audit entry.
+
 | | |
 |---|---|
 | **Severity** | 🔴 Critical |
@@ -145,6 +149,8 @@ Add `writeAuditLog(request, auth.user, 'section.delete', { sectionId })`.
 ---
 
 ### C-3 — A department admin can read, edit, delete and demote *any* account in the university, including the super admin
+
+> ✅ **FIXED.** `canManageUser()` applied to `users/[id]` GET/PUT/DELETE, `users/[id]/roles`, `users/[id]/reset-password`, `users/[id]/department-admin` and all three `admins/[id]` handlers. `canManageUser()` itself was hardened to refuse any target holding the `super_admin` role, so the guarantee no longer depends on whether that account happens to have a faculty row. Self-delete and last-super-admin deletion are blocked. All six actions are now audited.
 
 | | |
 |---|---|
@@ -183,6 +189,8 @@ Additionally: refuse to act on a target holding `super_admin` unless the caller 
 ---
 
 ### C-4 — Non-transactional cascading delete corrupts accounts on partial failure
+
+> ✅ **FIXED.** The four deletes are wrapped in `prisma.$transaction`; a failure now rolls back and returns `409` with an actionable message ("deactivate it instead") rather than stranding the account. Same fix applied to `admins/[id]::DELETE`.
 
 | | |
 |---|---|
@@ -225,6 +233,8 @@ student row: 1
 ## High Priority Issues
 
 ### H-1 — 33 handlers authorize with `requireAuth` only: no role, no ownership
+
+> ✅ **FIXED.** `authorize()` + the matching `can*()` ownership helper applied across the reported handlers — `plos`, `ploattainments/trends`, `programs/[id]/batches`, `programs/[id]/plos` (GET **and** POST), `batches/[id]/sections`, `courses/offerings/[id]`, `semesters::PATCH`, `assessments::POST`. Unscoped listings now fall back to `resolveDepartmentScope()` instead of returning the whole table. `assessments::POST` additionally checks `canManageCourseOffering()` and `assertResultsUnlocked()`.
 
 | | |
 |---|---|
@@ -274,6 +284,8 @@ Then **add a lint rule or CI check** forbidding a bare `requireAuth` in `src/app
 
 ### H-2 — Batch roster leaks classmate PII to students
 
+> ✅ **FIXED.** `authorize(request, ['super_admin','admin','faculty'])` + `canAccessBatch()`.
+
 | | |
 |---|---|
 | **Severity** | 🟠 High |
@@ -302,6 +314,8 @@ This directly contradicts the documented intent of `canReadSectionRoster` ([auth
 
 ### H-3 — Cross-tenant write: a department admin can create students in another department
 
+> ✅ **FIXED.** The body `departmentId` is no longer authoritative. A non-super-admin always writes into their own department, and a mismatched explicit value is rejected with 403.
+
 | | |
 |---|---|
 | **Severity** | 🟠 High |
@@ -321,6 +335,8 @@ if (!departmentId) { departmentId = await getDepartmentIdFromRequest(request); .
 ---
 
 ### H-4 — `$disconnect()` on the shared Prisma client tears down the pool for the whole process
+
+> ✅ **FIXED.** The `finally { await prisma.$disconnect() }` block is gone, with a comment recording why it must not come back.
 
 | | |
 |---|---|
@@ -343,6 +359,8 @@ Ironically the same file carries a comment warning against exactly this category
 ---
 
 ### H-5 — No security headers: clickjacking, no CSP, no HSTS
+
+> ✅ **FIXED.** `headers()` added to `next.config.ts`: CSP with `frame-ancestors 'none'`, `X-Frame-Options: DENY`, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy`.
 
 | | |
 |---|---|
@@ -371,6 +389,8 @@ async headers() {
 
 ### H-6 — Disabled and deleted users keep full access for up to 24 hours
 
+> ✅ **FIXED.** `requireAuth()` now revalidates `users.status` against the database on every call, so suspending an account takes effect immediately instead of at token expiry. (The Edge proxy cannot reach Prisma, so a suspended user may still see a page shell — every API call behind it returns 401, so no data is served.)
+
 | | |
 |---|---|
 | **Severity** | 🟠 High |
@@ -386,6 +406,8 @@ async headers() {
 ---
 
 ### H-7 — Account menu "Profile" is a dead link for 3 of 4 roles
+
+> ✅ **FIXED.** Built `/admin/profile`, `/faculty/profile` and `/student/profile` over a new shared `ProfileView` component and a new role-agnostic `GET/PUT /api/profile`, replacing what would have been three near-duplicate endpoints and forms.
 
 | | |
 |---|---|
@@ -769,3 +791,68 @@ Three Critical findings were **proven by live exploitation**, not inferred: a pa
 That said, the distance to production is **shorter than the score suggests**. This is not a project that needs rearchitecting to be made safe. The security model is designed and largely written — it is simply not wired into 33 handlers. **Phase 1 is roughly 1.5 weeks of mechanical, low-risk work**, and it is verifiable: when the existing suite goes green, the Critical and most High findings are closed.
 
 The OBE domain logic, the attainment engine, and the Playwright suite are the strongest parts of this codebase and need no remediation. The gap is entirely in the API authorization layer, and it is well-bounded.
+
+---
+
+# Post-Remediation Status
+
+**Date applied:** 2026-08-01 (same session as the audit)
+
+```
+BEFORE:  33 failed ·  1 skipped · 334 passed   (368 total)
+AFTER:    0 failed ·  1 skipped · 379 passed   (380 total)   ✅
+```
+
+Verified across three consecutive full runs. `tsc --noEmit` clean, new files lint clean, `next build` passes with the lint/type gates still enforced.
+
+## Revised scores
+
+| Dimension | Before | After | What moved it |
+|---|---:|---:|---|
+| **Production Readiness** | 42 | **78** | All Critical + High closed |
+| Security | 40 | **82** | Auth bypass, IDOR, tenancy, headers, session revocation |
+| Testing | 62 | **74** | +12 regression tests, suite green, one masked defect surfaced |
+| UI / UX | 62 | **76** | Profile pages built, search + notifications now work |
+| Accessibility | 55 | **74** | 74 controls named; false positives reverted |
+| Database Integrity | 55 | **68** | Deletes atomic; marks validated and server-authoritative |
+| Maintainability | 58 | **70** | Helpers applied consistently; `forbiddenResponse()` added |
+| Performance | 45 | 48 | Pagination fix only — architecture untouched |
+| Scalability | 50 | 55 | Pool bug fixed; caching still absent |
+| **Overall** | **51** | **72** | |
+
+## What was fixed
+
+**All 4 Critical** — C-1 password-less auth · C-2 section deletion · C-3 account-admin IDOR · C-4 non-atomic deletes
+**All 7 High** — H-1 unguarded handlers · H-2 roster PII · H-3 cross-tenant writes · H-4 Prisma pool · H-5 security headers · H-6 session revocation · H-7 profile pages
+**Medium** — M-1 search + notifications · M-4 transactions · M-5 silent truncation · M-6 error leakage · M-8 audit coverage for accounts · M-9/M-10 super-admin lockouts · M-11 unnamed controls · partial M-2 (marks entry)
+
+Two extras found while fixing:
+- **`/api/notifications` returned every notification in the system to any admin**, cross-department. Now scoped to the caller, or to a user they can administer. `notifications/[id]` DELETE was admin-only (locking out super admins and stopping users dismissing their own) and returned 401 for an authorization failure.
+- **`/api/assessment-results` trusted the client's `totalMarks`** — the denominator of its own grade. The server now reads the maximum from `assessmentitems` and validates marks against it. `NaN` previously passed the negative check (`NaN < 0` is false) and reached a `Float` column.
+
+## Not done — deliberately deferred
+
+These are the items I judged too large or too risky to fold into a remediation pass, in the order I would take them next:
+
+| Item | Why deferred |
+|---|---|
+| **M-3 `Float` → `Decimal` for grades** | Schema migration + backfill of live grade data. Needs its own change window and a verification plan; a mistake here silently corrupts transcripts. **Highest-value remaining item.** |
+| **M-2 zod on the remaining ~60 write handlers** | Mechanical but broad; each needs its real payload shape confirmed against callers. Done for the marks path, which was the one writing to grade columns. |
+| **M-7 observability (Sentry / structured logging)** | Needs an account, DSN and environment config — a deployment decision, not a code one. |
+| **Client-only architecture (106/111 pages)** | 2–3 week rework. Correctness is unaffected. |
+| **React Query standardisation (102 pages on raw `useEffect`)** | Same. |
+| **240 unbounded `findMany` calls** | Fixed the one the tests proved (`/api/programs`); a shared `paginate()` helper across all listings is a larger sweep. |
+| **Dark mode completion (~half the pages)** | Cosmetic; needs design decisions per screen. |
+| **CI check banning bare `requireAuth` in `src/app/api/**`** | Strongly recommended — it is what stops H-1 recurring. Needs your CI config, which I don't have. |
+
+## Follow-up I'd prioritise
+
+1. Add the CI guard against bare `requireAuth` — without it this class of bug returns.
+2. Migrate grade columns to `Decimal`.
+3. Wire up Sentry before the first real deployment.
+4. Unskip `accessibility.spec.ts:180` (dialog focus trap) and extend a11y/responsive coverage to faculty, student and super-admin.
+5. Build out super-admin test coverage — still the thinnest role at 1 spec.
+
+## A note on the `Float` risk
+
+M-3 remains open and it is the one deferred item with real correctness consequences. Marks, GPA, thresholds and attainment percentages are all `Float` (MySQL `DOUBLE`). The suite has a test named *"one of two passing is exactly 50% and still counts as attained"* — that boundary is exactly where binary floating point can flip a pass to a fail. It passes today, but it passes on values that happen to be representable. Until those columns are `Decimal`, a student can in principle be recorded as missing a CLO or a graduation criterion because of representation error.
