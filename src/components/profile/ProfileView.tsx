@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -74,35 +74,49 @@ export function ProfileView({ title }: { title: string }) {
     confirmPassword: '',
   });
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const response = await fetch('/api/profile', { credentials: 'include' });
-      const body = await response.json();
-
-      if (!response.ok || !body.success) {
-        throw new Error(body.error || 'Failed to load profile');
-      }
-
-      setProfile(body.data);
-      setForm({
-        firstName: body.data.firstName ?? '',
-        lastName: body.data.lastName ?? '',
-        phoneNumber: body.data.phoneNumber ?? '',
-      });
-    } catch (error) {
-      setLoadError(
-        error instanceof Error ? error.message : 'Failed to load profile'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Bumping this refetches. The retry button and a successful save both use it,
+  // which keeps every state update inside the effect below rather than in a
+  // callback the effect calls — the pattern the React compiler asks for, and it
+  // gives the fetch a cancellation guard on unmount for free.
+  const [reloadToken, setReloadToken] = useState(0);
+  const reload = () => setReloadToken((n) => n + 1);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          credentials: 'include',
+        });
+        const body = await response.json();
+        if (cancelled) return;
+
+        if (!response.ok || !body.success) {
+          throw new Error(body.error || 'Failed to load profile');
+        }
+
+        setProfile(body.data);
+        setLoadError(null);
+        setForm({
+          firstName: body.data.firstName ?? '',
+          lastName: body.data.lastName ?? '',
+          phoneNumber: body.data.phoneNumber ?? '',
+        });
+      } catch (error) {
+        if (cancelled) return;
+        setLoadError(
+          error instanceof Error ? error.message : 'Failed to load profile'
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
   const saveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -121,7 +135,7 @@ export function ProfileView({ title }: { title: string }) {
       }
 
       toast.success('Profile updated');
-      await load();
+      reload();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to update profile'
@@ -186,7 +200,9 @@ export function ProfileView({ title }: { title: string }) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={load}>Try again</Button>
+            <Button onClick={reload}>
+              Try again
+            </Button>
           </CardContent>
         </Card>
       </div>
