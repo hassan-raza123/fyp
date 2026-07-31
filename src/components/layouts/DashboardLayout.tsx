@@ -549,9 +549,17 @@ export default function DashboardLayout({
               ${isMobileSearchOpen ? 'block' : 'hidden md:block'}
             `}
             >
+              {/*
+                Deliberately not role="combobox": that contract requires managed
+                focus and aria-activedescendant, neither of which this
+                implements. A labelled search input that points at its own
+                results list is honest about what it is — and claiming the role
+                also made this element the first match for every
+                `getByRole('combobox')` on the page.
+              */}
               <div className="relative">
                 <Search
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10" 
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10"
                   size={14}
                   style={{
                     color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
@@ -561,9 +569,7 @@ export default function DashboardLayout({
                   type="text"
                   placeholder="Search..."
                   aria-label="Search pages"
-                  role="combobox"
-                  aria-expanded={searchMatches.length > 0}
-                  aria-controls="header-search-results"
+                  aria-describedby="header-search-results"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => {
