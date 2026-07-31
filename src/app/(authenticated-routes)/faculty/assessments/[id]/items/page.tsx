@@ -259,7 +259,7 @@ export default function AssessmentItemsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <button aria-label="Back"
             type="button"
             onClick={() => router.back()}
             className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
@@ -426,7 +426,7 @@ export default function AssessmentItemsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <button
+                        <button aria-label="Edit"
                           type="button"
                           className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
                           onClick={() => {
@@ -436,7 +436,7 @@ export default function AssessmentItemsPage() {
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
-                        <button
+                        <button aria-label="Delete"
                           type="button"
                           className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)]"
                           onClick={() => handleDelete(item.id)}

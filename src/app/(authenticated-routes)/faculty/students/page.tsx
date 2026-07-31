@@ -444,7 +444,7 @@ export default function StudentsPage() {
                         <Eye className="h-3.5 w-3.5" />
                         View
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => {
                           setSelectedStudent(student);
                           setShowDeleteDialog(true);

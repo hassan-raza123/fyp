@@ -409,7 +409,7 @@ export default function ReportsPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1.5">
                       {report.filePath && (
-                        <button
+                        <button aria-label="Download"
                           onClick={() => window.open(report.filePath || '', '_blank')}
                           className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                           style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -419,7 +419,7 @@ export default function ReportsPage() {
                           <Download className="h-3 w-3" />
                         </button>
                       )}
-                      <button
+                      <button aria-label="View"
                         onClick={() => router.push(`/admin/reports/${report.id}`)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -428,7 +428,7 @@ export default function ReportsPage() {
                       >
                         <Eye className="h-3 w-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => handleDeleteClick(report)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}

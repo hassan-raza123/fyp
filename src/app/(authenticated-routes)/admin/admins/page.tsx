@@ -426,7 +426,7 @@ export default function AdminsPage() {
                   <TableCell>{getStatusBadge(admin.user.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <button
+                      <button aria-label="View"
                         onClick={() => handleViewAdmin(admin)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
@@ -442,7 +442,7 @@ export default function AdminsPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Edit"
                         onClick={() => handleEditAdmin(admin)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
@@ -458,7 +458,7 @@ export default function AdminsPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => {
                           setSelectedAdmin(admin);
                           setShowDeleteDialog(true);

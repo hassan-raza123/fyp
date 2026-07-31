@@ -234,7 +234,7 @@ export default function PLOsPage() {
       {/* Header - CLO style with icon box */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <button
+          <button aria-label="Back"
             type="button"
             onClick={() => router.push('/admin/programs')}
             className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"
@@ -300,7 +300,7 @@ export default function PLOsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <button
+                    <button aria-label="Edit"
                       type="button"
                       onClick={() => handleEditClick(plo)}
                       className="p-2 rounded-lg transition-colors"
@@ -314,7 +314,7 @@ export default function PLOsPage() {
                     >
                       <Edit className="w-3 h-3" />
                     </button>
-                    <button
+                    <button aria-label="Delete"
                       type="button"
                       onClick={() => handleDeleteClick(plo)}
                       className="p-2 rounded-lg transition-colors text-[var(--error)] hover:bg-[var(--error)]/10"

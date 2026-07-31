@@ -293,7 +293,7 @@ export default function FacultyNotificationsPage() {
                       </div>
                     </div>
                     {!notification.isRead && (
-                      <button
+                      <button aria-label="Confirm"
                         type="button"
                         onClick={() => handleMarkAsRead(notification.id)}
                         className="p-2 rounded-lg shrink-0 hover:bg-[var(--hover-bg)] transition-colors"

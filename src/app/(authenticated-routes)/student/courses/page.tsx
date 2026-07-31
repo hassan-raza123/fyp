@@ -258,7 +258,7 @@ export default function CoursesPage() {
                 <TableCell>{getTypeBadge(course.type)}</TableCell>
                 <TableCell>{getStatusBadge(course.status)}</TableCell>
                 <TableCell>
-                  <button
+                  <button aria-label="View"
                     onClick={() => router.push(`/student/courses/${course.id}`)}
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center justify-center"
                     style={{ backgroundColor: iconBgColor, color: primaryColor }}

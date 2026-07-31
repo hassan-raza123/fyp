@@ -574,7 +574,7 @@ export default function AdminCLOsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <button
+                      <button aria-label="View"
                         onClick={() => handleViewClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -583,7 +583,7 @@ export default function AdminCLOsPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Edit"
                         onClick={() => handleEditClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -592,7 +592,7 @@ export default function AdminCLOsPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => handleDeleteClick(clo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
@@ -832,7 +832,7 @@ export default function AdminCLOsPage() {
                     placeholder="Weight"
                     className="w-20 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
-                  <button
+                  <button aria-label="Add"
                     onClick={addPLOMapping}
                     disabled={!newMapping.ploId || availablePLOs.length === 0}
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-8 flex items-center justify-center"
@@ -1002,7 +1002,7 @@ export default function AdminCLOsPage() {
                     placeholder="Weight"
                     className="w-20 h-8 text-xs bg-card border-card-border text-primary-text"
                   />
-                  <button
+                  <button aria-label="Add"
                     onClick={addPLOMapping}
                     disabled={!newMapping.ploId || availablePLOs.length === 0}
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-8 flex items-center justify-center"

@@ -487,7 +487,7 @@ const CLOAttainmentsPage = () => {
                               : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <button
+                            <button aria-label="View"
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();

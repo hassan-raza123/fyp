@@ -417,7 +417,7 @@ const LLOAttainmentsPage = () => {
                             {llo.calculatedAt ? format(new Date(llo.calculatedAt), 'PPp') : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <button
+                            <button aria-label="View"
                               type="button"
                               onClick={(e) => { e.stopPropagation(); setSelectedLLO(llo.id); }}
                               className="p-2 rounded-lg h-7 inline-flex items-center justify-center hover:bg-[var(--hover-bg)]"

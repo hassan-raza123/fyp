@@ -110,7 +110,7 @@ export default function AssessmentViewPage() {
       {/* Header - CLO style with back + icon box */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <button
+          <button aria-label="Back"
             type="button"
             onClick={() => router.push('/admin/assessments')}
             className="p-2 rounded-lg border border-card-border bg-transparent text-primary-text hover:bg-[var(--hover-bg)] shrink-0"

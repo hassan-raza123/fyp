@@ -326,7 +326,7 @@ export default function SectionDetailsPage() {
     <div className='space-y-4'>
       <div className='flex items-center justify-between flex-wrap gap-3'>
         <div className='flex items-center gap-3'>
-          <button
+          <button aria-label="Back"
             type='button'
             onClick={() => router.back()}
             className='p-2 rounded-lg hover:bg-[var(--hover-bg)] transition-colors'
@@ -531,7 +531,7 @@ export default function SectionDetailsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <button
+                          <button aria-label="Delete"
                             type="button"
                             className="p-2 rounded-lg shrink-0 disabled:opacity-50"
                             style={{ backgroundColor: iconBgColor, color: primaryColor }}

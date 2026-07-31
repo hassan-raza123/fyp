@@ -394,7 +394,7 @@ export function CLOPLOMappingList() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <button
+                    <button aria-label="Delete"
                       onClick={() => handleDeleteClick(mapping.id)}
                       className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                       style={{

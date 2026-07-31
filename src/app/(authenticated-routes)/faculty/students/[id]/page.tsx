@@ -512,7 +512,7 @@ export default function StudentDetailsPage() {
   return (
     <div className='space-y-4'>
       <div className='flex items-center gap-3'>
-        <button
+        <button aria-label="Back"
           type='button'
           onClick={() => router.push('/faculty/students')}
           className='p-2 rounded-lg hover:bg-[var(--hover-bg)] transition-colors'
@@ -539,7 +539,7 @@ export default function StudentDetailsPage() {
           <div className='p-4 border-b border-card-border flex flex-row items-center justify-between flex-wrap gap-2'>
             <h2 className='text-sm font-semibold text-primary-text'>Student Information</h2>
             <div className='flex gap-2'>
-              <button
+              <button aria-label="Edit"
                 type='button'
                 onClick={() => setEditing(!editing)}
                 disabled={saving}

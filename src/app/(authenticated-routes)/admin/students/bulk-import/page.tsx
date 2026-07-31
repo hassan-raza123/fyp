@@ -259,7 +259,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button
+        <button aria-label="Back"
           onClick={() => router.push('/admin/students')}
           className="px-2 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
           style={{
@@ -421,7 +421,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
             >
               Cancel
             </button>
-            <button
+            <button aria-label="Upload"
               type="submit"
               disabled={!file || loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"

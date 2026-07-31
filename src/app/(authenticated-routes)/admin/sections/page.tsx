@@ -707,7 +707,7 @@ export default function SectionsPage() {
                   <TableCell>{getStatusBadge(section.status)}</TableCell>
                       <TableCell>
                     <div className="flex gap-1.5">
-                      <button
+                      <button aria-label="View"
                         onClick={() => handleViewSection(section)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
@@ -723,7 +723,7 @@ export default function SectionsPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Edit"
                         onClick={() => {
                           fetchCourseOfferings();
                           fetchBatches();
@@ -744,7 +744,7 @@ export default function SectionsPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => {
                           setSelectedSection(section);
                           setShowDeleteDialog(true);
@@ -1508,7 +1508,7 @@ export default function SectionsPage() {
             >
               Cancel
             </button>
-            <button
+            <button aria-label="Add user"
               onClick={handleAddStudent}
               disabled={isAddingStudent || !selectedStudentId}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"

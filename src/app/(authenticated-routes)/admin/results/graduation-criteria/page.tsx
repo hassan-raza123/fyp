@@ -287,7 +287,7 @@ function GraduationCriteriaContent() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <button
+                    <button aria-label="Edit"
                       onClick={() => openDialog(row)}
                       className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
                       style={{ backgroundColor: iconBgColor, color: primaryColor }}

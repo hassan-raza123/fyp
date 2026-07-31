@@ -449,7 +449,7 @@ const CalendarPage = () => {
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2">
-                <button
+                <button aria-label="Previous"
                   type="button"
                   onClick={() => navigateMonth('prev')}
                   className="p-2 rounded-lg transition-colors"
@@ -470,7 +470,7 @@ const CalendarPage = () => {
                     ? `Week of ${format(startOfWeek(currentDate), 'MMM d')}`
                     : format(currentDate, 'MMMM d, yyyy')}
                 </div>
-                <button
+                <button aria-label="Next"
                   type="button"
                   onClick={() => navigateMonth('next')}
                   className="p-2 rounded-lg transition-colors"

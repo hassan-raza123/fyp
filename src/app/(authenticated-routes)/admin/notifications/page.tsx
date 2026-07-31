@@ -432,7 +432,7 @@ export default function NotificationsPage() {
                           <Check className="h-3 w-3" />
                         </button>
                       )}
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => handleDeleteClick(notification)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}

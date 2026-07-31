@@ -395,7 +395,7 @@ export default function AdminLLOsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <button
+                      <button aria-label="View"
                         onClick={() => handleViewClick(llo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
@@ -411,7 +411,7 @@ export default function AdminLLOsPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Edit"
                         onClick={() => handleEditClick(llo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
@@ -427,7 +427,7 @@ export default function AdminLLOsPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => handleDeleteClick(llo)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{

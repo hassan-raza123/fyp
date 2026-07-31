@@ -436,7 +436,7 @@ export default function TranscriptsPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1.5">
                       {transcript.filePath && (
-                        <button
+                        <button aria-label="Download"
                           onClick={() => window.open(transcript.filePath || '', '_blank')}
                           className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                           style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -446,7 +446,7 @@ export default function TranscriptsPage() {
                           <Download className="h-3 w-3" />
                         </button>
                       )}
-                      <button
+                      <button aria-label="View"
                         onClick={() => router.push(`/admin/transcripts/${transcript.id}`)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
@@ -455,7 +455,7 @@ export default function TranscriptsPage() {
                       >
                         <Eye className="h-3 w-3" />
                       </button>
-                      <button
+                      <button aria-label="Delete"
                         onClick={() => handleDeleteClick(transcript)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
