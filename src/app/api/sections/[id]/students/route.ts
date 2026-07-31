@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkPrerequisites } from '@/lib/obe';
 import { requireAuth } from '@/lib/auth';
+import { canAccessSection, canReadSectionRoster } from '@/lib/authz';
 
 // POST /api/sections/[id]/students - Add a student to a section
 export async function POST(
@@ -393,7 +394,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const { success, error } = await requireAuth(request as any);
+    const { success, user, error } = await requireAuth(request as any);
     if (!success) {
       return NextResponse.json(
         { error: error || 'Unauthorized' },
@@ -408,6 +409,15 @@ export async function GET(
       return NextResponse.json(
         { error: 'Invalid section ID' },
         { status: 400 }
+      );
+    }
+
+    // The roster names every student in the section. Only staff attached to
+    // that section may read it — no student page consumes this endpoint.
+    if (!user || !(await canReadSectionRoster(request as any, user, sectionId))) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

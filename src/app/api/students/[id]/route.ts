@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canAccessStudent } from '@/lib/authz';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
@@ -48,6 +49,15 @@ export async function PUT(
       return NextResponse.json(
         { success: false, error: 'Invalid student ID' },
         { status: 400 }
+      );
+    }
+
+    // The role gate above only proves the caller is *an* admin. A department
+    // admin administers one department, so the student must be in it.
+    if (!user || !(await canAccessStudent(request, user, studentId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -282,6 +292,15 @@ export async function DELETE(
       );
     }
 
+    // Same reasoning as the update path: an admin may only delete within their
+    // own department.
+    if (!user || !(await canAccessStudent(request, user, studentId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
     const student = await prisma.students.findUnique({
       where: { id: studentId },
       include: {
@@ -353,11 +372,21 @@ export async function GET(
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
     const studentId = parseInt(resolvedParams.id);
-    
+
     if (isNaN(studentId) || studentId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid student ID' },
         { status: 400 }
+      );
+    }
+
+    // A valid token is not by itself permission to read this person. Without
+    // this check any signed-in student could walk the id range and collect
+    // every classmate's name, roll number and email address.
+    if (!user || !(await canAccessStudent(request, user, studentId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

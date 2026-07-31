@@ -1,25 +1,8 @@
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from './prisma';
-import { compare } from 'bcryptjs';
 import { NextRequest } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { TokenPayload } from '@/types/auth';
 import { randomBytes } from 'crypto';
-
-declare module 'next-auth' {
-  interface User {
-    id: string;
-    email: string;
-    name: string;
-    status: string;
-    role: string;
-  }
-
-  interface Session {
-    user: User;
-  }
-}
 
 // ============================================================================
 // JWT Token Functions
@@ -74,91 +57,11 @@ export async function createToken(payload: TokenPayload): Promise<string> {
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  pages: {
-    signIn: '/login',
-  },
-  providers: [
-    CredentialsProvider({
-      name: 'Sign in',
-      credentials: {
-        email: {
-          label: 'Email',
-          type: 'email',
-          placeholder: 'example@example.com',
-        },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) {
-          return null;
-        }
-
-        const user = await prisma.users.findUnique({
-          where: {
-            email: credentials.email,
-          },
-          include: {
-            userrole: {
-              include: {
-                role: true,
-              },
-            },
-          },
-        });
-
-        if (!user) {
-          return null;
-        }
-
-        const isPasswordValid = await compare(
-          credentials.password,
-          user.password_hash
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          name: user.first_name + ' ' + user.last_name,
-          status: user.status,
-          role: user.userrole?.role?.name || '',
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    session: ({ session, token }) => {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id,
-          status: token.status,
-          role: token.role,
-        },
-      };
-    },
-    jwt: ({ token, user }) => {
-      if (user) {
-        return {
-          ...token,
-          id: user.id,
-          status: user.status,
-          role: user.role,
-        };
-      }
-      return token;
-    },
-  },
-};
+// NextAuth is not wired up: there is no /api/auth/[...nextauth] route, and
+// nothing ever called getServerSession. The credentials provider that used to
+// live here duplicated the login flow while skipping OTP verification and the
+// must_change_password gate, so keeping it invited a second, weaker way in.
+// Sign-in goes through /api/auth/login and the JWT cookie checked by proxy.ts.
 
 function parseJwtPayload(payload: any): TokenPayload {
   return {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canAccessSection, canReadSectionRoster } from '@/lib/authz';
 import { z } from 'zod';
 
 const updateSectionSchema = z.object({
@@ -35,6 +36,16 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: 'Section ID is required or invalid' },
         { status: 400 }
+      );
+    }
+
+    // This payload includes the enrolled students and the assigned faculty
+    // member, names and email addresses included, so it is a staff view even
+    // for a student who is enrolled in the section.
+    if (!user || !(await canReadSectionRoster(request, user, sectionId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -134,6 +145,15 @@ export async function PUT(
         { status: 400 }
       );
     }
+
+    // Admin is a department role, so the section must sit in their department.
+    if (!user || !(await canAccessSection(request, user, sectionId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateSectionSchema.parse(body);
 

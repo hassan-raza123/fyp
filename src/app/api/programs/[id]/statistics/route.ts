@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessProgram } from '@/lib/authz';
 
 export async function GET(
   request: NextRequest,
@@ -16,8 +16,19 @@ export async function GET(
     ]);
     if (!auth.ok) return auth.response;
 
+    const programId = parseInt(params.id);
+
+    // Enrolment counts and curriculum belong to one department's programme;
+    // the role gate above admits every role, so ownership decides.
+    if (!(await canAccessProgram(request, auth.user, programId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
     const program = await prisma.programs.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: programId },
       include: {
         students: true,
         curriculum: {

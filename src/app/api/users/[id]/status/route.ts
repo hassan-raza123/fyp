@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canManageUser } from '@/lib/authz';
 
 export async function PATCH(
   request: NextRequest,
@@ -23,9 +24,18 @@ export async function PATCH(
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Being an admin is not enough: a department admin may only enable or
+    // disable accounts inside their own department. Otherwise any department
+    // admin could lock any user in the university out of the system.
+    if (!(await canManageUser(request, user, userId))) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

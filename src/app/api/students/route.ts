@@ -27,10 +27,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Only admins, faculty, students, and super_admins can access students
-    if (user.role !== 'admin' && user.role !== 'faculty' && user.role !== 'student' && user.role !== 'super_admin') {
+    // Staff only. A student has no business enumerating the student body —
+    // this listing carries every classmate's name, roll number and email.
+    // A student's own record is served by /api/student/profile.
+    if (!['admin', 'faculty', 'super_admin'].includes(user.role)) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid role' },
+        { success: false, error: 'Insufficient permissions' },
         { status: 403 }
       );
     }

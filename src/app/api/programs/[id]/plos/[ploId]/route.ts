@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessProgram } from '@/lib/authz';
 
 export async function GET(
   req: NextRequest,
@@ -21,6 +21,16 @@ export async function GET(
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },
       { status: 400 }
+    );
+  }
+
+  // The PLO belongs to a programme, and a programme belongs to a department.
+  // Without this an admin of one department could edit or delete another
+  // department's programme outcomes.
+  if (!(await canAccessProgram(req, auth.user!, programId))) {
+    return NextResponse.json(
+      { success: false, error: 'Insufficient permissions' },
+      { status: 403 }
     );
   }
   const plo = await prisma.plos.findFirst({
@@ -48,6 +58,16 @@ export async function PUT(
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },
       { status: 400 }
+    );
+  }
+
+  // The PLO belongs to a programme, and a programme belongs to a department.
+  // Without this an admin of one department could edit or delete another
+  // department's programme outcomes.
+  if (!(await canAccessProgram(req, auth.user!, programId))) {
+    return NextResponse.json(
+      { success: false, error: 'Insufficient permissions' },
+      { status: 403 }
     );
   }
   const body = await req.json();
@@ -88,6 +108,16 @@ export async function DELETE(
     return NextResponse.json(
       { success: false, error: 'Invalid program or PLO ID' },
       { status: 400 }
+    );
+  }
+
+  // The PLO belongs to a programme, and a programme belongs to a department.
+  // Without this an admin of one department could edit or delete another
+  // department's programme outcomes.
+  if (!(await canAccessProgram(req, auth.user!, programId))) {
+    return NextResponse.json(
+      { success: false, error: 'Insufficient permissions' },
+      { status: 403 }
     );
   }
   // Check for dependencies (e.g., CLO mappings or attainments)

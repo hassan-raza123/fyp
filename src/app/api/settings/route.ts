@@ -6,7 +6,16 @@ import { syncDepartmentFromSettings } from '@/lib/auth';
 // GET /api/settings
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request);
+    // The settings blob carries the outbound-mail credentials, so only staff
+    // who may edit them can read them. Everything a normal user needs from
+    // here (application name, thresholds) is served by their own endpoints.
+    const { success, user, error } = await requireAuth(request);
+    if (success && !['admin', 'super_admin'].includes(user?.role ?? '')) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
     if (!success) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },

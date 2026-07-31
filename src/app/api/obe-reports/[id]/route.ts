@@ -9,10 +9,20 @@ export async function GET(
 ) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // A signed-in user refused for lack of privilege is 403, not 401. Clients
+    // read 401 as an expired session and bounce the user to /login, which
+    // turns a permissions error into an apparent logout.
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -69,10 +79,20 @@ export async function PATCH(
 ) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // A signed-in user refused for lack of privilege is 403, not 401. Clients
+    // read 401 as an expired session and bounce the user to /login, which
+    // turns a permissions error into an apparent logout.
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -136,10 +156,20 @@ export async function DELETE(
 ) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // A signed-in user refused for lack of privilege is 403, not 401. Clients
+    // read 401 as an expired session and bounce the user to /login, which
+    // turns a permissions error into an apparent logout.
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

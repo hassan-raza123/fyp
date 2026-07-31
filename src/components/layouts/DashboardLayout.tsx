@@ -475,6 +475,8 @@ export default function DashboardLayout({
             <button
               className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
               onClick={() => setSidebarOpen(!isSidebarOpen)}
+              aria-label={isSidebarOpen ? 'Collapse navigation' : 'Expand navigation'}
+              aria-expanded={isSidebarOpen}
             >
               <Menu size={18} />
             </button>
@@ -510,6 +512,8 @@ export default function DashboardLayout({
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              aria-label='Search'
+              aria-expanded={isMobileSearchOpen}
               className={`md:hidden p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
             >
               <Search size={18} />
@@ -529,6 +533,7 @@ export default function DashboardLayout({
                 }}
                 className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
@@ -538,6 +543,8 @@ export default function DashboardLayout({
             <div ref={notificationRef} className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
+                aria-label='Notifications'
+                aria-expanded={showNotifications}
                 className={`p-2 rounded-lg transition-all duration-200 relative ${isDarkMode ? 'text-gray-300 hover:text-orange-400 hover:bg-orange-500/10' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-500/10'} hover:scale-105 active:scale-95`}
               >
                 <Bell size={18} />
@@ -550,6 +557,8 @@ export default function DashboardLayout({
             <div ref={profileRef} className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
+                aria-label='Account menu'
+                aria-expanded={showProfileMenu}
                 className="p-0 rounded-full transition-all duration-200"
                 onMouseEnter={(e) => {
                   const color = isDarkMode ? 'var(--orange)' : 'var(--blue)';

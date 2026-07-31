@@ -10,6 +10,8 @@ import {
   ChevronRight,
   TrendingUp,
   BookOpen,
+  PenSquare,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageLoading } from '@/components/ui/page-loading';
@@ -29,7 +31,12 @@ export default function ResultsPage() {
 
   if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
+  // Marks entry and result evaluation had no route into them from anywhere in
+  // the app — the pages existed but nothing linked to them, so they were
+  // reachable only by typing the URL.
   const quickActions = [
+    { href: '/admin/results/marks-entry', label: 'Marks Entry', icon: PenSquare },
+    { href: '/admin/results/result-evaluation', label: 'Result Evaluation', icon: ClipboardCheck },
     { href: '/admin/results/clo-attainments', label: 'Calculate CLOs', icon: Target },
     { href: '/admin/results/plo-attainments', label: 'Calculate PLOs', icon: GraduationCap },
     { href: '/admin/results/llo-attainments', label: 'Calculate LLOs', icon: BookOpen },

@@ -581,8 +581,11 @@ export default function SuperAdminAdminsPage() {
                 View and manage all admin users
               </CardDescription>
             </div>
-            <div className="flex gap-3">
-              <div className="relative w-64">
+            {/* Wraps on narrow screens: a fixed-width search plus the status
+                select is wider than a phone viewport, which made the whole
+                page pan sideways. */}
+            <div className="flex flex-wrap gap-3">
+              <div className="relative w-full sm:w-64">
                 <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-text`} />
                 <Input
                   placeholder="Search admins..."

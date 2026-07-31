@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { programs_status } from '@prisma/client';
 import { requireAuth } from '@/lib/auth';
+import { canAccessProgram } from '@/lib/authz';
 import { Prisma } from '@prisma/client';
 
 export async function GET(
@@ -33,6 +34,16 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
+      );
+    }
+
+    // An `admin` is a department admin. Resolving the programme straight from
+    // the URL id let the admin of one department read, rename and delete
+    // another department's programmes.
+    if (!user || !(await canAccessProgram(request, user, programId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -129,6 +140,16 @@ export async function PUT(
       return NextResponse.json(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
+      );
+    }
+
+    // An `admin` is a department admin. Resolving the programme straight from
+    // the URL id let the admin of one department read, rename and delete
+    // another department's programmes.
+    if (!user || !(await canAccessProgram(request, user, programId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
@@ -284,6 +305,16 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
+      );
+    }
+
+    // An `admin` is a department admin. Resolving the programme straight from
+    // the URL id let the admin of one department read, rename and delete
+    // another department's programmes.
+    if (!user || !(await canAccessProgram(request, user, programId))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

@@ -184,6 +184,24 @@ export async function canAccessSection(
 }
 
 /**
+ * Can this user read the *roster* of the given section?
+ *
+ * Stricter than `canAccessSection` on purpose. A roster names every enrolled
+ * student — roll numbers and email addresses included — which is a staff view.
+ * An enrolled student passes `canAccessSection` because they legitimately read
+ * their own section's marks and attendance, but that is not a reason to hand
+ * them their classmates' contact details.
+ */
+export async function canReadSectionRoster(
+  request: NextRequest,
+  user: TokenPayload,
+  sectionId: number
+): Promise<boolean> {
+  if (!['super_admin', 'admin', 'faculty'].includes(user.role)) return false;
+  return canAccessSection(request, user, sectionId);
+}
+
+/**
  * Can this user read the given student's records?
  *
  * super_admin  → always
@@ -224,6 +242,146 @@ export async function canAccessStudent(
   }
 
   return false;
+}
+
+/**
+ * Can this user *read* the given course?
+ *
+ * Wider than `canManageCourse`, which is about configuration: a student needs
+ * to read the course they are taking, so enrolment counts here even though it
+ * confers no right to change anything.
+ */
+export async function canAccessCourse(
+  request: NextRequest,
+  user: TokenPayload,
+  courseId: number
+): Promise<boolean> {
+  if (await canManageCourse(request, user, courseId)) return true;
+
+  if (user.role === 'student') {
+    const studentId = await studentIdOf(user);
+    if (!studentId) return false;
+    const enrolment = await prisma.studentsections.findFirst({
+      where: {
+        studentId,
+        section: { courseOffering: { courseId } },
+      },
+      select: { id: true },
+    });
+    return enrolment !== null;
+  }
+
+  return false;
+}
+
+/**
+ * Can this user read/modify the given programme?
+ *
+ * super_admin  → always
+ * admin        → the programme belongs to their department
+ * faculty      → the programme is in their department
+ * student      → they are enrolled in it
+ *
+ * A department admin runs one department, not the system. Routes that only
+ * checked for the `admin` role let the admin of one department rename, delete
+ * from, and read another department's programmes.
+ */
+export async function canAccessProgram(
+  request: NextRequest,
+  user: TokenPayload,
+  programId: number
+): Promise<boolean> {
+  if (user.role === 'super_admin') return true;
+
+  const program = await prisma.programs.findUnique({
+    where: { id: programId },
+    select: { departmentId: true },
+  });
+  if (!program) return false;
+
+  if (user.role === 'admin' || user.role === 'faculty') {
+    const departmentId = await getDepartmentIdFromRequest(request);
+    if (!departmentId) return false;
+    return program.departmentId === departmentId;
+  }
+
+  if (user.role === 'student') {
+    const userId = getUserId(user);
+    if (!userId) return false;
+    const student = await prisma.students.findFirst({
+      where: { userId, programId },
+      select: { id: true },
+    });
+    return student !== null;
+  }
+
+  return false;
+}
+
+/** Can this user read/modify the given batch? Resolved through its programme. */
+export async function canAccessBatch(
+  request: NextRequest,
+  user: TokenPayload,
+  batchId: string
+): Promise<boolean> {
+  if (user.role === 'super_admin') return true;
+
+  const batch = await prisma.batches.findUnique({
+    where: { id: batchId },
+    select: { programId: true },
+  });
+  if (!batch) return false;
+
+  return canAccessProgram(request, user, batch.programId);
+}
+
+/**
+ * Can this user administer the given user account?
+ *
+ * super_admin  → always
+ * admin        → the target belongs to their department, via whichever of the
+ *                faculty or student rows the account owns
+ * anyone else  → only themselves
+ *
+ * Without this, a department admin could disable or reset the password of any
+ * account in the university.
+ */
+export async function canManageUser(
+  request: NextRequest,
+  user: TokenPayload,
+  targetUserId: number
+): Promise<boolean> {
+  if (user.role === 'super_admin') return true;
+
+  const selfId = getUserId(user);
+  if (selfId === targetUserId) return true;
+
+  if (user.role !== 'admin') return false;
+
+  const departmentId = await getDepartmentIdFromRequest(request);
+  if (!departmentId) return false;
+
+  // An account is placed in a department by its faculty row or its student row.
+  const [faculty, student] = await Promise.all([
+    prisma.faculties.findFirst({
+      where: { userId: targetUserId },
+      select: { departmentId: true },
+    }),
+    prisma.students.findFirst({
+      where: { userId: targetUserId },
+      select: { departmentId: true },
+    }),
+  ]);
+
+  const targetDepartmentId = faculty?.departmentId ?? student?.departmentId;
+
+  // An account belonging to no department (another super admin, say) is not a
+  // department admin's to touch.
+  if (targetDepartmentId === undefined || targetDepartmentId === null) {
+    return false;
+  }
+
+  return targetDepartmentId === departmentId;
 }
 
 /**

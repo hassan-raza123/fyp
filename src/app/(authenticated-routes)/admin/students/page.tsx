@@ -583,6 +583,7 @@ export default function StudentsPage() {
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => handleViewStudent(student)}
+                        aria-label={`View ${student.user.firstName} ${student.user.lastName}`}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
                           backgroundColor: iconBgColor,
@@ -599,6 +600,7 @@ export default function StudentsPage() {
                       </button>
                       <button
                         onClick={() => handleEditStudent(student)}
+                        aria-label={`Edit ${student.user.firstName} ${student.user.lastName}`}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
                           backgroundColor: iconBgColor,
@@ -618,6 +620,7 @@ export default function StudentsPage() {
                           setSelectedStudent(student);
                           setShowDeleteDialog(true);
                         }}
+                        aria-label={`Delete ${student.user.firstName} ${student.user.lastName}`}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{
                           backgroundColor: 'var(--error-opacity-10)',

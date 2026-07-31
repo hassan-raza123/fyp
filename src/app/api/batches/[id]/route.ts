@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, requireRole } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
+import { canAccessBatch } from '@/lib/authz';
 
 // GET /api/batches/[id] - Get a single batch by ID
 export async function GET(
@@ -9,13 +10,30 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    // This handler previously ran no check of its own, so any signed-in user
+    // could read any batch — including one from another department.
+    const { success, user, error } = await requireAuth(request);
+    if (!success || !user) {
+      return NextResponse.json(
+        { success: false, error: error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
-    
+
     if (!resolvedParams?.id) {
       return NextResponse.json(
         { success: false, error: 'Batch ID is required' },
         { status: 400 }
+      );
+    }
+
+    if (!(await canAccessBatch(request, user, resolvedParams.id))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

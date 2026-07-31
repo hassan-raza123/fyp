@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_type, course_status } from '@prisma/client';
+import { canAccessCourse } from '@/lib/authz';
 
 const updateCourseSchema = z.object({
   code: z.string().min(1, 'Course code is required'),
@@ -47,6 +48,15 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: 'Invalid course ID' },
         { status: 400 }
+      );
+    }
+
+    // Staff are scoped to their department; a student may read a course they
+    // are actually enrolled in.
+    if (!user || !(await canAccessCourse(request, user, id))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 
