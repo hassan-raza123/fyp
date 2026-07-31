@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to create batch',
+          'Failed to create batch',
       },
       { status: 500 }
     );

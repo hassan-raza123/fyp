@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to fetch semesters',
+          'Failed to fetch semesters',
       },
       { status: 500 }
     );

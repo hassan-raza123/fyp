@@ -289,7 +289,7 @@ export async function PUT(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to update batch',
+          'Failed to update batch',
       },
       { status: 500 }
     );
@@ -384,7 +384,7 @@ export async function DELETE(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to delete batch',
+          'Failed to delete batch',
       },
       { status: 500 }
     );

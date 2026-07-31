@@ -146,7 +146,7 @@ export async function PUT(request: NextRequest) {
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to update profile',
+          'Failed to update profile',
       },
       { status: 500 }
     );

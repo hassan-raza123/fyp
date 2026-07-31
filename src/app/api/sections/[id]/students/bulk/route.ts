@@ -248,8 +248,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to add students to section',
-        details: error instanceof Error ? error.message : String(error),
+        error: 'Failed to add students to section'
       },
       { status: 500 }
     );

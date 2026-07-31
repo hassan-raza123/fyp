@@ -257,8 +257,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to add student to section',
-        details: error instanceof Error ? error.message : String(error),
+        error: 'Failed to add student to section'
       },
       { status: 500 }
     );
@@ -381,8 +380,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to remove student from section',
-        details: error instanceof Error ? error.message : String(error),
+        error: 'Failed to remove student from section'
       },
       { status: 500 }
     );

@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
         results.failed++;
         results.errors.push(
           `Failed to import user ${record.email}: ${
-            error instanceof Error ? error.message : 'Unknown error'
+            'Unknown error'
           }`
         );
       }

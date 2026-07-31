@@ -537,7 +537,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(
       'Login error:',
-      error instanceof Error ? error.message : 'Unknown error'
+      'Unknown error'
     );
     return NextResponse.json(
       {

@@ -335,7 +335,7 @@ export async function POST(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to assign roles',
+          'Failed to assign roles',
       },
       { status: 500 }
     );

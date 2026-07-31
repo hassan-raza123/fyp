@@ -76,7 +76,7 @@ export async function GET(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to fetch semester',
+          'Failed to fetch semester',
       },
       { status: 500 }
     );
@@ -198,7 +198,7 @@ export async function PUT(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to update semester',
+          'Failed to update semester',
       },
       { status: 500 }
     );
@@ -284,7 +284,7 @@ export async function DELETE(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to delete semester',
+          'Failed to delete semester',
       },
       { status: 500 }
     );

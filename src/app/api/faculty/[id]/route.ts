@@ -94,7 +94,7 @@ export async function GET(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to fetch faculty',
+          'Failed to fetch faculty',
       },
       { status: 500 }
     );

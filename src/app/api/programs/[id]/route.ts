@@ -97,7 +97,7 @@ export async function GET(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to fetch program',
+          'Failed to fetch program',
       },
       { status: 500 }
     );
@@ -262,7 +262,7 @@ export async function PUT(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to update program',
+          'Failed to update program',
       },
       { status: 500 }
     );
@@ -371,7 +371,7 @@ export async function DELETE(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to delete program',
+          'Failed to delete program',
       },
       { status: 500 }
     );
