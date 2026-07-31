@@ -383,7 +383,7 @@ export default function FacultySurveysPage() {
                   onClick={() => handleViewResults(survey.id)}>
                   <BarChart2 className="h-3.5 w-3.5 mr-1" /> Results
                 </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                <Button aria-label="Delete" size="sm" variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
                   onClick={() => handleDelete(survey.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>

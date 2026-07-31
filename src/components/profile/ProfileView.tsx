@@ -288,7 +288,7 @@ export function ProfileView({ title }: { title: string }) {
                   />
                 </div>
 
-                <Button type='submit' disabled={savingProfile}>
+                <Button aria-label="Save" type='submit' disabled={savingProfile}>
                   <Save className='mr-2 h-4 w-4' aria-hidden='true' />
                   {savingProfile ? 'Saving…' : 'Save changes'}
                 </Button>
@@ -379,7 +379,7 @@ export function ProfileView({ title }: { title: string }) {
                   />
                 </div>
 
-                <Button type='submit' disabled={savingPassword}>
+                <Button aria-label="Lock" type='submit' disabled={savingPassword}>
                   <Lock className='mr-2 h-4 w-4' aria-hidden='true' />
                   {savingPassword ? 'Changing…' : 'Change password'}
                 </Button>

@@ -427,7 +427,7 @@ export default function CurriculumPage() {
                               </td>
                               <td className="px-4 py-2.5">
                                 <div className="flex items-center gap-1">
-                                  <Button
+                                  <Button aria-label="Edit"
                                     size="sm"
                                     variant="ghost"
                                     className="h-6 w-6 p-0 text-secondary-text hover:text-primary-text"
@@ -435,7 +435,7 @@ export default function CurriculumPage() {
                                   >
                                     <Edit2 className="h-3 w-3" />
                                   </Button>
-                                  <Button
+                                  <Button aria-label="Delete"
                                     size="sm"
                                     variant="ghost"
                                     className="h-6 w-6 p-0 text-red-400 hover:text-red-600"

@@ -695,7 +695,7 @@ export default function FacultyAttendancePage() {
                             Open
                           </Button>
                           {item.status !== 'finalized' && (
-                            <Button
+                            <Button aria-label="Delete"
                               variant='ghost'
                               size='sm'
                               onClick={() => handleDelete(item.id)}

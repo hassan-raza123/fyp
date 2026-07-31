@@ -40,8 +40,23 @@ export async function GET(request: NextRequest) {
     const { getCurrentDepartmentId } = await import('@/lib/auth');
     
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+
+    /**
+     * Paginate only when the caller asks for it.
+     *
+     * A default `limit=10` applied to every request meant `/api/programs` with
+     * no query string quietly returned the first ten rows. The tables pass
+     * `page`/`limit` and were fine; the dropdowns on /admin/plos, /admin/peos
+     * and /admin/reports do not, so from the eleventh programme onwards they
+     * simply had no option to select and nothing said so.
+     */
+    const hasExplicitPaging =
+      searchParams.has('page') || searchParams.has('limit');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.max(
+      1,
+      parseInt(searchParams.get('limit') || '10', 10) || 10
+    );
     const status = searchParams.get('status');
     const search = searchParams.get('search');
 
@@ -84,8 +99,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        skip: (page - 1) * limit,
-        take: limit,
+        ...(hasExplicitPaging
+          ? { skip: (page - 1) * limit, take: limit }
+          : {}),
         orderBy: {
           createdAt: 'desc',
         },

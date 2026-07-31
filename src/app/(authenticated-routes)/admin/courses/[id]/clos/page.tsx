@@ -243,14 +243,14 @@ export default function CourseCLOsPage() {
                 </TableCell>
                 <TableCell>
                   <div className='flex space-x-2'>
-                    <Button
+                    <Button aria-label="Edit"
                       variant='outline'
                       size='sm'
                       onClick={() => handleEditClick(clo)}
                     >
                       <Edit className='w-4 h-4' />
                     </Button>
-                    <Button
+                    <Button aria-label="Delete"
                       variant='destructive'
                       size='sm'
                       onClick={() => handleDeleteClick(clo)}

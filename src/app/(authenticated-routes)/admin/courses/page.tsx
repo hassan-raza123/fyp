@@ -480,7 +480,7 @@ export default function CoursesPage() {
                   <TableCell>{getStatusBadge(course.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <Button
+                      <Button aria-label="View"
                         size="sm"
                         onClick={() => handleViewCourse(course)}
                         className="h-7 w-7 p-0 hover:opacity-80"
@@ -488,7 +488,7 @@ export default function CoursesPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Edit"
                         size="sm"
                         onClick={() => handleEditCourse(course)}
                         className="h-7 w-7 p-0 hover:opacity-80"
@@ -496,7 +496,7 @@ export default function CoursesPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Delete"
                         size="sm"
                         onClick={() => {
                           setSelectedCourse(course);

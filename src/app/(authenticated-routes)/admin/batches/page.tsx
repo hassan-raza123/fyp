@@ -480,7 +480,7 @@ export default function BatchesPage() {
                   <TableCell className="text-xs text-primary-text">{batch._count.sections}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <Button
+                      <Button aria-label="View"
                         size="sm"
                         onClick={() => handleViewBatch(batch)}
                         className="h-7 w-7 p-0 hover:opacity-80"
@@ -488,7 +488,7 @@ export default function BatchesPage() {
                       >
                         <Eye className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Edit"
                         size="sm"
                         onClick={() => handleEditBatch(batch)}
                         className="h-7 w-7 p-0 hover:opacity-80"
@@ -496,7 +496,7 @@ export default function BatchesPage() {
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Delete"
                         size="sm"
                         onClick={() => {
                           setSelectedBatch(batch);

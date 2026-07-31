@@ -447,17 +447,17 @@ export default function ProgramsPage() {
                   <TableCell>{getStatusBadge(program.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">
-                      <Button size="sm" onClick={() => handleViewProgram(program)}
+                      <Button aria-label="View" size="sm" onClick={() => handleViewProgram(program)}
                         className="h-7 w-7 p-0 hover:opacity-80"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}>
                         <Eye className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" onClick={() => handleEditProgram(program)}
+                      <Button aria-label="Edit" size="sm" onClick={() => handleEditProgram(program)}
                         className="h-7 w-7 p-0 hover:opacity-80"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}>
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" onClick={() => { setSelectedProgram(program); setShowDeleteDialog(true); }}
+                      <Button aria-label="Delete" size="sm" onClick={() => { setSelectedProgram(program); setShowDeleteDialog(true); }}
                         className="h-7 w-7 p-0 hover:opacity-80"
                         style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}>
                         <Trash2 className="w-3 h-3" />

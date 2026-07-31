@@ -292,7 +292,7 @@ export default function SuperAdminProfilePage() {
                   </div>
                 </div>
               )}
-              <Button 
+              <Button aria-label="Save" 
                 onClick={handleSaveProfile} 
                 disabled={saving}
                 className="text-white"
@@ -375,7 +375,7 @@ export default function SuperAdminProfilePage() {
                   className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
                 />
               </div>
-              <Button 
+              <Button aria-label="Lock" 
                 onClick={handleChangePassword} 
                 disabled={saving}
                 className="text-white"
