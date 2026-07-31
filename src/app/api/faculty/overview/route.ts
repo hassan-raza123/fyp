@@ -14,76 +14,72 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get faculty's sections
-    const sections = await prisma.sections.findMany({
-      where: {
-        facultyId: facultyId,
-        status: 'active',
-      },
-      include: {
-        courseOffering: {
-          include: {
-            course: true,
-            semester: true,
+    // These four reads are independent of one another, so they go in one
+    // round trip rather than four sequential ones. This handler is the first
+    // thing a faculty member waits on after signing in.
+    const [sections, studentSections, activeAssessments, recentAssessments] =
+      await Promise.all([
+        prisma.sections.findMany({
+          where: {
+            facultyId: facultyId,
+            status: 'active',
           },
-        },
-      },
-    });
+          include: {
+            courseOffering: {
+              include: {
+                course: true,
+                semester: true,
+              },
+            },
+          },
+        }),
+        prisma.studentsections.findMany({
+          where: {
+            section: {
+              facultyId: facultyId,
+              status: 'active',
+            },
+          },
+          select: {
+            studentId: true,
+          },
+        }),
+        prisma.assessments.count({
+          where: {
+            conductedBy: facultyId,
+            status: 'active',
+          },
+        }),
+        prisma.assessments.findMany({
+          where: {
+            conductedBy: facultyId,
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5,
+          include: {
+            courseOffering: {
+              include: {
+                course: true,
+              },
+            },
+          },
+        }),
+      ]);
 
     // Get unique courses from sections
     const courseIds = [
       ...new Set(sections.map((s) => s.courseOffering.courseId)),
     ];
 
-    // Get total students from faculty's sections (count distinct students)
-    const studentSections = await prisma.studentsections.findMany({
-      where: {
-        section: {
-          facultyId: facultyId,
-          status: 'active',
-        },
-      },
-      select: {
-        studentId: true,
-      },
-    });
     const uniqueStudentIds = new Set(studentSections.map((ss) => ss.studentId));
     const totalStudents = uniqueStudentIds.size;
-
-    // Get total courses (unique courses from sections)
     const totalCourses = courseIds.length;
-
-    // Get total sections
     const totalSections = sections.length;
-
-    // Get active assessments
-    const activeAssessments = await prisma.assessments.count({
-      where: {
-        conductedBy: facultyId,
-        status: 'active',
-      },
-    });
-
-    // Get recent activities (assessments created in last 7 days)
-    const recentAssessments = await prisma.assessments.findMany({
-      where: {
-        conductedBy: facultyId,
-        createdAt: {
-          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 5,
-      include: {
-        courseOffering: {
-          include: {
-            course: true,
-          },
-        },
-      },
-    });
 
     // Format recent activities
     const recentActivities = recentAssessments.map((assessment) => ({

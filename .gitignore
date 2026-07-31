@@ -17,7 +17,9 @@ yarn.lock
 /.next/
 /out/
 
-package-lock.json
+# package-lock.json is deliberately tracked: without it `npm ci` cannot run and
+# every install may resolve different transitive versions, so a build that
+# passes locally can fail in CI for reasons nobody can reproduce.
 
 # production
 /build
