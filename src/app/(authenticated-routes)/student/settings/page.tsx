@@ -424,7 +424,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <button aria-label="Save"
+                  <button
                     onClick={handleSaveProfile}
                     disabled={saving}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
@@ -523,7 +523,7 @@ export default function SettingsPage() {
                     </p>
                   )}
               </div>
-              <button aria-label="Lock"
+              <button
                 onClick={handleChangePassword}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
@@ -726,7 +726,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button aria-label="Save"
+              <button
                 onClick={handleSavePreferences}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"

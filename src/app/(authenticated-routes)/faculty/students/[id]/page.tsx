@@ -539,7 +539,7 @@ export default function StudentDetailsPage() {
           <div className='p-4 border-b border-card-border flex flex-row items-center justify-between flex-wrap gap-2'>
             <h2 className='text-sm font-semibold text-primary-text'>Student Information</h2>
             <div className='flex gap-2'>
-              <button aria-label="Edit"
+              <button
                 type='button'
                 onClick={() => setEditing(!editing)}
                 disabled={saving}

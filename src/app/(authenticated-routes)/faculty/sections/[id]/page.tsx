@@ -531,7 +531,7 @@ export default function SectionDetailsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <button aria-label="Delete"
+                          <button
                             type="button"
                             className="p-2 rounded-lg shrink-0 disabled:opacity-50"
                             style={{ backgroundColor: iconBgColor, color: primaryColor }}

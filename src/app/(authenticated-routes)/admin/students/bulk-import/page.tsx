@@ -421,7 +421,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
             >
               Cancel
             </button>
-            <button aria-label="Upload"
+            <button
               type="submit"
               disabled={!file || loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"

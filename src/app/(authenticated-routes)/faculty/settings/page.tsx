@@ -318,7 +318,7 @@ export default function SettingsPage() {
                   <div><span className="font-medium text-primary-text">Department:</span> {profile.department?.name || 'N/A'}</div>
                 </div>
               )}
-              <button aria-label="Save"
+              <button
                 type="button"
                 onClick={handleSaveProfile}
                 disabled={saving}
@@ -367,7 +367,7 @@ export default function SettingsPage() {
                   className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text"
                 />
               </div>
-              <button aria-label="Lock"
+              <button
                 type="button"
                 onClick={handleChangePassword}
                 disabled={saving}
@@ -539,7 +539,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button aria-label="Save"
+              <button
                 type="button"
                 onClick={handleSavePreferences}
                 disabled={saving}
@@ -649,7 +649,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button aria-label="Save"
+              <button
                 type="button"
                 onClick={handleSavePreferences}
                 disabled={saving}

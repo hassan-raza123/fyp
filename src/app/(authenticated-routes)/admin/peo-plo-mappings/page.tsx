@@ -503,7 +503,7 @@ function PEOPLOMappingsPageContent() {
 
                 {/* Card Footer */}
                 <div className="px-4 py-2.5 border-t border-card-border">
-                  <button aria-label="Add"
+                  <button
                     onClick={() => openAddDialog(peo)}
                     disabled={unmappedPLOs.length === 0}
                     className="flex items-center gap-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"

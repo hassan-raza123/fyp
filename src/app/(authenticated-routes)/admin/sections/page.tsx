@@ -1508,7 +1508,7 @@ export default function SectionsPage() {
             >
               Cancel
             </button>
-            <button aria-label="Add user"
+            <button
               onClick={handleAddStudent}
               disabled={isAddingStudent || !selectedStudentId}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"

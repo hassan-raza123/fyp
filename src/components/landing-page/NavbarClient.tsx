@@ -155,7 +155,7 @@ export default function NavbarClient() {
             </div>
 
             {/* Mobile menu button - Enhanced */}
-            <button aria-label="Open menu"
+            <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 ${
                 isScrolled
