@@ -13,6 +13,10 @@ import { prisma } from '@/lib/prisma';
 import { captureOtp } from '@/lib/e2e-otp-store';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
+  createOtpChallenge,
+  setOtpChallengeCookie,
+} from '@/lib/otp-challenge';
+import {
   AdminRole,
   AllRoles,
   LoginResponse,
@@ -304,7 +308,7 @@ export async function POST(request: NextRequest) {
       // Send OTP via email
       const otpDelivered = await deliverOTP(email, otp);
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: otpDelivered
           ? 'OTP sent successfully. Please check your email.'
@@ -312,11 +316,23 @@ export async function POST(request: NextRequest) {
         data: {
           redirectTo: '/verify-otp',
           email: email,
-          // Frontend ko bhi effective role bhejte hain (admin / super_admin)
+          // Send the effective role (admin / super_admin) to the frontend too
           userType: effectiveAdminRole,
           otpSent: otpDelivered,
         },
       });
+
+      // The password has verified — mark that, so the OTP step can require it.
+      setOtpChallengeCookie(
+        response,
+        await createOtpChallenge({
+          userId: user.id,
+          email,
+          userType: effectiveAdminRole,
+        })
+      );
+
+      return response;
     }
 
     // Handle faculty users - always require OTP (like admin)
@@ -361,7 +377,7 @@ export async function POST(request: NextRequest) {
       // Send OTP via email
       const otpDelivered = await deliverOTP(email, otp);
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: otpDelivered
           ? 'OTP sent successfully. Please check your email.'
@@ -373,6 +389,13 @@ export async function POST(request: NextRequest) {
           otpSent: otpDelivered,
         },
       });
+
+      setOtpChallengeCookie(
+        response,
+        await createOtpChallenge({ userId: user.id, email, userType })
+      );
+
+      return response;
     }
 
     // Handle students - OTP only on first login (email verification)
@@ -418,7 +441,7 @@ export async function POST(request: NextRequest) {
         // Send OTP via email
         const otpDelivered = await deliverOTP(email, otp);
 
-        return NextResponse.json({
+        const response = NextResponse.json({
           success: true,
           message: 'OTP sent for email verification. Please check your email.',
           data: {
@@ -428,6 +451,13 @@ export async function POST(request: NextRequest) {
             otpSent: otpDelivered,
           },
         });
+
+        setOtpChallengeCookie(
+          response,
+          await createOtpChallenge({ userId: user.id, email, userType })
+        );
+
+        return response;
       }
 
       // Verified student - direct login (no OTP required)

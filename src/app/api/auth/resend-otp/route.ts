@@ -8,6 +8,7 @@ import { sendOTPEmail } from '@/lib/email-utils';
 import { prisma } from '@/lib/prisma';
 import { captureOtp } from '@/lib/e2e-otp-store';
 import { consumeRateLimit, getClientIp } from '@/lib/rate-limit';
+import { readOtpChallenge } from '@/lib/otp-challenge';
 
 // Resend limits — this endpoint sends email, so it is also a spam vector
 const RESEND_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -22,7 +23,7 @@ const resendOTPSchema = z.object({
     .max(255, 'Email is too long')
     .trim()
     .toLowerCase(),
-  userType: z.enum(['student', 'faculty', 'admin'] as const, {
+  userType: z.enum(['student', 'faculty', 'admin', 'super_admin'] as const, {
     required_error: 'User type is required',
     invalid_type_error: 'Invalid user type',
   }),
@@ -57,6 +58,22 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, userType } = validationResult.data;
+
+    // Resending is part of an in-progress sign-in, so the password must already
+    // have verified. Without this the endpoint minted a live OTP for any
+    // address on request — which made the OTP a standalone credential and the
+    // password no factor at all — and doubled as an unauthenticated way to
+    // send mail to arbitrary addresses.
+    const challenge = await readOtpChallenge(request, email);
+    if (!challenge) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Start a new sign-in before requesting another code.',
+        },
+        { status: 401 }
+      );
+    }
 
     const [emailLimit, ipLimit] = await Promise.all([
       consumeRateLimit({
@@ -96,13 +113,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'User not found',
-        },
-        { status: 404 }
-      );
+      // Uniform with the success path: the response must not distinguish a real
+      // address from one that does not exist.
+      return NextResponse.json({
+        success: true,
+        message: 'New OTP sent successfully. Please check your email.',
+        data: { email, userType },
+      });
     }
 
     // Generate new OTP

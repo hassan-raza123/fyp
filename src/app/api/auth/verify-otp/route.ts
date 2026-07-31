@@ -12,6 +12,10 @@ import {
 } from '@/types/auth';
 import { AUTH_TOKEN_COOKIE, COOKIE_OPTIONS } from '@/constants/auth';
 import {
+  readOtpChallenge,
+  clearOtpChallengeCookie,
+} from '@/lib/otp-challenge';
+import {
   consumeRateLimit,
   resetRateLimit,
   getClientIp,
@@ -143,6 +147,20 @@ export async function POST(
     }
 
     const { email, userType, otp } = validationResult.data;
+
+    // The OTP is the *second* factor. Without this check the endpoint issued a
+    // full session to anyone holding a code, and `/api/auth/resend-otp` could
+    // mint one with no password — so the password was not a factor at all.
+    const challenge = await readOtpChallenge(request, email);
+    if (!challenge) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your sign-in session has expired. Please sign in again.',
+        },
+        { status: 401 }
+      );
+    }
 
     // A 6-digit OTP is only 1,000,000 combinations, so unlimited guesses would
     // make it trivially brute-forceable. Cap attempts per account and per IP.
@@ -344,6 +362,9 @@ export async function POST(
 
     // Set cookie with constant name and options
     response.cookies.set(AUTH_TOKEN_COOKIE, token, COOKIE_OPTIONS);
+
+    // The challenge has been spent — drop it so it cannot be replayed.
+    clearOtpChallengeCookie(response);
 
     return response;
   } catch (error) {

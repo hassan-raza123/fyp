@@ -222,6 +222,8 @@ test.describe('A department admin creating records elsewhere', () => {
     const email = 'privesc.foreign.student@test.local';
 
     try {
+      // Every other field is valid on purpose: the request must fail on the
+      // department it names, not on a schema error that would mask it.
       const response = await apiPost(page, '/api/students', {
         firstName: 'Foreign',
         lastName: 'Student',
@@ -229,6 +231,8 @@ test.describe('A department admin creating records elsewhere', () => {
         rollNumber: 'PHY-PRIVESC-001',
         departmentId: foreignDepartmentId,
         programId: ids.programId,
+        batchId: ids.batchId,
+        status: 'active',
       });
 
       expect(response.status).toBe(403);

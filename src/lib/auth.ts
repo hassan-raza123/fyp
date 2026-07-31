@@ -150,10 +150,31 @@ export async function requireAuth(request: NextRequest): Promise<{
     }
 
     const { payload } = await jwtVerify(token, JWT_SECRET);
+    const user = parseJwtPayload(payload);
+
+    // Signature and expiry are not enough.
+    //
+    // `users.status` used to be read only at sign-in, and tokens live 24 hours,
+    // so suspending or deleting a compromised account had no effect until the
+    // token aged out: incident response could not actually evict anyone. One
+    // indexed lookup per request is the price of being able to revoke access.
+    const userId = getUserId(user);
+    if (!userId) {
+      return { success: false, error: 'Invalid token' };
+    }
+
+    const account = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { status: true },
+    });
+
+    if (!account || account.status !== 'active') {
+      return { success: false, error: 'Account is no longer active' };
+    }
 
     return {
       success: true,
-      user: parseJwtPayload(payload),
+      user,
     };
   } catch (error) {
     return {
@@ -161,6 +182,14 @@ export async function requireAuth(request: NextRequest): Promise<{
       error: 'Invalid token',
     };
   }
+}
+
+/** Resolve the numeric userId from a token payload, tolerating string ids. */
+function getUserId(user: TokenPayload): number | null {
+  const raw = user.userId ?? user.userData?.id;
+  if (raw === undefined || raw === null) return null;
+  const id = typeof raw === 'number' ? raw : parseInt(String(raw), 10);
+  return Number.isNaN(id) ? null : id;
 }
 
 export async function requireRole(
