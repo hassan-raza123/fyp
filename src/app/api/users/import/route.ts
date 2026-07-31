@@ -151,10 +151,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    // A caller sending JSON instead of multipart makes formData() throw, which
+    // surfaced as an opaque 500. Report the actual problem instead.
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            'Expected a multipart/form-data request containing a CSV file field named "file".',
+        },
+        { status: 400 }
+      );
+    }
 
-    if (!file) {
+    const file = formData.get('file') as File | null;
+
+    if (!file || typeof file.text !== 'function') {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
