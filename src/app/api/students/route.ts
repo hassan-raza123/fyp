@@ -276,18 +276,39 @@ export async function POST(request: NextRequest) {
       status,
     } = result.data;
 
-    // Get department ID from authenticated user if not provided
+    // Resolve the department the student is created in.
+    //
+    // A department admin does not get to choose: taking `departmentId` from the
+    // request body and only checking that it exists let them create accounts in
+    // any department in the university. Their own department is authoritative,
+    // and a supplied value is accepted only when it matches it. A super_admin
+    // belongs to no department, so for them the body is the only source.
     const { getDepartmentIdFromRequest } = await import('@/lib/auth');
-    let departmentId = providedDepartmentId;
-    
-    if (!departmentId) {
-      departmentId = await getDepartmentIdFromRequest(request);
-      if (!departmentId) {
+    const { forbiddenResponse } = await import('@/lib/authz');
+    const callerDepartmentId = await getDepartmentIdFromRequest(request);
+    let departmentId: number;
+
+    if (user.role === 'super_admin') {
+      if (!providedDepartmentId) {
+        return NextResponse.json(
+          { success: false, error: 'departmentId is required' },
+          { status: 400 }
+        );
+      }
+      departmentId = providedDepartmentId;
+    } else {
+      if (!callerDepartmentId) {
         return NextResponse.json(
           { success: false, error: 'Department not configured. Please set department in Settings.' },
           { status: 400 }
         );
       }
+      if (providedDepartmentId && providedDepartmentId !== callerDepartmentId) {
+        return forbiddenResponse(
+          'You can only create students in your own department'
+        );
+      }
+      departmentId = callerDepartmentId;
     }
 
     // Check if user with email already exists

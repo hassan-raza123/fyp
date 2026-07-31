@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canManageUser, forbiddenResponse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // POST /api/users/[id]/roles - Assign roles and role-specific details to a user
 export async function POST(
@@ -8,16 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication and get user data
-    const { success, user: authUser, error } = await requireAuth(request);
-    if (!success || !authUser) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user has admin role - only admins can assign roles
-    if (authUser.role !== 'admin' && authUser.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+    const authUser = auth.user;
 
     // Handle async params (Next.js 15+)
     const resolvedParams = await Promise.resolve(params);
@@ -31,6 +26,12 @@ export async function POST(
     const userId = parseInt(idParam, 10);
     if (isNaN(userId) || userId <= 0) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+
+    // Role assignment is the sharpest tool here — it decides what an account
+    // can do. A department admin may only wield it inside their department.
+    if (!(await canManageUser(request, authUser, userId))) {
+      return forbiddenResponse();
     }
 
     // Parse and validate request body

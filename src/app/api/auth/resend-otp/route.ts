@@ -163,7 +163,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
+  // No `$disconnect()` here: `prisma` is the process-wide singleton, so
+  // disconnecting would tear down the connection pool that every other
+  // in-flight request on this instance is using.
 }

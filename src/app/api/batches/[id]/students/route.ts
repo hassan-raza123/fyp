@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { requireRole } from '@/lib/auth';
+import { authorize, canAccessBatch, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/batches/[id]/students - Get students in a batch
 export async function GET(
@@ -10,6 +11,17 @@ export async function GET(
 ) {
   const params = await _params;
   try {
+    // A roster names every student in the batch with their roll number and
+    // email address. That is a staff view — the same reasoning as
+    // `canReadSectionRoster`: a student legitimately reads their own results,
+    // which is not a reason to hand them their classmates' contact details.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    if (!(await canAccessBatch(request, auth.user, params.id))) {
+      return forbiddenResponse();
+    }
+
     const batch = await prisma.batches.findUnique({
       where: { id: params.id },
       include: {

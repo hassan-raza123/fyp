@@ -361,6 +361,17 @@ export async function canManageUser(
   const departmentId = await getDepartmentIdFromRequest(request);
   if (!departmentId) return false;
 
+  // A super admin is never a department admin's to touch, whatever department
+  // their faculty row happens to name. Relying only on the department check
+  // below would make that guarantee depend on how the account was set up: a
+  // super admin who also holds a faculty row in this department would other-
+  // wise be deletable and demotable by the admin of that department.
+  const targetRole = await prisma.userroles.findFirst({
+    where: { userId: targetUserId },
+    select: { role: { select: { name: true } } },
+  });
+  if (targetRole?.role?.name === 'super_admin') return false;
+
   // An account is placed in a department by its faculty row or its student row.
   const [faculty, student] = await Promise.all([
     prisma.faculties.findFirst({
@@ -434,6 +445,21 @@ export async function assertResultsUnlocked(
 }
 
 export { forbidden, unauthorized };
+
+/**
+ * A bare 403 response.
+ *
+ * `forbidden()` returns the `AuthzFail` wrapper, which is what `authorize()`
+ * hands back — returning it straight out of a route handler type-checks only
+ * because handlers are loosely typed, and ships an object where a Response
+ * belongs. Ownership checks (`canManageUser`, `canAccessSection`, …) return a
+ * plain boolean and need the response itself, so they get their own helper.
+ */
+export function forbiddenResponse(
+  message = 'Insufficient permissions'
+): NextResponse {
+  return NextResponse.json({ success: false, error: message }, { status: 403 });
+}
 
 /**
  * Resolve the department a request should be scoped to.

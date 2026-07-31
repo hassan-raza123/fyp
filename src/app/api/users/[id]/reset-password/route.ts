@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { generatePasswordResetToken } from '@/lib/auth';
 import { sendPasswordResetEmail } from '@/lib/email-utils';
+import { authorize, canManageUser, forbiddenResponse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 export async function POST(
   request: NextRequest,
@@ -15,13 +16,14 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    const authResult = await requireAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
-    if (!['admin', 'super_admin'].includes(authResult.user?.role ?? '')) {
-      return NextResponse.json({ error: 'Only admins can reset passwords' }, { status: 403 });
+    // A department admin runs one department. Without this, they could trigger
+    // a reset for any account in the university — including a super admin —
+    // and take it over from the resulting email.
+    if (!(await canManageUser(request, auth.user, userId))) {
+      return forbiddenResponse();
     }
 
     // Get the target user's email
@@ -47,6 +49,11 @@ export async function POST(
       console.error('Error sending password reset email:', emailError);
       throw new Error('Failed to send password reset email');
     }
+
+    await writeAuditLog(request, auth.user, 'user.password_reset', {
+      targetUserId: userId,
+      targetEmail: targetUser.email,
+    });
 
     return NextResponse.json({
       message: 'Password reset email sent successfully',

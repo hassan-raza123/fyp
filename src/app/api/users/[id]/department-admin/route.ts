@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canManageUser, forbiddenResponse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 export async function POST(
   request: NextRequest,
@@ -8,19 +10,9 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    // Check authentication and get user data
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
-
-    // Check if user has admin or super_admin role
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const userId = parseInt(params.id);
     if (isNaN(userId)) {
@@ -28,6 +20,12 @@ export async function POST(
         { success: false, error: 'Invalid user ID' },
         { status: 400 }
       );
+    }
+
+    // Promoting an account to department admin is a privilege grant; it must
+    // stay inside the department the caller actually runs.
+    if (!(await canManageUser(request, user, userId))) {
+      return forbiddenResponse();
     }
 
     const { departmentId } = await request.json();

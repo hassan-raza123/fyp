@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canManageUser, forbiddenResponse, getUserId } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 import { z } from 'zod';
 
 const updateAdminSchema = z.object({
@@ -43,6 +45,12 @@ export async function GET(
         { success: false, error: 'Admin ID is required or invalid' },
         { status: 400 }
       );
+    }
+
+    // Holding the admin role is not a licence over every other admin account
+    // in the university — a department admin administers their own department.
+    if (!user || !(await canManageUser(request, user, userId))) {
+      return forbiddenResponse();
     }
 
     // Get user with admin role
@@ -146,6 +154,12 @@ export async function PUT(
         { success: false, error: 'Admin ID is required or invalid' },
         { status: 400 }
       );
+    }
+
+    // Holding the admin role is not a licence over every other admin account
+    // in the university — a department admin administers their own department.
+    if (!user || !(await canManageUser(request, user, userId))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();
@@ -311,6 +325,12 @@ export async function DELETE(
       );
     }
 
+    // Holding the admin role is not a licence over every other admin account
+    // in the university — a department admin administers their own department.
+    if (!user || !(await canManageUser(request, user, userId))) {
+      return forbiddenResponse();
+    }
+
     // Check if user exists and is an admin
     const existingUser = await prisma.users.findUnique({
       where: { id: userId },
@@ -339,18 +359,37 @@ export async function DELETE(
       );
     }
 
-    // Delete related records
-    await prisma.userroles.deleteMany({
-      where: { userId },
-    });
+    if (getUserId(user) === userId) {
+      return NextResponse.json(
+        { success: false, error: 'You cannot delete your own account' },
+        { status: 400 }
+      );
+    }
 
-    await prisma.faculties.deleteMany({
-      where: { userId },
-    });
+    // One transaction: unwrapped, a failure on the second delete left the role
+    // row already gone and the account stranded without one.
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.userroles.deleteMany({ where: { userId } });
+        await tx.faculties.deleteMany({ where: { userId } });
+        await tx.users.delete({ where: { id: userId } });
+      });
+    } catch (txError) {
+      console.error('Admin delete rolled back:', txError);
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'This admin still has records attached and cannot be deleted. Deactivate the account instead.',
+        },
+        { status: 409 }
+      );
+    }
 
-    // Finally delete the user
-    await prisma.users.delete({
-      where: { id: userId },
+    await writeAuditLog(request, user, 'user.delete', {
+      targetUserId: userId,
+      targetEmail: existingUser.email,
+      wasAdmin: true,
     });
 
     return NextResponse.json({

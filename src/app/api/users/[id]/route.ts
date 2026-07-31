@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { hash } from 'bcryptjs';
+import { authorize, canManageUser, forbiddenResponse, getUserId } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // GET /api/users/[id] - Get a specific user
 export async function GET(
@@ -15,15 +16,13 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    // Check authentication and authorization
-    const authResult = await requireAuth(request);
-    if (!authResult.success || !authResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
-    // Only admins and super_admins can access user details
-    if (authResult.user.role !== 'admin' && authResult.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    // Holding the admin role is not enough: a department admin administers
+    // their own department, not the whole university.
+    if (!(await canManageUser(request, auth.user, userId))) {
+      return forbiddenResponse();
     }
 
     // Get the target user with only the required fields
@@ -79,18 +78,19 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and get user data
-    const { success, user, error } = await requireAuth(request);
-    if (!success || !user) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user has admin or super_admin role
-    if (user.role !== 'admin' && user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { id } = await context.params;
+    const targetId = parseInt(id, 10);
+    if (Number.isNaN(targetId) || targetId <= 0) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+
+    if (!(await canManageUser(request, auth.user, targetId))) {
+      return forbiddenResponse();
+    }
+
     const body = await request.json();
     const { email, first_name, last_name, phone_number, status } = body;
 
@@ -147,6 +147,12 @@ export async function PUT(
     // Get the role name if it exists
     const userRole = updatedUser.userrole?.role?.name || null;
 
+    await writeAuditLog(request, auth.user, 'user.update', {
+      targetUserId: targetId,
+      email,
+      status,
+    });
+
     return NextResponse.json({
       id: updatedUser.id,
       email: updatedUser.email,
@@ -178,33 +184,73 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    // Check authentication and authorization
-    const authResult = await requireAuth(request);
-    if (!authResult.success || !authResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+
+    if (!(await canManageUser(request, auth.user, userId))) {
+      return forbiddenResponse();
     }
 
-    // Only admins and super_admins can delete users
-    if (authResult.user.role !== 'admin' && authResult.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    // Deleting yourself leaves nobody holding the keys and immediately
+    // invalidates the session making the request.
+    const selfId = getUserId(auth.user);
+    if (selfId === userId) {
+      return NextResponse.json(
+        { error: 'You cannot delete your own account' },
+        { status: 400 }
+      );
     }
 
-    // First delete any related records
-    await prisma.userroles.deleteMany({
-      where: { userId },
-    });
-
-    await prisma.faculties.deleteMany({
-      where: { userId },
-    });
-
-    await prisma.students.deleteMany({
-      where: { userId },
-    });
-
-    // Finally delete the user
-    await prisma.users.delete({
+    const target = await prisma.users.findUnique({
       where: { id: userId },
+      select: { email: true, userrole: { select: { role: { select: { name: true } } } } },
+    });
+
+    if (!target) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Removing the last super admin locks everyone out of the system-wide
+    // screens permanently, and nothing else can recreate the role.
+    if (target.userrole?.role?.name === 'super_admin') {
+      const remaining = await prisma.userroles.count({
+        where: { role: { name: 'super_admin' } },
+      });
+      if (remaining <= 1) {
+        return NextResponse.json(
+          { error: 'Cannot delete the last super admin account' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // One transaction, not four sequential writes. Most relations declare no
+    // `onDelete`, so Prisma defaults to `Restrict` and a user carrying grades
+    // or enrolments makes a later delete throw — which, unwrapped, left the
+    // role row already deleted and the user stranded with no role at all:
+    // login answers "User has no roles assigned" and the account is
+    // unreachable from the role-filtered admin listings.
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.userroles.deleteMany({ where: { userId } });
+        await tx.faculties.deleteMany({ where: { userId } });
+        await tx.students.deleteMany({ where: { userId } });
+        await tx.users.delete({ where: { id: userId } });
+      });
+    } catch (txError) {
+      console.error('User delete rolled back:', txError);
+      return NextResponse.json(
+        {
+          error:
+            'This account still has records attached (grades, enrolments or attendance) and cannot be deleted. Deactivate it instead.',
+        },
+        { status: 409 }
+      );
+    }
+
+    await writeAuditLog(request, auth.user, 'user.delete', {
+      targetUserId: userId,
+      targetEmail: target.email,
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

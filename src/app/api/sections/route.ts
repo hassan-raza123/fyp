@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessSection, forbiddenResponse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 import { z } from 'zod';
 
 const createSectionSchema = z.object({
@@ -293,14 +295,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Deleting a section is a staff action. Authorising on the role *before*
+    // the row is looked up matters: a handler that only calls `requireAuth`
+    // lets any signed-in account — a student included — reach the delete.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -312,9 +311,22 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const sectionId = parseInt(id, 10);
+    if (Number.isNaN(sectionId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid section ID' },
+        { status: 400 }
+      );
+    }
+
+    // ...and the section must belong to the caller's department.
+    if (!(await canAccessSection(request, auth.user, sectionId))) {
+      return forbiddenResponse();
+    }
+
     // Check if section exists
     const section = await prisma.sections.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: sectionId },
       include: {
         _count: {
           select: {
@@ -344,7 +356,12 @@ export async function DELETE(request: NextRequest) {
 
     // Delete section
     await prisma.sections.delete({
-      where: { id: parseInt(id) },
+      where: { id: sectionId },
+    });
+
+    await writeAuditLog(request, auth.user, 'section.delete', {
+      sectionId,
+      name: section.name,
     });
 
     return NextResponse.json({

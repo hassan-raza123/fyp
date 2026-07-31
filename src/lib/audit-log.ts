@@ -51,7 +51,23 @@ export type AuditAction =
   // closing the loop
   | 'action_plan.auto_create'
   // reports
-  | 'report.generate';
+  | 'report.generate'
+  // structural configuration
+  | 'section.delete'
+  // account administration — who can sign in, as what, is a security event and
+  // an accreditation question ("who granted this person marking rights?").
+  // Without these the audit trail covers marks but not the accounts that set them.
+  | 'user.create'
+  | 'user.update'
+  | 'user.delete'
+  | 'user.role_change'
+  | 'user.status_change'
+  | 'user.password_reset'
+  // authentication — needed to investigate a compromise after the fact
+  | 'auth.login_success'
+  | 'auth.login_failure'
+  | 'auth.otp_failure'
+  | 'auth.logout';
 
 /**
  * Record an audited action. Never throws — a failure to write the audit row
