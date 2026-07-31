@@ -39,7 +39,18 @@ I verified the three most severe findings by exploiting them live against a prod
 33 failed · 1 skipped · 334 passed  (4.9m, 368 total)
 ```
 
-32 of the 33 failures are **real application defects**, not test flakiness. One (`navigation.spec.ts:110`) is a test defect. Zero flaky tests — the suite is deterministic.
+**All 33 failures are real application defects**, not flakiness — one was a locator bug masking a genuine defect, fixed during this audit. Zero flaky tests; the suite is deterministic across runs.
+
+### Deliverables
+
+| File | Change |
+|---|---|
+| `PRODUCTION-READINESS-AUDIT.md` | This report |
+| `e2e/tests/privilege-escalation.spec.ts` | **New** — 8 regression tests for C-2, C-4, H-1, H-2, H-3 |
+| `e2e/tests/auth-bypass.spec.ts` | **New** — 4 regression tests for C-1, H-6 |
+| `e2e/tests/navigation.spec.ts` | **Fixed** — strict-mode locator collision |
+
+The 12 new tests fail by design against the current code and pass once each finding is fixed. No application code was modified.
 
 ---
 
@@ -160,6 +171,7 @@ Additionally: refuse to act on a target holding `super_admin` unless the caller 
 |---|---|
 | **Severity** | 🔴 Critical |
 | **Location** | [src/app/api/users/[id]/route.ts](fyp/src/app/api/users/[id]/route.ts) — `DELETE` |
+| **Status** | ✅ **Reproduced — corruption confirmed** |
 | **Effort** | 2h |
 
 Four sequential writes, **no `$transaction`**:
@@ -175,11 +187,18 @@ await prisma.users.delete({ where: { id: userId } });
 
 **Result:** a surviving user row with no role. `/api/auth/login` returns *"User has no roles assigned"* — the account is permanently locked out and invisible to role-filtered admin listings. Recoverable only by direct SQL.
 
-The suite already surfaces exactly this failure mode elsewhere:
+**Reproduced.** The regression test added in this audit (`privilege-escalation.spec.ts` → *"a failed delete leaves the account intact, not half-removed"*) creates a student holding a section enrolment and deletes them:
+
 ```
-[WebServer] Invalid `prisma.students.create()` invocation:
-            Foreign key constraint violated on the fields: (`programId`)  P2003
-[WebServer] Unique constraint failed on the constraint: `userroles_userId_key`  P2002
+Error: the delete returned 500 but had already stripped the role, locking the account out
+```
+
+Direct database inspection after the run confirmed the corrupt state — `users` row present, `userroles` count `0`:
+
+```
+seeded student user still exists: true
+roles: 0
+student row: 1
 ```
 
 **Fix.** Wrap in `prisma.$transaction`. The codebase already uses `$transaction` correctly in 24 places — this is an inconsistency, not a knowledge gap. Same defect in `admins/[id]::DELETE`, `faculty/[id]::DELETE`, and `students/route.ts::POST` (3 creates: a partial failure leaves a user who cannot log in).
@@ -376,11 +395,18 @@ Every admin, faculty member and student who opens the account menu and clicks Pr
 
 ## Medium Priority Issues
 
-### M-1 — Header search bar is decorative
+### M-1 — Header search bar and notifications bell are both decorative
 
 [DashboardLayout.tsx:502-505](fyp/src/components/layouts/DashboardLayout.tsx#L502) — `searchTerm` is bound to the input and updated by `setSearchTerm`, then **never read**. No filter, no navigation, no submit handler. A prominent search box on every dashboard does nothing.
-`✘ navigation.spec.ts:126 — "typing in the header search and submitting changes nothing on the page"`
-**Fix:** implement it, or remove it until it works. **Effort:** 3d (implement) / 15m (remove).
+`✘ navigation.spec.ts — "typing in the header search and submitting changes nothing on the page"`
+
+The **notifications bell** is the same story. This originally looked like a test bug (a strict-mode locator collision between the sidebar nav item and the header bell, both named "Notifications"). After fixing the locator during this audit, the test still fails — the bell sets `aria-expanded` but renders no panel:
+```
+✘ the bell reports itself expanded but renders no panel
+```
+So the navigation spec has **5 real defects, not 4**; the locator collision was masking a genuine one.
+
+**Fix:** implement both, or remove them until they work. **Effort:** 3d (implement) / 30m (remove).
 
 ### M-2 — 66% of write handlers accept unvalidated input
 
@@ -553,15 +579,15 @@ The `api-helper.ts` workaround — running `fetch` inside the page so a `SameSit
 | `user-admin-isolation` | 8 | 🔴 **App defect** → C-3 |
 | `cross-tenant-reads` | 11 | 🟠 **App defect** → H-1 |
 | `accessibility` | 8 | 🟡 **App defect** → M-11 |
-| `navigation` | 5 | 4 app defects (H-7 ×3, M-1 ×1) + **1 test defect** |
+| `navigation` | 5 | **5 app defects** (H-7 ×3, M-1 ×2) — one was masked by a test bug |
 | `list-limits` | 1 | 🟡 **App defect** → M-5 |
 
-**The one test defect** — `navigation.spec.ts:114`:
+**The masked defect** — `navigation.spec.ts:114` failed on a strict-mode collision:
 ```
 strict mode violation: getByRole('button', { name: /notifications/i }) resolved to 2 elements:
   1) sidebar nav "Notifications"      2) header bell aria-label="Notifications"
 ```
-Fix: `page.getByLabel('Notifications', { exact: true })` or scope to the header.
+✅ **Fixed in this audit** (scoped to the header control). The test then failed again on its real assertion — the bell renders no panel. The locator bug had been hiding an application defect.
 
 **The one skipped test** — `accessibility.spec.ts:180` "a dialog traps focus and closes on Escape". Focus trapping is a common real-world a11y failure; this should be unskipped.
 
@@ -605,21 +631,43 @@ Smoke tests render **all 111 pages** across the 4 roles (page-level ✅). Functi
 | Role × capability matrix | **~45%** |
 | **Weighted overall** | **≈ 40%** |
 
-### Missing tests to add
+### Tests delivered by this audit ✅
 
-**Priority 1 — regression guards for the Critical findings (none exist today):**
-1. `resend-otp` must reject a request with no OTP challenge cookie *(C-1)*
-2. `verify-otp` must reject an OTP not preceded by a password check *(C-1)*
-3. Student `DELETE /api/sections?id=…` must return 403 *(C-2)*
-4. Student `GET /api/batches/[id]/students` must return 403 *(H-2)*
-5. Faculty `POST /api/assessments` against a foreign `courseOfferingId` must return 403 *(H-1)*
-6. Student/faculty `PATCH /api/semesters` must return 403 *(H-1)*
-7. Dept-admin `POST /api/students` with a foreign `departmentId` must return 403 *(H-3)*
-8. Deleting a user with dependent rows must roll back atomically *(C-4)*
+Two new specs were written and one existing test was repaired. **All 12 new tests fail against the current code and pass once the corresponding finding is fixed** — they are the acceptance criteria for Phase 1.
+
+**`e2e/tests/privilege-escalation.spec.ts`** (8 tests) — the unguarded-write gap:
+
+| Test | Guards |
+|---|---|
+| student cannot reach the section delete handler at all | C-2 |
+| student cannot delete a real section | C-2 |
+| student cannot modify semesters | H-1 |
+| student cannot create a PLO on a programme | H-1 |
+| student cannot read the roster of their own batch | H-2 |
+| faculty cannot create an assessment on an offering they do not teach | H-1 |
+| dept admin cannot create a student in another department | H-3 |
+| a failed delete leaves the account intact, not half-removed | C-4 |
+
+**`e2e/tests/auth-bypass.spec.ts`** (4 tests) — the OTP-as-sole-credential flaw:
+
+| Test | Guards |
+|---|---|
+| resend-otp refuses to mint a code for an anonymous caller | C-1 |
+| resend-otp does not reveal whether an account exists | C-1 / L-2 |
+| verify-otp rejects a code never preceded by a password | C-1 |
+| a suspended user cannot keep using an existing token | H-6 |
+
+**`e2e/tests/navigation.spec.ts`** — fixed the strict-mode locator collision, which unmasked a real defect (M-1).
+
+Both new specs follow the suite's existing conventions: `storageState` per role, self-built and torn-down foreign tenants, and assertion messages that state the consequence rather than the value. The section-delete and account-deletion tests create their own disposable rows rather than mutating the shared fixture — an earlier draft used the seeded student and corrupted it for every later spec, which the run caught.
+
+`tsc --noEmit` is clean with both files added.
+
+### Further tests to add
 
 **Priority 2 — coverage gaps:** a full super-admin suite (CRUD on departments/admins/super-admins, dashboard, navigation); survey lifecycle incl. the two public token endpoints; notification CRUD per role; suspended-user access revocation *(H-6)*; concurrent marks entry on one section; expired-session behaviour mid-form; bulk import with malformed/duplicate rows; a11y + responsive extended to faculty, student and super-admin.
 
-**Priority 3 — hygiene:** fix the strict-mode collision (`navigation.spec.ts:114`); unskip the focus-trap test; make `signOut` assert server-side invalidation *(L-10)*; add `@axe-core/playwright` for full WCAG coverage rather than hand-rolled checks; add a second browser project (Firefox/WebKit).
+**Priority 3 — hygiene:** ~~fix the strict-mode collision~~ ✅ done; unskip the focus-trap test; make `signOut` assert server-side invalidation *(L-10)*; add `@axe-core/playwright` for full WCAG coverage rather than hand-rolled checks; add a second browser project (Firefox/WebKit).
 
 **Duplicates:** none found. **Refactors:** none needed — the suite's structure is sound.
 
@@ -660,10 +708,10 @@ Smoke tests render **all 111 pages** across the 4 roles (page-level ✅). Functi
 7. **H-3** Ignore body `departmentId` for non-super-admins — *1h*
 8. **H-5** Add security headers — *2h*
 9. **H-1** Apply `authorize()` + `can*()` across the 33 handlers — *2–3d*
-10. Add the 8 Priority-1 regression tests — *1d*
+10. ~~Add regression tests for the Critical findings~~ ✅ **done — 12 tests delivered**
 11. **Add a CI check** rejecting bare `requireAuth` in `src/app/api/**` — *4h*
 
-**Exit criterion: the Playwright suite is green.**
+**Exit criterion: the Playwright suite is green — including the 12 new tests, which currently fail by design.**
 
 ### Phase 2 — Production hardening (~2 weeks)
 **H-6** session revocation · **M-2** zod on all writes · **M-6** stop leaking exceptions · **M-7** Sentry + structured logging · **M-8** audit account + auth events · **M-9/M-10** super-admin lockouts · **M-4** remaining transactions · **M-11** aria-labels + shared `<RowActions>` · **H-7** build the 3 profile pages · **M-1** implement or remove search
