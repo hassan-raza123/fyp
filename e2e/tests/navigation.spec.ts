@@ -110,7 +110,14 @@ test.describe('Header controls', () => {
   test('the notifications button opens something', async ({ page }) => {
     await page.goto('/admin');
 
-    const bell = page.getByRole('button', { name: /notifications/i });
+    // The sidebar nav item and the header bell are both named "Notifications",
+    // so an unscoped lookup resolves to two elements and fails strict mode.
+    // The header control is the one under test.
+    const bell = page
+      .getByRole('banner')
+      .getByLabel('Notifications', { exact: true })
+      .or(page.getByLabel('Notifications', { exact: true }))
+      .first();
     await expect(bell).toBeVisible({ timeout: 20_000 });
     await bell.click();
 
