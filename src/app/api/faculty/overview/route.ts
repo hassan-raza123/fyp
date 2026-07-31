@@ -438,6 +438,44 @@ export async function GET(request: NextRequest) {
           allResults.length
         : 0;
 
+    // ── Attendance prompts ───────────────────────────────────────────────────
+    // Sessions left open are the ones that silently do not count yet, so the
+    // dashboard surfaces them: a lecturer who marked a roll but never finalized
+    // it would otherwise believe the attendance was recorded.
+    const facultySections = await prisma.sections.findMany({
+      where: { facultyId },
+      select: {
+        id: true,
+        name: true,
+        courseOffering: { select: { course: { select: { code: true } } } },
+      },
+    });
+
+    const openSessions = await prisma.attendance_sessions.findMany({
+      where: { sectionId: { in: facultySections.map((s) => s.id) }, status: 'open' },
+      select: { id: true, date: true, slot: true, sectionId: true },
+      orderBy: { date: 'desc' },
+      take: 10,
+    });
+
+    const sectionById = new Map(facultySections.map((s) => [s.id, s]));
+
+    const attendanceSummary = {
+      sectionsTaught: facultySections.length,
+      openSessionCount: openSessions.length,
+      openSessions: openSessions.map((session) => {
+        const section = sectionById.get(session.sectionId);
+        return {
+          sessionId: session.id,
+          sectionId: session.sectionId,
+          sectionName: section?.name ?? '',
+          courseCode: section?.courseOffering.course.code ?? '',
+          date: session.date.toISOString().slice(0, 10),
+          slot: session.slot,
+        };
+      }),
+    };
+
     return NextResponse.json({
       success: true,
       data: {
@@ -511,6 +549,7 @@ export async function GET(request: NextRequest) {
           })),
           averageClassPerformance,
         },
+
         recentGradingActivity: recentGradingActivity.map((activity) => ({
           assessmentId: activity.assessmentId,
           assessmentTitle: activity.assessmentTitle,
@@ -521,6 +560,7 @@ export async function GET(request: NextRequest) {
           evaluatedAt: activity.evaluatedAt?.toISOString() || null,
           status: activity.status,
         })),
+        attendance: attendanceSummary,
       },
     });
   } catch (error) {

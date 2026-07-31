@@ -217,6 +217,18 @@ interface DashboardData {
     evaluatedAt: string | null;
     status: string;
   }>;
+  attendance?: {
+    sectionsTaught: number;
+    openSessionCount: number;
+    openSessions: Array<{
+      sessionId: number;
+      sectionId: number;
+      sectionName: string;
+      courseCode: string;
+      date: string;
+      slot: number;
+    }>;
+  };
 }
 
 export default function FacultyOverview() {
@@ -307,6 +319,33 @@ export default function FacultyOverview() {
             </button>
           </div>
         </div>
+
+        {/* An attendance session left open does not count towards any
+            student's percentage yet, so it is surfaced here rather than left
+            to be discovered when the figures look wrong. */}
+        {data.attendance && data.attendance.openSessionCount > 0 && (
+          <button
+            onClick={() => router.push('/faculty/attendance')}
+            className="w-full flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-left transition-colors hover:bg-amber-500/20"
+          >
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="text-sm">
+              <p className="font-medium text-primary-text">
+                {data.attendance.openSessionCount} attendance session
+                {data.attendance.openSessionCount > 1 ? 's are' : ' is'} still
+                open
+              </p>
+              <p className="mt-1 text-secondary-text">
+                {data.attendance.openSessions
+                  .slice(0, 3)
+                  .map((s) => `${s.courseCode} ${s.date}`)
+                  .join(', ')}
+                {data.attendance.openSessionCount > 3 && ' and more'}. Open
+                sessions do not count towards attendance until finalized.
+              </p>
+            </div>
+          </button>
+        )}
 
         {/* Stats Grid - admin style */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
