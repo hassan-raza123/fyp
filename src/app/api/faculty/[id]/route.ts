@@ -510,7 +510,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Unknown error',
       },
       { status: 500 }
     );

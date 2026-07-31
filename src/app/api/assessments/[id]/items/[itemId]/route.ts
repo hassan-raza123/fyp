@@ -118,7 +118,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating assessment item:', error);
     return NextResponse.json(
-      { error: 'Failed to update assessment item', details: String(error) },
+      { error: 'Failed to update assessment item' },
       { status: 500 }
     );
   }
@@ -174,7 +174,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting assessment item:', error);
     return NextResponse.json(
-      { error: 'Failed to delete assessment item', details: String(error) },
+      { error: 'Failed to delete assessment item' },
       { status: 500 }
     );
   }

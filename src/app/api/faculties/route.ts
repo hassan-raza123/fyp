@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create faculty',
+        error: 'Failed to create faculty',
       },
       { status: 500 }
     );

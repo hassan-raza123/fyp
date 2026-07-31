@@ -354,7 +354,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating course:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       errorObject: JSON.stringify(error, null, 2),
     });

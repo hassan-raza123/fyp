@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create super admin',
+        error: 'Failed to create super admin',
       },
       { status: 500 }
     );

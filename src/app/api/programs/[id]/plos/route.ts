@@ -60,7 +60,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch PLOs',
+        error: 'Failed to fetch PLOs',
       },
       { status: 500 }
     );
@@ -156,7 +156,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create PLO',
+        error: 'Failed to create PLO',
       },
       { status: 500 }
     );

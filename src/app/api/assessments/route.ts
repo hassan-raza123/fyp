@@ -225,14 +225,14 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Error creating assessment (prisma):', err);
       return NextResponse.json(
-        { error: 'Failed to create assessment', details: String(err) },
+        { error: 'Failed to create assessment' },
         { status: 500 }
       );
     }
   } catch (error) {
     console.error('Error in POST /api/assessments:', error);
     return NextResponse.json(
-      { error: 'Failed to create assessment', details: String(error) },
+      { error: 'Failed to create assessment' },
       { status: 500 }
     );
   }

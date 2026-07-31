@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Menu,
   Bell,
@@ -226,6 +226,66 @@ export default function DashboardLayout({
   const searchRef = useRef<HTMLDivElement | null>(null);
   const notificationRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * Header search: jump to a page.
+   *
+   * The box used to bind `searchTerm` and never read it again — a prominent
+   * control on every dashboard that did nothing. Searching the navigation the
+   * current role actually has is the behaviour that works for all four roles
+   * without guessing which listing endpoint a given term belongs to.
+   */
+  const searchMatches = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return [];
+
+    return navigationSections
+      .flatMap((section) =>
+        section.items.map((item) => ({ ...item, section: section.title }))
+      )
+      .filter((item) => item.label.toLowerCase().includes(term))
+      .slice(0, 8);
+  }, [searchTerm, navigationSections]);
+
+  const goToMatch = (href: string) => {
+    setSearchTerm('');
+    setIsMobileSearchOpen(false);
+    router.push(href);
+  };
+
+  // Notifications shown in the bell panel
+  const [notifications, setNotifications] = useState<
+    Array<{ id: number; title: string; message: string; isRead: boolean; createdAt: string }>
+  >([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    let cancelled = false;
+    setNotificationsLoading(true);
+
+    fetch('/api/notifications?limit=5', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((body) => {
+        if (cancelled) return;
+        const list = Array.isArray(body?.data) ? body.data : [];
+        setNotifications(list.slice(0, 5));
+      })
+      .catch(() => {
+        if (!cancelled) setNotifications([]);
+      })
+      .finally(() => {
+        if (!cancelled) setNotificationsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showNotifications]);
+
+  const notificationsHref =
+    role === 'super_admin' ? '/super-admin' : `/${role}/notifications`;
 
   // Handle logout using server action
   const handleLogout = async () => {
@@ -500,11 +560,51 @@ export default function DashboardLayout({
                 <input
                   type="text"
                   placeholder="Search..."
+                  aria-label="Search pages"
+                  role="combobox"
+                  aria-expanded={searchMatches.length > 0}
+                  aria-controls="header-search-results"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchMatches.length > 0) {
+                      e.preventDefault();
+                      goToMatch(searchMatches[0].href);
+                    }
+                    if (e.key === 'Escape') setSearchTerm('');
+                  }}
                   className={`w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none transition-all duration-200 ${isDarkMode ? 'bg-gray-800/70 text-white border-gray-700/50 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 focus:bg-gray-800/90' : 'bg-gray-100/80 text-gray-900 border-gray-200/60 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:bg-white/95'} backdrop-blur-sm shadow-sm focus:shadow-md`}
                 />
               </div>
+
+              {searchTerm.trim() && (
+                <div
+                  id="header-search-results"
+                  role="listbox"
+                  className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}
+                >
+                  {searchMatches.length === 0 ? (
+                    <p className="px-3 py-3 text-sm text-gray-500">
+                      No matches found
+                    </p>
+                  ) : (
+                    searchMatches.map((match) => (
+                      <button
+                        key={match.href}
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => goToMatch(match.href)}
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors ${isDarkMode ? 'text-gray-100 hover:bg-gray-800' : 'text-gray-800 hover:bg-gray-100'}`}
+                      >
+                        <span>{match.label}</span>
+                        <span className="text-xs text-gray-500">
+                          {match.section}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -551,6 +651,64 @@ export default function DashboardLayout({
                 {/* Notification Badge */}
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
               </button>
+
+              {/*
+                The bell set `aria-expanded` and rendered nothing — it announced
+                a panel to a screen reader that did not exist.
+              */}
+              {showNotifications && (
+                <div
+                  role="menu"
+                  aria-label="Notifications"
+                  className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}
+                >
+                  <div
+                    className={`border-b px-4 py-2.5 text-sm font-medium ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-200 text-gray-900'}`}
+                  >
+                    Notifications
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {notificationsLoading ? (
+                      <p className="px-4 py-6 text-center text-sm text-gray-500">
+                        Loading…
+                      </p>
+                    ) : notifications.length === 0 ? (
+                      <p className="px-4 py-6 text-center text-sm text-gray-500">
+                        You have no notifications
+                      </p>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          role="menuitem"
+                          tabIndex={0}
+                          className={`border-b px-4 py-3 last:border-b-0 ${isDarkMode ? 'border-gray-800' : 'border-gray-100'}`}
+                        >
+                          <p
+                            className={`text-sm ${n.isRead ? 'font-normal' : 'font-semibold'} ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+                          >
+                            {n.title}
+                          </p>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
+                            {n.message}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowNotifications(false);
+                      router.push(notificationsHref);
+                    }}
+                    className={`w-full border-t px-4 py-2.5 text-sm font-medium transition-colors ${isDarkMode ? 'border-gray-700 text-orange-400 hover:bg-gray-800' : 'border-gray-200 text-blue-600 hover:bg-gray-50'}`}
+                  >
+                    View all notifications
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Profile Menu */}

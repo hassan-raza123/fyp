@@ -100,7 +100,7 @@ export async function POST(
   } catch (error) {
     console.error('Error creating assessment item:', error);
     return NextResponse.json(
-      { error: 'Failed to create assessment item', details: String(error) },
+      { error: 'Failed to create assessment item' },
       { status: 500 }
     );
   }
