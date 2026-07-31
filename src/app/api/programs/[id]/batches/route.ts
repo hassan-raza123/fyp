@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     // Handle both sync and async params (Next.js 15+ compatibility)
     const resolvedParams = params instanceof Promise ? await params : params;
@@ -32,6 +27,10 @@ export async function GET(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
       );
+    }
+
+    if (!(await canAccessProgram(request, auth.user, programId))) {
+      return forbiddenResponse();
     }
 
     // Check if program exists

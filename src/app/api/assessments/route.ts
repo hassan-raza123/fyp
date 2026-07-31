@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canManageCourseOffering,
+  assertResultsUnlocked,
+  forbiddenResponse,
+} from '@/lib/authz';
 import { assessment_status, assessment_type } from '@prisma/client';
 import { NextRequest } from 'next/server';
 
@@ -96,10 +102,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const body = await request.json();
     let {
@@ -112,6 +117,26 @@ export async function POST(request: NextRequest) {
       weightage,
       courseOfferingId,
     } = body;
+
+    const offeringId = Number(courseOfferingId);
+    if (!Number.isInteger(offeringId) || offeringId <= 0) {
+      return NextResponse.json(
+        { error: 'A valid courseOfferingId is required' },
+        { status: 400 }
+      );
+    }
+
+    // `courseOfferingId` arrives in the body. Without this it was never
+    // compared against the offerings the caller actually teaches, so any
+    // faculty member could plant a graded assessment in another department's
+    // course.
+    if (!(await canManageCourseOffering(request, user, offeringId))) {
+      return forbiddenResponse();
+    }
+
+    // A locked offering is locked for a reason: results have been finalised.
+    const lockError = await assertResultsUnlocked(user, offeringId);
+    if (lockError) return lockError;
 
     // Normalize and map type
     let normalizedType = typeof type === 'string' ? type.toLowerCase() : type;
@@ -143,7 +168,7 @@ export async function POST(request: NextRequest) {
     // Validate total weightage ≤ 100 for this course offering
     const existingWeightage = await prisma.assessments.aggregate({
       where: {
-        courseOfferingId: Number(courseOfferingId),
+        courseOfferingId: offeringId,
         status: { not: 'cancelled' },
       },
       _sum: { weightage: true },
@@ -170,7 +195,7 @@ export async function POST(request: NextRequest) {
           dueDate: new Date(dueDate),
           instructions,
           weightage: Number(weightage),
-          courseOfferingId: Number(courseOfferingId),
+          courseOfferingId: offeringId,
           conductedBy: faculty.id,
           status: assessment_status.active,
         },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessBatch, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/batches/[id]/sections - Get sections for a batch
 export async function GET(
@@ -9,13 +10,13 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
+    // The timetable of a batch names the faculty teaching each section — a
+    // staff view of a cohort the caller may have nothing to do with.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    if (!(await canAccessBatch(request, auth.user, params.id))) {
+      return forbiddenResponse();
     }
 
     const sections = await prisma.sections.findMany({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma, semester_status } from '@prisma/client';
 import { requireRole, requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 import { z } from 'zod';
 
 const createSemesterSchema = z.object({
@@ -388,10 +389,11 @@ export async function DELETE(request: NextRequest) {
 // Add a new endpoint to update all semester statuses
 export async function PATCH(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    // Recomputing every semester's status rewrites rows the whole system reads
+    // from — squarely an administrative action, not something any signed-in
+    // account should be able to trigger.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const semesters = await prisma.semesters.findMany();
     const updates = await Promise.all(

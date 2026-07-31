@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 /**
  * GET /api/ploattainments/trends?programId=X
@@ -18,10 +19,10 @@ import { requireAuth } from '@/lib/auth';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    // Programme-wide attainment history is a staff/accreditation view: it
+    // describes the cohort, not the caller.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
@@ -31,6 +32,18 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'programId query parameter is required.' },
         { status: 400 }
       );
+    }
+
+    const programIdNum = parseInt(programId, 10);
+    if (Number.isNaN(programIdNum)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid programId' },
+        { status: 400 }
+      );
+    }
+
+    if (!(await canAccessProgram(request, auth.user, programIdNum))) {
+      return forbiddenResponse();
     }
 
     // Fetch all PLO attainments for this program, including PLO and semester info

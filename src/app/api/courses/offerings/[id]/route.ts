@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 import { Prisma } from '@prisma/client';
 
 export async function GET(
@@ -8,14 +9,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
@@ -26,6 +26,26 @@ export async function GET(
         { success: false, error: 'Course offering ID is required or invalid' },
         { status: 400 }
       );
+    }
+
+    // Resolved through the offering's course: staff by department, a student by
+    // enrolment. `canAccessCourse` is the read-side rule — wider than
+    // `canManageCourse`, because a student legitimately reads the course they
+    // are taking without any right to change it.
+    const offeringCourse = await prisma.courseofferings.findUnique({
+      where: { id: offeringId },
+      select: { courseId: true },
+    });
+
+    if (!offeringCourse) {
+      return NextResponse.json(
+        { success: false, error: 'Course offering not found' },
+        { status: 404 }
+      );
+    }
+
+    if (!(await canAccessCourse(request, auth.user, offeringCourse.courseId))) {
+      return forbiddenResponse();
     }
 
     const courseOffering = await prisma.courseofferings.findUnique({

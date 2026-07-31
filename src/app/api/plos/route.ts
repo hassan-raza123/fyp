@@ -1,18 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 // GET /api/plos
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    // PLOs are programme configuration — an accreditation artefact, not
+    // student-facing data. Students read their own attainment through
+    // /api/student/plo-attainments, which resolves them from the session.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
 
     const where: any = {};
-    if (programId) where.programId = parseInt(programId);
+
+    if (programId) {
+      const id = parseInt(programId, 10);
+      if (Number.isNaN(id)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid programId' },
+          { status: 400 }
+        );
+      }
+      if (!(await canAccessProgram(request, auth.user, id))) {
+        return forbiddenResponse();
+      }
+      where.programId = id;
+    } else {
+      // No programme named: scope the listing to what the caller may see rather
+      // than returning every PLO in the system.
+      const scope = await resolveDepartmentScope(request, auth.user);
+      if (scope.error) return scope.error;
+      if (scope.scoped) {
+        where.program = { departmentId: scope.departmentId };
+      }
+    }
 
     const plos = await prisma.plos.findMany({
       where,

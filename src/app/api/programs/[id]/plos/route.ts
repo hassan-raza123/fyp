@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 import { plo_status } from '@prisma/client';
 
 // GET /api/programs/[id]/plos
@@ -21,6 +21,12 @@ export async function GET(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
       );
+    }
+
+    // The admin role alone is not enough — a department admin runs one
+    // department, and this programme may belong to another.
+    if (!(await canAccessProgram(request, auth.user, programId))) {
+      return forbiddenResponse();
     }
 
     // Check if program exists
@@ -67,14 +73,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { id } = await params;
     const programId = parseInt(id);
@@ -83,6 +83,11 @@ export async function POST(
         { success: false, error: 'Invalid program ID' },
         { status: 400 }
       );
+    }
+
+    // A PLO belongs to a programme, and a programme belongs to a department.
+    if (!(await canAccessProgram(request, auth.user, programId))) {
+      return forbiddenResponse();
     }
 
     // Check if program exists
