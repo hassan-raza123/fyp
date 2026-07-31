@@ -79,19 +79,26 @@ test.describe('One-time passwords', () => {
     await page.getByRole('button', { name: /sign in|login/i }).click();
     await page.waitForURL(/verify-otp/, { timeout: 30_000 });
 
-    const resend = await page.request.post(`${baseURL}/api/auth/resend-otp`, {
-      data: { email: ACCOUNTS.faculty.email, userType: 'faculty' },
+    // Posted from inside the page: the OTP challenge cookie issued by the
+    // password step is SameSite=Strict, and `page.request` runs outside any
+    // site context, so it would be withheld and the call would 401 — an
+    // artifact of the harness, not the app. See `support/api-helper.ts`.
+    const resend = await apiPost(page, '/api/auth/resend-otp', {
+      email: ACCOUNTS.faculty.email,
+      userType: 'faculty',
     });
-    expect(resend.ok()).toBeTruthy();
+    expect(resend.ok).toBeTruthy();
 
     const code = await fetchOtp(page, ACCOUNTS.faculty.email, baseURL!);
 
-    const verify = await page.request.post(`${baseURL}/api/auth/verify-otp`, {
-      data: { email: ACCOUNTS.faculty.email, userType: 'faculty', otp: code },
+    const verify = await apiPost(page, '/api/auth/verify-otp', {
+      email: ACCOUNTS.faculty.email,
+      userType: 'faculty',
+      otp: code,
     });
 
-    expect(verify.status(), 'a resent OTP must verify').toBe(200);
-    expect((await verify.json()).success).toBe(true);
+    expect(verify.status, 'a resent OTP must verify').toBe(200);
+    expect((verify.body as { success: boolean }).success).toBe(true);
   });
 
   test('a wrong code is rejected', async ({ page, baseURL }) => {

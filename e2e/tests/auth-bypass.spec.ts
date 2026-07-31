@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { ACCOUNTS } from '../support/fixtures';
-import { fetchOtp } from '../support/auth-helper';
+import { ACCOUNTS, TEST_PASSWORD, testDb } from '../support/fixtures';
+import { fetchOtp, signIn } from '../support/auth-helper';
+import { apiGet, apiPost } from '../support/api-helper';
 
 /**
  * The OTP must be a *second* factor, not a standalone credential.
@@ -58,40 +59,54 @@ test.describe('OTP issuance requires a verified password', () => {
     ).toBe(fake.status());
   });
 
-  test('verify-otp rejects a code that was never preceded by a password', async ({
-    page,
+  /**
+   * A genuinely live code is used here, obtained through a *real* password
+   * login in a throwaway context. The attacker then presents it from a context
+   * that never did the password step. Asserting with a real code matters: a
+   * test that guessed one would pass simply because the code was wrong.
+   */
+  test('verify-otp rejects a valid code presented without a password step', async ({
+    browser,
     baseURL,
   }) => {
-    await page.goto('/login');
+    // Victim's context: a legitimate password login, which mints a real OTP.
+    const victim = await browser.newContext({ baseURL });
+    const victimPage = await victim.newPage();
+    await victimPage.goto('/login');
+    await victimPage.getByRole('button', { name: 'Admin', exact: true }).click();
+    await victimPage.getByLabel('Email').fill(ACCOUNTS.admin.email);
+    await victimPage
+      .getByLabel('Password', { exact: true })
+      .fill(TEST_PASSWORD);
+    await victimPage.getByRole('button', { name: /sign in|login/i }).click();
+    await victimPage.waitForURL(/verify-otp/, { timeout: 30_000 });
 
-    // Mint a code the way an attacker would: no password anywhere in the flow.
-    await page.request.post('/api/auth/resend-otp', {
-      data: { email: ACCOUNTS.admin.email, userType: 'admin' },
-    });
+    const code = await fetchOtp(victimPage, ACCOUNTS.admin.email, baseURL!);
+    await victim.close();
 
-    let code: string;
-    try {
-      code = await fetchOtp(page, ACCOUNTS.admin.email, baseURL!);
-    } catch {
-      // resend-otp already refuses anonymous callers — the chain is broken at
-      // its first link, which is the outcome this file is asserting.
-      return;
-    }
+    // Attacker's context: holds the code, never supplied the password.
+    const attacker = await browser.newContext({ baseURL });
+    const attackerPage = await attacker.newPage();
+    await attackerPage.goto('/login');
 
-    const response = await page.request.post('/api/auth/verify-otp', {
-      data: { email: ACCOUNTS.admin.email, userType: 'admin', otp: code },
+    const response = await apiPost(attackerPage, '/api/auth/verify-otp', {
+      email: ACCOUNTS.admin.email,
+      userType: 'admin',
+      otp: code,
     });
 
     expect(
-      response.status(),
-      'a full admin session was issued without any password being supplied'
-    ).not.toBe(200);
+      response.status,
+      'a full admin session was issued to a caller who never supplied a password'
+    ).toBe(401);
 
-    const cookies = await page.context().cookies();
+    const cookies = await attacker.cookies();
     expect(
       cookies.find((c) => c.name === 'token'),
       'a session cookie was set for a caller who never proved a password'
     ).toBeUndefined();
+
+    await attacker.close();
   });
 });
 
@@ -106,9 +121,6 @@ test.describe('Suspending an account revokes its session', () => {
     page,
     baseURL,
   }) => {
-    const { signIn } = await import('../support/auth-helper');
-    const { testDb, TEST_PASSWORD } = await import('../support/fixtures');
-
     await signIn(page, {
       email: ACCOUNTS.student.email,
       password: TEST_PASSWORD,
@@ -116,8 +128,8 @@ test.describe('Suspending an account revokes its session', () => {
       baseURL: baseURL!,
     });
 
-    const before = await page.request.get('/api/student/overview');
-    expect(before.status(), 'precondition: the session works').toBe(200);
+    const before = await apiGet(page, '/api/student/overview');
+    expect(before.status, 'precondition: the session works').toBe(200);
 
     await testDb.users.updateMany({
       where: { email: ACCOUNTS.student.email },
@@ -125,13 +137,11 @@ test.describe('Suspending an account revokes its session', () => {
     });
 
     try {
-      const after = await page.evaluate(async () => {
-        const r = await fetch('/api/student/overview', { credentials: 'include' });
-        return r.status;
-      });
+      // Same cookie, same token — the only thing that changed is the account.
+      const after = await apiGet(page, '/api/student/overview');
 
       expect(
-        after,
+        after.status,
         'a suspended account kept full access on its existing token'
       ).toBe(401);
     } finally {
