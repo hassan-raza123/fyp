@@ -93,20 +93,45 @@ test.describe('Document structure', () => {
   });
 });
 
-test.describe('Controls are announced', () => {
-  test.use({ storageState: statePath('admin') });
+/**
+ * Two pages was not a representative sample. The listing screens are where
+ * icon-only row actions live — an edit pencil and a delete bin rendered as
+ * bare `<button><Icon /></button>` announce as nothing at all, and they are the
+ * destructive controls on the page.
+ */
+const CONTROL_SWEEP = {
+  admin: [
+    '/admin',
+    '/admin/students',
+    '/admin/semesters',
+    '/admin/courses',
+    '/admin/programs',
+    '/admin/batches',
+    '/admin/sections',
+    '/admin/clos',
+    '/admin/plos',
+  ],
+  faculty: ['/faculty', '/faculty/assessments', '/faculty/sections'],
+  student: ['/student', '/student/courses', '/student/results'],
+  superAdmin: ['/super-admin', '/super-admin/departments'],
+} as const;
 
-  for (const path of ['/admin', '/admin/students']) {
-    test(`${path} has no unnamed buttons or links`, async ({ page }) => {
-      await page.goto(path);
-      const offenders = await unnamedControls(page);
-      expect(
-        offenders,
-        `controls a screen reader announces as blank:\n${offenders.join('\n')}`
-      ).toEqual([]);
-    });
-  }
-});
+for (const [role, paths] of Object.entries(CONTROL_SWEEP)) {
+  test.describe(`Controls are announced (${role})`, () => {
+    test.use({ storageState: statePath(role as keyof typeof CONTROL_SWEEP) });
+
+    for (const path of paths) {
+      test(`${path} has no unnamed buttons or links`, async ({ page }) => {
+        await page.goto(path);
+        const offenders = await unnamedControls(page);
+        expect(
+          offenders,
+          `controls a screen reader announces as blank:\n${offenders.join('\n')}`
+        ).toEqual([]);
+      });
+    }
+  });
+}
 
 test.describe('Forms are labelled', () => {
   test('the login form labels every field', async ({ page }) => {
