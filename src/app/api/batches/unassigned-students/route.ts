@@ -17,11 +17,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: roleResult.error }, { status: 403 });
     }
 
-    // Get current department ID from request
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
+    // A super_admin belongs to no department by design, so demanding one here
+    // locked the highest-privilege role out entirely.
+    const isSuperAdmin = roleResult.user?.role === 'super_admin';
+    const currentDepartmentId = isSuperAdmin
+      ? null
+      : await getCurrentDepartmentId(request);
+
+    if (!isSuperAdmin && !currentDepartmentId) {
       return NextResponse.json(
-        { error: 'Department not configured in settings' },
+        { error: 'Department not assigned. Please contact super admin.' },
         { status: 400 }
       );
     }
@@ -31,13 +36,25 @@ export async function GET(request: NextRequest) {
     const programId = searchParams.get('programId');
     const search = searchParams.get('search');
 
-    // Build query conditions - automatically filter by current department
-    let whereClause = 'WHERE s.batchId IS NULL AND s.departmentId = ?';
-    const params: any[] = [currentDepartmentId];
+    // Build query conditions - scoped by department except for a super_admin
+    let whereClause = 'WHERE s.batchId IS NULL';
+    const params: any[] = [];
+
+    if (currentDepartmentId) {
+      whereClause += ' AND s.departmentId = ?';
+      params.push(currentDepartmentId);
+    }
 
     if (programId) {
+      const programIdNum = parseInt(programId, 10);
+      if (Number.isNaN(programIdNum)) {
+        return NextResponse.json(
+          { error: 'Invalid programId' },
+          { status: 400 }
+        );
+      }
       whereClause += ' AND s.programId = ?';
-      params.push(parseInt(programId));
+      params.push(programIdNum);
     }
 
     if (search) {

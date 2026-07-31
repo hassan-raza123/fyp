@@ -128,7 +128,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and role
-    const authResult = await requireRole(request, ['admin']);
+    // A super_admin can already list programmes; excluding them from creation
+    // locked the highest-privilege role out of the screen it can otherwise read.
+    const authResult = await requireRole(request, ['admin', 'super_admin']);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         {

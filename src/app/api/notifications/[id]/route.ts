@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canManageUser, forbiddenResponse } from '@/lib/authz';
 
 export async function PATCH(
   request: NextRequest,
@@ -32,7 +33,12 @@ export async function PATCH(
       );
     }
 
-    if (user?.role !== 'admin' && notification.userId !== user?.userId) {
+    // Its owner, or somebody with authority over that account.
+    if (
+      !user ||
+      (notification.userId !== user.userId &&
+        !(await canManageUser(request, user, notification.userId)))
+    ) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
@@ -76,7 +82,7 @@ export async function DELETE(
 ) {
   try {
     const { success, user, error } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }
@@ -84,7 +90,35 @@ export async function DELETE(
     }
 
     const { id } = await context.params;
-    const notificationId = parseInt(id);
+    const notificationId = parseInt(id, 10);
+    if (Number.isNaN(notificationId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid notification ID' },
+        { status: 400 }
+      );
+    }
+
+    const notification = await prisma.notifications.findUnique({
+      where: { id: notificationId },
+      select: { userId: true },
+    });
+
+    if (!notification) {
+      return NextResponse.json(
+        { success: false, error: 'Notification not found' },
+        { status: 404 }
+      );
+    }
+
+    // Previously admin-only, which both locked a super_admin out (401, and the
+    // wrong status for an authorization failure) and stopped users dismissing
+    // their own notifications.
+    if (
+      notification.userId !== user.userId &&
+      !(await canManageUser(request, user, notification.userId))
+    ) {
+      return forbiddenResponse();
+    }
 
     await prisma.notifications.delete({
       where: { id: notificationId },

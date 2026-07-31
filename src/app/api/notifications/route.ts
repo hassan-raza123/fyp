@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canManageUser, forbiddenResponse } from '@/lib/authz';
 import { notification_type } from '@prisma/client';
 import { z } from 'zod';
 
@@ -27,12 +28,25 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
 
     const where: any = {};
-    
-    // Admin can see all notifications, others only their own
-    if (user?.role !== 'admin') {
+
+    // A notification is addressed to one person. Letting any admin read the
+    // whole table handed them every other user's notifications, across every
+    // department. Reading somebody else's requires the same authority as
+    // administering their account.
+    if (userId) {
+      const targetId = parseInt(userId, 10);
+      if (Number.isNaN(targetId)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid userId' },
+          { status: 400 }
+        );
+      }
+      if (!user || !(await canManageUser(request, user, targetId))) {
+        return forbiddenResponse();
+      }
+      where.userId = targetId;
+    } else {
       where.userId = user?.userId;
-    } else if (userId) {
-      where.userId = parseInt(userId);
     }
 
     if (isRead !== null && isRead !== undefined) {
