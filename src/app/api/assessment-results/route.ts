@@ -7,6 +7,40 @@ import {
   forbidden,
 } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
+import { z } from 'zod';
+
+/**
+ * Marks arrive as a nested array and are written straight into `Float` columns
+ * that every attainment figure is derived from. Hand-rolled checks let `NaN`
+ * through — `NaN < 0` is false, so a non-numeric mark passed the old negative
+ * check and reached the database.
+ */
+const marksEntrySchema = z.object({
+  sectionId: z.coerce.number().int().positive(),
+  marks: z
+    .array(
+      z.object({
+        studentId: z.coerce.number().int().positive(),
+        assessmentId: z.coerce.number().int().positive(),
+        items: z
+          .array(
+            z.object({
+              assessmentItemId: z.coerce.number().int().positive().optional(),
+              marks: z.coerce
+                .number()
+                .finite('Marks must be a number')
+                .min(0, 'Marks cannot be negative'),
+              totalMarks: z.coerce
+                .number()
+                .finite('Total marks must be a number')
+                .positive('Total marks must be greater than zero'),
+            })
+          )
+          .min(1, 'Each student needs at least one item'),
+      })
+    )
+    .min(1, 'No marks provided'),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -113,32 +147,30 @@ export async function POST(request: NextRequest) {
     const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
     if (!auth.ok) return auth.response;
 
-    const body = await request.json();
-    const { sectionId, marks } = body;
-
-    if (!sectionId || !marks || !Array.isArray(marks)) {
+    const parsed = marksEntrySchema.safeParse(await request.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
+    const { sectionId, marks } = parsed.data;
 
-    if (!(await canAccessSection(request, auth.user, Number(sectionId)))) {
+    if (!(await canAccessSection(request, auth.user, sectionId))) {
       return forbidden('You do not have access to this section').response;
     }
 
-    if (marks.length === 0) {
-      return NextResponse.json(
-        { error: 'No marks provided' },
-        { status: 400 }
-      );
-    }
-
-    // Validate no negative marks
+    // A mark above the item's own total is a data-entry slip that would push
+    // the percentage past 100 and corrupt every attainment derived from it.
     for (const studentMark of marks) {
-      if (studentMark.items.some((item: any) => item.marks < 0)) {
+      const over = studentMark.items.find(
+        (item) => item.marks > item.totalMarks
+      );
+      if (over) {
         return NextResponse.json(
-          { error: 'Marks cannot be negative' },
+          {
+            error: `Awarded ${over.marks} out of a maximum of ${over.totalMarks}`,
+          },
           { status: 400 }
         );
       }
