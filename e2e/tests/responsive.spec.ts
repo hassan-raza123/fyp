@@ -30,21 +30,42 @@ async function horizontalOverflow(page: Page): Promise<number> {
   });
 }
 
-/** The widest element sticking out, for a failure message worth reading. */
+/**
+ * The outermost element actually pushing the page wide, for a failure message
+ * worth reading.
+ *
+ * Anything inside a horizontally scrollable ancestor is skipped — a wide table
+ * within its own scroller is working as intended and would otherwise be named
+ * on every failure, hiding the element really at fault.
+ */
 async function widestOffender(page: Page): Promise<string> {
   return page.evaluate(() => {
     const limit = document.documentElement.clientWidth;
-    let worst = '';
-    let worstWidth = limit;
-    for (const el of Array.from(document.querySelectorAll('body *'))) {
-      const rect = el.getBoundingClientRect();
-      if (rect.right > worstWidth + 1) {
-        worstWidth = rect.right;
-        const cls = (el.className || '').toString().slice(0, 60);
-        worst = `<${el.tagName.toLowerCase()} class="${cls}"> right=${Math.round(rect.right)}`;
+
+    const insideScroller = (el: Element): boolean => {
+      let node = el.parentElement;
+      while (node && node !== document.body) {
+        const overflowX = getComputedStyle(node).overflowX;
+        if (overflowX === 'auto' || overflowX === 'scroll') return true;
+        node = node.parentElement;
       }
-    }
-    return worst || '(none identified)';
+      return false;
+    };
+
+    const offenders = Array.from(document.querySelectorAll('body *')).filter(
+      (el) => el.getBoundingClientRect().right > limit + 1 && !insideScroller(el)
+    );
+
+    if (offenders.length === 0) return '(none identified)';
+
+    // The first in document order is the container; its children merely inherit
+    // the problem.
+    const el = offenders[0];
+    const rect = el.getBoundingClientRect();
+    const cls = (el.className || '').toString().slice(0, 70);
+    return `<${el.tagName.toLowerCase()} class="${cls}"> width=${Math.round(
+      rect.width
+    )} right=${Math.round(rect.right)}`;
   });
 }
 
