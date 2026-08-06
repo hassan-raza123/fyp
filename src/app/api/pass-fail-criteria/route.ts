@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 export async function GET(request: NextRequest) {
-  const { success, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  // Pass/fail thresholds decide who passes a course — staff configuration.
+  const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = new URL(request.url);
-  const courseOfferingId = searchParams.get('courseOfferingId');
+  const offeringParam = searchParams.get('courseOfferingId');
+
+  let where: Record<string, unknown> = {};
+
+  if (offeringParam) {
+    const offeringId = parseInt(offeringParam, 10);
+    if (Number.isNaN(offeringId)) {
+      return NextResponse.json({ error: 'Invalid courseOfferingId' }, { status: 400 });
+    }
+    if (!(await canManageCourseOffering(request, auth.user, offeringId))) {
+      return forbiddenResponse();
+    }
+    where = { courseOfferingId: offeringId };
+  } else {
+    // No offering named: scope to the caller's department rather than
+    // returning every course's criteria in the university.
+    const scope = await resolveDepartmentScope(request, auth.user);
+    if (scope.error) return scope.error;
+    if (scope.scoped) {
+      where = {
+        courseofferings: { course: { departmentId: scope.departmentId } },
+      };
+    }
+  }
 
   const criteria = await prisma.passfailcriteria.findMany({
-    where: courseOfferingId ? { courseOfferingId: parseInt(courseOfferingId) } : {},
+    where,
     include: {
       courseofferings: {
         include: {

@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, programScopeFilter } from '@/lib/authz';
 
 // GET /api/peos?programId=1
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
-    const programId = searchParams.get('programId');
+    const programIdParam = searchParams.get('programId');
+    const programId = programIdParam ? Number(programIdParam) : null;
+
+    if (programId !== null && Number.isNaN(programId)) {
+      return NextResponse.json({ error: 'Invalid programId' }, { status: 400 });
+    }
+
+    const scope = await programScopeFilter(request, auth.user, programId);
+    if ('error' in scope) return scope.error;
 
     const peos = await prisma.peos.findMany({
       where: {
-        ...(programId ? { programId: Number(programId) } : {}),
+        ...scope.where,
         status: { not: 'archived' },
       },
       include: {

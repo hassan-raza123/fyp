@@ -1,23 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, programScopeFilter } from '@/lib/authz';
 
 // GET /api/peo-plo-mappings?peoId=1  OR  ?programId=1
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const peoId = searchParams.get('peoId');
-    const programId = searchParams.get('programId');
+    const programIdParam = searchParams.get('programId');
+    const programId = programIdParam ? Number(programIdParam) : null;
+
+    if (programId !== null && Number.isNaN(programId)) {
+      return NextResponse.json({ error: 'Invalid programId' }, { status: 400 });
+    }
+
+    // Resolved through the PEO's programme: with a programme named, check it;
+    // without one, scope the listing to the caller's department.
+    const scope = await programScopeFilter(request, auth.user, programId, 'peo');
+    if ('error' in scope) return scope.error;
 
     const mappings = await prisma.peoplomappings.findMany({
       where: {
         ...(peoId ? { peoId: Number(peoId) } : {}),
-        ...(programId ? { peo: { programId: Number(programId) } } : {}),
+        ...scope.where,
       },
       include: {
         peo: { select: { id: true, code: true, description: true } },

@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, courseScopeFilter } from '@/lib/authz';
 
 // GET /api/clos
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) return NextResponse.json({ error }, { status: 401 });
+    // CLOs are course configuration. A student reads their own attainment
+    // through /api/student/clo-attainments, which resolves them from the
+    // session; this endpoint describes the course, not the caller.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
-    const courseId = searchParams.get('courseId');
+    const courseIdParam = searchParams.get('courseId');
+    const courseId = courseIdParam ? Number(courseIdParam) : null;
 
-    const where = {
-      ...(courseId && { courseId: Number(courseId) }),
-    };
+    if (courseId !== null && Number.isNaN(courseId)) {
+      return NextResponse.json({ error: 'Invalid courseId' }, { status: 400 });
+    }
+
+    const scope = await courseScopeFilter(request, auth.user, courseId);
+    if ('error' in scope) return scope.error;
+
+    const where = scope.where;
 
     const clos = await prisma.clos.findMany({
       where,

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/peos/[id]
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const peo = await prisma.peos.findUnique({
       where: { id: Number(params.id) },
@@ -27,6 +26,11 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 
     if (!peo) {
       return NextResponse.json({ error: 'PEO not found' }, { status: 404 });
+    }
+
+    // Resolved through the programme the PEO belongs to.
+    if (!(await canAccessProgram(request, auth.user, peo.programId))) {
+      return forbiddenResponse();
     }
 
     return NextResponse.json(peo);

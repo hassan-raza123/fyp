@@ -2,16 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
+import { authorize, programScopeFilter } from '@/lib/authz';
 
 export async function GET(request: NextRequest) {
-  const { success, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = new URL(request.url);
-  const programId = searchParams.get('programId');
+  const programIdParam = searchParams.get('programId');
+  const programId = programIdParam ? parseInt(programIdParam, 10) : null;
 
-  const where: Prisma.program_curriculumWhereInput = {};
-  if (programId) where.programId = parseInt(programId);
+  if (programId !== null && Number.isNaN(programId)) {
+    return NextResponse.json({ error: 'Invalid programId' }, { status: 400 });
+  }
+
+  const scope = await programScopeFilter(request, auth.user, programId);
+  if ('error' in scope) return scope.error;
+
+  const where = scope.where as Prisma.program_curriculumWhereInput;
 
   const entries = await prisma.program_curriculum.findMany({
     where,

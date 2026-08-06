@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize } from '@/lib/authz';
 
 // GET /api/departments/by-code?code=CS
 // Simple endpoint to get department ID by code
 export async function GET(request: NextRequest) {
   try {
-    const { success } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Department configuration is a staff view.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');

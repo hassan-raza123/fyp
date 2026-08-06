@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
-  const { success, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+  if (!auth.ok) return auth.response;
 
   const criterion = await prisma.passfailcriteria.findUnique({
     where: { id: parseInt(params.id) },
@@ -20,6 +21,11 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
   });
 
   if (!criterion) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  if (!(await canManageCourseOffering(request, auth.user, criterion.courseOfferingId))) {
+    return forbiddenResponse();
+  }
+
   return NextResponse.json({ success: true, data: criterion });
 }
 

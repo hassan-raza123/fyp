@@ -12,6 +12,7 @@ import {
   DEFAULT_PLO_THRESHOLD,
 } from '@/lib/obe';
 import { plo_status } from '@prisma/client';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 interface ContributingCLO {
   cloId: number;
@@ -42,10 +43,9 @@ interface PLOAttainment {
 // ── GET: live calculation for display (not persisted) ───────────────────────
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Programme-wide PLO attainment is an accreditation view of the cohort.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
@@ -59,6 +59,12 @@ export async function GET(request: NextRequest) {
     }
 
     const pid = Number(programId);
+    if (Number.isNaN(pid)) {
+      return NextResponse.json({ error: 'Invalid programId' }, { status: 400 });
+    }
+    if (!(await canAccessProgram(request, auth.user, pid))) {
+      return forbiddenResponse();
+    }
     const sid = Number(semesterId);
 
     // Fetch PLOs with CLO + LLO mapping attainments for the semester

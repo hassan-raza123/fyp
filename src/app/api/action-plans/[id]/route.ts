@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getFacultyIdFromRequest } from '@/lib/auth';
+import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
-  const { success, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+  if (!auth.ok) return auth.response;
 
   const plan = await prisma.action_plans.findUnique({
     where: { id: parseInt(params.id) },
@@ -22,6 +23,15 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
   });
 
   if (!plan) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  // An action plan closes the loop on a course offering's attainment gap.
+  if (
+    plan.courseOfferingId !== null &&
+    !(await canManageCourseOffering(request, auth.user, plan.courseOfferingId))
+  ) {
+    return forbiddenResponse();
+  }
+
   return NextResponse.json({ success: true, data: plan });
 }
 

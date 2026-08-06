@@ -71,14 +71,18 @@ function validateStatusTransition(
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Semesters are university-wide reference data — a student needs the
+    // calendar as much as an admin does — so every signed-in role may read
+    // them. Stated explicitly rather than left as a bare `requireAuth`, so the
+    // next reader can tell this is a decision and not an omission.
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

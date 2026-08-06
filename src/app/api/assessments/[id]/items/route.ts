@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import {
   authorize,
+  canAccessCourse,
   canManageCourseOffering,
   assertResultsUnlocked,
   forbidden,
+  forbiddenResponse,
 } from '@/lib/authz';
 
 export async function POST(
@@ -107,14 +109,36 @@ export async function POST(
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
+    const owning = await prisma.assessments.findUnique({
+      where: { id: parseInt(params.id) },
+      select: { courseOffering: { select: { courseId: true } } },
+    });
+
+    if (!owning) {
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
+    }
+
+    if (
+      !(await canAccessCourse(
+        request,
+        auth.user,
+        owning.courseOffering.courseId
+      ))
+    ) {
+      return forbiddenResponse();
     }
 
     const assessmentItems = await prisma.assessmentitems.findMany({

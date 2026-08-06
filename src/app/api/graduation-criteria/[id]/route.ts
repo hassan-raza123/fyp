@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 /**
  * GET /api/graduation-criteria/[id]
@@ -8,8 +9,8 @@ import { requireAuth } from '@/lib/auth';
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const criteria = await prisma.graduation_criteria.findUnique({
       where: { id: parseInt(params.id) },
@@ -18,6 +19,11 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 
     if (!criteria) {
       return NextResponse.json({ success: false, error: 'Criteria not found' }, { status: 404 });
+    }
+
+    // Resolved through the programme this criteria set belongs to.
+    if (!(await canAccessProgram(request, auth.user, criteria.programId))) {
+      return forbiddenResponse();
     }
 
     return NextResponse.json({ success: true, data: criteria });

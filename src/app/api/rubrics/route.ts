@@ -1,23 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 // GET /api/rubrics?courseOfferingId=1  OR  ?cloId=1
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Rubrics are marking guidance: staff configuration, not student-facing.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
-    const courseOfferingId = searchParams.get('courseOfferingId');
+    const offeringParam = searchParams.get('courseOfferingId');
     const cloId = searchParams.get('cloId');
     const lloId = searchParams.get('lloId');
 
+    let ownership: Record<string, unknown> = {};
+
+    if (offeringParam) {
+      const offeringId = Number(offeringParam);
+      if (Number.isNaN(offeringId)) {
+        return NextResponse.json({ error: 'Invalid courseOfferingId' }, { status: 400 });
+      }
+      if (!(await canManageCourseOffering(request, auth.user, offeringId))) {
+        return forbiddenResponse();
+      }
+      ownership = { courseOfferingId: offeringId };
+    } else {
+      const scope = await resolveDepartmentScope(request, auth.user);
+      if (scope.error) return scope.error;
+      if (scope.scoped) {
+        ownership = {
+          courseOffering: { course: { departmentId: scope.departmentId } },
+        };
+      }
+    }
+
     const rubrics = await prisma.rubrics.findMany({
       where: {
-        ...(courseOfferingId ? { courseOfferingId: Number(courseOfferingId) } : {}),
+        ...ownership,
         ...(cloId ? { cloId: Number(cloId) } : {}),
         ...(lloId ? { lloId: Number(lloId) } : {}),
       },

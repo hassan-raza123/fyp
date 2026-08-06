@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/courses/[id]/prerequisites — list prerequisites for a course
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
+  const auth = await authorize(request, [
+    'super_admin',
+    'admin',
+    'faculty',
+    'student',
+  ]);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const courseId = parseInt(id);
+
+  if (Number.isNaN(courseId)) {
+    return NextResponse.json({ error: 'Invalid course ID' }, { status: 400 });
+  }
+
+  if (!(await canAccessCourse(request, auth.user, courseId))) {
+    return forbiddenResponse();
+  }
 
   const course = await prisma.courses.findUnique({
     where: { id: courseId },

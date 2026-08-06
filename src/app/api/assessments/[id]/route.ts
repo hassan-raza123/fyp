@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import {
   authorize,
+  canAccessCourse,
   canManageCourseOffering,
   assertResultsUnlocked,
   forbidden,
+  forbiddenResponse,
 } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 import { TokenPayload } from '@/types/auth';
@@ -243,9 +245,34 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) {
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    // A student reads the assessment for a course they are enrolled in, so the
+    // gate is ownership rather than role. `canAccessCourse` is the read-side
+    // rule: staff by department, a student by enrolment.
+    const auth = await authorize(request as unknown as NextRequest, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
+
+    const owning = await prisma.assessments.findUnique({
+      where: { id: parseInt(params.id) },
+      select: { courseOffering: { select: { courseId: true } } },
+    });
+
+    if (!owning) {
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
+    }
+
+    if (
+      !(await canAccessCourse(
+        request as unknown as NextRequest,
+        auth.user,
+        owning.courseOffering.courseId
+      ))
+    ) {
+      return forbiddenResponse();
     }
 
     const assessment = await prisma.assessments.findUnique({

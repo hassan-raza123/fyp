@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { authorize, resolveDepartmentScope } from '@/lib/authz';
 
 export async function GET(request: NextRequest) {
   try {
-    const { success, error } = await requireAuth(request as any);
-    if (!success) return NextResponse.json({ error }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const cloId = searchParams.get('cloId');
@@ -14,6 +15,14 @@ export async function GET(request: NextRequest) {
     const where: any = {};
     if (cloId) where.cloId = parseInt(cloId);
     if (ploId) where.ploId = parseInt(ploId);
+
+    // Mappings are the accreditation trail between a course and a programme;
+    // scope them to the caller's department.
+    const scope = await resolveDepartmentScope(request, auth.user);
+    if (scope.error) return scope.error;
+    if (scope.scoped) {
+      where.clo = { course: { departmentId: scope.departmentId } };
+    }
 
     const mappings = await prisma.cloplomappings.findMany({
       where,

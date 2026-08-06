@@ -515,3 +515,75 @@ export function departmentFilter(
 ): Record<string, number> {
   return departmentId === null ? {} : { [field]: departmentId };
 }
+
+/**
+ * The programmes this user may read, as a Prisma `where` fragment.
+ *
+ * The OBE configuration endpoints (`/api/peos`, `/api/plos`, `/api/clos`,
+ * the mapping tables, the criteria tables) all hang off a programme or a
+ * course, and all of them used to answer any signed-in caller with every row
+ * in the system. They share one rule:
+ *
+ *   - a programme id in the query  → check it with `canAccessProgram`
+ *   - no id                        → scope the listing to the caller's
+ *                                    department instead of returning the lot
+ *
+ * Returns the fragment to spread into `where`, or an error response.
+ */
+export async function programScopeFilter(
+  request: NextRequest,
+  user: TokenPayload,
+  programId: number | null,
+  /** Path from the queried model to `programs`, e.g. 'peo' for peoplomappings. */
+  path?: string
+): Promise<{ where: Record<string, unknown> } | { error: NextResponse }> {
+  if (programId !== null) {
+    if (!(await canAccessProgram(request, user, programId))) {
+      return { error: forbiddenResponse() };
+    }
+    const key = path ? path : null;
+    return {
+      where: key ? { [key]: { programId } } : { programId },
+    };
+  }
+
+  const scope = await resolveDepartmentScope(request, user);
+  if (scope.error) return { error: scope.error };
+  if (!scope.scoped) return { where: {} };
+
+  const departmentFragment = { departmentId: scope.departmentId };
+  return {
+    where: path
+      ? { [path]: { program: departmentFragment } }
+      : { program: departmentFragment },
+  };
+}
+
+/**
+ * The same idea resolved through a course rather than a programme, for the
+ * endpoints keyed on `courseId` (`/api/clos`, prerequisites, …).
+ */
+export async function courseScopeFilter(
+  request: NextRequest,
+  user: TokenPayload,
+  courseId: number | null,
+  path?: string
+): Promise<{ where: Record<string, unknown> } | { error: NextResponse }> {
+  if (courseId !== null) {
+    if (!(await canAccessCourse(request, user, courseId))) {
+      return { error: forbiddenResponse() };
+    }
+    return { where: path ? { [path]: { courseId } } : { courseId } };
+  }
+
+  const scope = await resolveDepartmentScope(request, user);
+  if (scope.error) return { error: scope.error };
+  if (!scope.scoped) return { where: {} };
+
+  const departmentFragment = { departmentId: scope.departmentId };
+  return {
+    where: path
+      ? { [path]: { course: departmentFragment } }
+      : { course: departmentFragment },
+  };
+}

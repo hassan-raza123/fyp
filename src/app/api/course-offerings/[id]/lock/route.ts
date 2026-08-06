@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit-log';
+import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 /**
  * PATCH /api/course-offerings/[id]/lock
@@ -95,10 +96,8 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const courseOfferingId = parseInt(params.id);
     if (isNaN(courseOfferingId)) {
@@ -106,6 +105,10 @@ export async function GET(
         { success: false, error: 'Invalid course offering ID.' },
         { status: 400 }
       );
+    }
+
+    if (!(await canManageCourseOffering(request, auth.user, courseOfferingId))) {
+      return forbiddenResponse();
     }
 
     const offering = await prisma.courseofferings.findUnique({
