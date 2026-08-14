@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import {
   authorize,
@@ -7,6 +8,13 @@ import {
   forbidden,
 } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
+
+/** Moderation of an already-entered result: a status change and a note. */
+const updateResultSchema = z.object({
+  // Mirrors the `result_status` enum in the schema.
+  status: z.enum(['pending', 'evaluated', 'published', 'draft']).optional(),
+  remarks: z.string().max(2000).optional(),
+});
 
 export async function PATCH(
   request: NextRequest,
@@ -23,8 +31,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid result ID' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { status, remarks } = body;
+    const parsed = updateResultSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    const { status, remarks } = parsed.data;
 
     if (!status && !remarks) {
       return NextResponse.json(

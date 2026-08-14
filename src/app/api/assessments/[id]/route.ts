@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import {
@@ -11,6 +12,29 @@ import {
 } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 import { TokenPayload } from '@/types/auth';
+
+/**
+ * `totalMarks` is the denominator of every percentage derived from this
+ * assessment and `weightage` is its share of the course total, so neither may
+ * arrive as a string, a negative, or `NaN`.
+ */
+const updateAssessmentSchema = z.object({
+  title: z.string().trim().min(1).max(255).optional(),
+  description: z.string().max(2000).nullish(),
+  dueDate: z.string().datetime().or(z.string().min(1)).optional(),
+  instructions: z.string().max(4000).nullish(),
+  totalMarks: z.coerce
+    .number()
+    .finite('Total marks must be a number')
+    .positive('Total marks must be greater than zero')
+    .optional(),
+  weightage: z.coerce
+    .number()
+    .finite('Weightage must be a number')
+    .min(0, 'Weightage cannot be negative')
+    .max(100, 'Weightage cannot exceed 100')
+    .optional(),
+});
 
 /**
  * Resolve the assessment and confirm the caller may manage its course offering.
@@ -65,8 +89,15 @@ export async function PUT(
     );
     if (!access.ok) return access.response;
 
-    const body = await request.json();
-    const { title, description, dueDate, totalMarks, instructions, weightage } = body;
+    const parsed = updateAssessmentSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    const { title, description, dueDate, totalMarks, instructions, weightage } =
+      parsed.data;
 
     // If weightage is being changed, validate the new total won't exceed 100
     if (weightage !== undefined) {
@@ -105,9 +136,9 @@ export async function PUT(
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
         ...(dueDate !== undefined && { dueDate: new Date(dueDate) }),
-        ...(totalMarks !== undefined && { totalMarks: parseInt(totalMarks) }),
+        ...(totalMarks !== undefined && { totalMarks }),
         ...(instructions !== undefined && { instructions }),
-        ...(weightage !== undefined && { weightage: Number(weightage) }),
+        ...(weightage !== undefined && { weightage }),
       },
     });
 
