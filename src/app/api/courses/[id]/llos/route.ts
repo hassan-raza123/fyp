@@ -84,7 +84,7 @@ export async function POST(
   const params = await _params;
   try {
     const { success, user } = await requireAuth(req);
-    if (!success || user?.role !== 'admin') {
+    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

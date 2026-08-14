@@ -57,7 +57,12 @@ const publicApiRoutes = [
 
 // Public API routes matched by pattern, for dynamic segments
 const publicApiRoutePatterns = [
-  /^\/api\/surveys\/\d+\/public$/,
+  // Answering an external survey. The `token` query parameter is the
+  // credential and the handler verifies it.
+  //
+  // `/api/surveys/<id>/public` is deliberately *not* here: that route mints
+  // the token, and handing out a credential is a staff action even though
+  // using it is not.
   /^\/api\/surveys\/\d+\/external-respond$/,
 ];
 

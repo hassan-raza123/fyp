@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 

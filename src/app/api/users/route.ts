@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user has admin role
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

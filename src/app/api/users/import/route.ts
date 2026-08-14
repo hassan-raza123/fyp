@@ -146,8 +146,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
+    // A super_admin oversees every department; excluding them here locked the
+    // highest-privilege role out of bulk import for no reason.
+    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -170,6 +171,19 @@ export async function POST(request: NextRequest) {
 
     if (!file || typeof file.text !== 'function') {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // The whole file is read into memory and parsed, so it has to be bounded.
+    // A roster of a few thousand rows is well under this; anything larger is
+    // either a mistake or an attempt to exhaust the process.
+    const MAX_IMPORT_BYTES = 2 * 1024 * 1024; // 2 MB
+    if (file.size > MAX_IMPORT_BYTES) {
+      return NextResponse.json(
+        {
+          error: `That file is ${(file.size / 1024 / 1024).toFixed(1)} MB. The import limit is 2 MB — split it into smaller batches.`,
+        },
+        { status: 413 }
+      );
     }
 
     const content = await file.text();

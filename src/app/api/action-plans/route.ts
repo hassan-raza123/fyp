@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   // Admin sees all plans; faculty sees only plans for their course offerings
   if (
-    user?.role !== 'admin' &&
+    user?.role !== 'admin' && user?.role !== 'super_admin' &&
     user?.role !== 'faculty' &&
     user?.role !== 'super_admin'
   ) {

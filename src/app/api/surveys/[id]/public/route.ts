@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
+import { authorize } from '@/lib/authz';
 
-// POST /api/surveys/[id]/public
-// Generates (or returns existing) a public token link for alumni/employer surveys.
-// Requires admin auth.
+/**
+ * POST /api/surveys/[id]/public
+ *
+ * Mints (or returns) the public link token for an alumni/employer survey.
+ *
+ * The comment here used to say "Requires admin auth" while the handler checked
+ * nothing, and `proxy.ts` listed the path as public — so any anonymous caller
+ * could ask for the token of any survey by id, then use it to read the survey
+ * and submit responses. Those responses feed indirect PLO attainment, which is
+ * an accreditation figure.
+ *
+ * Handing out the credential is a staff action. Using it is not, which is why
+ * the respond endpoints stay public and verify the token instead.
+ */
 export async function POST(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
     const survey = await prisma.surveys.findUnique({
       where: { id: Number(params.id) },
       select: { id: true, type: true, status: true, publicToken: true },

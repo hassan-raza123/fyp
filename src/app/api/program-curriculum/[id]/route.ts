@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 

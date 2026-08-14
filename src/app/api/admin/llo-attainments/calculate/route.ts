@@ -11,7 +11,7 @@ const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
 export async function POST(req: NextRequest) {
   try {
     const { success, user, error } = await requireAuth(req);
-    if (!success || user?.role !== 'admin') {
+    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: error || 'Unauthorized' },
         { status: 401 }

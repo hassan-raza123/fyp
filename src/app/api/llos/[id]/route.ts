@@ -80,7 +80,7 @@ export async function PUT(
 ) {
   try {
     const { success, user } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -222,7 +222,7 @@ export async function DELETE(
 ) {
   try {
     const { success, user } = await requireAuth(request);
-    if (!success || user?.role !== 'admin') {
+    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

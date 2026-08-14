@@ -2,6 +2,56 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
+ * Confirm the caller holds this survey's public link token.
+ *
+ * These two handlers are reachable without a session by design — alumni and
+ * employers have no account. What makes that safe is the token: it is 32 random
+ * bytes, it is what the invitation email contains, and it is the only thing
+ * standing between the survey and the open internet.
+ *
+ * Neither handler used to check it. The survey id is a small integer in the
+ * URL, so anybody could walk `/api/surveys/1/external-respond`,
+ * `/2`, `/3` and submit as many responses as they liked to any active alumni
+ * or employer survey. Those responses are averaged into indirect PLO
+ * attainment, so stuffing them moves the numbers an accreditation review reads.
+ */
+async function surveyForToken(
+  request: NextRequest,
+  surveyId: number
+): Promise<{ ok: true } | { ok: false; response: NextResponse }> {
+  const token = new URL(request.url).searchParams.get('token');
+
+  if (!token) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { success: false, error: 'A survey link token is required.' },
+        { status: 401 }
+      ),
+    };
+  }
+
+  const survey = await prisma.surveys.findUnique({
+    where: { id: surveyId },
+    select: { publicToken: true },
+  });
+
+  // Answering the same 404 whether the survey is missing or the token is wrong
+  // keeps this from confirming which survey ids exist.
+  if (!survey?.publicToken || survey.publicToken !== token) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { success: false, error: 'Invalid or expired survey link.' },
+        { status: 404 }
+      ),
+    };
+  }
+
+  return { ok: true };
+}
+
+/**
  * POST /api/surveys/[id]/external-respond
  * Alumni or employer submits answers — no login required.
  * Body: {
@@ -17,6 +67,15 @@ export async function POST(
   const params = await _params;
   try {
     const surveyId = parseInt(params.id);
+    if (Number.isNaN(surveyId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid survey id.' },
+        { status: 400 }
+      );
+    }
+
+    const authorised = await surveyForToken(request, surveyId);
+    if (!authorised.ok) return authorised.response;
 
     const survey = await prisma.surveys.findUnique({
       where: { id: surveyId },
@@ -150,13 +209,24 @@ export async function POST(
  * Returns the survey details + questions for public display (no auth needed).
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   const params = await _params;
   try {
+    const surveyId = parseInt(params.id);
+    if (Number.isNaN(surveyId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid survey id.' },
+        { status: 400 }
+      );
+    }
+
+    const authorised = await surveyForToken(request, surveyId);
+    if (!authorised.ok) return authorised.response;
+
     const survey = await prisma.surveys.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: surveyId },
       select: {
         id: true,
         title: true,

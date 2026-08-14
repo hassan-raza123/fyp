@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
   const params = await _params;
   const { success, user, error } = await requireAuth(request);
   if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 
