@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorize } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
@@ -164,13 +165,14 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    // Answering is a student action; the student is resolved from the session
+    // below, so there is no id here to authorise beyond the role.
+    const auth = await authorize(request, ['student']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const student = await prisma.students.findFirst({
-      where: { userId: user!.userId },
+      where: { userId: user.userId },
       select: { id: true },
     });
 

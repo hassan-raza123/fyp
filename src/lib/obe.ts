@@ -79,6 +79,39 @@ export interface CohortAttainment {
 }
 
 /**
+ * Percentages and thresholds are stored as `Float` (MySQL `DOUBLE`), which
+ * cannot represent most decimal fractions exactly. `(3 / 5) * 100` is
+ * `60.00000000000001`, and `0.1 + 0.2` is `0.30000000000000004`. A student who
+ * scores exactly the threshold can therefore land a few ulps below it and be
+ * recorded as *not* achieving an outcome they did achieve.
+ *
+ * The right long-term fix is `Decimal` columns; that is a schema migration plus
+ * a rewrite of every arithmetic site that consumes them. Until then, every
+ * threshold comparison in this file goes through here, so the boundary case is
+ * decided once and consistently rather than per call site.
+ *
+ * The tolerance is far smaller than any mark a human enters (1e-9 of a
+ * percentage point) and far larger than accumulated double error.
+ */
+const COMPARISON_EPSILON = 1e-9;
+
+/** `value >= threshold`, tolerant of floating-point representation error. */
+export function meetsThreshold(value: number, threshold: number): boolean {
+  return value >= threshold - COMPARISON_EPSILON;
+}
+
+/**
+ * Round a stored percentage to a sane precision.
+ *
+ * Writing `60.00000000000001` into a report, a transcript or an accreditation
+ * table is noise; four decimal places is finer than any grading policy and
+ * keeps the stored value equal to the one a human would compute.
+ */
+export function roundPercentage(value: number): number {
+  return Math.round(value * 1e4) / 1e4;
+}
+
+/**
  * Compute cohort attainment from per-student performance.
  *
  * Students without an evaluated result are **excluded from the denominator**
@@ -96,7 +129,7 @@ export function computeCohortAttainment(
 
   for (const perf of performanceByStudent.values()) {
     const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
-    if (percentage >= thresholds.performance) studentsAchieved++;
+    if (meetsThreshold(percentage, thresholds.performance)) studentsAchieved++;
   }
 
   const totalStudents = performanceByStudent.size;
@@ -115,7 +148,9 @@ export function computeCohortAttainment(
     };
   }
 
-  const attainmentPercent = (studentsAchieved / totalStudents) * 100;
+  const attainmentPercent = roundPercentage(
+    (studentsAchieved / totalStudents) * 100
+  );
 
   return {
     totalStudents,
@@ -125,7 +160,7 @@ export function computeCohortAttainment(
     isAchieved:
       thresholds.target === null
         ? null
-        : attainmentPercent >= thresholds.target,
+        : meetsThreshold(attainmentPercent, thresholds.target),
     hasData: true,
   };
 }
@@ -995,7 +1030,7 @@ export function attainmentVerdict(
     return 'no_target';
   }
 
-  return record.attainmentPercent >= record.targetThreshold
+  return meetsThreshold(record.attainmentPercent, record.targetThreshold)
     ? 'attained'
     : 'not_attained';
 }

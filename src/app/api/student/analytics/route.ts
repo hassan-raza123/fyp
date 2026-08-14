@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { COUNTABLE_GRADE_STATUSES } from '@/lib/obe';
+import { COUNTABLE_GRADE_STATUSES, meetsThreshold } from '@/lib/obe';
 import { getStudentIdFromRequest, getStudentFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -545,7 +545,9 @@ export async function GET(request: NextRequest) {
         studentAttainment: parseFloat(studentAttainment.toFixed(2)),
         classAttainment: parseFloat(classAttainment.toFixed(2)),
         status:
-          studentAttainment >= threshold ? 'attained' : 'not_attained',
+          meetsThreshold(studentAttainment, threshold)
+            ? 'attained'
+            : 'not_attained',
       });
     });
 

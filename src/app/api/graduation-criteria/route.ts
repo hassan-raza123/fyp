@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+
+/**
+ * The thresholds a student is measured against to graduate. `directWeight` and
+ * `indirectWeight` split direct (marks) against indirect (survey) attainment,
+ * so they have to be a proportion, not an arbitrary number.
+ */
+const graduationCriteriaSchema = z.object({
+  programId: z.coerce.number().int().positive(),
+  minCGPA: z.coerce.number().finite().min(0).max(4).optional(),
+  minPloAttainmentPercent: z.coerce.number().finite().min(0).max(100).optional(),
+  requireAllCourses: z.coerce.boolean().optional(),
+  directWeight: z.coerce.number().finite().min(0).max(1).optional(),
+  indirectWeight: z.coerce.number().finite().min(0).max(1).optional(),
+});
 
 /**
  * GET /api/graduation-criteria
@@ -53,7 +68,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Admins only' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const parsed = graduationCriteriaSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
+    }
     const {
       programId,
       minCGPA,
@@ -61,14 +82,10 @@ export async function POST(request: NextRequest) {
       requireAllCourses,
       directWeight,
       indirectWeight,
-    } = body;
+    } = parsed.data;
 
-    if (!programId) {
-      return NextResponse.json({ success: false, error: 'programId is required' }, { status: 400 });
-    }
-
-    const dWeight = directWeight !== undefined ? parseFloat(directWeight) : 0.7;
-    const iWeight = indirectWeight !== undefined ? parseFloat(indirectWeight) : 0.3;
+    const dWeight = directWeight ?? 0.7;
+    const iWeight = indirectWeight ?? 0.3;
 
     if (Math.abs(dWeight + iWeight - 1.0) > 0.001) {
       return NextResponse.json(
@@ -79,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     // Check for existing criteria
     const existing = await prisma.graduation_criteria.findUnique({
-      where: { programId: parseInt(programId) },
+      where: { programId },
     });
     if (existing) {
       return NextResponse.json(
@@ -90,10 +107,10 @@ export async function POST(request: NextRequest) {
 
     const criteria = await prisma.graduation_criteria.create({
       data: {
-        programId: parseInt(programId),
-        minCGPA: minCGPA !== undefined ? parseFloat(minCGPA) : 2.0,
-        minPloAttainmentPercent: minPloAttainmentPercent !== undefined ? parseFloat(minPloAttainmentPercent) : 50.0,
-        requireAllCourses: requireAllCourses !== undefined ? Boolean(requireAllCourses) : true,
+        programId,
+        minCGPA: minCGPA ?? 2.0,
+        minPloAttainmentPercent: minPloAttainmentPercent ?? 50.0,
+        requireAllCourses: requireAllCourses ?? true,
         directWeight: dWeight,
         indirectWeight: iWeight,
       },

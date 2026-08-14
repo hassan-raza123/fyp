@@ -55,8 +55,19 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    /**
+     * Paginate only when the caller asks for it.
+     *
+     * A default `limit=10` applied to every request meant a caller that sent no
+     * query string quietly received the first ten rows. Tables pass
+     * `page`/`limit` and were fine; the dropdowns that fill from these
+     * endpoints do not, so past the tenth row they simply had no option to
+     * select and nothing said so.
+     */
+    const hasExplicitPaging =
+      searchParams.has('page') || searchParams.has('limit');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10', 10) || 10);
     const status = searchParams.get('status') as
       | 'active'
       | 'inactive'
@@ -179,8 +190,9 @@ export async function GET(request: NextRequest) {
             first_name: 'asc',
           },
         },
-        skip: (page - 1) * limit,
-        take: limit,
+        ...(hasExplicitPaging
+          ? { skip: (page - 1) * limit, take: limit }
+          : {}),
       }),
       prisma.students.count({ where }),
     ]);
@@ -389,8 +401,17 @@ export async function POST(request: NextRequest) {
     const defaultPassword = generateTemporaryPassword();
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
+    /**
+     * One transaction for the whole account.
+     *
+     * A student is three rows — `users`, `userroles`, `students` — plus an
+     * optional enrolment. Created separately, a failure part-way left a user
+     * who could not sign in ("User has no roles assigned") or a user with a
+     * role but no student record, and nothing rolled back.
+     */
+    const student = await prisma.$transaction(async (tx) => {
     // Create user with student role
-    const newUser = await prisma.users.create({
+    const newUser = await tx.users.create({
       data: {
         first_name: firstName,
         last_name: lastName,
@@ -422,7 +443,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create student
-    const student = await prisma.students.create({
+    const created = await tx.students.create({
       data: {
         rollNumber,
         status,
@@ -484,15 +505,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Enroll student in section if sectionId is provided
-    if (body.sectionId) {
-      await prisma.studentsections.create({
-        data: {
-          studentId: student.id,
-          sectionId: Number(body.sectionId),
-          status: 'active',
-        },
-      });
-    }
+      if (body.sectionId) {
+        await tx.studentsections.create({
+          data: {
+            studentId: created.id,
+            sectionId: Number(body.sectionId),
+            status: 'active',
+          },
+        });
+      }
+
+      return created;
+    });
 
     // Transform the data to include currentStudents count
     const transformedStudent = {

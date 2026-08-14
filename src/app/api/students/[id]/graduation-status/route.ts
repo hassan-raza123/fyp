@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorize, canAccessStudent, forbidden } from '@/lib/authz';
-import {
-  aggregatePloScores,
-  countRequiredCourses,
-  COUNTABLE_GRADE_STATUSES,
-} from '@/lib/obe';
+import { aggregatePloScores, countRequiredCourses, COUNTABLE_GRADE_STATUSES, meetsThreshold } from '@/lib/obe';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize(request, [
@@ -101,7 +97,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const ploStatus = plos.map((plo) => {
     const agg = aggregated.get(plo.id);
     const score = agg?.percentage ?? null;
-    const attained = score !== null && score >= threshold;
+    const attained = score !== null && meetsThreshold(score, threshold);
 
     return {
       ploId: plo.id,
@@ -159,7 +155,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const isEligible =
     totalPlos > 0 &&
     attainedPlos === totalPlos &&
-    cgpa >= minCGPA &&
+    meetsThreshold(cgpa, minCGPA) &&
     allCoursesComplete;
 
   return NextResponse.json({

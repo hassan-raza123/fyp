@@ -82,8 +82,19 @@ export async function GET(request: NextRequest) {
     const { getCurrentDepartmentId, getFacultyIdFromRequest } = await import('@/lib/auth');
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    /**
+     * Paginate only when the caller asks for it.
+     *
+     * A default `limit=10` applied to every request meant a caller that sent no
+     * query string quietly received the first ten rows. Tables pass
+     * `page`/`limit` and were fine; the dropdowns that fill from these
+     * endpoints do not, so past the tenth row they simply had no option to
+     * select and nothing said so.
+     */
+    const hasExplicitPaging =
+      searchParams.has('page') || searchParams.has('limit');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10', 10) || 10);
     const search = searchParams.get('search') || '';
     const type = searchParams.get('type');
     const status = searchParams.get('status');
@@ -168,8 +179,9 @@ export async function GET(request: NextRequest) {
     // Then get paginated data
     const courses = await prisma.courses.findMany({
       where,
-      skip: (page - 1) * limit,
-      take: limit,
+      ...(hasExplicitPaging
+        ? { skip: (page - 1) * limit, take: limit }
+        : {}),
       orderBy: { code: 'asc' },
       include: {
         department: {
@@ -429,34 +441,39 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Update course — for explicit m2m, clear and recreate junction rows
-    if (prerequisites !== undefined) {
-      await prisma.courseprerequisites.deleteMany({ where: { A: id } });
-    }
-    if (programIds !== undefined) {
-      await prisma.programcourses.deleteMany({ where: { B: id } });
-    }
+    // Update course — for explicit m2m, clear and recreate junction rows.
+    // One transaction: the rows are cleared before they are recreated, so a
+    // failure between the two left the course with no prerequisites and no
+    // programme mappings at all.
+    const course = await prisma.$transaction(async (tx) => {
+      if (prerequisites !== undefined) {
+        await tx.courseprerequisites.deleteMany({ where: { A: id } });
+      }
+      if (programIds !== undefined) {
+        await tx.programcourses.deleteMany({ where: { B: id } });
+      }
 
-    const course = await prisma.courses.update({
-      where: { id },
-      data: {
-        ...updateData,
-        courses_A: prerequisites
-          ? { create: prerequisites.map((B) => ({ B })) }
-          : undefined,
-        programMappings: programIds
-          ? { create: programIds.map((A) => ({ A })) }
-          : undefined,
-      },
-      include: {
-        department: { select: { id: true, name: true, code: true } },
-        courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
-        programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
-        clos: {
-          where: { status: 'active' },
-          select: { id: true, code: true, description: true },
+      return tx.courses.update({
+        where: { id },
+        data: {
+          ...updateData,
+          courses_A: prerequisites
+            ? { create: prerequisites.map((B) => ({ B })) }
+            : undefined,
+          programMappings: programIds
+            ? { create: programIds.map((A) => ({ A })) }
+            : undefined,
         },
-      },
+        include: {
+          department: { select: { id: true, name: true, code: true } },
+          courses_A: { include: { courseA: { select: { id: true, code: true, name: true } } } },
+          programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
+          clos: {
+            where: { status: 'active' },
+            select: { id: true, code: true, description: true },
+          },
+        },
+      });
     });
 
     return NextResponse.json({

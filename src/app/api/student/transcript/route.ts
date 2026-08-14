@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { meetsThreshold } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getStudentFromRequest } from '@/lib/auth';
 
@@ -324,7 +325,9 @@ export async function GET(request: NextRequest) {
         cloDescription: attainment.clo.description,
         attainmentPercent: parseFloat(studentAttainment.toFixed(2)),
         status:
-          studentAttainment >= threshold ? 'attained' : 'not_attained',
+          meetsThreshold(studentAttainment, threshold)
+            ? 'attained'
+            : 'not_attained',
       });
     });
 

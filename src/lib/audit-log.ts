@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from './prisma';
+import { Prisma } from '@prisma/client';
 import { TokenPayload } from '@/types/auth';
 import { getUserId } from './authz';
 
@@ -74,6 +75,42 @@ export type AuditAction =
  * must not fail the user's request, but it is logged to the server console so
  * the gap is visible in production logs.
  */
+/**
+ * Record an authentication event.
+ *
+ * Separate from `writeAuditLog` because that one takes a `TokenPayload`, and
+ * the interesting authentication events happen *before* one exists — a failed
+ * password, a failed OTP. It takes a raw `userId` instead.
+ *
+ * `auditlogs.userId` is a required foreign key, so an attempt against an
+ * address with no account cannot be attributed and is not written here; the
+ * rate limiter is what defends that case. What this captures is the targeted
+ * one: repeated failures against an account that does exist.
+ */
+export async function writeAuthAuditLog(
+  request: NextRequest,
+  userId: number,
+  action: Extract<AuditAction, `auth.${string}`>,
+  details: Record<string, unknown> = {}
+): Promise<void> {
+  try {
+    await prisma.auditlogs.create({
+      data: {
+        userId,
+        action,
+        details: details as Prisma.InputJsonValue,
+        ipAddress:
+          request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+          request.headers.get('x-real-ip') ??
+          null,
+        userAgent: request.headers.get('user-agent') ?? null,
+      },
+    });
+  } catch (error) {
+    console.error(`Failed to write auth audit log for "${action}":`, error);
+  }
+}
+
 export async function writeAuditLog(
   request: NextRequest,
   user: TokenPayload,

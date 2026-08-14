@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { meetsThreshold } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
@@ -187,7 +188,7 @@ export async function POST(req: NextRequest) {
         let studentsAchieved = 0;
         studentPerformance.forEach((perf) => {
           const percentage = perf.total > 0 ? (perf.obtained / perf.total) * 100 : 0;
-          if (percentage >= threshold) {
+          if (meetsThreshold(percentage, threshold)) {
             studentsAchieved++;
           }
         });

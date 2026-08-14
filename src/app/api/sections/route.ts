@@ -47,8 +47,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const statusFilter = searchParams.get('status');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    /**
+     * Paginate only when the caller asks for it.
+     *
+     * A default `limit=10` applied to every request meant a caller that sent no
+     * query string quietly received the first ten rows. Tables pass
+     * `page`/`limit` and were fine; the dropdowns that fill from these
+     * endpoints do not, so past the tenth row they simply had no option to
+     * select and nothing said so.
+     */
+    const hasExplicitPaging =
+      searchParams.has('page') || searchParams.has('limit');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10', 10) || 10);
 
     // Add search filter
     if (search) {
@@ -128,8 +139,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        skip: (page - 1) * limit,
-        take: limit,
+        ...(hasExplicitPaging
+          ? { skip: (page - 1) * limit, take: limit }
+          : {}),
       }),
       prisma.sections.count({ where }),
     ]);

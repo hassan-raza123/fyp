@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveDepartmentScope } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
@@ -14,19 +15,16 @@ export async function GET(request: NextRequest) {
     const courseOfferingId = searchParams.get('courseOfferingId');
     const lloId = searchParams.get('lloId');
 
-    // Get current department ID from request
-    const departmentId = await getCurrentDepartmentId(request);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department by design; demanding one here
+    // locked the highest-privilege role out of the screen entirely.
+    const scope = await resolveDepartmentScope(request, auth.user);
+    if (scope.error) return scope.error;
+    const departmentId = scope.departmentId;
 
     const where: any = {
       llo: {
         course: {
-          departmentId: departmentId,
+          ...(departmentId === null ? {} : { departmentId }),
         },
       },
     };

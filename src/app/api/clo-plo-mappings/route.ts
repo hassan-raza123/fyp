@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { authorize, resolveDepartmentScope } from '@/lib/authz';
+
+/**
+ * The weight is the share this outcome contributes to the PLO it maps to.
+ * `weightedAverage` divides by the sum of these, so a `NaN` here does not fail
+ * loudly — it makes every attainment derived from the mapping `NaN` too.
+ */
+const mappingSchema = z.object({
+  cloId: z.coerce.number().int().positive(),
+  ploId: z.coerce.number().int().positive(),
+  weight: z.coerce
+    .number()
+    .finite('Weight must be a number')
+    .min(0, 'Weight cannot be negative')
+    .max(1, 'Weight cannot exceed 1'),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,16 +83,14 @@ export async function POST(request: NextRequest) {
     if (!success || !['admin', 'super_admin'].includes(user?.role ?? ''))
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
 
-    const body = await request.json();
-    const { cloId, ploId, weight } = body;
-
-    // Validate required fields
-    if (!cloId || !ploId || weight === undefined) {
+    const parsed = mappingSchema.safeParse(await request.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
+    const { cloId, ploId, weight } = parsed.data;
 
     // Validate weight
     if (weight < 0 || weight > 1) {
@@ -89,15 +103,15 @@ export async function POST(request: NextRequest) {
     // A CLO's weights across all the PLOs it maps to represent how its
     // contribution is divided, so they must not exceed 1 in total.
     const existingWeights = await prisma.cloplomappings.aggregate({
-      where: { cloId: parseInt(cloId), ploId: { not: parseInt(ploId) } },
+      where: { cloId: cloId, ploId: { not: ploId } },
       _sum: { weight: true },
     });
     const otherWeight = existingWeights._sum.weight ?? 0;
-    if (otherWeight + Number(weight) > 1.0001) {
+    if (otherWeight + weight > 1.0001) {
       return NextResponse.json(
         {
           success: false,
-          error: `Total mapping weight for this CLO would be ${(otherWeight + Number(weight)).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
+          error: `Total mapping weight for this CLO would be ${(otherWeight + weight).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
           usedWeight: otherWeight,
           remainingWeight: Math.max(0, 1 - otherWeight),
         },
@@ -107,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     // Get CLO with its course and programs
     const cloRaw = await prisma.clos.findUnique({
-      where: { id: parseInt(cloId) },
+      where: { id: cloId },
       include: {
         course: { include: { programMappings: { include: { program: true } } } },
       },
@@ -131,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     // Get PLO with its program
     const plo = await prisma.plos.findUnique({
-      where: { id: parseInt(ploId) },
+      where: { id: ploId },
       include: {
         program: true,
       },
@@ -167,8 +181,8 @@ export async function POST(request: NextRequest) {
     // Check if mapping already exists
     const existingMapping = await prisma.cloplomappings.findFirst({
       where: {
-        cloId: parseInt(cloId),
-        ploId: parseInt(ploId),
+        cloId: cloId,
+        ploId: ploId,
       },
     });
 
@@ -182,9 +196,9 @@ export async function POST(request: NextRequest) {
     // Create mapping
     const mapping = await prisma.cloplomappings.create({
       data: {
-        cloId: parseInt(cloId),
-        ploId: parseInt(ploId),
-        weight: parseFloat(weight),
+        cloId: cloId,
+        ploId: ploId,
+        weight: weight,
       },
       include: {
         clo: {

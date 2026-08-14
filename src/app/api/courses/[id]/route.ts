@@ -274,33 +274,38 @@ export async function PUT(
 
     const { prerequisites, programIds, ...updateData } = validatedData;
 
-    if (prerequisites !== undefined) {
-      await prisma.courseprerequisites.deleteMany({ where: { A: id } });
-    }
-    if (programIds !== undefined) {
-      await prisma.programcourses.deleteMany({ where: { B: id } });
-    }
+    // One transaction: the junction rows are cleared before they are
+    // recreated, so a failure between the two left the course with no
+    // prerequisites and no programme mappings at all.
+    const course = await prisma.$transaction(async (tx) => {
+      if (prerequisites !== undefined) {
+        await tx.courseprerequisites.deleteMany({ where: { A: id } });
+      }
+      if (programIds !== undefined) {
+        await tx.programcourses.deleteMany({ where: { B: id } });
+      }
 
-    const course = await prisma.courses.update({
-      where: { id },
-      data: {
-        ...updateData,
-        courses_A: prerequisites
-          ? { create: prerequisites.map((B) => ({ B })) }
-          : undefined,
-        programMappings: programIds
-          ? { create: programIds.map((A) => ({ A })) }
-          : undefined,
-      },
-      include: {
-        department: { select: { id: true, name: true, code: true } },
-        courses_A: { include: { courseB: { select: { id: true, code: true, name: true } } } },
-        programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
-        clos: {
-          where: { status: 'active' },
-          select: { id: true, code: true, description: true },
+      return tx.courses.update({
+        where: { id },
+        data: {
+          ...updateData,
+          courses_A: prerequisites
+            ? { create: prerequisites.map((B) => ({ B })) }
+            : undefined,
+          programMappings: programIds
+            ? { create: programIds.map((A) => ({ A })) }
+            : undefined,
         },
-      },
+        include: {
+          department: { select: { id: true, name: true, code: true } },
+          courses_A: { include: { courseB: { select: { id: true, code: true, name: true } } } },
+          programMappings: { include: { program: { select: { id: true, name: true, code: true } } } },
+          clos: {
+            where: { status: 'active' },
+            select: { id: true, code: true, description: true },
+          },
+        },
+      });
     });
 
     return NextResponse.json({

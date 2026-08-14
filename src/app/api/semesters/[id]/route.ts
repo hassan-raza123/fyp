@@ -9,14 +9,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Reference data: a student needs the academic calendar as much as an
+    // admin does. Stated explicitly so this reads as a decision, not an
+    // omission.
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;

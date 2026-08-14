@@ -153,7 +153,7 @@ function clearAuthCookie(response: NextResponse) {
 }
 
 // Function to create redirect response with token cleanup
-function createLoginRedirect(request: NextRequest, reason: string) {
+function createLoginRedirect(request: NextRequest) {
   const response = NextResponse.redirect(new URL('/login', request.url));
   clearAuthCookie(response);
   return response;
@@ -175,10 +175,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow public web routes
+  // Allow public web routes.
+  //
+  // Matched on path *segments*, not a bare prefix: `startsWith('/surveys')`
+  // also matched `/surveysanything`, so any route whose name merely began with
+  // a public one was reachable without a session.
   if (
     publicWebRoutes.some(
-      (route) => path === route || (route !== '/' && path.startsWith(route))
+      (route) =>
+        path === route || (route !== '/' && path.startsWith(`${route}/`))
     )
   ) {
     return NextResponse.next();
@@ -273,17 +278,16 @@ export async function proxy(request: NextRequest) {
 
   // For all other routes (protected routes), authentication is required
   if (!token) {
-    return createLoginRedirect(
-      request,
-      `No token found for protected route: ${path}`
-    );
+    return createLoginRedirect(request);
   }
 
-  // Verify token
-  const { isValid, userRole, mustChangePassword } = await verifyToken(token);
+  // Verify token — once. The result is reused below for the headers rather
+  // than verifying the same token a second time.
+  const { isValid, userRole, mustChangePassword, userId, email, userData } =
+    await verifyToken(token);
 
   if (!isValid || !userRole) {
-    return createLoginRedirect(request, `Invalid token for route: ${path}`);
+    return createLoginRedirect(request);
   }
 
   // An account still holding an admin-issued temporary password may go nowhere
@@ -306,16 +310,12 @@ export async function proxy(request: NextRequest) {
   if (isProtectedRoute) {
     // Check if user has permission for this route
     if (!isRouteAllowedForRole(path, verifiedUserRole)) {
-      return createLoginRedirect(
-        request,
-        `Role ${verifiedUserRole} not allowed for route: ${path}`
-      );
+      return createLoginRedirect(request);
     }
   }
 
   // Add user info to request headers for protected routes
   // At this point, we know userRole is valid (checked above)
-  const { userId, email, userData } = await verifyToken(token);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-user-id', userId);
   requestHeaders.set('x-user-email', email);

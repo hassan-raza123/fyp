@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getCurrentDepartmentId } from '@/lib/auth';
+
+/**
+ * The weight is the share this outcome contributes to the PLO it maps to.
+ * `weightedAverage` divides by the sum of these, so a `NaN` here does not fail
+ * loudly — it makes every attainment derived from the mapping `NaN` too.
+ */
+const mappingSchema = z.object({
+  lloId: z.coerce.number().int().positive(),
+  ploId: z.coerce.number().int().positive(),
+  weight: z.coerce
+    .number()
+    .finite('Weight must be a number')
+    .min(0, 'Weight cannot be negative')
+    .max(1, 'Weight cannot exceed 1'),
+});
 
 // GET /api/llo-plo-mappings
 export async function GET(request: NextRequest) {
@@ -92,16 +108,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { lloId, ploId, weight } = body;
-
-    // Validate required fields
-    if (!lloId || !ploId || weight === undefined) {
+    const parsed = mappingSchema.safeParse(await request.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
+    const { lloId, ploId, weight } = parsed.data;
 
     // Validate weight
     if (weight < 0 || weight > 1) {
@@ -114,15 +128,15 @@ export async function POST(request: NextRequest) {
     // An LLO's weights across all its PLO mappings divide its contribution, so
     // they must not exceed 1 in total (mirrors the CLO-PLO rule).
     const existingWeights = await prisma.lloplomappings.aggregate({
-      where: { lloId: parseInt(lloId), ploId: { not: parseInt(ploId) } },
+      where: { lloId: lloId, ploId: { not: ploId } },
       _sum: { weight: true },
     });
     const otherWeight = existingWeights._sum.weight ?? 0;
-    if (otherWeight + Number(weight) > 1.0001) {
+    if (otherWeight + weight > 1.0001) {
       return NextResponse.json(
         {
           success: false,
-          error: `Total mapping weight for this LLO would be ${(otherWeight + Number(weight)).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
+          error: `Total mapping weight for this LLO would be ${(otherWeight + weight).toFixed(2)}, which exceeds 1. Other mappings already use ${otherWeight.toFixed(2)}.`,
           usedWeight: otherWeight,
           remainingWeight: Math.max(0, 1 - otherWeight),
         },
@@ -139,7 +153,7 @@ export async function POST(request: NextRequest) {
 
     // Get LLO with its course
     const llo = await prisma.llos.findUnique({
-      where: { id: parseInt(lloId) },
+      where: { id: lloId },
       include: {
         course: true,
       },
@@ -161,7 +175,7 @@ export async function POST(request: NextRequest) {
 
     // Get PLO with its program
     const plo = await prisma.plos.findUnique({
-      where: { id: parseInt(ploId) },
+      where: { id: ploId },
       include: {
         program: true,
       },
@@ -185,8 +199,8 @@ export async function POST(request: NextRequest) {
     const existingMapping = await prisma.lloplomappings.findUnique({
       where: {
         lloId_ploId: {
-          lloId: parseInt(lloId),
-          ploId: parseInt(ploId),
+          lloId: lloId,
+          ploId: ploId,
         },
       },
     });
@@ -201,9 +215,9 @@ export async function POST(request: NextRequest) {
     // Create mapping
     const mapping = await prisma.lloplomappings.create({
       data: {
-        lloId: parseInt(lloId),
-        ploId: parseInt(ploId),
-        weight: parseFloat(weight),
+        lloId: lloId,
+        ploId: ploId,
+        weight: weight,
       },
       include: {
         llo: {

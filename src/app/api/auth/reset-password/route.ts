@@ -81,22 +81,23 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hash(password, 12);
 
-    // Update user's password
-    await prisma.users.update({
-      where: { id: resetRecord.userId },
-      data: {
-        password_hash: hashedPassword,
-        // Clearing the flag is what releases the account: the proxy holds
-        // a flagged user on /change-password, so updating the hash without
-        // this would trap them there permanently.
-        must_change_password: false,
-        password_changed_at: new Date(),
-      },
-    });
+    // Setting the password and consuming the token are one operation. Split
+    // apart, a failure between them either left the token replayable after the
+    // password had already changed, or burned the token without changing it.
+    await prisma.$transaction(async (tx) => {
+      await tx.users.update({
+        where: { id: resetRecord.userId },
+        data: {
+          password_hash: hashedPassword,
+          // Clearing the flag is what releases the account: the proxy holds
+          // a flagged user on /change-password, so updating the hash without
+          // this would trap them there permanently.
+          must_change_password: false,
+          password_changed_at: new Date(),
+        },
+      });
 
-    // Delete the used reset token
-    await prisma.passwordresets.delete({
-      where: { token },
+      await tx.passwordresets.delete({ where: { token } });
     });
 
     return NextResponse.json({

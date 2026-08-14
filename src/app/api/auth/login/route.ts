@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { writeAuthAuditLog } from '@/lib/audit-log';
 import { z } from 'zod';
 import { randomInt } from 'crypto';
-const bcrypt = require('bcryptjs');
 import { sendOTPEmail } from '@/lib/email-utils';
 import { createToken } from '@/lib/auth';
 import {
@@ -134,6 +135,15 @@ async function deliverOTP(email: string, otp: string): Promise<boolean> {
   }
 }
 
+/**
+ * The writes here are deliberately not wrapped in a transaction.
+ *
+ * They are independent and retry-safe: replacing the pending OTP, stamping
+ * `last_login`, and recording the audit row. A failure in any of them leaves no
+ * inconsistent state — the caller simply signs in again. Wrapping them would
+ * hold a database transaction open across a bcrypt hash and an SMTP call,
+ * which is a real cost for no correctness gain.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -222,6 +232,14 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
+      // A wrong password against an account that exists is the signal worth
+      // keeping: it is what a targeted attempt looks like.
+      await writeAuthAuditLog(request, user.id, 'auth.login_failure', {
+        email,
+        userType,
+        reason: 'invalid_password',
+      });
+
       return NextResponse.json(
         {
           success: false,
@@ -476,6 +494,12 @@ export async function POST(request: NextRequest) {
       await prisma.users.update({
         where: { id: user.id },
         data: { last_login: new Date() },
+      });
+
+      await writeAuthAuditLog(request, user.id, 'auth.login_success', {
+        email,
+        userType,
+        via: 'password',
       });
 
       // Determine redirect path based on role

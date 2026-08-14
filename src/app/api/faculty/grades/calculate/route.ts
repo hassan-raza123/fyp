@@ -351,6 +351,7 @@ async function createOrUpdateGrade(
 
   let attemptNumber = existing?.attemptNumber ?? 1;
   let isRepeat = existing?.isRepeat ?? false;
+  let supersede: number[] = [];
 
   if (!existing && courseId) {
     const priorAttempts = await prisma.studentgrades.findMany({
@@ -367,17 +368,29 @@ async function createOrUpdateGrade(
     if (priorAttempts.length > 0) {
       attemptNumber = (priorAttempts[0].attemptNumber ?? 1) + 1;
       isRepeat = true;
-
-      await prisma.studentgrades.updateMany({
-        where: { id: { in: priorAttempts.map((p) => p.id) } },
-        data: { status: 'superseded' },
-      });
+      supersede = priorAttempts.map((p) => p.id);
     }
   }
 
-  if (existing) {
-    // Update existing grade
-    return await prisma.studentgrades.update({
+  /**
+   * Superseding the earlier attempts and writing the new grade are one
+   * operation.
+   *
+   * Run separately, a failure after the `updateMany` left every prior attempt
+   * marked `superseded` with no replacement row — the course silently dropped
+   * out of the student's CGPA entirely, and nothing pointed at why.
+   */
+  return prisma.$transaction(async (tx) => {
+    if (supersede.length > 0) {
+      await tx.studentgrades.updateMany({
+        where: { id: { in: supersede } },
+        data: { status: 'superseded' },
+      });
+    }
+
+    if (existing) {
+      // Update existing grade
+      return tx.studentgrades.update({
       where: { id: existing.id },
       data: {
         totalMarks,
@@ -387,13 +400,14 @@ async function createOrUpdateGrade(
         gpaPoints,
         creditHours,
         qualityPoints,
-        calculatedAt: new Date(),
-        calculatedBy: facultyId,
-      },
-    });
-  } else {
+          calculatedAt: new Date(),
+          calculatedBy: facultyId,
+        },
+      });
+    }
+
     // Create new grade
-    return await prisma.studentgrades.create({
+    return tx.studentgrades.create({
       data: {
         studentId,
         courseOfferingId,
@@ -409,7 +423,7 @@ async function createOrUpdateGrade(
         calculatedBy: facultyId,
       },
     });
-  }
+  });
 }
 
 

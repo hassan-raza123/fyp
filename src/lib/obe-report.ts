@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { meetsThreshold } from '@/lib/obe';
 import { obe_report_type } from '@prisma/client';
 import { weightedAverage, findUnattainedOutcomes } from './obe';
 import { getSectionAttendanceSummary } from './attendance';
@@ -253,7 +254,7 @@ async function buildPeoSection(
         pct(threshold),
         attainment === null
           ? 'No data'
-          : attainment >= threshold
+          : meetsThreshold(attainment, threshold)
             ? 'Achieved'
             : 'Not achieved',
       ];

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { writeAuthAuditLog } from '@/lib/audit-log';
 import { createToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -20,7 +22,6 @@ import {
   resetRateLimit,
   getClientIp,
 } from '@/lib/rate-limit';
-const bcrypt = require('bcryptjs');
 
 // OTP guessing limits
 const OTP_ATTEMPT_WINDOW = 10 * 60 * 1000; // 10 minutes
@@ -123,6 +124,12 @@ function createUserData(user: any, userType: AllRoles): UserData {
   return baseData;
 }
 
+/**
+ * As in the login route, these writes are intentionally not transactional:
+ * marking the OTP used, flagging the email verified and stamping `last_login`
+ * are independent, and a failure in any of them costs the caller one retry
+ * rather than leaving the data inconsistent.
+ */
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse> {
@@ -302,6 +309,11 @@ export async function POST(
     const isValidOTP = await bcrypt.compare(otp, otpRecord.code);
 
     if (!isValidOTP) {
+      await writeAuthAuditLog(request, user.id, 'auth.otp_failure', {
+        email,
+        userType,
+      });
+
       return NextResponse.json(
         {
           success: false,
@@ -344,6 +356,12 @@ export async function POST(
     await prisma.users.update({
       where: { id: user.id },
       data: { last_login: new Date() },
+    });
+
+    await writeAuthAuditLog(request, user.id, 'auth.login_success', {
+      email,
+      userType: actualRole,
+      via: 'otp',
     });
 
     // Determine redirect path based on actual role

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { meetsThreshold } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { getStudentIdFromRequest } from '@/lib/auth';
 
@@ -197,7 +198,9 @@ export async function GET(request: NextRequest) {
           percentage: parseFloat(studentPercent.toFixed(2)),
           obtainedMarks: parseFloat(studentObtained.toFixed(1)),
           totalMarks: parseFloat(studentTotal.toFixed(1)),
-          status: studentPercent >= threshold ? 'attained' : 'not_attained',
+          status: meetsThreshold(studentPercent, threshold)
+            ? 'attained'
+            : 'not_attained',
         },
         classAttainment: classAtt
           ? {

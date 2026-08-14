@@ -1,7 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
+
+/**
+ * These four numbers decide who passes a course and whether an outcome counts
+ * as attained. Unvalidated, a non-numeric value reached a `Float` column as
+ * `NaN`, and every comparison against it silently answered false.
+ */
+const percent = z.coerce
+  .number()
+  .finite('Must be a number')
+  .min(0, 'Cannot be negative')
+  .max(100, 'Cannot exceed 100');
+
+const criteriaSchema = z.object({
+  courseOfferingId: z.coerce.number().int().positive(),
+  minPassPercent: percent.optional(),
+  minCloAttainmentPercent: percent.optional(),
+  minLloAttainmentPercent: percent.optional(),
+  minAttendancePercent: percent.optional(),
+});
 
 export async function GET(request: NextRequest) {
   // Pass/fail thresholds decide who passes a course — staff configuration.
@@ -57,15 +77,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Admins only' }, { status: 403 });
   }
 
-  const body = await request.json();
-  const { courseOfferingId, minPassPercent, minCloAttainmentPercent, minLloAttainmentPercent, minAttendancePercent } = body;
-
-  if (!courseOfferingId) {
-    return NextResponse.json({ error: 'courseOfferingId is required' }, { status: 400 });
+  const parsed = criteriaSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.errors[0].message },
+      { status: 400 }
+    );
   }
+  const {
+    courseOfferingId,
+    minPassPercent,
+    minCloAttainmentPercent,
+    minLloAttainmentPercent,
+    minAttendancePercent,
+  } = parsed.data;
 
   const existing = await prisma.passfailcriteria.findUnique({
-    where: { courseOfferingId: parseInt(courseOfferingId) },
+    where: { courseOfferingId },
   });
   if (existing) {
     return NextResponse.json(
@@ -76,11 +104,11 @@ export async function POST(request: NextRequest) {
 
   const criterion = await prisma.passfailcriteria.create({
     data: {
-      courseOfferingId: parseInt(courseOfferingId),
-      minPassPercent: parseFloat(minPassPercent ?? '50'),
-      minCloAttainmentPercent: minCloAttainmentPercent != null ? parseFloat(minCloAttainmentPercent) : null,
-      minLloAttainmentPercent: minLloAttainmentPercent != null ? parseFloat(minLloAttainmentPercent) : null,
-      minAttendancePercent: minAttendancePercent != null ? parseFloat(minAttendancePercent) : null,
+      courseOfferingId,
+      minPassPercent: minPassPercent ?? 50,
+      minCloAttainmentPercent: minCloAttainmentPercent ?? null,
+      minLloAttainmentPercent: minLloAttainmentPercent ?? null,
+      minAttendancePercent: minAttendancePercent ?? null,
       updatedAt: new Date(),
     },
   });

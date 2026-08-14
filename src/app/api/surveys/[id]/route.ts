@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorize } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
@@ -12,10 +13,10 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    // Survey definitions are staff configuration. Respondents reach a survey
+    // through the token-authenticated public routes, not this one.
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const survey = await prisma.surveys.findUnique({
       where: { id: parseInt(params.id) },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
-import { weightedAverage } from '@/lib/obe';
+import { weightedAverage, meetsThreshold } from '@/lib/obe';
 
 /**
  * GET /api/peo-attainments?programId=&semesterId=
@@ -130,7 +130,10 @@ export async function GET(request: NextRequest) {
         mappedPLOs,
         avgAttainment,
         threshold,
-        isAchieved: avgAttainment !== null ? avgAttainment >= threshold : null,
+        isAchieved:
+          avgAttainment !== null
+            ? meetsThreshold(avgAttainment, threshold)
+            : null,
         plosWithData: withData.length,
         totalMappedPLOs: mappedPLOs.length,
       };

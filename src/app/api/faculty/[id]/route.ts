@@ -260,20 +260,12 @@ export async function PUT(
       }
     }
 
-    // Update user data if provided
-    if (first_name || last_name || email || phone_number !== undefined || status) {
-      await prisma.users.update({
-        where: { id: existingFaculty.userId },
-        data: {
-          ...(first_name && { first_name }),
-          ...(last_name && { last_name }),
-          ...(email && { email }),
-          ...(phone_number !== undefined && { phone_number: phone_number || null }),
-          ...(status && { status }),
-          updatedAt: new Date(),
-        },
-      });
-    }
+    const userChanged =
+      Boolean(first_name) ||
+      Boolean(last_name) ||
+      Boolean(email) ||
+      phone_number !== undefined ||
+      Boolean(status);
 
     // Prepare update data
     const updateData: any = {
@@ -286,29 +278,49 @@ export async function PUT(
       updateData.departmentId = parseInt(departmentId);
     }
 
-    // Update faculty information
-    const updatedFaculty = await prisma.faculties.update({
-      where: { id: facultyId },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-            phone_number: true,
-            status: true,
+    // The account row and the faculty row describe one person. Updated
+    // separately, a failure between them left the two disagreeing — a renamed
+    // user still carrying the old designation, or vice versa.
+    const updatedFaculty = await prisma.$transaction(async (tx) => {
+      if (userChanged) {
+        await tx.users.update({
+          where: { id: existingFaculty.userId },
+          data: {
+            ...(first_name && { first_name }),
+            ...(last_name && { last_name }),
+            ...(email && { email }),
+            ...(phone_number !== undefined && {
+              phone_number: phone_number || null,
+            }),
+            ...(status && { status }),
+            updatedAt: new Date(),
+          },
+        });
+      }
+
+      return tx.faculties.update({
+        where: { id: facultyId },
+        data: updateData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+              phone_number: true,
+              status: true,
+            },
+          },
+          department: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
           },
         },
-        department: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-      },
+      });
     });
 
     // Send email if admin's department was changed
@@ -449,49 +461,41 @@ export async function DELETE(
     // Store the user ID for later operations
     const userId = existingFaculty.userId;
 
-    // If they are department head, update the department
-    if (
-      existingFaculty.department &&
-      existingFaculty.department.adminId === existingFaculty.userId
-    ) {
-      try {
-        await prisma.departments.update({
-          where: { id: existingFaculty.departmentId },
-          data: { adminId: null },
-        });
-      } catch (deptError) {
-        console.error('Error removing as department head:', deptError);
-        // Continue even if this fails
-      }
-    }
+    // If they are department head, the department must lose its head too
+    const clearDepartmentHead =
+      existingFaculty.department != null &&
+      existingFaculty.department.adminId === existingFaculty.userId;
 
-    // Delete ALL roles for this user (completely remove from userrole table)
+    /**
+     * All three writes in one transaction.
+     *
+     * Each step used to run in its own `try` that logged and carried on, so a
+     * failed role delete followed by a successful faculty delete left the user
+     * still holding a faculty role with no faculty row behind it — an account
+     * that lists as staff and resolves to nothing. Either the whole removal
+     * lands or none of it does.
+     */
     try {
-      await prisma.userroles.deleteMany({
-        where: {
-          userId: userId,
-        },
-      });
-    } catch (roleError) {
-      console.error('Error deleting user roles:', roleError);
-      // Continue even if this fails
-    }
+      await prisma.$transaction(async (tx) => {
+        if (clearDepartmentHead && existingFaculty.departmentId) {
+          await tx.departments.update({
+            where: { id: existingFaculty.departmentId },
+            data: { adminId: null },
+          });
+        }
 
-    // Delete the faculty record completely (instead of just removing department association)
-    try {
-      await prisma.faculties.delete({
-        where: { id: facultyId },
+        await tx.userroles.deleteMany({ where: { userId } });
+        await tx.faculties.delete({ where: { id: facultyId } });
       });
     } catch (deleteError) {
-      console.error('Error deleting faculty:', deleteError);
+      console.error('Faculty delete rolled back:', deleteError);
       return NextResponse.json(
         {
           success: false,
-          error: `Failed to delete faculty: ${
-            deleteError instanceof Error ? deleteError.message : 'Unknown error'
-          }`,
+          error:
+            'This faculty member still has records attached (sections, marks or attendance) and cannot be removed. Deactivate the account instead.',
         },
-        { status: 500 }
+        { status: 409 }
       );
     }
 

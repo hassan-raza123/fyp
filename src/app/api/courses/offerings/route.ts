@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorize, resolveDepartmentScope } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_offering_status } from '@prisma/client';
@@ -19,23 +20,18 @@ const updateOfferingSchema = createOfferingSchema.partial().extend({
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+    ]);
+    if (!auth.ok) return auth.response;
 
-    // Get current department ID from authenticated user
-    const currentDepartmentId = await getCurrentDepartmentId(request);
-    if (!currentDepartmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not assigned. Please contact super admin.' },
-        { status: 400 }
-      );
-    }
+    // Unscoped for a super_admin, who oversees every department rather than
+    // belonging to one.
+    const scope = await resolveDepartmentScope(request, auth.user);
+    if (scope.error) return scope.error;
+    const currentDepartmentId = scope.departmentId;
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -43,15 +39,26 @@ export async function GET(request: NextRequest) {
     const semesterId = searchParams.get('semesterId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const page = parseInt(searchParams.get('page') || '1');
+    /**
+     * Paginate only when the caller asks for it.
+     *
+     * A default `limit=10` applied to every request meant a caller that sent no
+     * query string quietly received the first ten rows. Tables pass
+     * `page`/`limit` and were fine; the dropdowns that fill from these
+     * endpoints do not, so past the tenth row they simply had no option to
+     * select and nothing said so.
+     */
+    const hasExplicitPaging =
+      searchParams.has('page') || searchParams.has('limit');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10', 10) || 10);
 
-    // Build query conditions - automatically filter by current department
-    const where: any = {
-      course: {
-        departmentId: currentDepartmentId,
-      },
-    };
+    // Scoped by department, except for a super_admin, for whom the filter is
+    // deliberately absent rather than set to null (which would match nothing).
+    const departmentScope =
+      currentDepartmentId === null ? {} : { departmentId: currentDepartmentId };
+
+    const where: any = { course: { ...departmentScope } };
 
     if (courseId) {
       where.courseId = parseInt(courseId);
@@ -67,16 +74,8 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        {
-          course: {
-            name: { contains: search, departmentId: currentDepartmentId },
-          },
-        },
-        {
-          course: {
-            code: { contains: search, departmentId: currentDepartmentId },
-          },
-        },
+        { course: { ...departmentScope, name: { contains: search } } },
+        { course: { ...departmentScope, code: { contains: search } } },
         { semester: { name: { contains: search } } },
       ];
     }

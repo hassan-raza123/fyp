@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { aggregatePloScores, weightedAverage } from '@/lib/obe';
+import { aggregatePloScores, weightedAverage, meetsThreshold } from '@/lib/obe';
 import { getStudentFromRequest } from '@/lib/auth';
 import { plo_status } from '@prisma/client';
 
@@ -291,7 +291,7 @@ export async function GET(request: NextRequest) {
           status:
             studentPLOAttainment === null
               ? 'not_assessed'
-              : studentPLOAttainment >= threshold
+              : meetsThreshold(studentPLOAttainment, threshold)
                 ? 'attained'
                 : 'not_attained',
         },
@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
           status:
             classPLOAttainment === null
               ? 'not_assessed'
-              : classPLOAttainment >= threshold
+              : meetsThreshold(classPLOAttainment, threshold)
                 ? 'attained'
                 : 'not_attained',
         },

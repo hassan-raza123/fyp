@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { aggregatePloScores } from '@/lib/obe';
+import { aggregatePloScores, meetsThreshold } from '@/lib/obe';
 import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     const totalPlos = plos.length;
     const attainedPlos = plos.filter((plo) => {
       const score = ploScoreMap.get(`${student.id}_${plo.id}`) ?? -1;
-      return score >= threshold;
+      return meetsThreshold(score, threshold);
     }).length;
     const assessedPlos = plos.filter((plo) => ploScoreMap.has(`${student.id}_${plo.id}`)).length;
     const completionPercent = totalPlos > 0 ? Math.round((attainedPlos / totalPlos) * 100) : 0;
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       totalPlos > 0 &&
       attainedPlos === totalPlos &&
       cgpa !== null &&
-      cgpa >= minCGPA;
+      meetsThreshold(cgpa, minCGPA);
 
     return {
       studentId: student.id,

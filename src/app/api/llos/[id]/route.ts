@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
@@ -19,13 +20,13 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, [
+      'super_admin',
+      'admin',
+      'faculty',
+      'student',
+    ]);
+    if (!auth.ok) return auth.response;
 
     const { id } = await context.params;
     const lloId = parseInt(id);
@@ -55,6 +56,11 @@ export async function GET(
         { success: false, error: 'LLO not found' },
         { status: 404 }
       );
+    }
+
+    // Resolved through the course the outcome belongs to.
+    if (!(await canAccessCourse(request, auth.user, llo.course.id))) {
+      return forbiddenResponse();
     }
 
     return NextResponse.json({ success: true, data: llo });
