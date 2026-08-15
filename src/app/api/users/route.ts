@@ -119,8 +119,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    // Check if user has admin role
-    if (authUser?.role !== 'admin') {
+    // A super_admin administers accounts across every department; excluding
+    // them meant the highest-privilege role could not create a user at all.
+    if (authUser?.role !== 'admin' && authUser?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

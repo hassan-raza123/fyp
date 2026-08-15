@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { getCurrentDepartmentId } from '@/lib/auth';
+import { resolveDepartmentScope } from '@/lib/authz';
 
 // GET /api/courses/[id]/llos
 export async function GET(
@@ -10,8 +10,8 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success } = await requireAuth(req);
-    if (!success) {
+    const { success, user } = await requireAuth(req);
+    if (!success || !user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -27,14 +27,12 @@ export async function GET(
       );
     }
 
-    // Get current department ID from request
-    const departmentId = await getCurrentDepartmentId(req);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department, so `null` here means "every
+    // department" rather than "misconfigured account". The ownership check
+    // below is skipped for them accordingly.
+    const scope = await resolveDepartmentScope(req, user!);
+    if (scope.error) return scope.error;
+    const departmentId = scope.departmentId;
 
     // Verify course belongs to department
     const course = await prisma.courses.findUnique({
@@ -49,7 +47,7 @@ export async function GET(
       );
     }
 
-    if (course.departmentId !== departmentId) {
+    if (departmentId !== null && course.departmentId !== departmentId) {
       return NextResponse.json(
         { success: false, error: 'Course does not belong to current department' },
         { status: 403 }
@@ -99,14 +97,12 @@ export async function POST(
       );
     }
 
-    // Get current department ID from request
-    const departmentId = await getCurrentDepartmentId(req);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department, so `null` here means "every
+    // department" rather than "misconfigured account". The ownership check
+    // below is skipped for them accordingly.
+    const scope = await resolveDepartmentScope(req, user!);
+    if (scope.error) return scope.error;
+    const departmentId = scope.departmentId;
 
     // Verify course belongs to department
     const course = await prisma.courses.findUnique({
@@ -121,7 +117,7 @@ export async function POST(
       );
     }
 
-    if (course.departmentId !== departmentId) {
+    if (departmentId !== null && course.departmentId !== departmentId) {
       return NextResponse.json(
         { success: false, error: 'Course does not belong to current department' },
         { status: 403 }

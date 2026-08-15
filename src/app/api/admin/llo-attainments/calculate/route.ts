@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { meetsThreshold } from '@/lib/obe';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { getCurrentDepartmentId } from '@/lib/auth';
+import { resolveDepartmentScope } from '@/lib/authz';
 
 // Lab assessment types — only these contribute to LLO attainments
 const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
@@ -28,14 +28,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get current department ID from request
-    const departmentId = await getCurrentDepartmentId(req);
-    if (!departmentId) {
-      return NextResponse.json(
-        { success: false, error: 'Department not configured' },
-        { status: 400 }
-      );
-    }
+    // A super_admin belongs to no department, so `null` here means "every
+    // department" rather than "misconfigured account". The ownership check
+    // below is skipped for them accordingly.
+    const scope = await resolveDepartmentScope(req, user!);
+    if (scope.error) return scope.error;
+    const departmentId = scope.departmentId;
 
     // Verify course offering belongs to department
     const courseOffering = await prisma.courseofferings.findUnique({
@@ -57,7 +55,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (courseOffering.course.departmentId !== departmentId) {
+    if (departmentId !== null && courseOffering.course.departmentId !== departmentId) {
       return NextResponse.json(
         { success: false, error: 'Course offering does not belong to current department' },
         { status: 403 }
