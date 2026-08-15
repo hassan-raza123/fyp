@@ -133,6 +133,19 @@ export default async function AuthLayout({
           }}
         >
           {children}
+
+          {branding.supportEmail && (
+            <p className='text-center text-sm mt-4' style={{ color: 'var(--gray-500)' }}>
+              Need help? Contact{' '}
+              <a
+                href={`mailto:${branding.supportEmail}`}
+                className='font-medium hover:underline'
+                style={{ color: 'var(--brand-primary)' }}
+              >
+                IT Support
+              </a>
+            </p>
+          )}
         </div>
       </div>
 

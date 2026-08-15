@@ -339,17 +339,10 @@ export default function LoginForm() {
           )}
         </button>
 
-        {/* Support Info */}
-        <p className='text-center text-sm mt-4' style={{ color: 'var(--gray-500)' }}>
-          Need help? Contact{' '}
-          <a
-            href='mailto:itzhassanraza276@gmail.com'
-            className='font-medium hover:underline'
-            style={{ color: 'var(--brand-primary)' }}
-          >
-            IT Support
-          </a>
-        </p>
+        {/* The "contact IT support" line lives in the auth layout, which can
+            read the institution's own support address from Settings. It was
+            here as a hardcoded personal Gmail account, shown to every user of
+            every installation. */}
       </form>
     </div>
   );

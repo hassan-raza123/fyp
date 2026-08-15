@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
             // codebase deployable to exactly one customer.
             institutionName: '',
             institutionShortName: '',
+            supportEmail: '',
             applicationName: PRODUCT_NAME,
             academicYear: String(new Date().getFullYear()),
             currentSemester: 'Spring',

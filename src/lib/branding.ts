@@ -26,6 +26,12 @@ export interface Branding {
   institutionName: string;
   /** Short form for tight spaces — "MNSUET". Falls back to the full name. */
   institutionShortName: string;
+  /**
+   * The institution's own IT support address, shown on the login screen.
+   * Empty means the support line is not rendered at all — better than
+   * pointing a locked-out user at an address that is not theirs.
+   */
+  supportEmail: string;
   /** True when the installation has not been branded yet. */
   isUnbranded: boolean;
 }
@@ -35,6 +41,7 @@ const FALLBACK: Branding = {
   productTagline: PRODUCT_TAGLINE,
   institutionName: DEFAULT_INSTITUTION_NAME,
   institutionShortName: DEFAULT_INSTITUTION_NAME,
+  supportEmail: '',
   isUnbranded: true,
 };
 
@@ -85,6 +92,7 @@ export async function getBranding(): Promise<Branding> {
       institutionName,
       institutionShortName:
         asNonEmptyString(system.institutionShortName) ?? institutionName,
+      supportEmail: asNonEmptyString(system.supportEmail) ?? '',
       isUnbranded: false,
     };
   } catch (error) {

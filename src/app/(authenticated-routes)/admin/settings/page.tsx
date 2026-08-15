@@ -31,6 +31,8 @@ interface Settings {
      *  in outbound email and on generated reports. */
     institutionName: string;
     institutionShortName: string;
+    /** Institution's own IT support address, shown on the login screen. */
+    supportEmail: string;
     /** Retained so settings saved before institutionName existed round-trip
      *  intact; `getBranding()` still reads it as a fallback. Not editable. */
     applicationName: string;
@@ -75,6 +77,7 @@ export default function SettingsPage() {
     system: {
       institutionName: '',
       institutionShortName: '',
+      supportEmail: '',
       applicationName: PRODUCT_NAME,
       academicYear: String(new Date().getFullYear()),
       currentSemester: 'Spring',
@@ -242,6 +245,27 @@ export default function SettingsPage() {
                 />
                 <p className='text-xs text-muted-foreground'>
                   Used where space is tight. Falls back to the full name.
+                </p>
+              </div>
+              <div className='space-y-2'>
+                <Label>IT Support Email</Label>
+                <Input
+                  type='email'
+                  placeholder='e.g. itsupport@your-institution.edu.pk'
+                  value={settings.system.supportEmail}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      system: {
+                        ...settings.system,
+                        supportEmail: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <p className='text-xs text-muted-foreground'>
+                  Offered to users who cannot sign in. Leave blank to hide the
+                  line entirely.
                 </p>
               </div>
               <div className='space-y-2'>

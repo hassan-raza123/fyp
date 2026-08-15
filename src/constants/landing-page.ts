@@ -84,21 +84,9 @@ export const userRoles = [
   },
 ];
 
-export const supervisor = {
-  name: 'Mr. Abdul Basit',
-  role: 'Project Supervisor',
-  designation: 'Lecturer, Computer Science Department',
-  linkedin: 'https://linkedin.com/in/supervisor',
-  picture: '/team/supervisor.jpg',
-};
-
-export const teamMembers = [
-  {
-    name: 'Hassan Raza',
-    role: 'Full Stack Developer',
-    github: 'https://github.com/member1',
-    linkedin: 'https://linkedin.com/in/member1',
-    picture: '/team/hassan.jpg',
-  },
-];
+// `supervisor` and `teamMembers` were removed along with the team section they
+// fed. They named the project's academic supervisor and authors as though they
+// were the company's staff, and pointed at photographs of them under
+// /public/team. Neither belongs on a page selling the product, and nobody named
+// there had agreed to appear on one.
 
