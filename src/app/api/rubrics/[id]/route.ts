@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
     if (!auth.success || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'faculty'].includes(auth.user.role)) {
+    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -104,7 +104,7 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
     if (!auth.success || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'faculty'].includes(auth.user.role)) {
+    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

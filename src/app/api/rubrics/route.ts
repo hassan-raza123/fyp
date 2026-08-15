@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     if (!auth.success || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'faculty'].includes(auth.user.role)) {
+    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -182,6 +182,12 @@ const adminNavigation = [
         href: '/admin/assessments',
       },
       {
+        id: 'rubrics',
+        label: 'Rubrics',
+        icon: ClipboardList,
+        href: '/admin/rubrics',
+      },
+      {
         id: 'results',
         label: 'Results',
         icon: BarChart2,
@@ -418,6 +424,12 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           label: 'My Assessments',
           icon: ClipboardList,
           href: '/faculty/assessments',
+        },
+        {
+          id: 'rubrics',
+          label: 'Rubrics',
+          icon: ClipboardList,
+          href: '/faculty/rubrics',
         },
         {
           id: 'results',
