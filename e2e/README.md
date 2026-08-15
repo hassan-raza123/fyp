@@ -23,14 +23,14 @@ npx playwright test -g "unassessed student"
 
 ## What it runs against
 
-A separate database, `EduTrack_test`, configured in `.env.test`. Your
+A separate database, `attainly_test`, configured in `.env.test`. Your
 development database is never touched. The suite drops and reseeds that database
 before every run, so it always starts from a known state.
 
 First-time setup on a new machine:
 
 ```bash
-mysql -u root -p -e "CREATE DATABASE EduTrack_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE attainly_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 npm run db:test:reset
 ```
 

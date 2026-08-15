@@ -10,6 +10,17 @@ export const metadata: Metadata = {
   description: `Login to access your ${PRODUCT_NAME} portal`,
 };
 
+/**
+ * Render per request rather than at build time.
+ *
+ * This layout reads the institution name from the database. Without this the
+ * auth pages prerender as static HTML, which bakes whatever the setting held
+ * when the deploy ran into the page — so an administrator changing their
+ * institution name would see no change until the next deploy, with nothing to
+ * indicate why. A query per login page view is the right trade for that.
+ */
+export const dynamic = 'force-dynamic';
+
 export default async function AuthLayout({
   children,
 }: {

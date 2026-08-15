@@ -536,7 +536,9 @@ export async function seedTestData(): Promise<SeededIds> {
     data: {
       id: 1,
       system: {
-        applicationName: 'EduTrack',
+        institutionName: 'Test University',
+        institutionShortName: 'TestU',
+        applicationName: 'Attainly',
         academicYear: '2026',
         currentSemester: 'Fall',
         defaultLanguage: 'en',
