@@ -9,15 +9,20 @@
 > ## ✅ REMEDIATION — three passes, all Critical and High closed
 >
 > **4 of 4 Critical · 7 of 7 High · 9 of 11 Medium · 6 of 11 Low**, plus
-> **3 further defects found in a fresh third-pass sweep** (2 High, 1 Medium) —
-> see *Third Pass* near the end.
+> **6 further defects found in three fresh sweeps** — see *Third Pass* (2 High,
+> 1 Medium: unauthenticated survey token minting and response stuffing),
+> *Fourth Pass* (1 High: two endpoints the UI calls that never existed) and
+> *Fifth Pass* (1 High: the admin assessments page could never load its data).
+>
+> **One incomplete feature stands: rubrics have a database, an API, domain
+> logic and tests, but no user interface.**
 >
 > Two Medium items remain partial by decision (M-2 validation, M-3 `Float`
 > columns), both documented with the reason.
 >
 > ```
 > ORIGINAL:  33 failed ·  1 skipped · 334 passed  (368 tests)
-> NOW:        0 failed ·  1 skipped · 385 passed  (386 tests)   ✅
+> NOW:        0 failed ·  1 skipped · 471 passed  (472 tests)   ✅
 > ```
 >
 > `tsc --noEmit` clean · `next build` passes · a new `prebuild` gate fails the
@@ -873,6 +878,141 @@ survey routes carry a reason naming the token they verify.
 
 Verified both ways again: passes on the current tree, fails on a deliberately
 unguarded handler.
+
+---
+
+# Fourth Pass — A-to-Z Feature Verification (2026-08-15)
+
+A completeness sweep rather than a security one: every navigation entry against
+its page, every `fetch()` in the UI against its API route, stub/TODO markers,
+and a feature inventory of the OBE domain.
+
+```
+389 passed · 1 skipped · 0 failed   ·   tsc clean · build passes · authz guard passes
+```
+
+## What was clean
+
+| Check | Result |
+|---|---|
+| Navigation entries → page exists | **73 / 73** ✅ |
+| Real `TODO`/`FIXME`/"not implemented" markers | **0** ✅ |
+| Stub pages | none — the 7-line files are the shared `ProfileView` wrappers |
+| Prisma migrations | present and versioned (2 + lock file) ✅ |
+| Cron endpoint | properly guarded by `CRON_SECRET`, 503 when unset ✅ |
+| Every OBE domain area (PEO/PLO/CLO/LLO, mappings, attainment, attendance, surveys, transcripts, reports, graduation, curriculum, Bloom) | has API + UI ✅ |
+
+## F-1 — Two endpoints the UI calls did not exist 🟠 High
+
+Comparing all 168 distinct API calls in the UI against the 190 route files
+turned up two that had **no backing route at all**:
+
+**`/api/courses/[id]/llos/plo-mappings`** — called by
+`faculty/results/llo-attainments`. Its `catch` only writes to the console, so
+the "LLO-PLO Mappings" panel rendered *"No LLO-PLO mappings found"* permanently,
+whatever the mappings were. A silent 404 is indistinguishable from empty data.
+
+**`/api/departments/[id]/programs`** — called by `faculty/students/[id]` to fill
+the programme dropdown. It surfaced a "Failed to fetch programs" toast, so the
+field could never be populated and the student edit form could not be
+completed.
+
+**Fixed.** Both routes written, authorized like their neighbours
+(`canAccessCourse` for the first, department scoping for the second), and
+covered by `e2e/tests/missing-endpoints.spec.ts` (4 tests).
+
+The CLO equivalent (`clos/plo-mappings`) had existed all along — only the LLO
+half was missing, which is why the gap looked like a data problem rather than a
+missing route.
+
+## F-2 — Rubrics are backend-only ⚠️ Incomplete feature
+
+Not a bug — a feature that was built halfway:
+
+| Layer | State |
+|---|---|
+| Database | `rubrics`, `rubric_criteria`, `rubric_scores` — 3 models ✅ |
+| API | `/api/rubrics`, `/api/rubrics/[id]`, `/api/assessment-results/[id]/rubric-score` ✅ |
+| Domain logic | `RUBRIC_LEVEL_FRACTIONS`, `scoreFromRubric()` in `obe.ts` ✅ |
+| Tests | covered in `records.spec.ts` ✅ |
+| **User interface** | **none — the word "rubric" does not appear anywhere in `src/app/(authenticated-routes)` or `src/components`** ❌ |
+
+A faculty member cannot create, edit or apply a rubric through the application.
+The capability exists and is reachable only by calling the API directly.
+
+**Not fixed here.** This is feature development, not remediation — it needs a
+criteria/levels builder and wiring into assessment-item scoring, plus decisions
+about who may edit a rubric once marks have been recorded against it. Building
+it half-guessed would be worse than leaving the gap documented.
+
+## Also fixed
+
+- **`POST /api/users/import`** read an entire uploaded CSV into memory with no
+  size check. Capped at 2 MB with an actionable message.
+- **21 further super-admin lockouts** (see *Third Pass*, N-3). One remains and
+  is correct: `admin/check-department` documents that a super admin has no
+  department to check.
+
+---
+
+# Fifth Pass — Runtime Verification (2026-08-15)
+
+The first four passes read code and asserted API behaviour. This one asks a
+different question: **when a real browser opens each page, does anything
+actually fail?**
+
+`e2e/tests/runtime-health.spec.ts` visits all **82 dashboard pages** across the
+four roles and asserts three things per page: no console error, no failed
+same-origin request, and **no API call returning 4xx/5xx**.
+
+That last one matters most. `smoke.spec.ts` proves a page *renders* — but a page
+whose data call 404s renders too, just empty, and the two look identical from
+outside. That is precisely how the missing LLO-PLO endpoint survived.
+
+```
+471 passed · 1 skipped · 0 failed
+```
+
+## F-3 — The admin's assessments page could never load its data 🟠 High
+
+`/admin/assessments` renders the shared `AssessmentList` and
+`CreateAssessmentForm` components, which call `/api/faculty/course-offerings`.
+That route resolved the caller **only** through `getFacultyIdFromRequest`, which
+returns null for anything that is not a faculty account — so every load of the
+admin assessments screen got a **401** and the course-offering selector was
+permanently empty.
+
+The page rendered fine, so it read as "no course offerings exist" rather than a
+broken call. No test caught it because no test asserted the network.
+
+**Fixed.** The endpoint is now role-aware, answering the same shape to a
+slightly different question per role:
+
+| Role | Gets |
+|---|---|
+| faculty | the offerings they teach, with their sections |
+| admin | the offerings in their department, with all sections |
+| super_admin | the same, unscoped |
+
+## One false positive, correctly identified
+
+`/student` reported two "failed" requests to `/student/courses/342?_rsc=…`.
+Those are Next's React-payload prefetches for links in view, aborted when the
+router navigates away — the framework working as designed, not a defect. The
+check now ignores `_rsc=` aborts rather than being taught to ignore failures
+generally.
+
+## Standing state after five passes
+
+| Gate | Result |
+|---|---|
+| Playwright | **471 passed · 1 skipped · 0 failed** |
+| `tsc --noEmit` | clean |
+| `npm run build` | passes |
+| Authorization guard (`prebuild`) | passes |
+| All 82 dashboard pages, 4 roles | runtime-clean |
+| 73 navigation entries | all resolve |
+| 168 UI API calls | all resolve |
 
 ---
 
