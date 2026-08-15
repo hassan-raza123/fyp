@@ -6,15 +6,18 @@
 
 ---
 
-> ## ✅ REMEDIATION — all Critical and High findings closed
+> ## ✅ REMEDIATION — three passes, all Critical and High closed
 >
-> **4 of 4 Critical · 7 of 7 High · 9 of 11 Medium · 6 of 11 Low.**
-> Two Medium items remain partial (M-2 validation, M-3 `Float` columns) and are
-> documented with the reason in *Post-Remediation Status* at the end.
+> **4 of 4 Critical · 7 of 7 High · 9 of 11 Medium · 6 of 11 Low**, plus
+> **3 further defects found in a fresh third-pass sweep** (2 High, 1 Medium) —
+> see *Third Pass* near the end.
+>
+> Two Medium items remain partial by decision (M-2 validation, M-3 `Float`
+> columns), both documented with the reason.
 >
 > ```
-> ORIGINAL:  33 failed ·  1 skipped · 334 passed
-> NOW:        0 failed ·  1 skipped · 379 passed   ✅
+> ORIGINAL:  33 failed ·  1 skipped · 334 passed  (368 tests)
+> NOW:        0 failed ·  1 skipped · 385 passed  (386 tests)   ✅
 > ```
 >
 > `tsc --noEmit` clean · `next build` passes · a new `prebuild` gate fails the
@@ -796,6 +799,80 @@ Three Critical findings were **proven by live exploitation**, not inferred: a pa
 That said, the distance to production is **shorter than the score suggests**. This is not a project that needs rearchitecting to be made safe. The security model is designed and largely written — it is simply not wired into 33 handlers. **Phase 1 is roughly 1.5 weeks of mechanical, low-risk work**, and it is verifiable: when the existing suite goes green, the Critical and most High findings are closed.
 
 The OBE domain logic, the attainment engine, and the Playwright suite are the strongest parts of this codebase and need no remediation. The gap is entirely in the API authorization layer, and it is well-bounded.
+
+---
+
+# Third Pass — Fresh Sweep (2026-08-15)
+
+A deliberate re-audit of areas the first two passes never examined closely: the
+external survey flows, file upload, the cron endpoint, migrations, and the
+role matrix. **It found three more real defects**, two of them High.
+
+```
+385 passed · 1 skipped · 0 failed
+```
+
+## N-1 — Anyone could mint a survey's public link token 🟠 High
+
+`POST /api/surveys/[id]/public` carried the comment *"Requires admin auth"* and
+checked **nothing**, while `proxy.ts` listed the path as public. Any anonymous
+caller could ask for the token of any alumni/employer survey by id.
+
+**Fixed.** The handler now calls `authorize(request, ['super_admin','admin','faculty'])`,
+and the path was removed from `publicApiRoutePatterns` — minting a credential is
+a staff action even though using it is not.
+
+## N-2 — Anyone could stuff survey responses 🟠 High
+
+`POST /api/surveys/[id]/external-respond` never looked at the token at all. The
+survey id is a small integer in the URL, so anybody could walk `/1`, `/2`, `/3`
+and submit unlimited responses to any active alumni or employer survey.
+
+Those responses are averaged into **indirect PLO attainment** by
+`accumulateSurveyRatings` — so the endpoint let an anonymous caller move a
+figure an accreditation review reads.
+
+**Fixed.** A shared `surveyForToken()` guard now verifies `surveys.publicToken`
+on both the GET and the POST, answering the same 404 for a missing survey and a
+wrong token so the endpoint cannot be used to enumerate survey ids.
+
+**Why these two survived two passes:** the survey subsystem had *zero* test
+coverage — noted in the original report under "Coverage by module", and not
+acted on. `e2e/tests/survey-access.spec.ts` now covers it (6 tests), including
+that a legitimate holder of the token still gets through.
+
+## N-3 — The super admin was locked out of 21 more endpoints 🟡 Medium
+
+M-9 was reported as two routes; a full sweep of the role matrix found the same
+pattern at **23 sites across 19 files** — `role !== 'admin'` with no
+`super_admin` branch. LLOs, LLO-PLO mappings, pass/fail criteria, programme
+curriculum, action plans, bulk user import, user creation, the admin overview
+and academic records were all unreachable for the highest-privilege role.
+
+**Fixed** at 22 sites. The two that needed department scoping were converted to
+`resolveDepartmentScope`. One exclusion was left in place —
+`admin/check-department` documents that a super admin has no department to
+check, which is correct.
+
+## Also fixed in this pass
+
+- **Unbounded CSV upload.** `POST /api/users/import` read the whole file into
+  memory with no size check. Now capped at 2 MB with a message that says what
+  to do about it.
+
+## The guard had the same blind spot
+
+`scripts/check-route-authorization.mjs` did not catch N-1 or N-2, because it
+only inspected handlers that call `requireAuth` — a handler with *no*
+authentication was invisible to it, which is the more dangerous case.
+
+It now fails on both: authenticating without authorizing, **and** establishing
+no caller identity while not being listed as public. `surveys/[id]/public` was
+removed from `PUBLIC_ROUTES` so it is actually checked; the two genuinely public
+survey routes carry a reason naming the token they verify.
+
+Verified both ways again: passes on the current tree, fails on a deliberately
+unguarded handler.
 
 ---
 
