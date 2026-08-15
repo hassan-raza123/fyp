@@ -14,15 +14,17 @@
 > *Fourth Pass* (1 High: two endpoints the UI calls that never existed) and
 > *Fifth Pass* (1 High: the admin assessments page could never load its data).
 >
-> **One incomplete feature stands: rubrics have a database, an API, domain
-> logic and tests, but no user interface.**
+> **All features are complete** — the rubric UI, the one gap found, was built
+> in the sixth pass. One accepted debt remains: the grade columns are `Float`
+> rather than `Decimal`; the practical failure mode is fixed and test-locked,
+> and the migration is documented with measurements at the end.
 >
 > Two Medium items remain partial by decision (M-2 validation, M-3 `Float`
 > columns), both documented with the reason.
 >
 > ```
 > ORIGINAL:  33 failed ·  1 skipped · 334 passed  (368 tests)
-> NOW:        0 failed ·  1 skipped · 471 passed  (472 tests)   ✅
+> NOW:        0 failed ·  1 skipped · 493 passed  (494 tests)   ✅
 > ```
 >
 > `tsc --noEmit` clean · `next build` passes · a new `prebuild` gate fails the
@@ -1013,6 +1015,103 @@ generally.
 | All 82 dashboard pages, 4 roles | runtime-clean |
 | 73 navigation entries | all resolve |
 | 168 UI API calls | all resolve |
+
+---
+
+# Sixth Pass — Feature Completion & Final Verification (2026-08-15)
+
+```
+493 passed · 1 skipped · 0 failed
+tsc clean · build passes · authz guard passes
+```
+
+## Rubrics: the feature is now complete ✅
+
+The Fourth Pass found rubrics half-built — three database models, a full CRUD
+API, `scoreFromRubric()` and end-to-end scoring tests, but **no screen**, so a
+rubric could only be created by calling the API directly.
+
+**Built.** `src/components/rubrics/RubricManager.tsx` plus `/admin/rubrics` and
+`/faculty/rubrics`, wired into the navigation for both roles:
+
+- criteria builder with weights, showing each criterion's share of the mark
+- all four levels (excellent / good / satisfactory / unsatisfactory) with the
+  fraction each is worth, mirroring `RUBRIC_LEVEL_FRACTIONS`
+- attach to a CLO or an LLO; create, edit and delete
+- `super_admin` added to the rubric API, which had excluded them
+
+Covered by `e2e/tests/rubrics.spec.ts` — 7 tests across the lifecycle, including
+that a student cannot create one.
+
+## Production configuration — verified
+
+| Check | Result |
+|---|---|
+| `.env*` gitignored (`!.env.example`) | ✅ |
+| Seed not in the build path | ✅ |
+| `E2E_TEST_MODE` refuses non-local hosts | ✅ |
+| `JWT_SECRET` has no fallback, ≥32 chars enforced | ✅ |
+| `CRON_SECRET` required (503 when unset) | ✅ |
+| Security headers (CSP, HSTS, frame-ancestors…) | ✅ |
+| TypeScript and ESLint gates enforced at build | ✅ |
+| Authorization gate on `prebuild` | ✅ |
+| Migrations tracked and versioned | ✅ (2) |
+
+---
+
+# M-3 `Float` → `Decimal`: the decision, with evidence
+
+This is the one item deliberately **not** done, across six passes. The reason is
+no longer an assertion — it was measured.
+
+## What was fixed
+
+The defect the audit named — *"a student recorded as failing a CLO because of
+representation error"* — **is fixed**. Every threshold comparison in the system
+goes through `meetsThreshold()` (1e-9 tolerance) and stored percentages go
+through `roundPercentage()`, applied at 13 sites.
+
+`e2e/tests/float-boundary.spec.ts` proves it with 13 tests, two of which use
+cases where a plain `>=` genuinely returns the wrong answer:
+
+```
+0.7 + 0.1 >= 0.8              → false    ← a student marked down by arithmetic
+(1/7)*100 >= 14.285714285714286 → false  ← same
+meetsThreshold(...)           → true  ✅
+```
+
+The tests also pin the tolerance from the other side: `49.99 >= 50` is still
+false, so a real near-miss is not forgiven.
+
+## Why the column migration was not attempted
+
+Three measurements, not opinions:
+
+| Surface | Count | What breaks |
+|---|---:|---|
+| Arithmetic sites on these fields | **434** across 52 files | `sum + marks` becomes string concatenation — silently |
+| Prisma aggregates (`_sum`, `_avg`) | **21** | Return `Decimal`; **not** covered by client result extensions |
+| `NextResponse.json()` boundaries | **1691** | A `Decimal` serialises to a JSON **string**: `60.5` becomes `"60.5"` |
+
+The third is decisive. Every API response carrying a mark, percentage or GPA
+would silently change wire type from number to string. Charts, `.toFixed()`
+calls and numeric comparisons across the whole frontend would break — and
+**the test suite would not necessarily catch it**, because a chart rendering
+`"60.5"` still renders.
+
+That is the specific danger: a migration done under time pressure produces
+corrupt grades that still look like grades.
+
+## What it actually needs
+
+A dedicated change window with: schema migration + data backfill; conversion at
+all 21 aggregate call sites; a serialisation layer converting `Decimal` to
+number at every response boundary; and verification against real transcripts
+before and after. That is a planned piece of work, not a quick fix.
+
+**Current position:** the practical failure mode is closed and test-locked. The
+columns remain `Float`, which is the textbook-incorrect type, and that is
+recorded here as a known, accepted, documented debt rather than a surprise.
 
 ---
 
