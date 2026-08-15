@@ -1432,11 +1432,7 @@ tests that were confirmed to fail when a single guard is removed. The
 authentication flow, the UI↔API surface and the runtime health of every
 dashboard page were checked and are sound.
 
-**Not production-ready:** the audit trail. The writes closed in S-1 are now
-correctly refused when foreign, but a legitimate cross-cutting change — editing
-graduation criteria, restructuring a curriculum, archiving a PEO — still leaves
-no record of who did it. For a system that produces accreditation evidence, that
-is the next thing to fix.
+**Closed in the follow-up below:** the audit trail. See *S-4*.
 
 **The lesson worth keeping:** the previous passes asserted "all Critical and
 High closed" twice and were wrong both times, and this pass found a Critical
@@ -1445,3 +1441,69 @@ gate that could not see the defect. A green gate is evidence about the gate.
 `scripts/check-route-authorization.mjs` is now strict enough that this
 particular class cannot come back — but the general point stands, and the next
 pass should begin by asking what the current gate is structurally blind to.
+
+---
+
+## S-4 — The audit trail did not cover structural configuration 🟠 High
+
+> ✅ **FIXED** in the same pass, after the verdict above named it as the
+> remaining gap. Locked by `e2e/tests/audit-trail.spec.ts` (6 tests).
+
+`AuditAction` covered marks, grades, attainment, attendance, account
+administration and authentication. It did not cover a single one of the writes
+S-1 had just closed.
+
+The two halves belong together. S-1 stopped a *foreign* admin rewriting another
+department's degree requirements. It did nothing about the *legitimate* one: a
+department admin could lower their own programme's minimum CGPA from 2.5 to 0.1,
+archive a programme objective, or restructure a curriculum, and the system kept
+no record that it happened or who did it. For a system whose output is
+accreditation evidence, "who changed this threshold, and when" has to be
+answerable — and it was not.
+
+**Fixed.** 30 new `AuditAction` values, wired at every corresponding call site:
+
+| Area | Actions |
+|---|---|
+| Objectives | `peo.create` · `peo.update` · `peo.archive` · `peo_plo_mapping.create` · `peo_plo_mapping.delete` |
+| Thresholds | `graduation_criteria.create` · `graduation_criteria.update` · `pass_fail_criteria.create` · `pass_fail_criteria.update` |
+| Curriculum | `curriculum.add` · `curriculum.update` · `curriculum.remove` |
+| Structure | `course.update` · `course.delete` · `batch.create` · `batch.update` · `batch.delete` · `section.create` · `program.create` |
+| Grading instruments | `rubric.create` · `rubric.update` · `rubric.delete` |
+| Surveys | `survey.create` · `survey.update` · `survey.delete` |
+| Records | `transcript.update` · `transcript.delete` · `report.update` · `report.delete` |
+
+Two details that make the records usable rather than decorative:
+
+- **Before/after pairs** on every threshold and definition change. A row saying
+  "the criteria were edited" cannot answer what the bar was when a cohort
+  graduated; `{before: {minCGPA: 2.5}, after: {minCGPA: 0.1}}` can.
+- **Destructive actions capture the row before deleting it.** `survey.delete`
+  records how many responses were destroyed with it; `report.delete` records
+  which report; `transcript.delete` records whose, and whether it was official.
+
+**Verified both ways.** The spec passes on the current tree, and removing a
+single `writeAuditLog` call makes its matching test fail. One test asserts the
+inverse property — that a *refused* cross-tenant write writes **no** row, so a
+denied probe can never be mistaken for a real change.
+
+```
+525 passed · 1 skipped · 0 failed
+tsc --noEmit clean · npm run build passes · authorization guard passes
+```
+
+## Revised verdict
+
+**Production-ready:** the authorization model and the audit trail behind it.
+Reads and writes are scoped symmetrically across all 192 routes, enforced at
+build time by a guard that fails on all three ways a handler can be wrong, and
+every structural change to the accreditation chain now names the person who made
+it, with the previous value alongside the new one.
+
+**Still open, unchanged and deliberate:** the `Float` → `Decimal` migration
+(measured, mitigated, test-locked — see the section above), M-2's remaining
+validation schemas, and Sentry wiring. None of these were touched here and none
+are affected by this pass's findings.
+
+**One thing to watch, cause unknown:** the `prisma/migrations/` deletion
+described above. Restored and intact; not explained.

@@ -2,7 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Linkedin, Mail, Twitter, Instagram, MapPin, Phone, GraduationCap, BookOpen, Users, Facebook, Youtube, MessageCircle, ArrowRight } from 'lucide-react';
+import { Linkedin, Mail, Twitter, Instagram, MapPin, Phone, BookOpen, Users, Facebook, Youtube, MessageCircle, ArrowRight } from 'lucide-react';
+import {
+  COMPANY_CONTACT,
+  COMPANY_SOCIAL,
+  PRODUCT_NAME,
+  PRODUCT_TAGLINE,
+  PRODUCT_DESCRIPTION,
+} from '@/constants/branding';
+
+/** Icon for a social network named in COMPANY_SOCIAL, by label. */
+const SOCIAL_ICONS: Record<string, typeof Linkedin> = {
+  Facebook,
+  Twitter,
+  LinkedIn: Linkedin,
+  Instagram,
+  YouTube: Youtube,
+  WhatsApp: MessageCircle,
+};
 
 export default function Footer() {
 
@@ -42,34 +59,31 @@ export default function Footer() {
                   <div className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full blur-2xl opacity-70 group-hover:opacity-90 transition-all' 
                     style={{ backgroundColor: 'var(--brand-secondary)' }}>
                   </div>
-                  <img src="/logo's/logo.png" alt='EduTrack Logo' className='relative z-10 w-20 h-20 object-contain transition-transform group-hover:scale-110' />
+                  <img src="/logo's/logo.png" alt={`${PRODUCT_NAME} logo`} className='relative z-10 w-20 h-20 object-contain transition-transform group-hover:scale-110' />
                 </div>
                 <div>
-                  <h3 className='text-3xl font-black text-white mb-1'>EduTrack</h3>
-                  <p className='text-base font-semibold' style={{ color: 'var(--brand-secondary)' }}>OBE Management System</p>
+                  <h3 className='text-3xl font-black text-white mb-1'>{PRODUCT_NAME}</h3>
+                  <p className='text-base font-semibold' style={{ color: 'var(--brand-secondary)' }}>{PRODUCT_TAGLINE}</p>
                 </div>
               </div>
               <p className='text-base text-white/80 leading-relaxed'>
-                Muhammad Nawaz Sharif University of Engineering & Technology, Multan. Transforming education through intelligent outcome tracking.
+                {PRODUCT_DESCRIPTION}
               </p>
             </div>
             
-            {/* Social Media - Modern Grid */}
+            {/* Social Media - rendered only once COMPANY_SOCIAL is filled in.
+                It previously listed the university's own official accounts. */}
+            {COMPANY_SOCIAL.length > 0 && (
             <div>
               <h4 className='text-sm font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2'>
                 <span className='w-8 h-0.5 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
                 Follow Us
               </h4>
               <div className='grid grid-cols-6 gap-3'>
-                {[
-                  { Icon: Facebook, label: 'Facebook', href: 'https://www.facebook.com/mnsuet' },
-                  { Icon: Twitter, label: 'Twitter', href: 'https://twitter.com/mnsuet' },
-                  { Icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/school/mnsuet' },
-                  { Icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/mnsuet' },
-                  { Icon: Youtube, label: 'YouTube', href: 'https://www.youtube.com/@mnsuet' },
-                  { Icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/92619330592' }
-                ].map(({ Icon, label, href }) => (
-                  <a 
+                {COMPANY_SOCIAL.map(({ label, href }) => {
+                  const Icon = SOCIAL_ICONS[label] ?? ArrowRight;
+                  return (
+                  <a
                     key={label}
                     href={href}
                     target='_blank'
@@ -95,9 +109,11 @@ export default function Footer() {
                   >
                     <Icon className='w-5 h-5 relative z-10' />
                   </a>
-                ))}
+                  );
+                })}
               </div>
             </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -110,7 +126,6 @@ export default function Footer() {
               {[
                 { href: '/#modules', label: 'Features', icon: BookOpen },
                 { href: '/#portal', label: 'Access Portal', icon: Users },
-                { href: '/#team', label: 'Our Team', icon: GraduationCap }
               ].map(({ href, label, icon: Icon }) => (
                 <li key={label}>
                   <Link
@@ -133,16 +148,21 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Contact Info.
+              Each entry renders only when COMPANY_CONTACT supplies it. These
+              slots held one university's real address, switchboard and inbox,
+              which would route this product's enquiries to them. */}
+          {(COMPANY_CONTACT.address || COMPANY_CONTACT.phone || COMPANY_CONTACT.email) && (
           <div className='md:col-span-4 space-y-6'>
             <h4 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
               <span className='w-1 h-6 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
               Get In Touch
             </h4>
             <ul className='space-y-4'>
+              {COMPANY_CONTACT.address && (
               <li className='group'>
-                <div className='flex items-start gap-4 p-4 rounded-xl backdrop-blur-md transition-all' 
-                  style={{ 
+                <div className='flex items-start gap-4 p-4 rounded-xl backdrop-blur-md transition-all'
+                  style={{
                     backgroundColor: 'var(--white-opacity-08)',
                     border: `1px solid var(--white-opacity-10)`
                   }}
@@ -153,14 +173,16 @@ export default function Footer() {
                   <div>
                     <p className='text-xs font-bold mb-1 uppercase tracking-wide' style={{ color: 'var(--brand-secondary)' }}>Address</p>
                     <span className='text-sm text-white/90 leading-relaxed'>
-                      QasimPur Colony, BCG Chowk, Bahawalpur Road, Multan, Punjab, Pakistan
+                      {COMPANY_CONTACT.address}
                     </span>
                   </div>
                 </div>
               </li>
+              )}
+              {COMPANY_CONTACT.phone && (
               <li className='group'>
-                <a href='tel:+92619330592' className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10' 
-                  style={{ 
+                <a href={`tel:${COMPANY_CONTACT.phone.replace(/[^+\d]/g, '')}`} className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10'
+                  style={{
                     backgroundColor: 'var(--white-opacity-08)',
                     border: `1px solid var(--white-opacity-10)`
                   }}
@@ -170,12 +192,14 @@ export default function Footer() {
                   </div>
                   <div>
                     <p className='text-xs font-bold mb-1 uppercase tracking-wide' style={{ color: 'var(--brand-secondary)' }}>Phone</p>
-                    <span className='text-sm text-white/90 font-medium'>+92-61-9330592</span>
+                    <span className='text-sm text-white/90 font-medium'>{COMPANY_CONTACT.phone}</span>
                   </div>
                 </a>
               </li>
+              )}
+              {COMPANY_CONTACT.email && (
               <li className='group'>
-                <a href='mailto:info@mnsuet.edu.pk' className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10' 
+                <a href={`mailto:${COMPANY_CONTACT.email}`} className='flex items-center gap-4 p-4 rounded-xl backdrop-blur-md transition-all hover:bg-white/10'
                   style={{ 
                     backgroundColor: 'var(--white-opacity-08)',
                     border: `1px solid var(--white-opacity-10)`
@@ -186,19 +210,21 @@ export default function Footer() {
                   </div>
                   <div>
                     <p className='text-xs font-bold mb-1 uppercase tracking-wide' style={{ color: 'var(--brand-secondary)' }}>Email</p>
-                    <span className='text-sm text-white/90 font-medium'>info@mnsuet.edu.pk</span>
+                    <span className='text-sm text-white/90 font-medium'>{COMPANY_CONTACT.email}</span>
                   </div>
                 </a>
               </li>
+              )}
             </ul>
           </div>
+          )}
         </div>
 
         {/* Bottom Bar - Modern */}
         <div className='pt-10 mt-10 border-t' style={{ borderColor: 'var(--white-opacity-10)' }}>
           <div className='flex flex-col md:flex-row items-center justify-between gap-6'>
             <div className='flex flex-col md:flex-row items-center gap-4 text-sm text-white/70'>
-              <p className='font-medium'>&copy; {new Date().getFullYear()} <span className='text-white'>EduTrack</span> — All rights reserved.</p>
+              <p className='font-medium'>&copy; {new Date().getFullYear()} <span className='text-white'>{PRODUCT_NAME}</span> — All rights reserved.</p>
             </div>
             <div className='flex items-center gap-6 text-sm'>
               <Link href='/privacy' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>

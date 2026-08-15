@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { syncDepartmentFromSettings } from '@/lib/auth';
+import { PRODUCT_NAME } from '@/constants/branding';
 
 // GET /api/settings
 export async function GET(request: NextRequest) {
@@ -30,8 +31,14 @@ export async function GET(request: NextRequest) {
         success: true,
         data: {
           system: {
-            applicationName: 'Smart Campus for MNSUET',
-            academicYear: '2025',
+            // The institution this installation belongs to. Blank by default:
+            // a fresh install belongs to whoever is setting it up, and
+            // shipping one university's name as the default is what made this
+            // codebase deployable to exactly one customer.
+            institutionName: '',
+            institutionShortName: '',
+            applicationName: PRODUCT_NAME,
+            academicYear: String(new Date().getFullYear()),
             currentSemester: 'Spring',
             defaultLanguage: 'en',
             timeZone: 'UTC',

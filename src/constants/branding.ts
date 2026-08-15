@@ -27,3 +27,31 @@ export const PRODUCT_DESCRIPTION =
  * sellable to exactly one customer.
  */
 export const DEFAULT_INSTITUTION_NAME = 'Your Institution';
+
+/**
+ * How to reach *us*, the vendor — for the public marketing site.
+ *
+ * Every field starts empty and the footer renders only what is filled in.
+ * That is deliberate. These slots previously held one university's real
+ * postal address, switchboard number, official email and official social
+ * accounts, carried over from when this was that university's internal
+ * system. On a page selling the product to other universities, that sends
+ * enquiries to an institution that has nothing to do with the product, and
+ * implies an endorsement nobody agreed to.
+ *
+ * Fill these in with the company's own details before launch. Leaving one
+ * blank hides it; it never falls back to somebody else's.
+ */
+export const COMPANY_CONTACT: {
+  email: string;
+  phone: string;
+  address: string;
+} = {
+  email: '',
+  phone: '',
+  address: '',
+};
+
+export const COMPANY_SOCIAL: ReadonlyArray<{ label: string; href: string }> = [
+  // { label: 'LinkedIn', href: 'https://www.linkedin.com/company/...' },
+];

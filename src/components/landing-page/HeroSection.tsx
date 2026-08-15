@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import NavbarClient from './NavbarClient';
+import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants/branding';
 
 export default function HeroSection() {
   return (
@@ -34,18 +35,19 @@ export default function HeroSection() {
 
       <div className='relative pt-32 pb-40'>
         <div className='max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
-          {/* University Badge */}
+          {/* Positioning badge. This named a single university when the product
+              served one; the marketing site now speaks to every university. */}
           <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-sm font-semibold mb-8 text-white'>
-            MNS University of Engineering & Technology
+            Built for PEC & HEC accreditation
           </span>
 
           {/* Main Heading */}
           <h1 className='text-6xl sm:text-7xl lg:text-8xl font-black text-white mb-6 leading-tight'>
-            EduTrack
+            {PRODUCT_NAME}
           </h1>
-          
+
           <div className='text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-secondary mb-8'>
-            OBE Management System
+            {PRODUCT_TAGLINE}
           </div>
 
           {/* Description */}

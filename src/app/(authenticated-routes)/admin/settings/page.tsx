@@ -23,9 +23,16 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { PageLoading } from '@/components/ui/page-loading';
 import { PageHeader } from '@/components/ui/page-header';
+import { PRODUCT_NAME } from '@/constants/branding';
 
 interface Settings {
   system: {
+    /** This installation's institution — what appears on the login screen,
+     *  in outbound email and on generated reports. */
+    institutionName: string;
+    institutionShortName: string;
+    /** Retained so settings saved before institutionName existed round-trip
+     *  intact; `getBranding()` still reads it as a fallback. Not editable. */
     applicationName: string;
     academicYear: string;
     currentSemester: string;
@@ -66,8 +73,10 @@ interface Settings {
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({
     system: {
-      applicationName: 'Smart Campus for MNSUET',
-      academicYear: '2025',
+      institutionName: '',
+      institutionShortName: '',
+      applicationName: PRODUCT_NAME,
+      academicYear: String(new Date().getFullYear()),
       currentSemester: 'Spring',
       defaultLanguage: 'en',
       timeZone: 'UTC',
@@ -197,19 +206,43 @@ export default function SettingsPage() {
           <CardContent className='space-y-4'>
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label>Application Name</Label>
+                <Label>Institution Name</Label>
                 <Input
-                  value={settings.system.applicationName}
+                  placeholder='e.g. MNS University of Engineering & Technology'
+                  value={settings.system.institutionName}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
                       system: {
                         ...settings.system,
-                        applicationName: e.target.value,
+                        institutionName: e.target.value,
                       },
                     })
                   }
                 />
+                <p className='text-xs text-muted-foreground'>
+                  Shown on the login screen, in outbound email, and on generated
+                  reports.
+                </p>
+              </div>
+              <div className='space-y-2'>
+                <Label>Institution Short Name</Label>
+                <Input
+                  placeholder='e.g. MNSUET'
+                  value={settings.system.institutionShortName}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      system: {
+                        ...settings.system,
+                        institutionShortName: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <p className='text-xs text-muted-foreground'>
+                  Used where space is tight. Falls back to the full name.
+                </p>
               </div>
               <div className='space-y-2'>
                 <Label>Academic Year</Label>
