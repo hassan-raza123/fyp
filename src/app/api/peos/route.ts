@@ -6,6 +6,7 @@ import {
   forbiddenResponse,
   programScopeFilter,
 } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // GET /api/peos?programId=1
 export async function GET(request: NextRequest) {
@@ -80,6 +81,12 @@ export async function POST(request: NextRequest) {
       include: {
         program: { select: { id: true, name: true, code: true } },
       },
+    });
+
+    await writeAuditLog(request, auth.user, 'peo.create', {
+      peoId: peo.id,
+      programId: peo.programId,
+      code: peo.code,
     });
 
     return NextResponse.json(peo, { status: 201 });

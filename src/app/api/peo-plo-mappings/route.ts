@@ -88,6 +88,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // A mapping carries the weight the PEO attainment rollup divides by.
+    await writeAuditLog(request, auth.user, 'peo_plo_mapping.create', {
+      mappingId: mapping.id,
+      peoId: Number(peoId),
+      ploId: Number(ploId),
+      programId: peo.programId,
+    });
+
     return NextResponse.json(mapping, { status: 201 });
   } catch (error: unknown) {
     if (

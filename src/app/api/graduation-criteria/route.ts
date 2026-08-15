@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import {
   authorize,
   canAccessProgram,
@@ -137,6 +138,14 @@ export async function POST(request: NextRequest) {
         indirectWeight: iWeight,
       },
       include: { program: { select: { id: true, name: true, code: true } } },
+    });
+
+    await writeAuditLog(request, auth.user, 'graduation_criteria.create', {
+      criteriaId: criteria.id,
+      programId,
+      minCGPA: criteria.minCGPA,
+      minPloAttainmentPercent: criteria.minPloAttainmentPercent,
+      requireAllCourses: criteria.requireAllCourses,
     });
 
     return NextResponse.json({ success: true, data: criteria }, { status: 201 });

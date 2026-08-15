@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 // GET /api/peos/[id]
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
@@ -51,7 +52,7 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
     // programme educational objectives of any programme in the university.
     const existing = await prisma.peos.findUnique({
       where: { id: Number(params.id) },
-      select: { programId: true },
+      select: { programId: true, code: true, description: true, status: true },
     });
     if (!existing) {
       return NextResponse.json({ error: 'PEO not found' }, { status: 404 });
@@ -75,6 +76,17 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
       },
     });
 
+    await writeAuditLog(request, auth.user, 'peo.update', {
+      peoId: Number(params.id),
+      programId: existing.programId,
+      before: {
+        code: existing.code,
+        description: existing.description,
+        status: existing.status,
+      },
+      after: { code: peo.code, description: peo.description, status: peo.status },
+    });
+
     return NextResponse.json(peo);
   } catch (error) {
     console.error('Error updating PEO:', error);
@@ -91,7 +103,7 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
 
     const existing = await prisma.peos.findUnique({
       where: { id: Number(params.id) },
-      select: { programId: true },
+      select: { programId: true, code: true },
     });
     if (!existing) {
       return NextResponse.json({ error: 'PEO not found' }, { status: 404 });
@@ -103,6 +115,12 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
     await prisma.peos.update({
       where: { id: Number(params.id) },
       data: { status: 'archived' },
+    });
+
+    await writeAuditLog(request, auth.user, 'peo.archive', {
+      peoId: Number(params.id),
+      programId: existing.programId,
+      code: existing.code,
     });
 
     return NextResponse.json({ success: true, message: 'PEO archived successfully' });

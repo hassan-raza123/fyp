@@ -1228,3 +1228,220 @@ It was verified both ways: it passes on the current tree, and it fails with a po
 3. **Sentry** — implement `reportError()` before the first real deployment.
 4. **Test coverage** — super-admin CRUD, surveys, notifications.
 5. L-2, L-5, L-10, L-11.
+
+---
+
+# Seventh Pass — Independent Audit (2026-08-15)
+
+An independent audit run against the tree as it stood after the sixth pass,
+treating every claim above as a claim to verify rather than a fact.
+
+```
+BASELINE (as documented):  493 passed · 1 skipped · 0 failed   ✅ reproduced
+AFTER THIS PASS:           519 passed · 1 skipped · 0 failed
+tsc --noEmit clean · npm run build passes · authorization guard passes
+```
+
+The documented baseline was accurate. All six check types were run. Checks 2
+(existing suite), 4 (UI↔API and navigation) and 5 (runtime health) came back
+clean. Check 1, working together with check 3, found the following.
+
+## S-1 — The write half of the tenant boundary was never closed 🔴 Critical
+
+| | |
+|---|---|
+| **Severity** | 🔴 Critical |
+| **Scope** | **53 handlers across 27 route files** |
+| **Status** | ✅ **Exploited live against a production build, with persisted damage** |
+| **Fixed** | ✅ all 53, locked by `e2e/tests/cross-tenant-writes.spec.ts` (26 tests) |
+
+### The claim that was wrong
+
+The ledger above records **H-1 "Handlers with bare `requireAuth`: 33 → 0"** and
+**"All Critical and High closed"**. Both statements are true as written and both
+measure the wrong thing.
+
+H-1 counted handlers that authenticated *without authorizing at all*. It did not
+count handlers that authorize a **role** but never an **owner**. The remediation
+went resource by resource and added `canAccessX(...)` to the `GET` handler,
+leaving `PUT`, `PATCH`, `POST` and `DELETE` on the same resource with a bare role
+check. `authorize(request, ['super_admin','admin'])` answers *"are you an
+admin"*. It never answers *"are you **this** department's admin"*.
+
+`scripts/check-route-authorization.mjs` passed the whole time because its rule
+was `ROLE_CHECK || OWNERSHIP_CHECK` — satisfying either was enough.
+
+The result is a system where, for a dozen resources, the *same row* returned
+`403` to a read and `200` to a write.
+
+### Proof (live, production build, seeded test database)
+
+Signed in as the department admin of department 303 (`e2e.admin@test.local`);
+every target below belongs to department 309, created for the test.
+
+```
+GET    /api/peos/113                 → 403  {"error":"Insufficient permissions"}   ← guarded
+PUT    /api/peos/113                 → 200  description overwritten
+DELETE /api/peos/113                 → 200  {"message":"PEO archived successfully"}
+
+GET    /api/graduation-criteria/113  → 403                                          ← guarded
+PUT    /api/graduation-criteria/113  → 200  minCGPA 2.5 → 0.1, minPLO 60 → 1
+
+GET    /api/courses/389              → 403                                          ← guarded
+PUT    /api/courses/389              → 200  renamed to "HIJACKED BY FOREIGN ADMIN"
+
+GET    /api/sections/289             → 403                                          ← guarded
+DELETE /api/sections/289             → 200  {"message":"Section deleted successfully"}
+
+PUT    /api/program-curriculum/225   → 200  core course moved to elective, semester 8
+DELETE /api/program-curriculum/225   → 200
+POST   /api/programs/519/courses     → 200  course added to a foreign curriculum
+```
+
+Database state afterwards, confirming the writes persisted:
+
+```
+PEO 113 (foreign dept):   status=archived   desc=OVERWRITTEN BY A FOREIGN DEPARTMENT ADMIN
+graduation_criteria 113:  minCGPA=0.1  minPLO=1        (seeded 2.5 / 60)
+course 389:               name=HIJACKED BY FOREIGN ADMIN
+section 289:              DELETED
+program_curriculum 225:   DELETED
+```
+
+The `403` on each `GET` is the control: it proves the session is genuinely
+foreign to that department and that the read path knows it.
+
+### Impact
+
+The graduation-criteria write is the most severe: `minCGPA` and
+`minPloAttainmentPercent` are the thresholds that decide who receives a degree.
+A department admin could lower another programme's bar to 0.1 CGPA, or raise it
+to block a cohort, and nothing in the system records that they did.
+
+The rest of the cluster covers the whole PEO → PLO → CLO/LLO chain, the
+curriculum that defines a degree, pass/fail criteria, rosters, transcripts,
+accreditation reports, rubrics and surveys — that is, every input to an
+accreditation figure and every record a student is graded against.
+
+### Two handlers had no ownership check on *either* side
+
+`transcripts/[id]` and `obe-reports/[id]` checked only for an admin role on
+`GET`, `PATCH` **and** `DELETE`. Any department admin could read, amend and
+delete the transcripts of every student in the university, and the accreditation
+reports of every programme. These were cross-tenant **reads** that the fourth
+pass's `cross-tenant-reads.spec.ts` did not cover.
+
+### Fixed
+
+Ownership resolution added to all 53 handlers, using the existing helpers
+(`canAccessProgram`, `canAccessCourse`, `canAccessSection`, `canAccessBatch`,
+`canAccessStudent`, `canManageCourse`, `canManageCourseOffering`) plus one new
+one:
+
+- **`canAccessSurvey()`** in `src/lib/authz.ts` — a survey hangs off either a
+  course offering or a programme and both columns are nullable, so ownership
+  resolves through whichever is set. Eleven survey handlers needed it.
+
+Three second-order defects were fixed alongside:
+
+- `DELETE /api/surveys/[id]/questions` chose the row to delete by a
+  `questionId` **query parameter** that was never checked against the survey in
+  the path. Scoping the path id alone would not have closed it.
+- `POST /api/programs` took `departmentId` from the request body, so a
+  department admin could create a programme inside another department — and
+  then own everything hanging off it.
+- `GET /api/graduation-criteria` listed **every** programme's thresholds
+  unscoped.
+
+## S-2 — The build guard could not see this class of defect 🟠 High
+
+`scripts/check-route-authorization.mjs` accepted a handler that satisfied
+`ROLE_CHECK` **or** `OWNERSHIP_CHECK`. Every handler in S-1 satisfied the first,
+so the gate that exists to prevent exactly this shipped it.
+
+**Fixed.** The guard now requires ownership resolution — not merely a role —
+from any handler that names a resource by id (a `[...]` segment in its path) and
+from every write handler. Two supporting changes keep that rule honest:
+
+- it follows **local helper functions**, so `assessments/[id]`, which resolves
+  ownership through a module-level `requireAssessmentAccess()`, is not reported.
+  That was a false positive in the first draft of this audit's own scan, and it
+  is the reason `assessments/[id]` appears nowhere in S-1;
+- routes that are genuinely global or self-scoped live in an explicit
+  `UNSCOPED_ROUTES` / `UNSCOPED_PREFIXES` map, each with a reason, so declaring
+  one is a visible decision rather than a silent omission — the same design as
+  `PUBLIC_ROUTES`.
+
+**Verified in all three directions**, by introducing a deliberately broken
+handler and confirming the message:
+
+| Handler | Guard says |
+|---|---|
+| no caller identity at all | `establishes no caller identity and is not listed as public` |
+| authenticates, authorizes nothing | `authenticates but authorizes nothing` |
+| role check only, on a write | `checks a role but never resolves ownership` |
+
+## S-3 — `POST /api/ploscores/calculate` is unreachable and redundant 🔵 Low
+
+The check-6 equivalent of the rubrics gap, with a different resolution. The
+route has no UI reference anywhere in `src/` and no test that calls it. Unlike
+rubrics, it is not a missing feature: `POST /api/plo-attainments` performs the
+same work through the same `computePloScoresForOffering()` /
+`savePloScores()` pair and *is* reachable from the UI. The route is a duplicate,
+not a gap.
+
+**Not deleted** — that is a product decision, not a remediation. It was
+**guarded**, because it took `programId` from the request body and wrote
+`ploscores` rows for it, which is the S-1 defect on an endpoint nobody uses.
+
+## What was verified and found correct
+
+| Check | Result |
+|---|---|
+| Documented baseline (493 · 1 · 0) | reproduced exactly ✅ |
+| OTP challenge binding (`otp-challenge.ts`) | sound — `verify-otp` requires the cookie, the OTP row is keyed on `(email, userType)`, and the admin/super-admin role resolution cannot elevate beyond roles actually held ✅ |
+| 109 distinct `/api/…` paths called in `src/` | all resolve to a route file ✅ |
+| 75 navigation `href`s | all resolve to a real page ✅ |
+| Runtime health across all dashboard pages and four roles | clean ✅ |
+| `assessments/[id]`, `llos/[id]` PUT, `sections/[id]` PUT, `batches/[id]` GET | already correctly guarded — **not** findings ✅ |
+
+## Deliberately not touched
+
+| Item | Why |
+|---|---|
+| `Float` → `Decimal` migration | The measurements above hold; nothing found in this pass changes the analysis. The practical failure mode remains fixed and test-locked. |
+| M-2's remaining validation schemas | Unrelated to this pass's findings; the numeric paths that feed attainment are already done. |
+| Deleting `ploscores/calculate` | Redundant, but removing a route is a product decision. Guarded instead. |
+| Audit-log coverage for the newly-guarded writes | Real gap: a foreign write is now refused, but a *legitimate* curriculum or criteria change still writes no audit entry. Wider than this pass. |
+
+## An unexplained observation, stated as such
+
+Partway through this audit the tracked files under `prisma/migrations/` and
+`prisma/_archived_migrations/` appeared as deleted in `git status`, on a tree
+that was clean at the start of the session. They were restored from git and are
+intact. `e2e/support/global-setup.ts` only calls `resetDatabase()`, which issues
+`DELETE` statements and touches no files, so the harness does not explain it and
+**no cause was established**. Worth watching; not attributed.
+
+## Verdict
+
+**Production-ready:** the authorization model. It is now applied symmetrically
+to reads *and* writes across all 192 routes, enforced at build time by a guard
+that fails on all three ways a handler can be wrong, and locked by 26 regression
+tests that were confirmed to fail when a single guard is removed. The
+authentication flow, the UI↔API surface and the runtime health of every
+dashboard page were checked and are sound.
+
+**Not production-ready:** the audit trail. The writes closed in S-1 are now
+correctly refused when foreign, but a legitimate cross-cutting change — editing
+graduation criteria, restructuring a curriculum, archiving a PEO — still leaves
+no record of who did it. For a system that produces accreditation evidence, that
+is the next thing to fix.
+
+**The lesson worth keeping:** the previous passes asserted "all Critical and
+High closed" twice and were wrong both times, and this pass found a Critical
+that six passes had missed. In every case the assertion was measured against a
+gate that could not see the defect. A green gate is evidence about the gate.
+`scripts/check-route-authorization.mjs` is now strict enough that this
+particular class cannot come back — but the general point stands, and the next
+pass should begin by asking what the current gate is structurally blind to.

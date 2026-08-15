@@ -14,7 +14,7 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
     // another department's accreditation figures.
     const mapping = await prisma.peoplomappings.findUnique({
       where: { id: Number(params.id) },
-      select: { peo: { select: { programId: true } } },
+      select: { peoId: true, ploId: true, peo: { select: { programId: true } } },
     });
     if (!mapping) {
       return NextResponse.json({ error: 'Mapping not found' }, { status: 404 });
@@ -24,6 +24,14 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
     }
 
     await prisma.peoplomappings.delete({ where: { id: Number(params.id) } });
+
+    await writeAuditLog(request, auth.user, 'peo_plo_mapping.delete', {
+      mappingId: Number(params.id),
+      peoId: mapping.peoId,
+      ploId: mapping.ploId,
+      programId: mapping.peo.programId,
+    });
+
     return NextResponse.json({ success: true, message: 'Mapping removed' });
   } catch (error) {
     console.error('Error deleting PEO-PLO mapping:', error);

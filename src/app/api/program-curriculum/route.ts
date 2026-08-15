@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { Prisma } from '@prisma/client';
 import {
   authorize,
@@ -96,6 +97,14 @@ export async function POST(request: NextRequest) {
       course: { select: { id: true, code: true, name: true, creditHours: true, type: true } },
       program: { select: { id: true, name: true, code: true } },
     },
+  });
+
+  await writeAuditLog(request, auth.user, 'curriculum.add', {
+    entryId: entry.id,
+    programId: entry.programId,
+    courseId: entry.courseId,
+    semesterSlot: entry.semesterSlot,
+    isRequired: entry.isRequired,
   });
 
   return NextResponse.json({ success: true, data: entry }, { status: 201 });

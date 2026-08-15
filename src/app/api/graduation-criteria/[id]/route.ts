@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 /**
@@ -47,7 +48,14 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
     // path must match it. These are the thresholds that decide who graduates.
     const existing = await prisma.graduation_criteria.findUnique({
       where: { id: parseInt(params.id) },
-      select: { programId: true },
+      select: {
+        programId: true,
+        minCGPA: true,
+        minPloAttainmentPercent: true,
+        requireAllCourses: true,
+        directWeight: true,
+        indirectWeight: true,
+      },
     });
     if (!existing) {
       return NextResponse.json(
@@ -91,6 +99,28 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
       where: { id: parseInt(params.id) },
       data: updateData,
       include: { program: { select: { id: true, name: true, code: true } } },
+    });
+
+    // These are the thresholds that decide who receives a degree. The
+    // before/after pair is the point: an accreditation review asks what the
+    // bar was at the time a cohort graduated, not only what it is now.
+    await writeAuditLog(request, auth.user, 'graduation_criteria.update', {
+      criteriaId: parseInt(params.id),
+      programId: existing.programId,
+      before: {
+        minCGPA: existing.minCGPA,
+        minPloAttainmentPercent: existing.minPloAttainmentPercent,
+        requireAllCourses: existing.requireAllCourses,
+        directWeight: existing.directWeight,
+        indirectWeight: existing.indirectWeight,
+      },
+      after: {
+        minCGPA: criteria.minCGPA,
+        minPloAttainmentPercent: criteria.minPloAttainmentPercent,
+        requireAllCourses: criteria.requireAllCourses,
+        directWeight: criteria.directWeight,
+        indirectWeight: criteria.indirectWeight,
+      },
     });
 
     return NextResponse.json({ success: true, data: criteria });

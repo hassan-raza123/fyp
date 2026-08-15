@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 /**
@@ -114,6 +115,14 @@ export async function POST(request: NextRequest) {
       minAttendancePercent: minAttendancePercent ?? null,
       updatedAt: new Date(),
     },
+  });
+
+  await writeAuditLog(request, auth.user, 'pass_fail_criteria.create', {
+    criteriaId: criterion.id,
+    courseOfferingId,
+    minPassPercent: criterion.minPassPercent,
+    minCloAttainmentPercent: criterion.minCloAttainmentPercent,
+    minLloAttainmentPercent: criterion.minLloAttainmentPercent,
   });
 
   return NextResponse.json({ success: true, data: criterion }, { status: 201 });

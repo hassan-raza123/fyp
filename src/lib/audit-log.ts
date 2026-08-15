@@ -53,8 +53,47 @@ export type AuditAction =
   | 'action_plan.auto_create'
   // reports
   | 'report.generate'
+  | 'report.update'
+  | 'report.delete'
   // structural configuration
+  | 'section.create'
   | 'section.delete'
+  /**
+   * The accreditation chain and the rules derived from it.
+   *
+   * The seventh audit pass closed a cross-tenant hole on every one of these
+   * writes — a foreign department admin could rewrite a programme's objectives,
+   * its curriculum, and the CGPA required to graduate from it. Refusing the
+   * foreign write is half the answer; the other half is being able to say who
+   * made the legitimate one. These are the figures an accreditation body asks
+   * about, so "who changed this, and when" has to be answerable.
+   */
+  | 'peo.create'
+  | 'peo.update'
+  | 'peo.archive'
+  | 'peo_plo_mapping.create'
+  | 'peo_plo_mapping.delete'
+  | 'graduation_criteria.create'
+  | 'graduation_criteria.update'
+  | 'pass_fail_criteria.create'
+  | 'pass_fail_criteria.update'
+  | 'curriculum.add'
+  | 'curriculum.update'
+  | 'curriculum.remove'
+  | 'course.update'
+  | 'course.delete'
+  | 'batch.create'
+  | 'batch.update'
+  | 'batch.delete'
+  | 'program.create'
+  | 'rubric.create'
+  | 'rubric.update'
+  | 'rubric.delete'
+  | 'survey.create'
+  | 'survey.update'
+  | 'survey.delete'
+  | 'transcript.update'
+  | 'transcript.delete'
   // account administration — who can sign in, as what, is a security event and
   // an accreditation question ("who granted this person marking rights?").
   // Without these the audit trail covers marks but not the accounts that set them.

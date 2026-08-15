@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
@@ -36,7 +37,12 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
   // The GET above resolves ownership through the course offering; so must this.
   const existing = await prisma.passfailcriteria.findUnique({
     where: { id: parseInt(params.id) },
-    select: { courseOfferingId: true },
+    select: {
+      courseOfferingId: true,
+      minPassPercent: true,
+      minCloAttainmentPercent: true,
+      minLloAttainmentPercent: true,
+    },
   });
   if (!existing) {
     return NextResponse.json({ error: 'Criteria not found' }, { status: 404 });
@@ -65,6 +71,23 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
       }),
       ...(status !== undefined && { status }),
       updatedAt: new Date(),
+    },
+  });
+
+  // `minPassPercent` is the bar every student on this offering is measured
+  // against, so a change to it retroactively changes who passed.
+  await writeAuditLog(request, auth.user, 'pass_fail_criteria.update', {
+    criteriaId: parseInt(params.id),
+    courseOfferingId: existing.courseOfferingId,
+    before: {
+      minPassPercent: existing.minPassPercent,
+      minCloAttainmentPercent: existing.minCloAttainmentPercent,
+      minLloAttainmentPercent: existing.minLloAttainmentPercent,
+    },
+    after: {
+      minPassPercent: criterion.minPassPercent,
+      minCloAttainmentPercent: criterion.minCloAttainmentPercent,
+      minLloAttainmentPercent: criterion.minLloAttainmentPercent,
     },
   });
 
