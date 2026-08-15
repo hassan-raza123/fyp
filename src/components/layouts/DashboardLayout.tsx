@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { PRODUCT_NAME } from '@/constants/branding';
 import {
   Menu,
   Bell,
@@ -480,7 +481,7 @@ export default function DashboardLayout({
             {/* App Name */}
             {isSidebarOpen && (
               <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_rgba(252,153,40,0.2)]' : ''}`}>
-                EduTrack
+                {PRODUCT_NAME}
               </h1>
             )}
           </Link>
@@ -829,7 +830,7 @@ export default function DashboardLayout({
         {/* Full Page Footer - Fixed at Bottom */}
         <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-gray-900/98 via-gray-900/95 to-gray-900/98 border-t border-gray-800/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-gray-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
           <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            © {new Date().getFullYear()} EduTrack. All rights reserved.
+            © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
           </p>
         </footer>
       </div>
