@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Sparkles } from 'lucide-react';
+import { PRODUCT_NAME } from '@/constants/branding';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -78,7 +79,7 @@ export default function NavbarClient() {
                 <div className='relative w-20 h-20 transform group-hover:scale-110 transition-all duration-300'>
                   <img
                     src="/logo's/logo.png"
-                    alt='EduTrack Logo'
+                    alt={`${PRODUCT_NAME} logo`}
                     className='w-full h-full object-contain drop-shadow-lg'
                   />
                 </div>
@@ -92,7 +93,7 @@ export default function NavbarClient() {
                       isScrolled ? 'text-slate-900' : 'text-white'
                     }`}
                   >
-                    EduTrack
+                    {PRODUCT_NAME}
                   </span>
                 </div>
                 <div 

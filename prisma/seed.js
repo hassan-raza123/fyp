@@ -105,17 +105,35 @@ async function seedDatabase() {
     },
   });
 
-  // 2. Create Super Admin User (Hassan)
+  // 2. Create the installation's first super admin.
+  //
+  // Taken from the environment, not hardcoded. This used to create one named
+  // person's account on every deployment, which meant provisioning a new
+  // customer left a stranger holding the highest-privilege account in their
+  // system — and the customer's own administrator with no way in.
   console.log('👤 Creating super admin user...');
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL;
+  if (!adminEmail) {
+    throw new Error(
+      'SEED_ADMIN_EMAIL is not set. It must be the email address of the ' +
+        'administrator who will own this installation, e.g. ' +
+        'SEED_ADMIN_EMAIL=registrar@university.edu.pk npm run seed'
+    );
+  }
+
+  const adminFirstName = process.env.SEED_ADMIN_FIRST_NAME || 'System';
+  const adminLastName = process.env.SEED_ADMIN_LAST_NAME || 'Administrator';
+
   const superAdminUser = await prisma.users.upsert({
-    where: { email: 'hassan.officialmail00@gmail.com' },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: 'hassan.officialmail00@gmail.com',
-      username: 'hassan.officialmail00',
+      email: adminEmail,
+      username: adminEmail.split('@')[0],
       password_hash: defaultPassword,
-      first_name: 'Hassan',
-      last_name: 'Admin',
+      first_name: adminFirstName,
+      last_name: adminLastName,
       status: 'active',
       email_verified: true,
       // Forces the operator to replace the generated password on first sign-in
@@ -151,7 +169,7 @@ async function seedDatabase() {
 
   console.log('✅ Database seeded successfully!');
   console.log('\n📝 Super Admin Login Credentials:');
-  console.log('Email:    hassan.officialmail00@gmail.com');
+  console.log('Email:   ', adminEmail);
   console.log('Password:', plainPassword, '(shown once — you must change it at first sign-in)');
   console.log('Role:     super_admin');
   console.log(

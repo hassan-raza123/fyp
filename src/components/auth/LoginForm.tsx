@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import { PRODUCT_NAME } from '@/constants/branding';
 import {
   BaseUserType,
   LoginResponse,
@@ -190,7 +191,7 @@ export default function LoginForm() {
           className='text-3xl font-bold mb-2'
           style={{ color: 'var(--brand-primary)' }}
         >
-          Sign in to EduTrack
+          Sign in to {PRODUCT_NAME}
         </h2>
       </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { LogIn, BarChart3, CheckCircle } from 'lucide-react';
+import { PRODUCT_NAME } from '@/constants/branding';
 
 export default function UniversityStatsBar() {
   const steps = [
@@ -45,7 +46,7 @@ export default function UniversityStatsBar() {
             Simple & Efficient Process
           </h2>
           <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
-            EduTrack makes OBE management straightforward in three easy steps
+            {PRODUCT_NAME} makes OBE management straightforward in three easy steps
           </p>
         </div>
 

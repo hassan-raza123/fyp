@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PRODUCT_NAME } from '@/constants/branding';
 import { useParams } from 'next/navigation';
 
 interface SurveyQuestion {
@@ -18,6 +19,8 @@ interface SurveyData {
   type: string;
   dueDate: string | null;
   questions: SurveyQuestion[];
+  /** The institution running the survey. Null until they set it in Settings. */
+  institutionName: string | null;
 }
 
 interface AnswerMap {
@@ -261,7 +264,9 @@ export default function PublicSurveyPage() {
         </form>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          EduTrack OBE System — MNS University
+          {survey.institutionName
+            ? `${survey.institutionName} — powered by ${PRODUCT_NAME}`
+            : PRODUCT_NAME}
         </p>
       </div>
     </div>

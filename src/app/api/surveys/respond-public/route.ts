@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getBranding } from '@/lib/branding';
 
 // GET /api/surveys/respond-public?token=xxx
 // Returns survey questions for a public (no-auth) respondent
@@ -39,6 +40,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'This survey has expired' }, { status: 400 });
     }
 
+    // Respondents here are employers and alumni with no account, reached by a
+    // link in an email. They need to see which institution is asking before
+    // they answer, so the survey page is told rather than hardcoding one.
+    const branding = await getBranding();
+
     return NextResponse.json({
       id: survey.id,
       title: survey.title,
@@ -46,6 +52,7 @@ export async function GET(request: NextRequest) {
       type: survey.type,
       dueDate: survey.dueDate,
       questions: survey.questions,
+      institutionName: branding.isUnbranded ? null : branding.institutionName,
     });
   } catch (error) {
     console.error('Error fetching public survey:', error);

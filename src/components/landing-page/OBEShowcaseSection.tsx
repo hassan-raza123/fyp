@@ -3,11 +3,12 @@
 import Image from 'next/image';
 import { Target, Award, BarChart3, Zap, Workflow, RefreshCw, GitBranch } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { PRODUCT_NAME } from '@/constants/branding';
 
 const showcaseItems = [
   {
     id: 'benefits',
-    title: 'Why EduTrack?',
+    title: `Why ${PRODUCT_NAME}?`,
     subtitle: 'Smart OBE Management',
     image: '/info-images/obe-benefits.webp',
     icon: Zap,
@@ -21,7 +22,7 @@ const showcaseItems = [
   {
     id: 'framework',
     title: 'PDCA Framework',
-    subtitle: 'How EduTrack Works',
+    subtitle: `How ${PRODUCT_NAME} Works`,
     image: '/info-images/pdca-framework.png',
     icon: Workflow,
     features: [
