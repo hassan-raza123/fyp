@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
@@ -229,6 +230,13 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    });
+
+    await writeAuditLog(request, auth.user, 'batch.create', {
+      batchId: newBatch.id,
+      code: newBatch.code,
+      name: newBatch.name,
+      programId: newBatch.programId,
     });
 
     return NextResponse.json({

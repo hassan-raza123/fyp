@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { Prisma, programs_status } from '@prisma/client';
 import {
   requireRole,
@@ -310,6 +311,13 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    });
+
+    await writeAuditLog(request, user, 'program.create', {
+      programId: program.id,
+      code: program.code,
+      name: program.name,
+      departmentId: program.departmentId,
     });
 
     return NextResponse.json({

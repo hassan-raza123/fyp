@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_type, course_status } from '@prisma/client';
 import { canAccessCourse } from '@/lib/authz';
+import { writeAuditLog } from '@/lib/audit-log';
 
 const updateCourseSchema = z.object({
   code: z.string().min(1, 'Course code is required'),
@@ -318,6 +319,22 @@ export async function PUT(
       });
     });
 
+    await writeAuditLog(request, user, 'course.update', {
+      courseId: id,
+      before: {
+        code: existingCourse.code,
+        name: existingCourse.name,
+        creditHours: existingCourse.creditHours,
+        status: existingCourse.status,
+      },
+      after: {
+        code: validatedData.code,
+        name: validatedData.name,
+        creditHours: validatedData.creditHours,
+        status: validatedData.status,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -432,6 +449,13 @@ export async function DELETE(
     // Delete course
     await prisma.courses.delete({
       where: { id },
+    });
+
+    await writeAuditLog(request, user, 'course.delete', {
+      courseId: id,
+      code: existingCourse.code,
+      name: existingCourse.name,
+      departmentId: existingCourse.departmentId,
     });
 
     return NextResponse.json({

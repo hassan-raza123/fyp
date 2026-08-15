@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 
 /**
  * GET /api/surveys/[id]
@@ -119,6 +120,11 @@ export async function PATCH(
       },
     });
 
+    await writeAuditLog(request, auth.user, 'survey.update', {
+      surveyId: parseInt(params.id),
+      changed: { title, description, type, dueDate, status },
+    });
+
     return NextResponse.json({ success: true, data: survey });
   } catch (error) {
     console.error('[UPDATE_SURVEY]', error);
@@ -170,7 +176,29 @@ export async function DELETE(
       );
     }
 
+    // Deleting a survey destroys its responses, which are the indirect half of
+    // PLO attainment.
+    const doomed = await prisma.surveys.findUnique({
+      where: { id: parseInt(params.id) },
+      select: {
+        title: true,
+        type: true,
+        programId: true,
+        courseOfferingId: true,
+        _count: { select: { responses: true } },
+      },
+    });
+
     await prisma.surveys.delete({ where: { id: parseInt(params.id) } });
+
+    await writeAuditLog(request, user, 'survey.delete', {
+      surveyId: parseInt(params.id),
+      title: doomed?.title,
+      type: doomed?.type,
+      programId: doomed?.programId,
+      courseOfferingId: doomed?.courseOfferingId,
+      responsesDestroyed: doomed?._count.responses,
+    });
 
     return NextResponse.json({ success: true, message: 'Survey deleted.' });
   } catch (error) {

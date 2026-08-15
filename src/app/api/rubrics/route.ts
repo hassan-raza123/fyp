@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 // GET /api/rubrics?courseOfferingId=1  OR  ?cloId=1
@@ -121,6 +122,16 @@ export async function POST(request: NextRequest) {
         llo: { select: { id: true, code: true } },
         criteria: true,
       },
+    });
+
+    // A rubric is the instrument marks are awarded by, so its creation and
+    // every later edit belong in the same trail as the marks themselves.
+    await writeAuditLog(request, auth.user, 'rubric.create', {
+      rubricId: rubric.id,
+      courseOfferingId: Number(courseOfferingId),
+      cloId: rubric.cloId,
+      lloId: rubric.lloId,
+      criteriaCount: rubric.criteria.length,
     });
 
     return NextResponse.json(rubric, { status: 201 });

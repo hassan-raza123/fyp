@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { requireAuth } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
 import { authorize, canAccessBatch, forbiddenResponse } from '@/lib/authz';
@@ -264,6 +265,22 @@ export async function PUT(
       },
     });
 
+    await writeAuditLog(request, auth.user, 'batch.update', {
+      batchId: resolvedParams.id,
+      before: {
+        name: existingBatch.name,
+        code: existingBatch.code,
+        programId: existingBatch.programId,
+        status: existingBatch.status,
+      },
+      after: {
+        name: updatedBatch.name,
+        code: updatedBatch.code,
+        programId: updatedBatch.programId,
+        status: updatedBatch.status,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Batch updated successfully',
@@ -343,6 +360,13 @@ export async function DELETE(
     // Delete the batch
     await prisma.batches.delete({
       where: { id: resolvedParams.id },
+    });
+
+    await writeAuditLog(request, auth.user, 'batch.delete', {
+      batchId: resolvedParams.id,
+      code: existingBatch.code,
+      name: existingBatch.name,
+      programId: existingBatch.programId,
     });
 
     return NextResponse.json({

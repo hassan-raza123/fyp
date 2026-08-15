@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 // DELETE /api/peo-plo-mappings/[id]

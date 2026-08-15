@@ -56,7 +56,7 @@ const studentFeatures = [
 export default function StatsOverview() {
   return (
     <div className='relative py-20 overflow-hidden'>
-      {/* Gradient Background with Blur Circles - Same as Testimonials */}
+      {/* Gradient Background with Blur Circles */}
       <div 
         className='absolute inset-0'
         style={{

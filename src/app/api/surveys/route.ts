@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { requireAuth } from '@/lib/auth';
 import {
   authorize,
@@ -135,6 +136,14 @@ export async function POST(request: NextRequest) {
         },
         program: { select: { id: true, name: true, code: true } },
       },
+    });
+
+    await writeAuditLog(request, user, 'survey.create', {
+      surveyId: survey.id,
+      title: survey.title,
+      type: survey.type,
+      programId: survey.programId,
+      courseOfferingId: survey.courseOfferingId,
     });
 
     return NextResponse.json({ success: true, data: survey });

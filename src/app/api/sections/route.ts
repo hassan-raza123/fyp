@@ -303,6 +303,16 @@ export async function POST(request: NextRequest) {
       currentStudents: section._count.studentsections,
     };
 
+    // `section.delete` was already audited; creation is the other half of the
+    // pair, and it is what assigns a faculty member marking rights on a cohort.
+    await writeAuditLog(request, user, 'section.create', {
+      sectionId: section.id,
+      name: section.name,
+      courseOfferingId: section.courseOfferingId,
+      facultyId: section.facultyId,
+      batchId: section.batchId,
+    });
+
     return NextResponse.json({
       success: true,
       data: transformedSection,

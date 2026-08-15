@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { requireAuth } from '@/lib/auth';
 import { transcript_status } from '@prisma/client';
 import type { TokenPayload } from '@/types/auth';
@@ -212,6 +213,15 @@ export async function PATCH(
       },
     });
 
+    // An official transcript is the document a student presents to an employer
+    // or another institution. Marking one official, or unofficial, is a
+    // decision someone has to be answerable for.
+    await writeAuditLog(request, user, 'transcript.update', {
+      transcriptId,
+      studentId: transcript.studentId,
+      changed: updateData,
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Transcript updated successfully',
@@ -255,8 +265,20 @@ export async function DELETE(
     const denied = await assertOwnsTranscript(request, user, transcriptId);
     if (denied) return denied;
 
+    const doomed = await prisma.transcripts.findUnique({
+      where: { id: transcriptId },
+      select: { studentId: true, transcriptType: true, isOfficial: true },
+    });
+
     await prisma.transcripts.delete({
       where: { id: transcriptId },
+    });
+
+    await writeAuditLog(request, user, 'transcript.delete', {
+      transcriptId,
+      studentId: doomed?.studentId,
+      transcriptType: doomed?.transcriptType,
+      wasOfficial: doomed?.isOfficial,
     });
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/rubrics/[id]
@@ -98,6 +99,16 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
       },
     });
 
+    // `criteria` is replaced wholesale (deleteMany + create), so an edit can
+    // silently change what every existing score on this rubric meant.
+    await writeAuditLog(request, auth.user, 'rubric.update', {
+      rubricId: Number(params.id),
+      courseOfferingId: existing.courseOfferingId,
+      titleChanged: title !== undefined,
+      criteriaReplaced: criteria !== undefined,
+      criteriaCount: rubric.criteria.length,
+    });
+
     return NextResponse.json(rubric);
   } catch (error) {
     console.error('Error updating rubric:', error);
@@ -126,6 +137,12 @@ export async function DELETE(request: NextRequest, { params: _params }: { params
     }
 
     await prisma.rubrics.delete({ where: { id: Number(params.id) } });
+
+    await writeAuditLog(request, auth.user, 'rubric.delete', {
+      rubricId: Number(params.id),
+      courseOfferingId: existing.courseOfferingId,
+    });
+
     return NextResponse.json({ success: true, message: 'Rubric deleted' });
   } catch (error) {
     console.error('Error deleting rubric:', error);

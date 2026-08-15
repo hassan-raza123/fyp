@@ -3,8 +3,6 @@ import UniversityStatsBar from '@/components/landing-page/UniversityStatsBar';
 import OBEShowcaseSection from '@/components/landing-page/OBEShowcaseSection';
 import FeaturesSection from '@/components/landing-page/FeaturesSection';
 import StatsOverview from '@/components/landing-page/StatsOverview';
-import TestimonialsSection from '@/components/landing-page/TestimonialsSection';
-import TeamSection from '@/components/landing-page/TeamSection';
 import CTASection from '@/components/landing-page/CTASection';
 import Footer from '@/components/landing-page/Footer';
 import FloatingChatButton from '@/components/landing-page/FloatingChatButton';
@@ -26,13 +24,17 @@ export default function LandingPage() {
       <StatsOverview />
       <FeaturesSection />
       
-      {/* Team & Portal Access */}
-      <TeamSection />
+      {/* Portal Access */}
       <CTASection />
-      
-      {/* Testimonials */}
-      <TestimonialsSection />
-      
+
+      {/* A testimonials section lived here carrying six invented quotes
+          attributed to named students, and a team section naming the project
+          authors and their academic supervisor. Both were fine for a project
+          demo and are not fine on a page that sells the product: the quotes
+          were fabricated customer reviews, and the supervisor had not agreed
+          to endorse anything. Bring testimonials back only with real, sourced
+          quotes from a real customer. */}
+
       <Footer />
       
       {/* Floating Chat Button */}

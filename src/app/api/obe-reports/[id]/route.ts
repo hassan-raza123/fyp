@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit-log';
 import { requireAuth } from '@/lib/auth';
 import type { TokenPayload } from '@/types/auth';
 import { report_status } from '@prisma/client';
@@ -177,6 +178,12 @@ export async function PATCH(
       },
     });
 
+    await writeAuditLog(request, user, 'report.update', {
+      reportId,
+      programId: report.programId,
+      changed: updateData,
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Report updated successfully',
@@ -220,8 +227,22 @@ export async function DELETE(
     const denied = await assertOwnsReport(request, user, reportId);
     if (denied) return denied;
 
+    // Captured before the delete: an accreditation report is evidence, and
+    // "which report was destroyed" is the question afterwards.
+    const doomed = await prisma.obereports.findUnique({
+      where: { id: reportId },
+      select: { programId: true, reportType: true, title: true },
+    });
+
     await prisma.obereports.delete({
       where: { id: reportId },
+    });
+
+    await writeAuditLog(request, user, 'report.delete', {
+      reportId,
+      programId: doomed?.programId,
+      reportType: doomed?.reportType,
+      title: doomed?.title,
     });
 
     return NextResponse.json({
