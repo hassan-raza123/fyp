@@ -3,13 +3,18 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from '@/components/providers/Providers';
 import { Toaster } from 'sonner';
+import { PRODUCT_DESCRIPTION, PRODUCT_FULL_NAME } from '@/constants/branding';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Metadata configuration
+// Metadata configuration.
+//
+// Only the product name appears here, never the customer's. This is the root
+// layout for every installation, and making it name one university is what it
+// did before. The institution's own name is a setting — see `getBranding()`.
 export const metadata: Metadata = {
-  title: 'EduTrack - OBE Management System',
-  description: 'Transforming Education Through Outcomes - Comprehensive Outcome-Based Education Management Platform for MNS University',
+  title: PRODUCT_FULL_NAME,
+  description: PRODUCT_DESCRIPTION,
   icons: {
     icon: [
       { url: "/logo's/logo.png", sizes: 'any' },

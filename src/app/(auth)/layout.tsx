@@ -2,17 +2,21 @@ import '@/styles/globals.css';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getBranding } from '@/lib/branding';
+import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants/branding';
 
 export const metadata: Metadata = {
-  title: 'Login | Smart Campus for MNSUET',
-  description: 'Login to access your Smart Campus for MNSUET portal',
+  title: `Login | ${PRODUCT_NAME}`,
+  description: `Login to access your ${PRODUCT_NAME} portal`,
 };
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const branding = await getBranding();
+
   return (
     <div 
       className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden light'
@@ -62,7 +66,7 @@ export default function AuthLayout({
           {/* Logo - Direct, No Box */}
           <Image
             src="/logo's/logo.png"
-            alt='EduTrack Logo'
+            alt={`${PRODUCT_NAME} logo`}
             width={70}
             height={70}
             className='object-contain relative z-10'
@@ -81,10 +85,10 @@ export default function AuthLayout({
               textShadow: `0 2px 8px var(--brand-secondary-opacity-50)`
             }}
           >
-            EduTrack
+            {PRODUCT_NAME}
           </h1>
           <p className='text-xs text-white mt-0.5' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
-            MNS University of Engineering & Technology
+            {branding.institutionName}
           </p>
         </div>
       </Link>
@@ -100,10 +104,12 @@ export default function AuthLayout({
               textShadow: '0 2px 8px rgba(0,0,0,0.5)'
             }}
           >
-            Outcome-Based Education Management System
+            {PRODUCT_TAGLINE}
           </h1>
           <p className='text-base text-white/90 leading-relaxed'>
-            MNS University of Engineering & Technology's dedicated platform for tracking CLO & PLO attainments, managing assessments, and generating OBE compliance reports.
+            {branding.isUnbranded
+              ? 'Track CLO & PLO attainments, manage assessments, and generate OBE compliance reports.'
+              : `${branding.institutionName}'s platform for tracking CLO & PLO attainments, managing assessments, and generating OBE compliance reports.`}
           </p>
         </div>
 
@@ -121,7 +127,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <div className='absolute bottom-6 left-8 text-white/60 text-sm z-20'>
-        © 2025 EduTrack - MNS UET. All rights reserved.
+        © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
       </div>
     </div>
   );

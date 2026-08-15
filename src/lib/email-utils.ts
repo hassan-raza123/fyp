@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
+import { PRODUCT_NAME } from '@/constants/branding';
 
-// Application name - update this if project name changes
-const APPLICATION_NAME = 'EduTrack - OBE Management System';
+// The name every outbound email is signed with. Sourced from the shared
+// product constant so a rename is one edit, not a search across nine files.
+const APPLICATION_NAME = PRODUCT_NAME;
 
 // Create reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
