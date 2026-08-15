@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 
 /**
  * GET /api/surveys/[id]/results
@@ -13,19 +13,16 @@ export async function GET(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
-
-    if (user?.role === 'student') {
-      return NextResponse.json(
-        { success: false, error: 'Students cannot view aggregated results.' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const surveyId = parseInt(params.id);
+
+    // Aggregated results are the indirect half of PLO attainment. Reading
+    // another department's is a cross-tenant read of an accreditation figure.
+    if (!(await canAccessSurvey(request, auth.user, surveyId))) {
+      return forbiddenResponse();
+    }
 
     const survey = await prisma.surveys.findUnique({
       where: { id: surveyId },

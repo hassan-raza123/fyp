@@ -221,13 +221,8 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user } = await requireAuth(request);
-    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { id } = await context.params;
     const lloId = parseInt(id);
@@ -249,6 +244,11 @@ export async function DELETE(
         { success: false, error: 'LLO not found' },
         { status: 404 }
       );
+    }
+
+    // The GET and PUT above both scope to the owning course; deletion must too.
+    if (!(await canAccessCourse(request, auth.user, existingLLO.courseId))) {
+      return forbiddenResponse();
     }
 
     // Delete LLO (cascade will handle related records)

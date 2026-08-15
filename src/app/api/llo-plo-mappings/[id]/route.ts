@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 
 // DELETE /api/llo-plo-mappings/[id]
 export async function DELETE(
@@ -8,13 +8,8 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { success, user } = await requireAuth(request);
-    if (!success || user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { id } = await context.params;
     const mappingId = parseInt(id);
@@ -29,6 +24,7 @@ export async function DELETE(
     // Check if mapping exists
     const existingMapping = await prisma.lloplomappings.findUnique({
       where: { id: mappingId },
+      select: { id: true, llo: { select: { courseId: true } } },
     });
 
     if (!existingMapping) {
@@ -36,6 +32,15 @@ export async function DELETE(
         { success: false, error: 'Mapping not found' },
         { status: 404 }
       );
+    }
+
+    // Resolved through the LLO's course. The mapping carries the weight the
+    // PLO rollup divides by, so deleting one changes another department's
+    // attainment figures without touching a row it owns directly.
+    if (
+      !(await canAccessCourse(request, auth.user, existingMapping.llo.courseId))
+    ) {
+      return forbiddenResponse();
     }
 
     // Delete mapping
@@ -55,4 +60,3 @@ export async function DELETE(
     );
   }
 }
-

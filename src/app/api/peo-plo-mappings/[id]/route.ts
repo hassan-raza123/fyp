@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 // DELETE /api/peo-plo-mappings/[id]
 export async function DELETE(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+
+    // Resolved through the PEO's programme. A mapping carries the weight the
+    // PEO attainment rollup divides by, so deleting one silently changes
+    // another department's accreditation figures.
+    const mapping = await prisma.peoplomappings.findUnique({
+      where: { id: Number(params.id) },
+      select: { peo: { select: { programId: true } } },
+    });
+    if (!mapping) {
+      return NextResponse.json({ error: 'Mapping not found' }, { status: 404 });
     }
-    if (!['admin', 'super_admin'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await canAccessProgram(request, auth.user, mapping.peo.programId))) {
+      return forbiddenResponse();
     }
 
     await prisma.peoplomappings.delete({ where: { id: Number(params.id) } });

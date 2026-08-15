@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole, getDepartmentIdFromRequest } from '@/lib/auth';
+import { requireAuth, getDepartmentIdFromRequest } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/batches - Get all batches with optional filters
 export async function GET(request: NextRequest) {
@@ -113,28 +114,9 @@ export async function GET(request: NextRequest) {
 // POST /api/batches - Create a new batch
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const { success: authSuccess, error: authError } = await requireAuth(
-      request
-    );
-    if (!authSuccess) {
-      return NextResponse.json(
-        { success: false, error: authError || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check role - only admins can create batches
-    const { success: roleSuccess, error: roleError } = await requireRole(request, [
-      'admin',
-      'super_admin',
-    ]);
-    if (!roleSuccess) {
-      return NextResponse.json(
-        { success: false, error: roleError || 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    // Only admins can create batches, and only in their own programmes.
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     // Parse request body
     const body = await request.json();
@@ -162,6 +144,12 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // The programme comes from the body. A batch is a cohort of real students,
+    // so creating one under another department's programme is a write into it.
+    if (!(await canAccessProgram(request, auth.user, parseInt(programId)))) {
+      return forbiddenResponse();
     }
 
     // Validate program exists

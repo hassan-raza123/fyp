@@ -15,17 +15,9 @@ export async function PATCH(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
-
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json(
-        { success: false, error: 'Only admins can lock or unlock results.' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const courseOfferingId = parseInt(params.id);
     if (isNaN(courseOfferingId)) {
@@ -33,6 +25,12 @@ export async function PATCH(
         { success: false, error: 'Invalid course offering ID.' },
         { status: 400 }
       );
+    }
+
+    // The GET below scopes with `canManageCourseOffering`. Locking decides
+    // whether faculty can still enter marks, so the write needs it too.
+    if (!(await canManageCourseOffering(request, user, courseOfferingId))) {
+      return forbiddenResponse();
     }
 
     const offering = await prisma.courseofferings.findUnique({

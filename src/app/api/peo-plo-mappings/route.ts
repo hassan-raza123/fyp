@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
-import { authorize, programScopeFilter } from '@/lib/authz';
+import {
+  authorize,
+  canAccessProgram,
+  forbiddenResponse,
+  programScopeFilter,
+} from '@/lib/authz';
 
 // GET /api/peo-plo-mappings?peoId=1  OR  ?programId=1
 export async function GET(request: NextRequest) {
@@ -45,13 +49,8 @@ export async function GET(request: NextRequest) {
 // POST /api/peo-plo-mappings  — body: { peoId, ploId }
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!['admin', 'super_admin'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { peoId, ploId } = body;
@@ -72,6 +71,13 @@ export async function POST(request: NextRequest) {
         { error: 'PEO and PLO must belong to the same program' },
         { status: 400 }
       );
+    }
+
+    // Both ids arrive in the body. Same-programme is not the same question as
+    // "your programme" — without this, a foreign admin can wire up mappings in
+    // a programme they have no claim to.
+    if (!(await canAccessProgram(request, auth.user, peo.programId))) {
+      return forbiddenResponse();
     }
 
     const mapping = await prisma.peoplomappings.create({

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 /**
@@ -41,10 +40,23 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json({ success: false, error: 'Admins only' }, { status: 403 });
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+
+    // The GET above resolves ownership through the programme and the write
+    // path must match it. These are the thresholds that decide who graduates.
+    const existing = await prisma.graduation_criteria.findUnique({
+      where: { id: parseInt(params.id) },
+      select: { programId: true },
+    });
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Criteria not found' },
+        { status: 404 }
+      );
+    }
+    if (!(await canAccessProgram(request, auth.user, existing.programId))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();

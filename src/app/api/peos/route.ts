@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
-import { authorize, programScopeFilter } from '@/lib/authz';
+import {
+  authorize,
+  canAccessProgram,
+  forbiddenResponse,
+  programScopeFilter,
+} from '@/lib/authz';
 
 // GET /api/peos?programId=1
 export async function GET(request: NextRequest) {
@@ -46,13 +50,8 @@ export async function GET(request: NextRequest) {
 // POST /api/peos
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!['admin', 'super_admin'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { code, description, programId, status } = body;
@@ -62,6 +61,13 @@ export async function POST(request: NextRequest) {
         { error: 'code, description, and programId are required' },
         { status: 400 }
       );
+    }
+
+    // The programme comes from the request body, so it has to be checked —
+    // otherwise a department admin can plant PEOs in another department's
+    // programme, which feeds straight into its accreditation figures.
+    if (!(await canAccessProgram(request, auth.user, Number(programId)))) {
+      return forbiddenResponse();
     }
 
     const peo = await prisma.peos.create({

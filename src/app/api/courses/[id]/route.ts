@@ -227,6 +227,16 @@ export async function PUT(
     const validatedData = updateCourseSchema.parse(body);
     const id = parseInt(resolvedParams.id);
 
+    // The GET above scopes reads with `canAccessCourse`; the write path has to
+    // ask the same question. A role check alone let the admin of one
+    // department rewrite any course in the university.
+    if (!user || !(await canAccessCourse(request, user, id))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
     // Check if course exists
     const existingCourse = await prisma.courses.findUnique({
       where: { id },
@@ -376,6 +386,15 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: 'Invalid course ID' },
         { status: 400 }
+      );
+    }
+
+    // Same ownership question as the read side — deletion is the write that
+    // matters most.
+    if (!user || !(await canAccessCourse(request, user, id))) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
       );
     }
 

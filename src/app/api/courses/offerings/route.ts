@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authorize, resolveDepartmentScope } from '@/lib/authz';
+import {
+  authorize,
+  canAccessCourse,
+  canManageCourseOffering,
+  forbiddenResponse,
+  resolveDepartmentScope,
+} from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { course_offering_status } from '@prisma/client';
@@ -140,24 +146,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const validatedData = createOfferingSchema.parse(body);
+
+    // The course is named in the body. Creating an offering against another
+    // department's course puts sections, assessments and marks under it.
+    if (!(await canAccessCourse(request, auth.user, validatedData.courseId))) {
+      return forbiddenResponse();
+    }
 
     // Check if course exists
     const course = await prisma.courses.findUnique({
@@ -259,24 +258,18 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const validatedData = updateOfferingSchema.parse(body);
+
+    // The offering id arrives in the body; ownership resolves through it.
+    if (
+      !(await canManageCourseOffering(request, auth.user, validatedData.id))
+    ) {
+      return forbiddenResponse();
+    }
 
     // Check if offering exists
     const existingOffering = await prisma.courseofferings.findUnique({
@@ -403,21 +396,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    if (!['admin', 'super_admin'].includes(user?.role ?? '')) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -427,6 +407,11 @@ export async function DELETE(request: NextRequest) {
         { success: false, error: 'Course offering ID is required' },
         { status: 400 }
       );
+    }
+
+    // Same ownership question as the update path.
+    if (!(await canManageCourseOffering(request, auth.user, parseInt(id)))) {
+      return forbiddenResponse();
     }
 
     // Check if offering exists

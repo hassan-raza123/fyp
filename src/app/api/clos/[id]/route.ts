@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize, canManageCourse, forbidden } from '@/lib/authz';
+import { authorize, canAccessCourse, canManageCourse, forbidden } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 
 // GET /api/clos/[id]
@@ -40,6 +40,12 @@ export async function GET(
         },
       },
     });
+
+    // All roles may read *a* CLO — not every department's. Scoped through the
+    // owning course, which is where a student's enrolment is checked too.
+    if (clo && !(await canAccessCourse(request, auth.user, clo.courseId))) {
+      return forbidden().response;
+    }
 
     if (!clo) {
       return NextResponse.json(

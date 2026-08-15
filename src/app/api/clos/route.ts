@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
-import { authorize, courseScopeFilter } from '@/lib/authz';
+import {
+  authorize,
+  canManageCourse,
+  courseScopeFilter,
+  forbidden,
+} from '@/lib/authz';
 
 // GET /api/clos
 export async function GET(request: NextRequest) {
@@ -61,9 +65,8 @@ export async function GET(request: NextRequest) {
 // POST /api/clos
 export async function POST(req: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(req as any);
-    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role ?? ''))
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(req, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const data = await req.json();
     const { code, description, courseId, bloomLevel, status } = data;
@@ -92,6 +95,12 @@ export async function POST(req: NextRequest) {
     const course = await prisma.courses.findUnique({
       where: { id: courseId },
     });
+
+    // `courseId` comes from the body: a CLO planted in another department's
+    // course becomes part of its attainment chain.
+    if (!(await canManageCourse(req, auth.user, courseId))) {
+      return forbidden('You do not have access to this course').response;
+    }
 
     if (!course) {
       return NextResponse.json(
@@ -148,9 +157,12 @@ export async function POST(req: NextRequest) {
 // PUT /api/clos
 export async function PUT(request: Request) {
   try {
-    const { success, user, error } = await requireAuth(request as any);
-    if (!success || !['admin', 'faculty', 'super_admin'].includes(user?.role ?? ''))
-      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request as NextRequest, [
+      'super_admin',
+      'admin',
+      'faculty',
+    ]);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { id, code, description, courseId, bloomLevel, status } = body;
@@ -184,6 +196,24 @@ export async function PUT(request: Request) {
         { success: false, error: 'CLO not found' },
         { status: 404 }
       );
+    }
+
+    // Both the CLO's current course and the target course are checked, so a
+    // CLO cannot be moved into — or out of — a course the caller cannot reach.
+    // This mirrors `clos/[id]` PUT, which already did it.
+    const req = request as NextRequest;
+    const allowedOnCurrent = await canManageCourse(
+      req,
+      auth.user,
+      existingCLO.courseId
+    );
+    const allowedOnTarget = await canManageCourse(
+      req,
+      auth.user,
+      parseInt(courseId)
+    );
+    if (!allowedOnCurrent || !allowedOnTarget) {
+      return forbidden('You do not have access to this course').response;
     }
 
     // Check if CLO code already exists for the course (excluding current CLO)

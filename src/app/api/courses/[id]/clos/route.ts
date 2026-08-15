@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize, canManageCourse, forbidden } from '@/lib/authz';
+import { authorize, canAccessCourse, canManageCourse, forbidden } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 
 export async function GET(
@@ -22,6 +22,12 @@ export async function GET(
 
     if (isNaN(courseId)) {
       return NextResponse.json({ error: 'Invalid course ID' }, { status: 400 });
+    }
+
+    // "All roles" is about which role, not which course: staff are still
+    // scoped to their department and a student to courses they are taking.
+    if (!(await canAccessCourse(req, auth.user, courseId))) {
+      return forbidden().response;
     }
 
     const clos = await prisma.clos.findMany({

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 /**
@@ -71,11 +70,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const parsed = criteriaSchema.safeParse(await request.json());
   if (!parsed.success) {
@@ -91,6 +87,13 @@ export async function POST(request: NextRequest) {
     minLloAttainmentPercent,
     minAttendancePercent,
   } = parsed.data;
+
+  // The offering arrives in the body. `minPassPercent` is the bar every
+  // student on that offering is measured against, so writing it into another
+  // department's offering changes who passes there.
+  if (!(await canManageCourseOffering(request, auth.user, courseOfferingId))) {
+    return forbiddenResponse();
+  }
 
   const existing = await prisma.passfailcriteria.findUnique({
     where: { courseOfferingId },

@@ -1,15 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
+
+/**
+ * A curriculum row says which courses a degree requires and in which semester.
+ * Both handlers resolve ownership through the owning programme — the listing
+ * side already did, and a write that skipped it let a department admin
+ * restructure another department's degree.
+ */
+async function assertOwnsEntry(
+  request: NextRequest,
+  auth: Extract<Awaited<ReturnType<typeof authorize>>, { ok: true }>,
+  entryId: number
+): Promise<NextResponse | null> {
+  const entry = await prisma.program_curriculum.findUnique({
+    where: { id: entryId },
+    select: { programId: true },
+  });
+  if (!entry) {
+    return NextResponse.json(
+      { error: 'Curriculum entry not found' },
+      { status: 404 }
+    );
+  }
+  if (!(await canAccessProgram(request, auth.user, entry.programId))) {
+    return forbiddenResponse();
+  }
+  return null;
+}
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
+  const denied = await assertOwnsEntry(request, auth, parseInt(id));
+  if (denied) return denied;
+
   const body = await request.json();
   const { semesterSlot, courseCategory, isRequired } = body;
 
@@ -29,13 +56,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
+  const denied = await assertOwnsEntry(request, auth, parseInt(id));
+  if (denied) return denied;
 
   await prisma.program_curriculum.delete({ where: { id: parseInt(id) } });
 

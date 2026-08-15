@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/rubrics/[id]
@@ -42,12 +41,22 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    // The GET above resolves ownership through the rubric's course offering.
+    // A rubric decides how marks are awarded, so the write path needs it too.
+    const existing = await prisma.rubrics.findUnique({
+      where: { id: Number(params.id) },
+      select: { courseOfferingId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Rubric not found' }, { status: 404 });
     }
-    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (
+      !(await canManageCourseOffering(request, auth.user, existing.courseOfferingId))
+    ) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();
@@ -100,12 +109,20 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
 export async function DELETE(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+
+    const existing = await prisma.rubrics.findUnique({
+      where: { id: Number(params.id) },
+      select: { courseOfferingId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Rubric not found' }, { status: 404 });
     }
-    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (
+      !(await canManageCourseOffering(request, auth.user, existing.courseOfferingId))
+    ) {
+      return forbiddenResponse();
     }
 
     await prisma.rubrics.delete({ where: { id: Number(params.id) } });

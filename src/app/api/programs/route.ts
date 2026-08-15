@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma, programs_status } from '@prisma/client';
-import { requireRole, requireAuth } from '@/lib/auth';
+import {
+  requireRole,
+  requireAuth,
+  getDepartmentIdFromRequest,
+} from '@/lib/auth';
+import { forbiddenResponse } from '@/lib/authz';
 
 type ProgramWithCounts = Prisma.programsGetPayload<{
   include: {
@@ -209,6 +214,17 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // `departmentId` is taken from the body, so a department admin could
+    // create a programme inside somebody else's department — and then, being
+    // its creator's department admin, own everything hanging off it. A super
+    // admin runs the whole university and may name any department.
+    if (user.role !== 'super_admin') {
+      const callerDepartmentId = await getDepartmentIdFromRequest(request);
+      if (!callerDepartmentId || Number(departmentId) !== callerDepartmentId) {
+        return forbiddenResponse();
+      }
     }
     if (
       !totalCreditHours ||

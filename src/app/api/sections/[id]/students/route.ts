@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkPrerequisites } from '@/lib/obe';
 import { requireAuth } from '@/lib/auth';
-import { canAccessSection, canReadSectionRoster } from '@/lib/authz';
+import {
+  authorize,
+  canAccessSection,
+  canReadSectionRoster,
+  forbiddenResponse,
+} from '@/lib/authz';
 
 // POST /api/sections/[id]/students - Add a student to a section
 export async function POST(
@@ -11,21 +16,9 @@ export async function POST(
 ) {
   try {
     // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Role check
-    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const body = await request.json();
     const { studentId } = body;
@@ -53,6 +46,12 @@ export async function POST(
         },
         { status: 400 }
       );
+    }
+
+    // Enrolling a student is a write against the section's roster; scope it
+    // the same way the roster read is scoped.
+    if (!(await canAccessSection(request, user, sectionId))) {
+      return forbiddenResponse();
     }
 
     // Check if section exists and get current student count
@@ -271,21 +270,9 @@ export async function DELETE(
 ) {
   try {
     // Check authentication
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json(
-        { success: false, error: error || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Role check
-    if (!['admin', 'super_admin', 'faculty'].includes(user?.role ?? '')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const body = await request.json();
     const { studentId } = body;
@@ -313,6 +300,11 @@ export async function DELETE(
         },
         { status: 400 }
       );
+    }
+
+    // Unenrolling is the same kind of write as enrolling.
+    if (!(await canAccessSection(request, user, sectionId))) {
+      return forbiddenResponse();
     }
 
     // Check if enrollment exists

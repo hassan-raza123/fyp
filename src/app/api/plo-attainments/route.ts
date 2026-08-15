@@ -305,6 +305,12 @@ export async function POST(request: NextRequest) {
     const pid = Number(programId);
     const sid = Number(semesterId);
 
+    // Recomputing attainment writes `ploattainments` rows for the programme
+    // named in the body — an accreditation figure for someone else's degree.
+    if (!(await canAccessProgram(request, auth.user, pid))) {
+      return forbiddenResponse();
+    }
+
     // ── Fetch PLOs with CLO + LLO attainments ─────────────────────────────────
     const plos = await prisma.plos.findMany({
       where: { programId: pid, status: plo_status.active },

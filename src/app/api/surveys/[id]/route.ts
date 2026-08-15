@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 
 /**
  * GET /api/surveys/[id]
@@ -17,6 +16,11 @@ export async function GET(
     // through the token-authenticated public routes, not this one.
     const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
     if (!auth.ok) return auth.response;
+
+    // Being staff is not a claim on every department's surveys.
+    if (!(await canAccessSurvey(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const survey = await prisma.surveys.findUnique({
       where: { id: parseInt(params.id) },
@@ -63,16 +67,11 @@ export async function PATCH(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
-    if (user?.role === 'student') {
-      return NextResponse.json(
-        { success: false, error: 'Students cannot update surveys.' },
-        { status: 403 }
-      );
+    if (!(await canAccessSurvey(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();
@@ -140,9 +139,15 @@ export async function DELETE(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
+
+    // Ownership first: creator-or-admin decides *which staff member* may
+    // delete it, but only once we know the survey is in their department at
+    // all. Without this a foreign admin satisfied `isAdmin` and deleted it.
+    if (!(await canAccessSurvey(request, user, parseInt(params.id)))) {
+      return forbiddenResponse();
     }
 
     // Check if faculty created this survey (allow creator to delete their own)
@@ -155,8 +160,8 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Survey not found.' }, { status: 404 });
     }
 
-    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
-    const isCreator = surveyToDelete.createdBy === user?.userId;
+    const isAdmin = user.role === 'admin' || user.role === 'super_admin';
+    const isCreator = surveyToDelete.createdBy === user.userId;
 
     if (!isAdmin && !isCreator) {
       return NextResponse.json(

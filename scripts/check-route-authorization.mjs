@@ -76,6 +76,57 @@ const OWNERSHIP_CHECK =
 
 const HANDLER = /export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b/g;
 
+/** Locally-declared functions, so a handler that delegates can be followed. */
+const LOCAL_FUNCTION =
+  /(?:async\s+)?function\s+(\w+)\s*\(|const\s+(\w+)\s*=\s*(?:async\s*)?\(/g;
+
+const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+/**
+ * Routes where a role check alone is the whole answer, because the resource is
+ * not owned by a department.
+ *
+ * This list exists because the check below is otherwise strict: any handler
+ * that names a resource by id, and any write handler at all, must resolve
+ * ownership and not merely a role. That rule is what the sixth audit pass
+ * missed — `authorize()` was called everywhere, so the old check passed, while
+ * the *write* half of a dozen resources never asked whose row it was. A
+ * department admin could rewrite another department's PEOs, graduation
+ * thresholds, curriculum, courses and sections; the matching GET returned 403.
+ *
+ * Adding an entry here is a statement that the resource is genuinely global or
+ * self-scoped. It should be as deliberate as adding to PUBLIC_ROUTES.
+ */
+const UNSCOPED_ROUTES = new Map([
+  ['semesters', 'the academic calendar is university-wide, not per-department'],
+  ['semesters/[id]', 'same: a semester has no owning department'],
+  ['departments', 'creating departments is a super-admin act; listing is reference data'],
+  ['departments/[id]', 'the resource *is* the department; handlers compare ids inline'],
+  ['departments/by-code', 'reference lookup by code'],
+  ['settings', 'a single global settings row'],
+  ['profile', 'always the caller\'s own row'],
+  ['notifications', 'addressed to the caller; scoped by recipient, not department'],
+  ['notifications/[id]', 'same'],
+  ['users', 'creation assigns a department rather than reading one'],
+  ['users/import', 'bulk creation, department taken from the caller'],
+  ['contact', 'public contact form'],
+  ['action-plans/suggestions', 'derives suggestions from the caller\'s own scope'],
+  [
+    'surveys/[id]/respond',
+    'the respondent is resolved from the session; scoped to that student, not a department',
+  ],
+]);
+
+/** Prefixes whose whole subtree is role-gated rather than department-scoped. */
+const UNSCOPED_PREFIXES = [
+  ['super-admin/', 'super-admin-only surface; the role *is* the authorization'],
+  ['admins/', 'account administration, guarded by canManageUser where it applies'],
+  ['admin/', 'department-admin self-service; resolves the caller\'s own department'],
+  ['auth/', 'authentication endpoints'],
+  ['e2e/', 'test-only'],
+  ['cron/', 'authenticated by CRON_SECRET'],
+];
+
 async function* walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -95,6 +146,27 @@ for await (const file of walk(API_DIR)) {
   if (PUBLIC_ROUTES.has(key)) continue;
 
   const source = readFileSync(file, 'utf8');
+
+  /**
+   * Names of local functions that themselves resolve ownership, so a handler
+   * delegating to one counts as checked. `assessments/[id]` does exactly this
+   * with `requireAssessmentAccess`, and reporting it would be a false positive.
+   */
+  const ownershipHelpers = new Set();
+  for (const m of source.matchAll(LOCAL_FUNCTION)) {
+    const name = m[1] ?? m[2];
+    if (!name || /^(GET|POST|PUT|PATCH|DELETE)$/.test(name)) continue;
+    const after = source.slice(m.index, m.index + 1600);
+    if (OWNERSHIP_CHECK.test(after)) ownershipHelpers.add(name);
+  }
+  const delegates = ownershipHelpers.size
+    ? new RegExp(`\\b(?:${[...ownershipHelpers].join('|')})\\s*\\(`)
+    : null;
+
+  const isDynamic = key.includes('[');
+  const unscoped =
+    UNSCOPED_ROUTES.has(key) ||
+    UNSCOPED_PREFIXES.some(([prefix]) => key.startsWith(prefix));
 
   const marks = [...source.matchAll(HANDLER)];
   for (let i = 0; i < marks.length; i++) {
@@ -122,12 +194,37 @@ for await (const file of walk(API_DIR)) {
       continue;
     }
 
-    if (ROLE_CHECK.test(body) || OWNERSHIP_CHECK.test(body)) continue;
+    const hasRole = ROLE_CHECK.test(body);
+    const hasOwnership =
+      OWNERSHIP_CHECK.test(body) || (delegates !== null && delegates.test(body));
 
-    violations.push({
-      location: `${file}::${marks[i][1]}`,
-      reason: 'authenticates but authorizes nothing',
-    });
+    if (!hasRole && !hasOwnership) {
+      violations.push({
+        location: `${file}::${marks[i][1]}`,
+        reason: 'authenticates but authorizes nothing',
+      });
+      continue;
+    }
+
+    /**
+     * A role is not ownership.
+     *
+     * `authorize(request, ['super_admin','admin'])` answers "are you an
+     * admin", never "are you *this* department's admin". Any handler that
+     * names a resource by id, and every write handler, has to answer the
+     * second question too.
+     */
+    const needsOwnership =
+      !unscoped && (isDynamic || WRITE_METHODS.has(marks[i][1]));
+
+    if (needsOwnership && !hasOwnership) {
+      violations.push({
+        location: `${file}::${marks[i][1]}`,
+        reason:
+          'checks a role but never resolves ownership — a role is not a claim ' +
+          'on a particular department\'s row',
+      });
+    }
   }
 }
 

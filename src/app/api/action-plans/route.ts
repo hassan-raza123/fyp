@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, getFacultyIdFromRequest } from '@/lib/auth';
+import {
+  authorize,
+  canManageCourseOffering,
+  forbiddenResponse,
+} from '@/lib/authz';
 import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
@@ -60,11 +65,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const body = await request.json();
   const {
@@ -88,6 +90,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // The offering comes from the body. An action plan is the documented
+  // response to a missed outcome and forms part of the accreditation record.
+  if (
+    !(await canManageCourseOffering(
+      request,
+      auth.user,
+      parseInt(courseOfferingId)
+    ))
+  ) {
+    return forbiddenResponse();
+  }
+
   const plan = await prisma.action_plans.create({
     data: {
       courseOfferingId: parseInt(courseOfferingId),
@@ -102,7 +116,7 @@ export async function POST(request: NextRequest) {
       expectedOutcome: expectedOutcome ?? null,
       targetDate: targetDate ? new Date(targetDate) : null,
       status: 'pending',
-      createdBy: user!.userId,
+      createdBy: auth.user.userId,
     },
     include: {
       plo: { select: { code: true, description: true } },

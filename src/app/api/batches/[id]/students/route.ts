@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
-import { requireRole } from '@/lib/auth';
 import { authorize, canAccessBatch, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/batches/[id]/students - Get students in a batch
@@ -60,15 +58,13 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    // Authentication and authorization check
-    const authResult = await requireAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
-    const roleResult = await requireRole(request, ['super_admin', 'admin']);
-    if (!roleResult.success) {
-      return NextResponse.json({ error: roleResult.error }, { status: 403 });
+    // The GET above resolves ownership through the batch's programme. Changing
+    // a roster moves real students between cohorts, so it needs the same check.
+    if (!(await canAccessBatch(request, auth.user, params.id))) {
+      return forbiddenResponse();
     }
 
     const { studentIds } = await request.json();
@@ -167,15 +163,13 @@ export async function DELETE(
 ) {
   const params = await _params;
   try {
-    // Authentication and authorization check
-    const authResult = await requireAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
-    const roleResult = await requireRole(request, ['super_admin', 'admin']);
-    if (!roleResult.success) {
-      return NextResponse.json({ error: roleResult.error }, { status: 403 });
+    // The GET above resolves ownership through the batch's programme. Changing
+    // a roster moves real students between cohorts, so it needs the same check.
+    if (!(await canAccessBatch(request, auth.user, params.id))) {
+      return forbiddenResponse();
     }
 
     const { studentIds } = await request.json();

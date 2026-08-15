@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 import { sendSurveyInvitation } from '@/lib/email-utils';
 
 const MAX_EMAILS_PER_REQUEST = 200;
@@ -17,15 +17,18 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
-    if (user?.role === 'student') {
-      return NextResponse.json({ success: false, error: 'Not authorized' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const surveyId = parseInt(params.id);
     if (isNaN(surveyId)) {
       return NextResponse.json({ success: false, error: 'Invalid survey ID' }, { status: 400 });
+    }
+
+    // Sending invitations distributes the survey's public token by email, so
+    // it is the same act as minting it: staff only, own department only.
+    if (!(await canAccessSurvey(request, auth.user, surveyId))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
-import { authorize, programScopeFilter } from '@/lib/authz';
+import {
+  authorize,
+  canAccessCourse,
+  canAccessProgram,
+  forbiddenResponse,
+  programScopeFilter,
+} from '@/lib/authz';
 
 export async function GET(request: NextRequest) {
   const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
@@ -45,11 +50,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const body = await request.json();
   const { programId, courseId, semesterSlot, courseCategory, isRequired } = body;
@@ -59,6 +61,16 @@ export async function POST(request: NextRequest) {
       { error: 'programId, courseId, and semesterSlot are required' },
       { status: 400 }
     );
+  }
+
+  // The curriculum defines what a degree requires. Both ids come from the
+  // body, so both sides are checked: the programme being written into, and the
+  // course being pulled in.
+  if (!(await canAccessProgram(request, auth.user, parseInt(programId)))) {
+    return forbiddenResponse();
+  }
+  if (!(await canAccessCourse(request, auth.user, parseInt(courseId)))) {
+    return forbiddenResponse();
   }
 
   // Check if already exists

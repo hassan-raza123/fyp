@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 
 /**
  * POST /api/surveys/[id]/public
@@ -22,6 +22,13 @@ export async function POST(request: NextRequest, { params: _params }: { params: 
   try {
     const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
     if (!auth.ok) return auth.response;
+
+    // Being staff is not a claim on another department's survey. The token
+    // this mints lets its holder read the survey and submit responses that
+    // feed indirect PLO attainment.
+    if (!(await canAccessSurvey(request, auth.user, Number(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const survey = await prisma.surveys.findUnique({
       where: { id: Number(params.id) },

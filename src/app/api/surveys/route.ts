@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canAccessProgram,
+  canManageCourseOffering,
+  forbiddenResponse,
+} from '@/lib/authz';
 
 /**
  * GET /api/surveys
@@ -82,17 +88,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
-
-    if (user?.role === 'student') {
-      return NextResponse.json(
-        { success: false, error: 'Students cannot create surveys.' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
+    const user = auth.user;
 
     const body = await request.json();
     const { title, description, type, courseOfferingId, programId, dueDate } = body;
@@ -102,6 +100,19 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'title and either courseOfferingId or programId are required.' },
         { status: 400 }
       );
+    }
+
+    // The survey is attached to whichever of these the caller supplies, so the
+    // supplied one has to be theirs — otherwise a survey can be planted in
+    // another department's programme and its responses counted there.
+    if (courseOfferingId) {
+      if (
+        !(await canManageCourseOffering(request, user, parseInt(courseOfferingId)))
+      ) {
+        return forbiddenResponse();
+      }
+    } else if (!(await canAccessProgram(request, user, parseInt(programId)))) {
+      return forbiddenResponse();
     }
 
     const survey = await prisma.surveys.create({

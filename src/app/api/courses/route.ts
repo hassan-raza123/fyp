@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveDepartmentScope, departmentFilter } from '@/lib/authz';
+import {
+  canAccessCourse,
+  departmentFilter,
+  forbiddenResponse,
+  resolveDepartmentScope,
+} from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma, course_type, course_status } from '@prisma/client';
@@ -409,6 +414,12 @@ export async function PUT(request: NextRequest) {
 
     const { id, prerequisites, programIds, ...updateData } = validatedData;
 
+    // The id arrives in the body rather than the path, which is why this
+    // handler was missed: same defect as `courses/[id]` PUT.
+    if (!(await canAccessCourse(request, user, Number(id)))) {
+      return forbiddenResponse();
+    }
+
     // Check if course exists
     const existingCourse = await prisma.courses.findUnique({
       where: { id },
@@ -531,6 +542,12 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if course exists
+    // Same ownership question as `courses/[id]` DELETE — the id just arrives
+    // in the query string here.
+    if (!(await canAccessCourse(request, user, parseInt(id)))) {
+      return forbiddenResponse();
+    }
+
     const existingCourse = await prisma.courses.findUnique({
       where: { id: parseInt(id) },
     });

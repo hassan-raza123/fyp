@@ -1,7 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import type { TokenPayload } from '@/types/auth';
 import { report_status } from '@prisma/client';
+import { canAccessProgram, forbiddenResponse } from '@/lib/authz';
+
+/**
+ * An OBE report is the accreditation artefact for a programme. All three
+ * handlers checked only for an admin role, so any department admin could read,
+ * amend the status of, or delete another department's reports. Ownership
+ * resolves through the programme the report was generated for.
+ *
+ * `programId` is nullable — a report with no programme is university-wide, so
+ * only a super admin may touch it.
+ */
+async function assertOwnsReport(
+  request: NextRequest,
+  user: TokenPayload,
+  reportId: number
+): Promise<NextResponse | null> {
+  const report = await prisma.obereports.findUnique({
+    where: { id: reportId },
+    select: { programId: true },
+  });
+  if (!report) {
+    return NextResponse.json(
+      { success: false, error: 'Report not found' },
+      { status: 404 }
+    );
+  }
+  if (report.programId === null) {
+    return user.role === 'super_admin' ? null : forbiddenResponse();
+  }
+  if (!(await canAccessProgram(request, user, report.programId))) {
+    return forbiddenResponse();
+  }
+  return null;
+}
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +63,9 @@ export async function GET(
 
     const { id } = await context.params;
     const reportId = parseInt(id);
+
+    const denied = await assertOwnsReport(request, user, reportId);
+    if (denied) return denied;
 
     const report = await prisma.obereports.findUnique({
       where: { id: reportId },
@@ -98,6 +136,9 @@ export async function PATCH(
 
     const { id } = await context.params;
     const reportId = parseInt(id);
+
+    const denied = await assertOwnsReport(request, user, reportId);
+    if (denied) return denied;
     const body = await request.json();
     const { status, filePath } = body;
 
@@ -175,6 +216,9 @@ export async function DELETE(
 
     const { id } = await context.params;
     const reportId = parseInt(id);
+
+    const denied = await assertOwnsReport(request, user, reportId);
+    if (denied) return denied;
 
     await prisma.obereports.delete({
       where: { id: reportId },

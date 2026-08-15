@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 import { computePloScoresForOffering, savePloScores } from '@/lib/obe';
 
@@ -36,6 +36,13 @@ export async function POST(request: NextRequest) {
 
     const pid = Number(programId);
     const sid = Number(semesterId);
+
+    // `programId` comes from the body and this handler writes `ploscores`
+    // rows, which the graduation tracker reads. Recomputing another
+    // department's programme is a cross-tenant write.
+    if (!(await canAccessProgram(request, auth.user, pid))) {
+      return forbiddenResponse();
+    }
 
     const semesterRecord = await prisma.semesters.findUnique({
       where: { id: sid },

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, requireRole } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { batches_status } from '@prisma/client';
-import { canAccessBatch } from '@/lib/authz';
+import { authorize, canAccessBatch, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/batches/[id] - Get a single batch by ID
 export async function GET(
@@ -146,28 +146,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success: authSuccess, error: authError } = await requireAuth(
-      request
-    );
-    if (!authSuccess) {
-      return NextResponse.json(
-        { success: false, error: authError || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check role
-    const { success: roleSuccess, error: roleError } = await requireRole(request, [
-      'admin',
-      'super_admin',
-    ]);
-    if (!roleSuccess) {
-      return NextResponse.json(
-        { success: false, error: roleError || 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
@@ -177,6 +157,12 @@ export async function PUT(
         { success: false, error: 'Batch ID is required' },
         { status: 400 }
       );
+    }
+
+    // The GET above resolves ownership through the batch's programme; so must
+    // the write path.
+    if (!(await canAccessBatch(request, auth.user, resolvedParams.id))) {
+      return forbiddenResponse();
     }
 
     // Check if batch exists
@@ -302,28 +288,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    // Check authentication
-    const { success: authSuccess, error: authError } = await requireAuth(
-      request
-    );
-    if (!authSuccess) {
-      return NextResponse.json(
-        { success: false, error: authError || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check role
-    const { success: roleSuccess, error: roleError } = await requireRole(request, [
-      'admin',
-      'super_admin',
-    ]);
-    if (!roleSuccess) {
-      return NextResponse.json(
-        { success: false, error: roleError || 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     // Handle both sync and async params
     const resolvedParams = params instanceof Promise ? await params : params;
@@ -333,6 +299,11 @@ export async function DELETE(
         { success: false, error: 'Batch ID is required' },
         { status: 400 }
       );
+    }
+
+    // Same ownership question as the read and update paths.
+    if (!(await canAccessBatch(request, auth.user, resolvedParams.id))) {
+      return forbiddenResponse();
     }
 
     // Check if batch exists

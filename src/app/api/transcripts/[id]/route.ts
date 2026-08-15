@@ -2,6 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { transcript_status } from '@prisma/client';
+import type { TokenPayload } from '@/types/auth';
+import { canAccessStudent, forbiddenResponse } from '@/lib/authz';
+
+/**
+ * A transcript is a student's academic record — grades, GPA, credit hours.
+ * All three handlers checked only that the caller held an admin role, so the
+ * admin of one department could read, amend and delete the transcripts of
+ * every student in the university. Ownership resolves through the student.
+ */
+async function assertOwnsTranscript(
+  request: NextRequest,
+  user: TokenPayload,
+  transcriptId: number
+): Promise<NextResponse | null> {
+  const transcript = await prisma.transcripts.findUnique({
+    where: { id: transcriptId },
+    select: { studentId: true },
+  });
+  if (!transcript) {
+    return NextResponse.json(
+      { success: false, error: 'Transcript not found' },
+      { status: 404 }
+    );
+  }
+  if (!(await canAccessStudent(request, user, transcript.studentId))) {
+    return forbiddenResponse();
+  }
+  return null;
+}
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +57,9 @@ export async function GET(
 
     const { id } = await context.params;
     const transcriptId = parseInt(id);
+
+    const denied = await assertOwnsTranscript(request, user, transcriptId);
+    if (denied) return denied;
 
     const transcript = await prisma.transcripts.findUnique({
       where: { id: transcriptId },
@@ -117,6 +149,9 @@ export async function PATCH(
 
     const { id } = await context.params;
     const transcriptId = parseInt(id);
+
+    const denied = await assertOwnsTranscript(request, user, transcriptId);
+    if (denied) return denied;
     const body = await request.json();
     const { status, filePath, isOfficial } = body;
 
@@ -216,6 +251,9 @@ export async function DELETE(
 
     const { id } = await context.params;
     const transcriptId = parseInt(id);
+
+    const denied = await assertOwnsTranscript(request, user, transcriptId);
+    if (denied) return denied;
 
     await prisma.transcripts.delete({
       where: { id: transcriptId },

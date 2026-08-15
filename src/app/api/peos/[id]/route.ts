@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/peos/[id]
@@ -44,12 +43,21 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+
+    // The GET above resolves ownership through the programme; the write path
+    // has to do the same. Without it a department admin could rewrite the
+    // programme educational objectives of any programme in the university.
+    const existing = await prisma.peos.findUnique({
+      where: { id: Number(params.id) },
+      select: { programId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'PEO not found' }, { status: 404 });
     }
-    if (!['admin', 'super_admin'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await canAccessProgram(request, auth.user, existing.programId))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();
@@ -78,12 +86,18 @@ export async function PUT(request: NextRequest, { params: _params }: { params: P
 export async function DELETE(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
+
+    const existing = await prisma.peos.findUnique({
+      where: { id: Number(params.id) },
+      select: { programId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'PEO not found' }, { status: 404 });
     }
-    if (!['admin', 'super_admin'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await canAccessProgram(request, auth.user, existing.programId))) {
+      return forbiddenResponse();
     }
 
     await prisma.peos.update({

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 
 // GET /api/courses/[id]/prerequisites — list prerequisites for a course
@@ -48,11 +47,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 // POST /api/courses/[id]/prerequisites — add a prerequisite
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const courseId = parseInt(id);
@@ -65,6 +61,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (courseId === parseInt(prerequisiteId)) {
     return NextResponse.json({ error: 'A course cannot be its own prerequisite' }, { status: 400 });
+  }
+
+  // Both courses are named by the caller, and both are checked: the course
+  // being changed, and the one being made its prerequisite. A prerequisite is
+  // a graduation gate, so a foreign write here blocks real students.
+  if (!(await canAccessCourse(request, auth.user, courseId))) {
+    return forbiddenResponse();
+  }
+  if (!(await canAccessCourse(request, auth.user, parseInt(prerequisiteId)))) {
+    return forbiddenResponse();
   }
 
   await prisma.courseprerequisites.create({
@@ -81,11 +87,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
 // DELETE /api/courses/[id]/prerequisites — remove a prerequisite
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
-  }
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
   const courseId = parseInt(id);
@@ -94,6 +97,10 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   if (!prerequisiteId) {
     return NextResponse.json({ error: 'prerequisiteId is required' }, { status: 400 });
+  }
+
+  if (!(await canAccessCourse(request, auth.user, courseId))) {
+    return forbiddenResponse();
   }
 
   await prisma.courseprerequisites.delete({

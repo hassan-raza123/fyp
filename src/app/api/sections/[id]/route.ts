@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { canAccessSection, canReadSectionRoster } from '@/lib/authz';
+import {
+  canAccessSection,
+  canReadSectionRoster,
+  forbiddenResponse,
+} from '@/lib/authz';
 import { z } from 'zod';
 
 const updateSectionSchema = z.object({
@@ -293,6 +297,14 @@ export async function DELETE(
         { success: false, error: 'Section ID is required or invalid' },
         { status: 400 }
       );
+    }
+
+    // The PUT above scopes to the caller's department with `canAccessSection`.
+    // This handler did not, so a department admin could delete any section in
+    // the university — the same defect as C-2, on the item route rather than
+    // the collection route.
+    if (!user || !(await canAccessSection(request, user, sectionId))) {
+      return forbiddenResponse();
     }
 
     // Check if section exists

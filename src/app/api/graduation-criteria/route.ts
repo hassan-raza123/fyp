@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import {
+  authorize,
+  canAccessProgram,
+  departmentFilter,
+  forbiddenResponse,
+  resolveDepartmentScope,
+} from '@/lib/authz';
 
 /**
  * The thresholds a student is measured against to graduate. `directWeight` and
@@ -24,17 +30,29 @@ const graduationCriteriaSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json({ success: false, error: 'Admins only' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const programId = searchParams.get('programId');
 
+    // A named programme is checked; an unnamed one scopes the listing to the
+    // caller's department. Without this the endpoint handed every department's
+    // graduation thresholds to any admin who asked.
+    let where: Record<string, unknown>;
+    if (programId) {
+      if (!(await canAccessProgram(request, auth.user, parseInt(programId)))) {
+        return forbiddenResponse();
+      }
+      where = { id: parseInt(programId) };
+    } else {
+      const scope = await resolveDepartmentScope(request, auth.user);
+      if (scope.error) return scope.error;
+      where = departmentFilter(scope.departmentId);
+    }
+
     const programs = await prisma.programs.findMany({
-      where: programId ? { id: parseInt(programId) } : {},
+      where,
       include: {
         graduationCriteria: true,
       },
@@ -62,11 +80,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) return NextResponse.json({ success: false, error }, { status: 401 });
-    if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-      return NextResponse.json({ success: false, error: 'Admins only' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin']);
+    if (!auth.ok) return auth.response;
 
     const parsed = graduationCriteriaSchema.safeParse(await request.json());
     if (!parsed.success) {
@@ -83,6 +98,13 @@ export async function POST(request: NextRequest) {
       directWeight,
       indirectWeight,
     } = parsed.data;
+
+    // `programId` comes from the body: these thresholds decide who graduates,
+    // so writing them into a foreign programme is a direct attack on its
+    // degree requirements.
+    if (!(await canAccessProgram(request, auth.user, programId))) {
+      return forbiddenResponse();
+    }
 
     const dWeight = directWeight ?? 0.7;
     const iWeight = indirectWeight ?? 0.3;

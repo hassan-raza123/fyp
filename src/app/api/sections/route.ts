@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { authorize, canAccessSection, forbiddenResponse } from '@/lib/authz';
+import {
+  authorize,
+  canAccessSection,
+  canManageCourseOffering,
+  forbiddenResponse,
+} from '@/lib/authz';
 import { writeAuditLog } from '@/lib/audit-log';
 import { z } from 'zod';
 
@@ -192,6 +197,18 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validatedData = createSectionSchema.parse(body);
+
+    // The offering comes from the body, so it has to be the caller's. DELETE
+    // on this route was the original C-2; creation had the same gap.
+    if (
+      !(await canManageCourseOffering(
+        request,
+        user,
+        validatedData.courseOfferingId
+      ))
+    ) {
+      return forbiddenResponse();
+    }
 
     // Check if course offering exists
     const courseOffering = await prisma.courseofferings.findUnique({

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessProgram, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(
   request: NextRequest,
@@ -15,6 +15,12 @@ export async function GET(
       'student',
     ]);
     if (!auth.ok) return auth.response;
+
+    // Staff are scoped to their department; a student may read the curriculum
+    // of a programme they are enrolled in.
+    if (!(await canAccessProgram(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const programCourses = await prisma.program_curriculum.findMany({
       where: { programId: parseInt(params.id) },
@@ -45,9 +51,14 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    // Mapping courses into a program is curriculum configuration: admins only.
+    // Mapping courses into a program is curriculum configuration: admins only,
+    // and only for their own department's programmes.
     const auth = await authorize(request, ['super_admin', 'admin']);
     if (!auth.ok) return auth.response;
+
+    if (!(await canAccessProgram(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const body = await request.json();
     const { courseId, semester, isCore, creditHours } = body;
@@ -126,9 +137,14 @@ export async function PUT(
 ) {
   const params = await _params;
   try {
-    // Mapping courses into a program is curriculum configuration: admins only.
+    // Mapping courses into a program is curriculum configuration: admins only,
+    // and only for their own department's programmes.
     const auth = await authorize(request, ['super_admin', 'admin']);
     if (!auth.ok) return auth.response;
+
+    if (!(await canAccessProgram(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const body = await request.json();
     const { courseId, semester, isCore, creditHours } = body;
@@ -185,9 +201,14 @@ export async function DELETE(
 ) {
   const params = await _params;
   try {
-    // Mapping courses into a program is curriculum configuration: admins only.
+    // Mapping courses into a program is curriculum configuration: admins only,
+    // and only for their own department's programmes.
     const auth = await authorize(request, ['super_admin', 'admin']);
     if (!auth.ok) return auth.response;
+
+    if (!(await canAccessProgram(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');

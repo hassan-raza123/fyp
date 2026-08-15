@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canManageCourseOffering, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
@@ -31,10 +30,21 @@ export async function GET(request: NextRequest, { params: _params }: { params: P
 
 export async function PUT(request: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   const params = await _params;
-  const { success, user, error } = await requireAuth(request);
-  if (!success) return NextResponse.json({ error }, { status: 401 });
-  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Admins only' }, { status: 403 });
+  const auth = await authorize(request, ['super_admin', 'admin']);
+  if (!auth.ok) return auth.response;
+
+  // The GET above resolves ownership through the course offering; so must this.
+  const existing = await prisma.passfailcriteria.findUnique({
+    where: { id: parseInt(params.id) },
+    select: { courseOfferingId: true },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: 'Criteria not found' }, { status: 404 });
+  }
+  if (
+    !(await canManageCourseOffering(request, auth.user, existing.courseOfferingId))
+  ) {
+    return forbiddenResponse();
   }
 
   const body = await request.json();

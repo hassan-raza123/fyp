@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessCourse, forbiddenResponse } from '@/lib/authz';
 
 export async function GET(
   req: NextRequest,
@@ -23,6 +23,12 @@ export async function GET(
         { success: false, error: 'Invalid course ID' },
         { status: 400 }
       );
+    }
+
+    // CLO-PLO mappings are the weights the attainment rollup divides by, so
+    // reading them is scoped like the course itself.
+    if (!(await canAccessCourse(req, auth.user, courseId))) {
+      return forbiddenResponse();
     }
 
     // Get all CLOs for this course

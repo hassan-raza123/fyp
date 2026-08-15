@@ -413,6 +413,46 @@ export async function canManageCourseOffering(
 }
 
 /**
+ * Can this user read or administer the given survey?
+ *
+ * A survey hangs off either a course offering (course-exit surveys) or a
+ * programme (alumni, employer, programme-exit), and both columns are nullable.
+ * Ownership resolves through whichever one is set:
+ *
+ * course offering → `canManageCourseOffering`
+ * programme       → `canAccessProgram`
+ * neither         → super_admin only; nothing scopes it
+ *
+ * Survey responses feed *indirect* PLO attainment, which is an accreditation
+ * figure — so reading another department's survey, editing its questions, or
+ * minting its public link are all cross-tenant acts, not merely staff acts.
+ * Every survey route checked `['super_admin','admin','faculty']` and stopped
+ * there.
+ */
+export async function canAccessSurvey(
+  request: NextRequest,
+  user: TokenPayload,
+  surveyId: number
+): Promise<boolean> {
+  if (user.role === 'super_admin') return true;
+
+  const survey = await prisma.surveys.findUnique({
+    where: { id: surveyId },
+    select: { courseOfferingId: true, programId: true },
+  });
+  if (!survey) return false;
+
+  if (survey.courseOfferingId !== null) {
+    return canManageCourseOffering(request, user, survey.courseOfferingId);
+  }
+  if (survey.programId !== null) {
+    return canAccessProgram(request, user, survey.programId);
+  }
+
+  return false;
+}
+
+/**
  * Reject the request when the course offering's results are locked.
  * Returns null when entry is allowed, or the error response when it is not.
  *

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { authorize, canManageCourseOffering, forbiddenResponse, resolveDepartmentScope } from '@/lib/authz';
 
 // GET /api/rubrics?courseOfferingId=1  OR  ?cloId=1
@@ -60,13 +59,8 @@ export async function GET(request: NextRequest) {
 // POST /api/rubrics
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.success || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!['super_admin', 'admin', 'faculty'].includes(auth.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
     const body = await request.json();
     const { title, courseOfferingId, cloId, lloId, criteria } = body;
@@ -76,6 +70,18 @@ export async function POST(request: NextRequest) {
         { error: 'title and courseOfferingId are required' },
         { status: 400 }
       );
+    }
+
+    // A rubric decides how marks are awarded on its offering, so creating one
+    // against a foreign offering is a write into that department's grading.
+    if (
+      !(await canManageCourseOffering(
+        request,
+        auth.user,
+        Number(courseOfferingId)
+      ))
+    ) {
+      return forbiddenResponse();
     }
     if (!cloId && !lloId) {
       return NextResponse.json(

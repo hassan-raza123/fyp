@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { authorize, resolveDepartmentScope } from '@/lib/authz';
+import {
+  authorize,
+  canManageCourse,
+  forbiddenResponse,
+  resolveDepartmentScope,
+} from '@/lib/authz';
 
 /**
  * The weight is the share this outcome contributes to the PLO it maps to.
@@ -91,6 +96,25 @@ export async function POST(request: NextRequest) {
       );
     }
     const { cloId, ploId, weight } = parsed.data;
+
+    // The CLO is named in the body. This mapping is a weight the PLO rollup
+    // divides by, so writing one into another department's CLO alters its
+    // attainment figures.
+    const cloOwner = await prisma.clos.findUnique({
+      where: { id: cloId },
+      select: { courseId: true },
+    });
+    if (!cloOwner) {
+      return NextResponse.json(
+        { success: false, error: 'CLO not found' },
+        { status: 404 }
+      );
+    }
+    if (
+      !(await canManageCourse(request as NextRequest, user!, cloOwner.courseId))
+    ) {
+      return forbiddenResponse();
+    }
 
     // Validate weight
     if (weight < 0 || weight > 1) {

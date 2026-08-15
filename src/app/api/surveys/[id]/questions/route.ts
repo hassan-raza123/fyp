@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authorize } from '@/lib/authz';
+import { authorize, canAccessSurvey, forbiddenResponse } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 
 /**
  * GET /api/surveys/[id]/questions
@@ -17,6 +16,10 @@ export async function GET(
     // through the token-authenticated public routes, not this one.
     const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
     if (!auth.ok) return auth.response;
+
+    if (!(await canAccessSurvey(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
+    }
 
     const questions = await prisma.survey_questions.findMany({
       where: { surveyId: parseInt(params.id) },
@@ -45,16 +48,13 @@ export async function POST(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
-    if (user?.role === 'student') {
-      return NextResponse.json(
-        { success: false, error: 'Students cannot add questions.' },
-        { status: 403 }
-      );
+    // A question carries the PLO it scores against, so adding one to another
+    // department's survey injects into its indirect attainment.
+    if (!(await canAccessSurvey(request, auth.user, parseInt(params.id)))) {
+      return forbiddenResponse();
     }
 
     const body = await request.json();
@@ -116,16 +116,12 @@ export async function DELETE(
 ) {
   const params = await _params;
   try {
-    const { success, user, error } = await requireAuth(request);
-    if (!success) {
-      return NextResponse.json({ success: false, error }, { status: 401 });
-    }
+    const auth = await authorize(request, ['super_admin', 'admin', 'faculty']);
+    if (!auth.ok) return auth.response;
 
-    if (user?.role === 'student') {
-      return NextResponse.json(
-        { success: false, error: 'Students cannot delete questions.' },
-        { status: 403 }
-      );
+    const surveyId = parseInt(params.id);
+    if (!(await canAccessSurvey(request, auth.user, surveyId))) {
+      return forbiddenResponse();
     }
 
     const { searchParams } = new URL(request.url);
@@ -134,6 +130,20 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: 'questionId query param is required.' },
         { status: 400 }
+      );
+    }
+
+    // The question id is a second, independent id: checking the survey in the
+    // path is not enough, because the row deleted is chosen by this one. Pin
+    // it to the survey that was actually authorized.
+    const question = await prisma.survey_questions.findUnique({
+      where: { id: parseInt(questionId) },
+      select: { surveyId: true },
+    });
+    if (!question || question.surveyId !== surveyId) {
+      return NextResponse.json(
+        { success: false, error: 'Question not found on this survey.' },
+        { status: 404 }
       );
     }
 
