@@ -414,11 +414,8 @@ export default function DashboardLayout({
         flex flex-col
         transition-all duration-300 ease-in-out
         backdrop-blur-md
-        ${isDarkMode 
-          ? 'bg-gradient-to-b from-ink via-ink/98 to-ink/95' 
-          : 'bg-gradient-to-b from-white via-white/98 to-surface-2/95'
-        }
-        border-r ${'border-subtle/60'}
+        bg-gradient-to-b from-surface via-surface/98 to-surface-2/95
+        border-r border-subtle/60
         ${isDarkMode 
           ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_var(--brand-primary-opacity-10)]' 
           : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_var(--brand-primary-opacity-06)]'
@@ -432,7 +429,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${'border-subtle/60'} ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/50' : 'bg-gradient-to-br from-white via-white to-surface-2/50'}`}>
+        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${'border-subtle/60'} ${'bg-gradient-to-br from-surface via-surface to-surface-2/50'}`}>
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -530,7 +527,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Compact Header - Enhanced Design with Theme Classes */}
-        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_var(--brand-primary-opacity-10)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_var(--brand-primary-opacity-06)]'} transition-all duration-200`}>
+        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${'bg-surface/95 border-b border-subtle/60 shadow-sm'} transition-all duration-200`}>
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
@@ -580,7 +577,7 @@ export default function DashboardLayout({
                     }
                     if (e.key === 'Escape') setSearchTerm('');
                   }}
-                  className={`w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none transition-all duration-200 ${isDarkMode ? 'bg-surface-2/70 text-white border-subtle/50 focus:border-warn/50 focus:ring-2 focus:ring-warn/20 focus:bg-surface-2/90' : 'bg-surface-2/80 text-ink border-subtle/60 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-white/95'} backdrop-blur-sm shadow-sm focus:shadow-md`}
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none transition-all duration-200 ${'bg-surface-2/80 text-ink border-subtle/60 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-surface'} backdrop-blur-sm shadow-sm focus:shadow-md`}
                 />
               </div>
 
@@ -750,7 +747,7 @@ export default function DashboardLayout({
 
               {/* Profile Menu Dropdown - Image Style with Theme Classes */}
               {showProfileMenu && (
-                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_var(--brand-primary-opacity-10)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_var(--brand-primary-opacity-06)]'}`}>
+                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${'bg-surface/95 border border-subtle/60 shadow-md'}`}>
                   {/* User Info Section */}
                   <div className={`px-4 py-3 border-b ${'border-subtle/60 bg-gradient-to-r from-surface-2/50 to-transparent'}`}>
                     <p className={`text-sm font-bold ${'text-ink'}`}>
@@ -823,12 +820,12 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/30' : 'bg-gradient-to-br from-surface-2 via-white to-surface-2/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]'}`}>
+        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${'bg-gradient-to-br from-surface-2 via-surface to-surface-2/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]'}`}>
           {children}
         </main>
 
         {/* Full Page Footer - Fixed at Bottom */}
-        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_var(--brand-primary-opacity-10)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_var(--brand-primary-opacity-06)]'} transition-all duration-200`}>
+        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${'bg-surface/95 border-t border-subtle/60 shadow-sm'} transition-all duration-200`}>
           <p className={`text-xs font-medium ${'text-ink-muted'}`}>
             © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
           </p>
