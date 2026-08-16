@@ -415,8 +415,8 @@ export default function DashboardLayout({
         transition-all duration-300 ease-in-out
         backdrop-blur-md
         ${isDarkMode 
-          ? 'bg-gradient-to-b from-gray-900 via-gray-900/98 to-gray-900/95' 
-          : 'bg-gradient-to-b from-white via-white/98 to-gray-50/95'
+          ? 'bg-gradient-to-b from-ink via-ink/98 to-ink/95' 
+          : 'bg-gradient-to-b from-white via-white/98 to-surface-2/95'
         }
         border-r ${isDarkMode ? 'border-subtle/60' : 'border-subtle/60'}
         ${isDarkMode 
@@ -432,7 +432,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${isDarkMode ? 'border-subtle/60' : 'border-subtle/60'} ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800/50' : 'bg-gradient-to-br from-white via-white to-gray-50/50'}`}>
+        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${isDarkMode ? 'border-subtle/60' : 'border-subtle/60'} ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/50' : 'bg-gradient-to-br from-white via-white to-surface-2/50'}`}>
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -530,7 +530,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Compact Header - Enhanced Design with Theme Classes */}
-        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-gray-900/98 via-gray-900/95 to-gray-900/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
+        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
@@ -588,7 +588,7 @@ export default function DashboardLayout({
                 <div
                   id="header-search-results"
                   role="listbox"
-                  className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-white'}`}
+                  className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-surface'}`}
                 >
                   {searchMatches.length === 0 ? (
                     <p className="px-3 py-3 text-sm text-ink-muted">
@@ -667,7 +667,7 @@ export default function DashboardLayout({
                 <div
                   role="menu"
                   aria-label="Notifications"
-                  className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-white'}`}
+                  className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-surface'}`}
                 >
                   <div
                     className={`border-b px-4 py-2.5 text-sm font-medium ${isDarkMode ? 'border-subtle text-ink-muted' : 'border-subtle text-ink'}`}
@@ -750,9 +750,9 @@ export default function DashboardLayout({
 
               {/* Profile Menu Dropdown - Image Style with Theme Classes */}
               {showProfileMenu && (
-                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-surface/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(252,153,40,0.1)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(38,40,149,0.05)]'}`}>
+                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(252,153,40,0.1)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(38,40,149,0.05)]'}`}>
                   {/* User Info Section */}
-                  <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-subtle/60 bg-gradient-to-r from-gray-900/50 to-transparent' : 'border-subtle/60 bg-gradient-to-r from-gray-50/50 to-transparent'}`}>
+                  <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-subtle/60 bg-gradient-to-r from-ink/50 to-transparent' : 'border-subtle/60 bg-gradient-to-r from-surface-2/50 to-transparent'}`}>
                     <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-ink'}`}>
                       {user?.userData.firstName} {user?.userData.lastName}
                     </p>
@@ -823,12 +823,12 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800/30' : 'bg-gradient-to-br from-gray-50 via-white to-gray-50/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.05),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.05),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]'}`}>
+        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/30' : 'bg-gradient-to-br from-surface-2 via-white to-surface-2/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.05),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.05),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]'}`}>
           {children}
         </main>
 
         {/* Full Page Footer - Fixed at Bottom */}
-        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-gray-900/98 via-gray-900/95 to-gray-900/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
+        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
           <p className={`text-xs font-medium ${isDarkMode ? 'text-ink-muted' : 'text-ink-muted'}`}>
             © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
           </p>

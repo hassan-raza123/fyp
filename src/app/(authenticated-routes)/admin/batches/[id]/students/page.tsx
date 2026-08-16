@@ -413,7 +413,7 @@ export default function BatchStudentsPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className='bg-white divide-y divide-border'>
+                    <tbody className='bg-surface divide-y divide-border'>
                       {batchStudents.map((student) => (
                         <tr key={student.id} className='hover:bg-muted/50'>
                           <td className='px-4 py-3 whitespace-nowrap'>
@@ -569,7 +569,7 @@ export default function BatchStudentsPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className='bg-white divide-y divide-border'>
+                    <tbody className='bg-surface divide-y divide-border'>
                       {unassignedStudents.map((student) => (
                         <tr key={student.id} className='hover:bg-muted/50'>
                           <td className='px-4 py-3 whitespace-nowrap'>

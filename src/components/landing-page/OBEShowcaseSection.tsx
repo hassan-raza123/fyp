@@ -150,7 +150,7 @@ export default function OBEShowcaseSection() {
                   background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))'
                 }}
               ></div>
-              <div className='relative bg-white rounded-3xl overflow-hidden shadow-2xl border-2 border-subtle transform hover:scale-[1.02] transition-all duration-500'>
+              <div className='relative bg-surface rounded-3xl overflow-hidden shadow-2xl border-2 border-subtle transform hover:scale-[1.02] transition-all duration-500'>
                 <Image
                   src={activeItem.image}
                   alt={activeItem.title}

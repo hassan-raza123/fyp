@@ -149,7 +149,7 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
     <div className='space-y-6'>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         {/* Student List */}
-        <div className='bg-white p-4 rounded-lg shadow'>
+        <div className='bg-surface p-4 rounded-lg shadow'>
           <h3 className='text-lg font-semibold mb-4'>Students</h3>
           <div className='space-y-2'>
             {students.map((student) => (
@@ -172,7 +172,7 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
         </div>
 
         {/* Result Details */}
-        <div className='bg-white p-4 rounded-lg shadow'>
+        <div className='bg-surface p-4 rounded-lg shadow'>
           <h3 className='text-lg font-semibold mb-4'>Result Details</h3>
           {selectedStudent && results[selectedStudent] ? (
             <div className='space-y-4'>

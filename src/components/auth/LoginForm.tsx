@@ -245,7 +245,7 @@ export default function LoginForm() {
             type='email'
             value={formData.email}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
+            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-surface text-ink ${
               errors.email 
                 ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
                 : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
@@ -281,7 +281,7 @@ export default function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-surface text-ink ${
                 errors.password 
                   ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
                   : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'

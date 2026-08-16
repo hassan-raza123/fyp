@@ -237,7 +237,7 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-surface text-ink ${
                 errors.password 
                   ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
                   : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
@@ -275,7 +275,7 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-surface text-ink ${
                 errors.confirmPassword 
                   ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
                   : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'

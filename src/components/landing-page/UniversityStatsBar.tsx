@@ -29,7 +29,7 @@ export default function UniversityStatsBar() {
   ];
 
   return (
-    <section id='how-it-works' className='relative py-20 overflow-hidden bg-white scroll-mt-20'>
+    <section id='how-it-works' className='relative py-20 overflow-hidden bg-surface scroll-mt-20'>
       {/* Decorative Background */}
       <div className='absolute inset-0'>
         <div className='absolute top-1/4 left-0 w-96 h-96 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-primary)' }}></div>
@@ -39,7 +39,7 @@ export default function UniversityStatsBar() {
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-orange-50 border border-subtle text-sm font-bold mb-4' style={{ color: 'var(--brand-primary)' }}>
+          <span className='inline-block px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/10 border border-subtle text-sm font-bold mb-4' style={{ color: 'var(--brand-primary)' }}>
             HOW IT WORKS
           </span>
           <h2 className='text-3xl sm:text-4xl font-black text-ink mb-4'>
@@ -53,7 +53,7 @@ export default function UniversityStatsBar() {
         {/* Steps Grid */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8 relative'>
           {/* Connecting Line (Desktop) */}
-          <div className='hidden md:block absolute top-24 left-1/4 right-1/4 h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent'></div>
+          <div className='hidden md:block absolute top-24 left-1/4 right-1/4 h-1 bg-gradient-to-r from-transparent via-subtle to-transparent'></div>
 
           {steps.map((step, index) => {
             const Icon = step.icon;
@@ -63,7 +63,7 @@ export default function UniversityStatsBar() {
                 className='group relative'
               >
                 {/* Card */}
-                <div className='relative bg-white rounded-2xl p-8 border-2 border-subtle hover:border-subtle transition-all duration-300 hover:shadow-xl hover:-translate-y-2'>
+                <div className='relative bg-surface rounded-2xl p-8 border-2 border-subtle hover:border-subtle transition-all duration-300 hover:shadow-xl hover:-translate-y-2'>
                   {/* Number Badge */}
                   <div 
                     className='absolute -top-6 left-8 w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg z-10'

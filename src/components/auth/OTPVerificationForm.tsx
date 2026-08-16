@@ -187,7 +187,7 @@ function OTPVerificationFormContent() {
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className='w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all focus:outline-none bg-white text-primary border-firm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:scale-105'
+                className='w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all focus:outline-none bg-surface text-primary border-firm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:scale-105'
               />
             ))}
           </div>

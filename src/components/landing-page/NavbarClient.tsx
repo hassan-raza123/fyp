@@ -178,12 +178,12 @@ export default function NavbarClient() {
         <div className='fixed inset-0 z-40 lg:hidden'>
           {/* Backdrop */}
           <div 
-            className='fixed inset-0 bg-surface/50 backdrop-blur-sm animate-fade-in'
+            className='fixed inset-0 bg-white/50 backdrop-blur-sm animate-fade-in'
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Menu Panel */}
-          <div className='fixed top-20 inset-x-4 bg-white rounded-2xl border border-subtle shadow-2xl animate-slide-down overflow-hidden'>
+          <div className='fixed top-20 inset-x-4 bg-surface rounded-2xl border border-subtle shadow-2xl animate-slide-down overflow-hidden'>
             <div className='p-6 space-y-2'>
               {navigation.map((item) => (
                 <Link

@@ -125,7 +125,7 @@ export const BulkMarksEntry: React.FC<BulkMarksEntryProps> = ({
   return (
     <div className='space-y-4'>
       <div className='overflow-x-auto'>
-        <table className='min-w-full bg-white border'>
+        <table className='min-w-full bg-surface border'>
           <thead>
             <tr>
               <th className='border p-2'>Roll No</th>

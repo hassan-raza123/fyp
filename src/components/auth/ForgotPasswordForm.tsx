@@ -101,7 +101,7 @@ export default function ForgotPasswordForm() {
               type='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
+              className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-surface text-ink ${
                 errors.email 
                   ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
                   : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'

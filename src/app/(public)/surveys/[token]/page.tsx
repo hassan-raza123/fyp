@@ -120,7 +120,7 @@ export default function PublicSurveyPage() {
   if (error && !survey) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-2">
-        <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
+        <div className="bg-surface rounded-xl shadow p-8 max-w-md w-full text-center">
           <div className="text-bad text-4xl mb-4">⚠</div>
           <h2 className="text-xl font-semibold text-ink mb-2">Survey Unavailable</h2>
           <p className="text-ink-muted">{error}</p>
@@ -132,7 +132,7 @@ export default function PublicSurveyPage() {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-2">
-        <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
+        <div className="bg-surface rounded-xl shadow p-8 max-w-md w-full text-center">
           <div className="text-good text-5xl mb-4">✓</div>
           <h2 className="text-2xl font-semibold text-ink mb-2">Thank You!</h2>
           <p className="text-ink-muted">Your response has been submitted successfully.</p>
@@ -154,7 +154,7 @@ export default function PublicSurveyPage() {
     <div className="min-h-screen bg-surface-2 py-10 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
+        <div className="bg-surface rounded-xl shadow p-6 mb-6">
           <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">
             {surveyTypeLabel[survey.type] ?? survey.type}
           </div>
@@ -171,7 +171,7 @@ export default function PublicSurveyPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Respondent info */}
-          <div className="bg-white rounded-xl shadow p-6">
+          <div className="bg-surface rounded-xl shadow p-6">
             <h3 className="font-semibold text-ink-2 mb-4">Your Information (Optional)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -199,7 +199,7 @@ export default function PublicSurveyPage() {
 
           {/* Questions */}
           {survey.questions.map((q, idx) => (
-            <div key={q.id} className="bg-white rounded-xl shadow p-6">
+            <div key={q.id} className="bg-surface rounded-xl shadow p-6">
               <div className="flex items-start gap-3 mb-4">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
                   {idx + 1}
