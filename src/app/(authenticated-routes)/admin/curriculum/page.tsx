@@ -57,11 +57,11 @@ interface CurriculumEntry {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  core: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  elective: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-  lab: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  project: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-  thesis: 'bg-red-500/10 text-red-600 border-red-500/20',
+  core: 'bg-primary/10 text-primary border-primary/20',
+  elective: 'bg-primary/10 text-primary border-primary/20',
+  lab: 'bg-good/10 text-good border-good/20',
+  project: 'bg-warn/10 text-warn border-warn/20',
+  thesis: 'bg-bad/10 text-bad border-bad/20',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -416,11 +416,11 @@ export default function CurriculumPage() {
                               </td>
                               <td className="px-4 py-2.5">
                                 {entry.isRequired ? (
-                                  <Badge className="text-[10px] h-4 px-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                                  <Badge className="text-[10px] h-4 px-1.5 bg-good/10 text-good border-good/20">
                                     Required
                                   </Badge>
                                 ) : (
-                                  <Badge className="text-[10px] h-4 px-1.5 bg-gray-500/10 text-gray-500 border-gray-500/20">
+                                  <Badge className="text-[10px] h-4 px-1.5 bg-surface-2/10 text-ink-muted border-firm/20">
                                     Optional
                                   </Badge>
                                 )}
@@ -438,7 +438,7 @@ export default function CurriculumPage() {
                                   <Button aria-label="Delete"
                                     size="sm"
                                     variant="ghost"
-                                    className="h-6 w-6 p-0 text-red-400 hover:text-red-600"
+                                    className="h-6 w-6 p-0 text-bad hover:text-bad"
                                     onClick={() => handleRemove(entry)}
                                   >
                                     <Trash2 className="h-3 w-3" />

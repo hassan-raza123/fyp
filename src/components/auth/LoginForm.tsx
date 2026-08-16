@@ -235,7 +235,7 @@ export default function LoginForm() {
         <div>
             <label
               htmlFor='email'
-              className='block text-sm font-medium mb-2 text-gray-700'
+              className='block text-sm font-medium mb-2 text-ink-2'
             >
               Email
             </label>
@@ -245,16 +245,16 @@ export default function LoginForm() {
             type='email'
             value={formData.email}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+            className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
               errors.email 
-                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
+                : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
             }`}
             onBlur={() => validateEmail(formData.email)}
             placeholder={getEmailPlaceholder(formData.userType)}
           />
           {errors.email && (
-            <p className='text-red-500 text-sm mt-1'>{errors.email}</p>
+            <p className='text-bad text-sm mt-1'>{errors.email}</p>
           )}
         </div>
 
@@ -263,13 +263,13 @@ export default function LoginForm() {
           <div className='flex justify-between items-center mb-2'>
             <label
               htmlFor='password'
-              className='block text-sm font-medium text-gray-700'
+              className='block text-sm font-medium text-ink-2'
             >
               Password
             </label>
             <Link
               href='/forgot-password'
-              className='text-sm font-medium hover:underline text-blue-600'
+              className='text-sm font-medium hover:underline text-primary'
             >
               Forgot password
             </Link>
@@ -281,10 +281,10 @@ export default function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
                 errors.password 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                  ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
+                  : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
               }`}
               onBlur={() => validatePassword(formData.password)}
               placeholder='Enter your password'
@@ -292,20 +292,20 @@ export default function LoginForm() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
           {errors.password && (
-            <p className='text-red-500 text-sm mt-1'>{errors.password}</p>
+            <p className='text-bad text-sm mt-1'>{errors.password}</p>
           )}
         </div>
 
         {/* Server Error */}
         {serverError && (
-          <div className='bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm'>
+          <div className='bg-bad-wash border border-bad text-bad px-4 py-3 rounded-lg text-sm'>
             {serverError}
           </div>
         )}

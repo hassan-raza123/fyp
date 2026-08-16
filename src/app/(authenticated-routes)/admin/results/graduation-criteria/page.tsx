@@ -280,7 +280,7 @@ function GraduationCriteriaContent() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className={`text-[10px] px-1.5 py-0.5 ${row.criteria ? 'bg-[var(--success-green)] text-white' : 'bg-amber-500 text-white'}`}
+                      className={`text-[10px] px-1.5 py-0.5 ${row.criteria ? 'bg-[var(--success-green)] text-white' : 'bg-warn text-white'}`}
                       variant="secondary"
                     >
                       {row.criteria ? 'Configured' : 'Not Configured'}
@@ -397,7 +397,7 @@ function GraduationCriteriaContent() {
               </div>
             </div>
             {Math.abs(parseFloat(formData.directWeight || '0') + parseFloat(formData.indirectWeight || '0') - 1.0) > 0.001 && (
-              <p className="text-xs text-red-500">Direct + Indirect weights must equal 1.0</p>
+              <p className="text-xs text-bad">Direct + Indirect weights must equal 1.0</p>
             )}
           </div>
           <DialogFooter className="mt-2">

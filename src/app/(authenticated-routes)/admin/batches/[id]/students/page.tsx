@@ -301,7 +301,7 @@ export default function BatchStudentsPage() {
     return (
       <div className='container mx-auto p-6'>
         <PageTitle heading='Manage Batch Students' />
-        <div className='rounded-md bg-red-50 p-4 mb-6 text-red-700'>
+        <div className='rounded-md bg-bad-wash p-4 mb-6 text-bad'>
           {error || 'Failed to load batch data'}
         </div>
         <Button variant='outline' asChild>

@@ -192,7 +192,7 @@ const MessagesPage = () => {
       case 'course':
         return 'bg-[var(--success-green-opacity-10)] text-[var(--success-green)] border border-card-border';
       case 'assessment':
-        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-card-border';
+        return 'bg-primary/10 text-primary dark:text-primary border border-card-border';
       case 'grade':
         return 'bg-[var(--brand-secondary-opacity-10)] text-[var(--orange)] dark:text-[var(--orange)] border border-card-border';
       case 'system':

@@ -84,11 +84,11 @@ function shortLabel(assessment: Assessment, index: number) {
 
 function gradeColor(grade: string | undefined) {
   if (!grade) return '';
-  if (['A+', 'A', 'A-'].includes(grade)) return 'text-green-600 dark:text-green-400';
-  if (['B+', 'B', 'B-'].includes(grade)) return 'text-blue-600 dark:text-blue-400';
-  if (['C+', 'C', 'C-'].includes(grade)) return 'text-yellow-600 dark:text-yellow-400';
-  if (['D+', 'D'].includes(grade)) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-400';
+  if (['A+', 'A', 'A-'].includes(grade)) return 'text-good dark:text-good';
+  if (['B+', 'B', 'B-'].includes(grade)) return 'text-primary dark:text-primary';
+  if (['C+', 'C', 'C-'].includes(grade)) return 'text-warn dark:text-warn';
+  if (['D+', 'D'].includes(grade)) return 'text-warn dark:text-warn';
+  return 'text-bad dark:text-bad';
 }
 
 const ResultSheetPage = () => {

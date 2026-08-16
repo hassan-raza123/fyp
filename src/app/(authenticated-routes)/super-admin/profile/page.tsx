@@ -266,13 +266,13 @@ export default function SuperAdminProfilePage() {
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-card-border">
                   <div>
                     <p className="text-xs text-muted-text mb-1">Status</p>
-                    <Badge className={profile.status === 'active' ? 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30' : 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'}>
+                    <Badge className={profile.status === 'active' ? 'bg-good/20 text-good dark:text-good border-good/30' : 'bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30'}>
                       {profile.status}
                     </Badge>
                   </div>
                   <div>
                     <p className="text-xs text-muted-text mb-1">Role</p>
-                    <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                    <Badge className="bg-primary/20 text-primary dark:text-primary border-primary/30">
                       Super Admin
                     </Badge>
                   </div>

@@ -148,11 +148,11 @@ const AssignmentItem = ({
   const getPriorityColor = () => {
     switch (priority) {
       case 'high':
-        return 'bg-red-500';
+        return 'bg-bad';
       case 'medium':
-        return 'bg-yellow-500';
+        return 'bg-warn';
       default:
-        return 'bg-green-500';
+        return 'bg-good';
     }
   };
 
@@ -399,9 +399,9 @@ export default function StudentDashboard() {
           data.attendance.coursesAtRisk > 0) && (
           <Link
             href='/student/attendance'
-            className='flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 transition-colors hover:bg-amber-500/20'
+            className='flex items-start gap-3 rounded-lg border border-warn/40 bg-warn/10 p-4 transition-colors hover:bg-warn/20'
           >
-            <AlertTriangle className='mt-0.5 h-5 w-5 shrink-0 text-amber-600' />
+            <AlertTriangle className='mt-0.5 h-5 w-5 shrink-0 text-warn' />
             <div className='text-sm'>
               <p className='font-medium text-primary-text'>
                 {data.attendance.coursesIneligible > 0

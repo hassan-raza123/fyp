@@ -312,11 +312,11 @@ export default function SectionDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-good';
       case 'inactive':
         return 'bg-[var(--gray-500)]';
       case 'suspended':
-        return 'bg-yellow-500';
+        return 'bg-warn';
       default:
         return 'bg-[var(--gray-500)]';
     }
@@ -587,7 +587,7 @@ export default function SectionDetailsPage() {
                             {analytics.averagePerformance.toFixed(1)}%
                           </p>
                         </div>
-                        <TrendingUp className="w-8 h-8 text-green-600" />
+                        <TrendingUp className="w-8 h-8 text-good" />
                       </div>
                     </div>
                   </div>
@@ -613,7 +613,7 @@ export default function SectionDetailsPage() {
                             {analytics.totalAssessments}
                           </p>
                         </div>
-                        <FileText className="w-8 h-8 text-purple-600" />
+                        <FileText className="w-8 h-8 text-primary" />
                       </div>
                     </div>
                   </div>
@@ -626,7 +626,7 @@ export default function SectionDetailsPage() {
                             {analytics.cloAttainmentSummary.filter(c => c.status === 'attained').length} / {analytics.cloAttainmentSummary.length}
                           </p>
                         </div>
-                        <Target className="w-8 h-8 text-orange-600" />
+                        <Target className="w-8 h-8 text-warn" />
                       </div>
                     </div>
                   </div>
@@ -735,7 +735,7 @@ export default function SectionDetailsPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-24 bg-[var(--hover-bg)] rounded-full h-2">
                                   <div
-                                    className="bg-blue-600 h-2 rounded-full"
+                                    className="bg-primary h-2 rounded-full"
                                     style={{
                                       width: `${assessment.submissionRate}%`,
                                     }}
@@ -778,7 +778,7 @@ export default function SectionDetailsPage() {
                           <div className="w-24 text-sm font-medium">{range.range}</div>
                           <div className="flex-1 bg-[var(--hover-bg)] rounded-full h-4">
                             <div
-                              className="bg-purple-600 h-4 rounded-full"
+                              className="bg-primary h-4 rounded-full"
                               style={{
                                 width: `${(range.count / analytics.section.totalStudents) * 100}%`,
                               }}

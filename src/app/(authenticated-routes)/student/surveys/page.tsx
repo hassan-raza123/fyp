@@ -196,7 +196,7 @@ export default function StudentSurveysPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold text-primary-text truncate">{survey.title}</p>
                     {responded && (
-                      <Badge className="text-[10px] h-4 px-1.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                      <Badge className="text-[10px] h-4 px-1.5 bg-good/10 text-good border border-good/20">
                         Submitted
                       </Badge>
                     )}
@@ -212,7 +212,7 @@ export default function StudentSurveysPage() {
                   </p>
                 </div>
                 {responded ? (
-                  <div className="flex items-center gap-1 text-emerald-600 flex-shrink-0">
+                  <div className="flex items-center gap-1 text-good flex-shrink-0">
                     <CheckCircle2 className="h-4 w-4" />
                     <span className="text-xs">Done</span>
                   </div>

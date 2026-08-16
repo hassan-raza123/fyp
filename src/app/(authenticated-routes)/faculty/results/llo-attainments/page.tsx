@@ -208,7 +208,7 @@ const LLOAttainmentsPage = () => {
   const getStatusBadge = (status: string) => {
     if (status === 'attained')
       return (
-        <Badge variant="default" className="bg-green-600">
+        <Badge variant="default" className="bg-good">
           <CheckCircle className="w-3 h-3 mr-1" /> Attained
         </Badge>
       );
@@ -596,7 +596,7 @@ const LLOAttainmentsPage = () => {
                             </TableCell>
                             <TableCell>
                               {s.achieved ? (
-                                <Badge variant="default" className="bg-green-600 text-[10px]">Achieved</Badge>
+                                <Badge variant="default" className="bg-good text-[10px]">Achieved</Badge>
                               ) : (
                                 <Badge variant="destructive" className="text-[10px]">Not Achieved</Badge>
                               )}

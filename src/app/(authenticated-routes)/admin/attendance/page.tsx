@@ -61,7 +61,7 @@ interface Defaulter {
 
 function verdictBadge(verdict: string) {
   if (verdict === 'at_risk') {
-    return <Badge className='bg-amber-500 hover:bg-amber-500'>At risk</Badge>;
+    return <Badge className='bg-warn hover:bg-warn'>At risk</Badge>;
   }
   return <Badge variant='destructive'>Below threshold</Badge>;
 }

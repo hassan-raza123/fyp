@@ -118,26 +118,26 @@ function statusClasses(status: AttendanceStatus, active: boolean): string {
   if (!active) return 'bg-transparent text-muted-foreground hover:bg-muted';
   switch (status) {
     case 'present':
-      return 'bg-emerald-600 text-white hover:bg-emerald-700';
+      return 'bg-good text-white hover:bg-good';
     case 'absent':
-      return 'bg-red-600 text-white hover:bg-red-700';
+      return 'bg-bad text-white hover:bg-bad';
     case 'late':
-      return 'bg-amber-500 text-white hover:bg-amber-600';
+      return 'bg-warn text-white hover:bg-warn';
     case 'excused':
-      return 'bg-sky-600 text-white hover:bg-sky-700';
+      return 'bg-primary text-white hover:bg-primary';
   }
 }
 
 function verdictBadge(verdict: string, percent: number) {
   switch (verdict) {
     case 'eligible':
-      return <Badge className='bg-emerald-600 hover:bg-emerald-600'>Eligible</Badge>;
+      return <Badge className='bg-good hover:bg-good'>Eligible</Badge>;
     case 'at_risk':
-      return <Badge className='bg-amber-500 hover:bg-amber-500'>At risk</Badge>;
+      return <Badge className='bg-warn hover:bg-warn'>At risk</Badge>;
     case 'ineligible':
       return <Badge variant='destructive'>Short ({percent}%)</Badge>;
     case 'condoned':
-      return <Badge className='bg-sky-600 hover:bg-sky-600'>Condoned</Badge>;
+      return <Badge className='bg-primary hover:bg-primary'>Condoned</Badge>;
     case 'barred':
       return <Badge variant='destructive'>Barred</Badge>;
     default:
@@ -537,7 +537,7 @@ export default function FacultyAttendancePage() {
                     </p>
                   </div>
                   {session.status === 'finalized' ? (
-                    <Badge className='bg-emerald-600 hover:bg-emerald-600'>
+                    <Badge className='bg-good hover:bg-good'>
                       <Lock className='mr-1 h-3 w-3' /> Finalized
                     </Badge>
                   ) : (
@@ -567,8 +567,8 @@ export default function FacultyAttendancePage() {
                 </div>
 
                 {session.status === 'finalized' && (
-                  <div className='mb-4 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm'>
-                    <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-amber-600' />
+                  <div className='mb-4 flex items-start gap-2 rounded-md border border-warn/40 bg-warn/10 p-3 text-sm'>
+                    <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-warn' />
                     <span>
                       This session is finalized and counts towards attendance.
                       Contact your department admin to make a correction.
@@ -679,7 +679,7 @@ export default function FacultyAttendancePage() {
                         <TableCell>{item.recordCount}</TableCell>
                         <TableCell>
                           {item.status === 'finalized' ? (
-                            <Badge className='bg-emerald-600 hover:bg-emerald-600'>
+                            <Badge className='bg-good hover:bg-good'>
                               Finalized
                             </Badge>
                           ) : (
@@ -743,7 +743,7 @@ export default function FacultyAttendancePage() {
                       {summary.finalizedSessions}
                     </p>
                     {summary.openSessions > 0 && (
-                      <p className='mt-1 text-xs text-amber-600'>
+                      <p className='mt-1 text-xs text-warn'>
                         {summary.openSessions} open — not yet counted
                       </p>
                     )}

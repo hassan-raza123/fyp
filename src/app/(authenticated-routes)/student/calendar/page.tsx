@@ -139,7 +139,7 @@ const CalendarPage = () => {
       case 'assessment':
         return 'bg-[var(--brand-primary-opacity-10)] text-[var(--blue)] dark:bg-[var(--brand-secondary-opacity-10)] dark:text-[var(--orange)] border border-card-border';
       case 'semester':
-        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30';
+        return 'bg-primary/10 text-primary dark:text-primary border border-primary/30';
       case 'announcement':
         return 'bg-[var(--success-green-opacity-10)] text-[var(--success-green)] border border-[var(--success-green)]/30';
       default:

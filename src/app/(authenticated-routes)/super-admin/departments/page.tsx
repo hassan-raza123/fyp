@@ -590,8 +590,8 @@ export default function SuperAdminDepartmentsPage() {
                             <Badge
                               className={`mt-1 text-[10px] ${
                                 dept.admin.status === 'active'
-                                  ? 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30'
-                                  : 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'
+                                  ? 'bg-good/20 text-good dark:text-good border-good/30'
+                                  : 'bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30'
                               }`}
                             >
                               {dept.admin.status}
@@ -934,7 +934,7 @@ export default function SuperAdminDepartmentsPage() {
             <DialogTitle className="text-primary-text">Delete Department</DialogTitle>
             <DialogDescription className="text-secondary-text">
               Are you sure you want to delete{' '}
-              <span className="font-semibold text-red-500">{selectedDepartment?.name || 'this department'}</span>? This action
+              <span className="font-semibold text-bad">{selectedDepartment?.name || 'this department'}</span>? This action
               cannot be undone. The department can only be deleted if it has no
               faculties, students, programs, or courses.
             </DialogDescription>

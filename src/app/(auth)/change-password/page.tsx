@@ -82,7 +82,7 @@ export default function ChangePasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-yellow-500" />
+            <ShieldAlert className="h-5 w-5 text-warn" />
             <CardTitle>Choose a new password</CardTitle>
           </div>
           <CardDescription>
@@ -119,7 +119,7 @@ export default function ChangePasswordPage() {
                   <li
                     key={rule.label}
                     className={`text-xs ${
-                      rule.ok ? 'text-emerald-600' : 'text-muted-foreground'
+                      rule.ok ? 'text-good' : 'text-muted-foreground'
                     }`}
                   >
                     {rule.ok ? '✓' : '○'} {rule.label}
@@ -141,9 +141,9 @@ export default function ChangePasswordPage() {
             </div>
 
             {errors.length > 0 && (
-              <ul className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/20 p-3 space-y-1">
+              <ul className="rounded-md border border-bad bg-bad-wash dark:bg-bad/20 p-3 space-y-1">
                 {errors.map((err, i) => (
-                  <li key={i} className="text-xs text-red-600 dark:text-red-400">
+                  <li key={i} className="text-xs text-bad dark:text-bad">
                     {err}
                   </li>
                 ))}

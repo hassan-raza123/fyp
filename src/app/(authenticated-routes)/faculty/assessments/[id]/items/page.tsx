@@ -271,7 +271,7 @@ export default function AssessmentItemsPage() {
             <p className="text-xs text-secondary-text mt-0.5">
               {assessment?.title || 'Loading...'}{' '}
               {isLabAssessment && (
-                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary dark:bg-primary dark:text-primary">
                   Lab Assessment — items mapped to LLOs
                 </span>
               )}
@@ -415,7 +415,7 @@ export default function AssessmentItemsPage() {
                     <TableCell className="text-xs text-primary-text">{item.marks}</TableCell>
                     <TableCell>
                       {item.llo ? (
-                        <Badge variant="outline" className="text-blue-600 border-blue-300">
+                        <Badge variant="outline" className="text-primary border-primary">
                           {item.llo.code}
                         </Badge>
                       ) : item.clo ? (

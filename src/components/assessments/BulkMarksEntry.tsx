@@ -134,7 +134,7 @@ export const BulkMarksEntry: React.FC<BulkMarksEntryProps> = ({
                 <th key={item.id} className='border p-2'>
                   Q{item.questionNo}
                   <br />
-                  <span className='text-sm text-gray-500'>
+                  <span className='text-sm text-ink-muted'>
                     (Max: {item.marks})
                   </span>
                 </th>
@@ -171,7 +171,7 @@ export const BulkMarksEntry: React.FC<BulkMarksEntryProps> = ({
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className='bg-blue-600 hover:bg-blue-700'
+          className='bg-primary hover:bg-primary'
         >
           {loading ? 'Saving...' : 'Save Marks'}
         </Button>

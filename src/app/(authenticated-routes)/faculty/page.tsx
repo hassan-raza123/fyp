@@ -326,9 +326,9 @@ export default function FacultyOverview() {
         {data.attendance && data.attendance.openSessionCount > 0 && (
           <button
             onClick={() => router.push('/faculty/attendance')}
-            className="w-full flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-left transition-colors hover:bg-amber-500/20"
+            className="w-full flex items-start gap-3 rounded-lg border border-warn/40 bg-warn/10 p-4 text-left transition-colors hover:bg-warn/20"
           >
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warn" />
             <div className="text-sm">
               <p className="font-medium text-primary-text">
                 {data.attendance.openSessionCount} attendance session

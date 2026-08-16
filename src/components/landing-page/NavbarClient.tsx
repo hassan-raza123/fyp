@@ -53,7 +53,7 @@ export default function NavbarClient() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'navbar-glass shadow-xl border-b border-slate-200'
+            ? 'navbar-glass shadow-xl border-b border-subtle'
             : 'bg-transparent'
         }`}
       >
@@ -90,7 +90,7 @@ export default function NavbarClient() {
                 <div className='flex items-center gap-2'>
                   <span
                     className={`text-2xl font-black tracking-tight transition-colors duration-300 ${
-                      isScrolled ? 'text-slate-900' : 'text-white'
+                      isScrolled ? 'text-ink' : 'text-white'
                     }`}
                   >
                     {PRODUCT_NAME}
@@ -117,7 +117,7 @@ export default function NavbarClient() {
                     isScrolled
                       ? isActive(item.href)
                         ? 'navbar-link-active'
-                        : 'text-slate-700 hover:bg-slate-100'
+                        : 'text-ink-2 hover:bg-surface-2'
                       : isActive(item.href)
                       ? 'text-white bg-white/20 backdrop-blur-sm'
                       : 'text-white/90 hover:bg-white/10'
@@ -159,7 +159,7 @@ export default function NavbarClient() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 ${
                 isScrolled
-                  ? 'text-slate-900 hover:bg-slate-100'
+                  ? 'text-ink hover:bg-surface-2'
                   : 'text-white hover:bg-white/10'
               }`}
             >
@@ -178,12 +178,12 @@ export default function NavbarClient() {
         <div className='fixed inset-0 z-40 lg:hidden'>
           {/* Backdrop */}
           <div 
-            className='fixed inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in'
+            className='fixed inset-0 bg-surface/50 backdrop-blur-sm animate-fade-in'
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Menu Panel */}
-          <div className='fixed top-20 inset-x-4 bg-white rounded-2xl border border-slate-200 shadow-2xl animate-slide-down overflow-hidden'>
+          <div className='fixed top-20 inset-x-4 bg-white rounded-2xl border border-subtle shadow-2xl animate-slide-down overflow-hidden'>
             <div className='p-6 space-y-2'>
               {navigation.map((item) => (
                 <Link
@@ -193,7 +193,7 @@ export default function NavbarClient() {
                   className={`block px-4 py-3 rounded-xl text-base font-semibold transition-all ${
                     isActive(item.href)
                       ? 'navbar-link-active'
-                      : 'text-slate-700 hover:bg-slate-100'
+                      : 'text-ink-2 hover:bg-surface-2'
                   }`}
                 >
                   {item.name}

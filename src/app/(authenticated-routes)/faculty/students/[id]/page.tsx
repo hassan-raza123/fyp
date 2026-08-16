@@ -499,11 +499,11 @@ export default function StudentDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500';
+        return 'bg-good';
       case 'inactive':
         return 'bg-[var(--gray-500)]';
       case 'suspended':
-        return 'bg-yellow-500';
+        return 'bg-warn';
       default:
         return 'bg-[var(--gray-500)]';
     }
@@ -961,7 +961,7 @@ export default function StudentDetailsPage() {
                             {analytics.overallPerformance.toFixed(1)}%
                           </p>
                         </div>
-                        <TrendingUp className="w-8 h-8 text-green-600" />
+                        <TrendingUp className="w-8 h-8 text-good" />
                       </div>
                     </div>
                   </div>
@@ -987,7 +987,7 @@ export default function StudentDetailsPage() {
                             {analytics.completedAssessments}
                           </p>
                         </div>
-                        <Target className="w-8 h-8 text-purple-600" />
+                        <Target className="w-8 h-8 text-primary" />
                       </div>
                     </div>
                   </div>
@@ -1002,7 +1002,7 @@ export default function StudentDetailsPage() {
                               : 0}%
                           </p>
                         </div>
-                        <BarChart2 className="w-8 h-8 text-orange-600" />
+                        <BarChart2 className="w-8 h-8 text-warn" />
                       </div>
                     </div>
                   </div>
@@ -1091,7 +1091,7 @@ export default function StudentDetailsPage() {
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 {course.difference >= 0 ? (
-                                  <TrendingUp className="w-4 h-4 text-green-600" />
+                                  <TrendingUp className="w-4 h-4 text-good" />
                                 ) : (
                                   <TrendingUp className="w-4 h-4 text-[var(--error)] rotate-180" />
                                 )}
@@ -1388,7 +1388,7 @@ export default function StudentDetailsPage() {
               Are you sure you want to delete this student? This action cannot
               be undone.
               {student.sections.length > 0 && (
-                <span className='block text-red-500 mt-2'>
+                <span className='block text-bad mt-2'>
                   Warning: This student is enrolled in {student.sections.length}{' '}
                   section(s). You must remove them from all sections before
                   deleting.

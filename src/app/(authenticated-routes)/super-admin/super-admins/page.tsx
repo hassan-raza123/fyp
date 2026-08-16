@@ -380,19 +380,19 @@ export default function SuperAdminsPage() {
     const statusLower = status.toLowerCase();
     if (statusLower === 'active') {
       return (
-        <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+        <Badge className="bg-good/20 text-good dark:text-good border-good/30">
           Active
         </Badge>
       );
     } else if (statusLower === 'inactive') {
       return (
-        <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+        <Badge className="bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30">
           Inactive
         </Badge>
       );
     }
     return (
-      <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+      <Badge className="bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30">
         {status}
       </Badge>
     );
@@ -711,8 +711,8 @@ export default function SuperAdminsPage() {
                 className="bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
               />
             </div>
-            <div className="rounded-lg p-4 bg-blue-500/10 border border-blue-500/20">
-              <p className="text-xs text-blue-600 dark:text-blue-400">
+            <div className="rounded-lg p-4 bg-primary/10 border border-primary/20">
+              <p className="text-xs text-primary dark:text-primary">
                 <strong>Note:</strong> A random password is generated and emailed to the user; it is shown once here after creation. 
                 The user will receive an email with login credentials.
               </p>

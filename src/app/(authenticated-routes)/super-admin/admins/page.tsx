@@ -464,19 +464,19 @@ export default function SuperAdminAdminsPage() {
     const statusLower = status.toLowerCase();
     if (statusLower === 'active') {
       return (
-        <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+        <Badge className="bg-good/20 text-good dark:text-good border-good/30">
           Active
         </Badge>
       );
     } else if (statusLower === 'inactive') {
       return (
-        <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+        <Badge className="bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30">
           Inactive
         </Badge>
       );
     }
     return (
-      <Badge className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+      <Badge className="bg-surface-2/20 text-ink-2 dark:text-ink-muted border-firm/30">
         {status}
       </Badge>
     );

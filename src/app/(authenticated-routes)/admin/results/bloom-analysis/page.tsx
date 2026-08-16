@@ -352,7 +352,7 @@ function BloomAnalysisContent() {
                     <span className="text-[10px] text-secondary-text">
                       {entry.level} ({entry.total})
                       {entry.isHOT && (
-                        <span className="ml-0.5 text-emerald-500 font-medium">HOT</span>
+                        <span className="ml-0.5 text-good font-medium">HOT</span>
                       )}
                     </span>
                   </div>

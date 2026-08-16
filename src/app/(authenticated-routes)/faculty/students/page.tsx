@@ -496,7 +496,7 @@ export default function StudentsPage() {
               Are you sure you want to delete this student? This action cannot
               be undone.
               {selectedStudent && selectedStudent.currentStudents > 0 && (
-                <span className='block text-red-500 mt-2'>
+                <span className='block text-bad mt-2'>
                   Warning: This student is enrolled in{' '}
                   {selectedStudent.currentStudents} section(s). You must remove
                   them from all sections before deleting.

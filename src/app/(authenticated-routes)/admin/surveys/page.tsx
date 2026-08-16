@@ -68,10 +68,10 @@ const SURVEY_TYPE_LABELS: Record<SurveyType, string> = {
 };
 
 const SURVEY_TYPE_COLORS: Record<SurveyType, string> = {
-  course_exit: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  program_exit: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-  alumni: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-  employer: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+  course_exit: 'bg-primary/10 text-primary border-primary/20',
+  program_exit: 'bg-primary/10 text-primary border-primary/20',
+  alumni: 'bg-warn/10 text-warn border-warn/20',
+  employer: 'bg-good/10 text-good border-good/20',
 };
 
 interface Survey {
@@ -105,9 +105,9 @@ interface SurveyResult {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-  active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  closed: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+  draft: 'bg-warn/10 text-warn border-warn/20',
+  active: 'bg-good/10 text-good border-good/20',
+  closed: 'bg-surface-2/10 text-ink-muted border-firm/20',
 };
 
 export default function AdminSurveysPage() {
@@ -411,13 +411,13 @@ export default function AdminSurveysPage() {
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 {survey.status === 'draft' && (
-                  <Button size="sm" variant="ghost" className="h-7 text-xs text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-good hover:bg-good-wash dark:hover:bg-good/30"
                     onClick={() => handleStatusChange(survey.id, 'active')}>
                     <PlayCircle className="h-3.5 w-3.5 mr-1" /> Activate
                   </Button>
                 )}
                 {survey.status === 'active' && (
-                  <Button size="sm" variant="ghost" className="h-7 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-ink-muted hover:bg-surface-2 dark:hover:bg-surface-2"
                     onClick={() => handleStatusChange(survey.id, 'closed')}>
                     <StopCircle className="h-3.5 w-3.5 mr-1" /> Close
                   </Button>
@@ -439,7 +439,7 @@ export default function AdminSurveysPage() {
                   onClick={() => handleViewResults(survey.id)}>
                   <BarChart2 className="h-3.5 w-3.5 mr-1" /> Results
                 </Button>
-                <Button aria-label="Delete" size="sm" variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                <Button aria-label="Delete" size="sm" variant="ghost" className="h-7 text-xs text-bad hover:bg-bad-wash dark:hover:bg-bad/30"
                   onClick={() => handleDelete(survey.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -551,7 +551,7 @@ export default function AdminSurveysPage() {
               <div className="space-y-2 mb-3">
                 {questions.map((q, i) => (
                   <div key={i} className="flex items-start gap-2 rounded-lg bg-hover-bg p-2.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-emerald-500 flex-shrink-0" />
+                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-good flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-primary-text">{q.question}</p>
                       <p className="text-[10px] text-secondary-text mt-0.5">
@@ -562,7 +562,7 @@ export default function AdminSurveysPage() {
                       </p>
                     </div>
                     <button onClick={() => setQuestions((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="text-secondary-text hover:text-red-500 transition-colors">
+                      className="text-secondary-text hover:text-bad transition-colors">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -633,13 +633,13 @@ export default function AdminSurveysPage() {
 
               {inviteResult ? (
                 <div className="space-y-3">
-                  <div className="rounded-lg p-3 bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-sm font-semibold text-emerald-600">{inviteResult.sent} invitation{inviteResult.sent !== 1 ? 's' : ''} sent successfully</p>
+                  <div className="rounded-lg p-3 bg-good/10 border border-good/20">
+                    <p className="text-sm font-semibold text-good">{inviteResult.sent} invitation{inviteResult.sent !== 1 ? 's' : ''} sent successfully</p>
                   </div>
                   {inviteResult.failed.length > 0 && (
-                    <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/20">
-                      <p className="text-xs font-medium text-red-600 mb-1">{inviteResult.failed.length} failed to send:</p>
-                      <p className="text-xs text-red-500">{inviteResult.failed.join(', ')}</p>
+                    <div className="rounded-lg p-3 bg-bad/10 border border-bad/20">
+                      <p className="text-xs font-medium text-bad mb-1">{inviteResult.failed.length} failed to send:</p>
+                      <p className="text-xs text-bad">{inviteResult.failed.join(', ')}</p>
                     </div>
                   )}
                   <Button size="sm" variant="outline" onClick={() => { setInviteResult(null); setInviteEmails(''); }}

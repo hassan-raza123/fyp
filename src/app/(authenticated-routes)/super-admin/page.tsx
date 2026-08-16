@@ -102,8 +102,8 @@ const StatCard = ({ title, value, icon, subtitle, trend, isDarkMode = false }: S
           )}
           {trend !== undefined && (
             <div className="flex items-center mt-2">
-              <ArrowUpRight className={`w-3 h-3 mr-1 ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-              <span className={`text-xs font-semibold ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <ArrowUpRight className={`w-3 h-3 mr-1 ${trend >= 0 ? 'text-good' : 'text-bad'}`} />
+              <span className={`text-xs font-semibold ${trend >= 0 ? 'text-good' : 'text-bad'}`}>
                 {trend >= 0 ? '+' : ''}{trend}%
               </span>
               <span className="text-xs text-muted-text ml-1.5">vs last month</span>

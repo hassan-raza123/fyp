@@ -223,25 +223,25 @@ export default function GraduationTrackerPage() {
       {/* Summary cards */}
       {students.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4 flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500 flex-shrink-0" />
+          <div className="rounded-lg border border-good dark:border-good bg-good-wash dark:bg-good/20 p-4 flex items-center gap-3">
+            <CheckCircle2 className="h-8 w-8 text-good flex-shrink-0" />
             <div>
-              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{eligible}</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-500">Eligible for Graduation</p>
+              <p className="text-2xl font-bold text-good dark:text-good">{eligible}</p>
+              <p className="text-xs text-good dark:text-good">Eligible for Graduation</p>
             </div>
           </div>
-          <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4 flex items-center gap-3">
-            <XCircle className="h-8 w-8 text-red-400 flex-shrink-0" />
+          <div className="rounded-lg border border-bad dark:border-bad bg-bad-wash dark:bg-bad/20 p-4 flex items-center gap-3">
+            <XCircle className="h-8 w-8 text-bad flex-shrink-0" />
             <div>
-              <p className="text-2xl font-bold text-red-700 dark:text-red-400">{notEligible}</p>
-              <p className="text-xs text-red-600 dark:text-red-500">Not Yet Eligible</p>
+              <p className="text-2xl font-bold text-bad dark:text-bad">{notEligible}</p>
+              <p className="text-xs text-bad dark:text-bad">Not Yet Eligible</p>
             </div>
           </div>
-          <div className="rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20 p-4 flex items-center gap-3">
-            <AlertTriangle className="h-8 w-8 text-yellow-500 flex-shrink-0" />
+          <div className="rounded-lg border border-warn dark:border-warn bg-warn-wash dark:bg-warn/20 p-4 flex items-center gap-3">
+            <AlertTriangle className="h-8 w-8 text-warn flex-shrink-0" />
             <div>
-              <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">{notAssessed}</p>
-              <p className="text-xs text-yellow-600 dark:text-yellow-500">Not Yet Assessed</p>
+              <p className="text-2xl font-bold text-warn dark:text-warn">{notAssessed}</p>
+              <p className="text-xs text-warn dark:text-warn">Not Yet Assessed</p>
             </div>
           </div>
         </div>
@@ -341,7 +341,7 @@ export default function GraduationTrackerPage() {
                     </td>
                     <td className="px-4 py-3">
                       {student.cgpa !== null ? (
-                        <span className={`font-semibold ${student.cgpa >= 2.0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <span className={`font-semibold ${student.cgpa >= 2.0 ? 'text-good dark:text-good' : 'text-bad dark:text-bad'}`}>
                           {student.cgpa.toFixed(2)}
                         </span>
                       ) : (
@@ -370,15 +370,15 @@ export default function GraduationTrackerPage() {
                     </td>
                     <td className="px-4 py-3">
                       {student.assessedPlos === 0 ? (
-                        <Badge className="text-[10px] h-4 px-1.5 bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                        <Badge className="text-[10px] h-4 px-1.5 bg-warn/10 text-warn border-warn/20">
                           Not Assessed
                         </Badge>
                       ) : student.isEligible ? (
-                        <Badge className="text-[10px] h-4 px-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                        <Badge className="text-[10px] h-4 px-1.5 bg-good/10 text-good border-good/20">
                           Eligible
                         </Badge>
                       ) : (
-                        <Badge className="text-[10px] h-4 px-1.5 bg-red-500/10 text-red-600 border-red-500/20">
+                        <Badge className="text-[10px] h-4 px-1.5 bg-bad/10 text-bad border-bad/20">
                           Not Eligible
                         </Badge>
                       )}
@@ -435,9 +435,9 @@ export default function GraduationTrackerPage() {
               <div className="grid grid-cols-4 gap-3">
                 {[
                   { label: 'Total PLOs', value: detail.summary.totalPlos, color: 'text-primary-text' },
-                  { label: 'Attained', value: detail.summary.attainedPlos, color: 'text-emerald-600 dark:text-emerald-400' },
-                  { label: 'Not Assessed', value: detail.summary.notAssessedPlos, color: 'text-yellow-600 dark:text-yellow-400' },
-                  { label: 'Completion', value: `${detail.summary.completionPercent}%`, color: detail.summary.isEligible ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' },
+                  { label: 'Attained', value: detail.summary.attainedPlos, color: 'text-good dark:text-good' },
+                  { label: 'Not Assessed', value: detail.summary.notAssessedPlos, color: 'text-warn dark:text-warn' },
+                  { label: 'Completion', value: `${detail.summary.completionPercent}%`, color: detail.summary.isEligible ? 'text-good dark:text-good' : 'text-bad dark:text-bad' },
                 ].map((item) => (
                   <div key={item.label} className="rounded-lg border border-card-border bg-card p-3 text-center">
                     <p className={`text-xl font-bold ${item.color}`}>{item.value}</p>
@@ -447,13 +447,13 @@ export default function GraduationTrackerPage() {
               </div>
 
               {/* Eligibility banner */}
-              <div className={`rounded-lg p-3 flex items-center gap-3 ${detail.summary.isEligible ? 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800'}`}>
+              <div className={`rounded-lg p-3 flex items-center gap-3 ${detail.summary.isEligible ? 'bg-good-wash dark:bg-good/20 border border-good dark:border-good' : 'bg-bad-wash dark:bg-bad/20 border border-bad dark:border-bad'}`}>
                 {detail.summary.isEligible ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-good flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <XCircle className="h-5 w-5 text-bad flex-shrink-0" />
                 )}
-                <p className={`text-xs font-semibold ${detail.summary.isEligible ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                <p className={`text-xs font-semibold ${detail.summary.isEligible ? 'text-good dark:text-good' : 'text-bad dark:text-bad'}`}>
                   {detail.summary.isEligible
                     ? 'This student has met all PLOs and is eligible for graduation.'
                     : `This student has not met all PLOs. ${detail.summary.totalPlos - detail.summary.attainedPlos} PLO(s) still need to be attained (threshold: ${detail.summary.threshold}%).`}
@@ -467,12 +467,12 @@ export default function GraduationTrackerPage() {
                   {detail.ploStatus.map((plo) => (
                     <div
                       key={plo.ploId}
-                      className={`rounded-lg border p-3 ${plo.attained ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/10' : plo.score === null ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-950/10' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/10'}`}
+                      className={`rounded-lg border p-3 ${plo.attained ? 'border-good dark:border-good bg-good-wash/50 dark:bg-good/10' : plo.score === null ? 'border-warn dark:border-warn bg-warn-wash/50 dark:bg-warn/10' : 'border-bad dark:border-bad bg-bad-wash/50 dark:bg-bad/10'}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs font-bold ${plo.attained ? 'text-emerald-700 dark:text-emerald-400' : plo.score === null ? 'text-yellow-700 dark:text-yellow-400' : 'text-red-700 dark:text-red-400'}`}>
+                            <span className={`text-xs font-bold ${plo.attained ? 'text-good dark:text-good' : plo.score === null ? 'text-warn dark:text-warn' : 'text-bad dark:text-bad'}`}>
                               {plo.ploCode}
                             </span>
                             {plo.bloomLevel && (
@@ -495,13 +495,13 @@ export default function GraduationTrackerPage() {
                         <div className="text-right flex-shrink-0">
                           {plo.score !== null ? (
                             <>
-                              <p className={`text-sm font-bold ${plo.attained ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                              <p className={`text-sm font-bold ${plo.attained ? 'text-good dark:text-good' : 'text-bad dark:text-bad'}`}>
                                 {plo.score.toFixed(1)}%
                               </p>
                               <p className="text-[9px] text-secondary-text">Threshold: {plo.threshold}%</p>
                             </>
                           ) : (
-                            <span className="text-[10px] text-yellow-600 dark:text-yellow-400 font-medium">Not Assessed</span>
+                            <span className="text-[10px] text-warn dark:text-warn font-medium">Not Assessed</span>
                           )}
                         </div>
                       </div>

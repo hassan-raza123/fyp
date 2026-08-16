@@ -274,8 +274,8 @@ export default function PassFailCriteriaPage() {
                     <Badge
                       className={
                         c.status === 'active'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                          ? 'bg-good-wash text-good dark:bg-good/30 dark:text-good'
+                          : 'bg-surface-2 text-ink-2 dark:bg-surface-2 dark:text-ink-muted'
                       }
                     >
                       {c.status}

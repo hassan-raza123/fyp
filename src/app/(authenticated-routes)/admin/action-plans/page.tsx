@@ -97,10 +97,10 @@ interface ActionPlan {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-  in_progress: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  completed: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  cancelled: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+  pending: 'bg-warn/10 text-warn border-warn/20',
+  in_progress: 'bg-primary/10 text-primary border-primary/20',
+  completed: 'bg-good/10 text-good border-good/20',
+  cancelled: 'bg-surface-2/10 text-ink-muted border-firm/20',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -475,30 +475,30 @@ export default function ActionPlansPage() {
               {/* Below threshold — red border with Create Plan button */}
               {belowThreshold.map((plo) => (
                 <div key={plo.ploId}
-                  className="rounded-lg border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-3 space-y-1.5">
+                  className="rounded-lg border-2 border-bad dark:border-bad bg-bad-wash dark:bg-bad/20 p-3 space-y-1.5">
                   <div className="flex items-start justify-between gap-1">
                     <div>
-                      <p className="text-xs font-bold text-red-700 dark:text-red-400">{plo.ploCode}</p>
-                      <p className="text-[10px] text-red-600 dark:text-red-500 leading-tight mt-0.5 line-clamp-2">{plo.description}</p>
+                      <p className="text-xs font-bold text-bad dark:text-bad">{plo.ploCode}</p>
+                      <p className="text-[10px] text-bad dark:text-bad leading-tight mt-0.5 line-clamp-2">{plo.description}</p>
                     </div>
-                    <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-bad flex-shrink-0 mt-0.5" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full bg-red-500" style={{ width: `${Math.min(plo.attainment, 100)}%` }} />
+                    <div className="flex-1 bg-bad-wash dark:bg-bad/30 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full bg-bad" style={{ width: `${Math.min(plo.attainment, 100)}%` }} />
                     </div>
-                    <span className="text-[10px] font-semibold text-red-700 dark:text-red-400 w-10 text-right">
+                    <span className="text-[10px] font-semibold text-bad dark:text-bad w-10 text-right">
                       {plo.attainment.toFixed(1)}%
                     </span>
                   </div>
                   {plo.indirectAttainment !== null && (
-                    <p className="text-[9px] text-red-500">
+                    <p className="text-[9px] text-bad">
                       Direct: {plo.directAttainment.toFixed(1)}% · Indirect: {plo.indirectAttainment.toFixed(1)}%
                     </p>
                   )}
                   <Button
                     size="sm"
-                    className="h-6 text-[10px] w-full bg-red-500 hover:bg-red-600 text-white"
+                    className="h-6 text-[10px] w-full bg-bad hover:bg-bad text-white"
                     onClick={() => openCreateFromPlo(plo)}
                   >
                     <Plus className="h-2.5 w-2.5 mr-1" /> Create Plan
@@ -508,24 +508,24 @@ export default function ActionPlansPage() {
               {/* Above threshold — green */}
               {aboveThreshold.map((plo) => (
                 <div key={plo.ploId}
-                  className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-3 space-y-1.5">
+                  className="rounded-lg border border-good dark:border-good bg-good-wash dark:bg-good/20 p-3 space-y-1.5">
                   <div className="flex items-start justify-between gap-1">
                     <div>
-                      <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{plo.ploCode}</p>
-                      <p className="text-[10px] text-emerald-600 dark:text-emerald-500 leading-tight mt-0.5 line-clamp-2">{plo.description}</p>
+                      <p className="text-xs font-bold text-good dark:text-good">{plo.ploCode}</p>
+                      <p className="text-[10px] text-good dark:text-good leading-tight mt-0.5 line-clamp-2">{plo.description}</p>
                     </div>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-good flex-shrink-0 mt-0.5" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="flex-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${Math.min(plo.attainment, 100)}%` }} />
+                    <div className="flex-1 bg-good-wash dark:bg-good/30 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full bg-good" style={{ width: `${Math.min(plo.attainment, 100)}%` }} />
                     </div>
-                    <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 w-10 text-right">
+                    <span className="text-[10px] font-semibold text-good dark:text-good w-10 text-right">
                       {plo.attainment.toFixed(1)}%
                     </span>
                   </div>
                   {plo.indirectAttainment !== null && (
-                    <p className="text-[9px] text-emerald-600">
+                    <p className="text-[9px] text-good">
                       Direct: {plo.directAttainment.toFixed(1)}% · Indirect: {plo.indirectAttainment.toFixed(1)}%
                     </p>
                   )}
@@ -553,7 +553,7 @@ export default function ActionPlansPage() {
             <TrendingUp className="h-8 w-8 opacity-20" />
             <p className="text-xs">No action plans found.</p>
             {belowThreshold.length > 0 && (
-              <p className="text-[11px] text-red-500">
+              <p className="text-[11px] text-bad">
                 {belowThreshold.length} PLO(s) below threshold — create plans from the summary above.
               </p>
             )}
@@ -598,7 +598,7 @@ export default function ActionPlansPage() {
                     </td>
                     <td className="px-4 py-3 text-secondary-text">{plan.semester.name}</td>
                     <td className="px-4 py-3">
-                      <span className="font-semibold text-red-600 dark:text-red-400">
+                      <span className="font-semibold text-bad dark:text-bad">
                         {plan.attainmentValue.toFixed(1)}%
                       </span>
                     </td>
@@ -610,7 +610,7 @@ export default function ActionPlansPage() {
                     </td>
                     <td className="px-4 py-3">
                       {plan.isLoopClosed ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                        <span className="inline-flex items-center gap-1 text-[10px] text-good font-medium">
                           <CheckCircle2 className="h-3 w-3" /> Closed
                         </span>
                       ) : (
@@ -814,7 +814,7 @@ export default function ActionPlansPage() {
                 </div>
                 <div>
                   <p className="text-secondary-text">Attainment</p>
-                  <p className="font-semibold text-red-600 dark:text-red-400 mt-0.5">
+                  <p className="font-semibold text-bad dark:text-bad mt-0.5">
                     {editTarget.attainmentValue.toFixed(1)}% (threshold: {editTarget.threshold}%)
                   </p>
                 </div>

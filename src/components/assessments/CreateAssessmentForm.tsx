@@ -298,11 +298,11 @@ export function CreateAssessmentForm({
               'h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary',
               usedWeightage !== null &&
                 100 - usedWeightage < formData.weightage &&
-                'border-red-500'
+                'border-bad'
             )}
           />
           {usedWeightage !== null && 100 - usedWeightage < formData.weightage && (
-            <p className="text-[10px] text-red-500">
+            <p className="text-[10px] text-bad">
               Exceeds available weightage. Reduce to {(100 - usedWeightage).toFixed(0)}% or less.
             </p>
           )}

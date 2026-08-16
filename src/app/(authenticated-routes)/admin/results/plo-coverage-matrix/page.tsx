@@ -97,12 +97,12 @@ const BLOOM_ABBR: Record<BloomLevel, string> = {
 
 // Tailwind class pairs for each Bloom level
 const BLOOM_CELL_CLASSES: Record<BloomLevel, string> = {
-  Remember: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  Understand: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
-  Apply: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-  Analyze: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  Evaluate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-  Create: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  Remember: 'bg-primary/10 text-primary dark:bg-primary/40 dark:text-primary',
+  Understand: 'bg-primary/10 text-primary dark:bg-primary/40 dark:text-primary',
+  Apply: 'bg-good-wash text-good dark:bg-good/40 dark:text-good',
+  Analyze: 'bg-warn-wash text-warn dark:bg-warn/40 dark:text-warn',
+  Evaluate: 'bg-warn-wash text-warn dark:bg-warn/40 dark:text-warn',
+  Create: 'bg-bad-wash text-bad dark:bg-bad/40 dark:text-bad',
 };
 
 // Dot colors for the legend (visible in both modes)
@@ -401,13 +401,13 @@ function PLOCoverageMatrixContent() {
         <>
           {/* Zero-coverage warning */}
           {zeroCoveragePloIds.length > 0 && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-950/20 px-4 py-3">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 rounded-lg border border-warn dark:border-warn bg-warn-wash dark:bg-warn/20 px-4 py-3">
+              <AlertTriangle className="h-4 w-4 text-warn dark:text-warn flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-400">
+                <p className="text-xs font-semibold text-warn dark:text-warn">
                   PLOs with no course coverage detected
                 </p>
-                <p className="text-[11px] text-yellow-600 dark:text-yellow-500 mt-0.5">
+                <p className="text-[11px] text-warn dark:text-warn mt-0.5">
                   The following PLOs are not addressed by any course in the
                   program:{' '}
                   <span className="font-medium">
@@ -581,7 +581,7 @@ function PLOCoverageMatrixContent() {
                               ) : plo.id in row.ploMapping ? (
                                 // Mapping exists but no Bloom level recorded
                                 <span
-                                  className="inline-flex items-center justify-center rounded px-2 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                  className="inline-flex items-center justify-center rounded px-2 py-0.5 text-[11px] font-medium bg-surface-2 text-ink-muted dark:bg-surface-2 dark:text-ink-muted"
                                   title="Mapped (no Bloom level set)"
                                 >
                                   ✓
@@ -619,10 +619,10 @@ function PLOCoverageMatrixContent() {
                             <span
                               className={`inline-flex items-center justify-center rounded-full w-7 h-7 text-[11px] font-bold ${
                                 isZero
-                                  ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
+                                  ? 'bg-bad-wash text-bad dark:bg-bad/40 dark:text-bad'
                                   : count >= 3
-                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
-                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
+                                  ? 'bg-good-wash text-good dark:bg-good/40 dark:text-good'
+                                  : 'bg-primary/10 text-primary dark:bg-primary/40 dark:text-primary'
                               }`}
                             >
                               {count}
@@ -663,7 +663,7 @@ function PLOCoverageMatrixContent() {
                       ? plo.description.slice(0, 120) + '…'
                       : plo.description}
                     {zeroCoveragePloIds.includes(plo.id) && (
-                      <span className="ml-1 text-yellow-600 dark:text-yellow-400 font-medium">
+                      <span className="ml-1 text-warn dark:text-warn font-medium">
                         (no coverage)
                       </span>
                     )}

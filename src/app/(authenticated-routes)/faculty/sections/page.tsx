@@ -118,7 +118,7 @@ export default function SectionsPage() {
       case 'inactive':
         return 'bg-[var(--gray-500)] text-white';
       case 'suspended':
-        return 'bg-amber-500 text-white';
+        return 'bg-warn text-white';
       case 'deleted':
         return 'bg-[var(--error)] text-white';
       default:

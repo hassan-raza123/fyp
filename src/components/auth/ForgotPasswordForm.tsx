@@ -92,7 +92,7 @@ export default function ForgotPasswordForm() {
           <div>
             <label
               htmlFor='email'
-              className='block text-sm font-medium mb-2 text-gray-700'
+              className='block text-sm font-medium mb-2 text-ink-2'
             >
               Email Address
             </label>
@@ -101,16 +101,16 @@ export default function ForgotPasswordForm() {
               type='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              className={`w-full px-4 py-3 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
                 errors.email 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                  ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
+                  : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
               }`}
               onBlur={() => validateEmail(email)}
               placeholder='Enter your registered email'
             />
             {errors.email && (
-              <p className='text-red-500 text-sm mt-1'>{errors.email}</p>
+              <p className='text-bad text-sm mt-1'>{errors.email}</p>
             )}
           </div>
 

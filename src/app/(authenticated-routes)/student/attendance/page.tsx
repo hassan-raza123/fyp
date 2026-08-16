@@ -50,13 +50,13 @@ interface HistoryEntry {
 function verdictBadge(verdict: string) {
   switch (verdict) {
     case 'eligible':
-      return <Badge className='bg-emerald-600 hover:bg-emerald-600'>Eligible</Badge>;
+      return <Badge className='bg-good hover:bg-good'>Eligible</Badge>;
     case 'at_risk':
-      return <Badge className='bg-amber-500 hover:bg-amber-500'>At risk</Badge>;
+      return <Badge className='bg-warn hover:bg-warn'>At risk</Badge>;
     case 'ineligible':
       return <Badge variant='destructive'>Below threshold</Badge>;
     case 'condoned':
-      return <Badge className='bg-sky-600 hover:bg-sky-600'>Condoned</Badge>;
+      return <Badge className='bg-primary hover:bg-primary'>Condoned</Badge>;
     case 'barred':
       return <Badge variant='destructive'>Barred</Badge>;
     default:
@@ -67,11 +67,11 @@ function verdictBadge(verdict: string) {
 function statusBadge(status: string) {
   switch (status) {
     case 'present':
-      return <Badge className='bg-emerald-600 hover:bg-emerald-600'>Present</Badge>;
+      return <Badge className='bg-good hover:bg-good'>Present</Badge>;
     case 'late':
-      return <Badge className='bg-amber-500 hover:bg-amber-500'>Late</Badge>;
+      return <Badge className='bg-warn hover:bg-warn'>Late</Badge>;
     case 'excused':
-      return <Badge className='bg-sky-600 hover:bg-sky-600'>Excused</Badge>;
+      return <Badge className='bg-primary hover:bg-primary'>Excused</Badge>;
     default:
       return <Badge variant='destructive'>Absent</Badge>;
   }
@@ -208,8 +208,8 @@ export default function StudentAttendancePage() {
       />
 
       {shortCourses.length > 0 && (
-        <div className='mb-6 flex items-start gap-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-4'>
-          <AlertTriangle className='mt-0.5 h-5 w-5 shrink-0 text-amber-600' />
+        <div className='mb-6 flex items-start gap-3 rounded-md border border-warn/40 bg-warn/10 p-4'>
+          <AlertTriangle className='mt-0.5 h-5 w-5 shrink-0 text-warn' />
           <div className='text-sm'>
             <p className='font-medium'>
               {shortCourses.length} course

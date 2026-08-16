@@ -90,19 +90,19 @@ interface RecordsData {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getGradeBadgeClass(grade: string): string {
-  if (['A+', 'A'].includes(grade)) return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-  if (['B+', 'B'].includes(grade)) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-  if (['C+', 'C'].includes(grade)) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-  if (grade === 'D') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
-  return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+  if (['A+', 'A'].includes(grade)) return 'bg-good-wash text-good dark:bg-good/30 dark:text-good';
+  if (['B+', 'B'].includes(grade)) return 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary';
+  if (['C+', 'C'].includes(grade)) return 'bg-warn-wash text-warn dark:bg-warn/30 dark:text-warn';
+  if (grade === 'D') return 'bg-warn-wash text-warn dark:bg-warn/30 dark:text-warn';
+  return 'bg-bad-wash text-bad dark:bg-bad/30 dark:text-bad';
 }
 
 function cgpaColor(cgpa: number): string {
-  if (cgpa >= 3.5) return 'text-green-600 dark:text-green-400';
-  if (cgpa >= 3.0) return 'text-blue-600 dark:text-blue-400';
-  if (cgpa >= 2.5) return 'text-yellow-600 dark:text-yellow-400';
-  if (cgpa >= 2.0) return 'text-orange-600 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-400';
+  if (cgpa >= 3.5) return 'text-good dark:text-good';
+  if (cgpa >= 3.0) return 'text-primary dark:text-primary';
+  if (cgpa >= 2.5) return 'text-warn dark:text-warn';
+  if (cgpa >= 2.0) return 'text-warn dark:text-warn';
+  return 'text-bad dark:text-bad';
 }
 
 const PIE_COLORS = ['var(--success-green)', 'var(--accent)', 'var(--warning)', 'var(--warning)', 'var(--error)', 'var(--accent)', 'var(--chart-3)', 'var(--text-secondary)'];

@@ -227,7 +227,7 @@ function ResetPasswordFormContent() {
         <div>
           <label
             htmlFor='password'
-            className='block text-sm font-medium mb-2 text-gray-700'
+            className='block text-sm font-medium mb-2 text-ink-2'
           >
             New Password
           </label>
@@ -237,10 +237,10 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
                 errors.password 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                  ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
+                  : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
               }`}
               onBlur={() => validatePassword(password)}
               placeholder='Enter your new password'
@@ -248,14 +248,14 @@ function ResetPasswordFormContent() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
           {errors.password && (
-            <p className='text-red-500 text-xs mt-1 flex items-center gap-1'>
+            <p className='text-bad text-xs mt-1 flex items-center gap-1'>
               <span>⚠</span> {errors.password}
             </p>
           )}
@@ -265,7 +265,7 @@ function ResetPasswordFormContent() {
         <div>
           <label
             htmlFor='confirmPassword'
-            className='block text-sm font-medium mb-2 text-gray-700'
+            className='block text-sm font-medium mb-2 text-ink-2'
           >
             Confirm New Password
           </label>
@@ -275,10 +275,10 @@ function ResetPasswordFormContent() {
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-gray-900 ${
+              className={`w-full px-4 py-3 pr-12 rounded-lg border transition-all focus:outline-none bg-white text-ink ${
                 errors.confirmPassword 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                  : 'border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                  ? 'border-bad focus:border-bad focus:ring-2 focus:ring-bad/20' 
+                  : 'border-firm focus:border-primary focus:ring-2 focus:ring-primary/20'
               }`}
               onBlur={() => validateConfirmPassword(confirmPassword)}
               placeholder='Confirm your new password'
@@ -286,14 +286,14 @@ function ResetPasswordFormContent() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 hover:text-gray-600'
+              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className='text-red-500 text-xs mt-1 flex items-center gap-1'>
+            <p className='text-bad text-xs mt-1 flex items-center gap-1'>
               <span>⚠</span> {errors.confirmPassword}
             </p>
           )}
@@ -322,7 +322,7 @@ function ResetPasswordFormContent() {
         {/* Server Error */}
         {serverError && (
           <div 
-            className='px-4 py-3 rounded-lg border-2 border-red-200'
+            className='px-4 py-3 rounded-lg border-2 border-bad'
             style={{
               background: 'var(--error-opacity-05)',
               color: 'var(--error-dark)'

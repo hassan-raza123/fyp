@@ -351,7 +351,7 @@ export default function ReportViewPage() {
       {report.data && (
         <div className="space-y-6 mt-6">
           {report.data.warnings.length > 0 && (
-            <Card className="border-yellow-300 dark:border-yellow-800">
+            <Card className="border-warn dark:border-warn">
               <CardHeader>
                 <CardTitle className="text-sm">Notes</CardTitle>
               </CardHeader>

@@ -157,13 +157,13 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
                 key={student.id}
                 className={`p-3 rounded cursor-pointer ${
                   selectedStudent === student.id
-                    ? 'bg-blue-100 border-blue-500'
-                    : 'hover:bg-gray-50'
+                    ? 'bg-primary/10 border-primary'
+                    : 'hover:bg-surface-2'
                 }`}
                 onClick={() => setSelectedStudent(student.id)}
               >
                 <div className='font-medium'>{student.user.name}</div>
-                <div className='text-sm text-gray-500'>
+                <div className='text-sm text-ink-muted'>
                   Roll No: {student.rollNumber}
                 </div>
               </div>
@@ -180,13 +180,13 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
                 <div key={result.id} className='border rounded p-4'>
                   <div className='grid grid-cols-2 gap-4 mb-4'>
                     <div>
-                      <div className='text-sm text-gray-500'>Total Marks</div>
+                      <div className='text-sm text-ink-muted'>Total Marks</div>
                       <div className='font-medium'>
                         {result.obtainedMarks} / {result.totalMarks}
                       </div>
                     </div>
                     <div>
-                      <div className='text-sm text-gray-500'>Percentage</div>
+                      <div className='text-sm text-ink-muted'>Percentage</div>
                       <div className='font-medium'>
                         {result.percentage.toFixed(1)}%
                       </div>
@@ -194,7 +194,7 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
                   </div>
 
                   <div className='mb-4'>
-                    <div className='text-sm text-gray-500 mb-1'>Status</div>
+                    <div className='text-sm text-ink-muted mb-1'>Status</div>
                     <Select
                       value={result.status}
                       onValueChange={(value) =>
@@ -222,7 +222,7 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
                   </div>
 
                   <div>
-                    <div className='text-sm text-gray-500 mb-1'>Remarks</div>
+                    <div className='text-sm text-ink-muted mb-1'>Remarks</div>
                     <Textarea
                       value={result.remarks}
                       onChange={(e) =>
@@ -240,7 +240,7 @@ export const ResultModeration: React.FC<ResultModerationProps> = ({
               ))}
             </div>
           ) : (
-            <div className='text-center text-gray-500'>
+            <div className='text-center text-ink-muted'>
               Select a student to view their results
             </div>
           )}

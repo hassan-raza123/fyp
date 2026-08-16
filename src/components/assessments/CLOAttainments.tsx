@@ -261,12 +261,12 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
   }
 
   if (error) {
-    return <div className='text-red-600 p-4'>{error}</div>;
+    return <div className='text-bad p-4'>{error}</div>;
   }
 
   if (!attainments.length) {
     return (
-      <div className='text-center text-gray-500 py-4'>
+      <div className='text-center text-ink-muted py-4'>
         No CLO attainments data available
       </div>
     );
@@ -322,7 +322,7 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
           <Card
             key={attainment.cloId}
             className={`${
-              attainment.isAttained ? 'border-green-500' : 'border-red-500'
+              attainment.isAttained ? 'border-good' : 'border-bad'
             }`}
           >
             <CardHeader>
@@ -334,7 +334,7 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
                   <span>Attainment:</span>
                   <span
                     className={
-                      attainment.isAttained ? 'text-green-600' : 'text-red-600'
+                      attainment.isAttained ? 'text-good' : 'text-bad'
                     }
                   >
                     {attainment.attainmentPercentage.toFixed(1)}%
@@ -350,7 +350,7 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
                   <span>Status:</span>
                   <span
                     className={
-                      attainment.isAttained ? 'text-green-600' : 'text-red-600'
+                      attainment.isAttained ? 'text-good' : 'text-bad'
                     }
                   >
                     {attainment.isAttained ? 'Attained' : 'Not Attained'}

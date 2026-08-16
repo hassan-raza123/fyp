@@ -265,7 +265,7 @@ const CLOAttainmentsPage = () => {
   const getStatusBadge = (status: string) => {
     if (status === 'attained') {
       return (
-        <Badge variant="default" className="bg-green-600">
+        <Badge variant="default" className="bg-good">
           <CheckCircle className="w-3 h-3 mr-1" />
           Attained
         </Badge>
@@ -458,7 +458,7 @@ const CLOAttainmentsPage = () => {
                       {selectedCourseData.clos.map((clo) => (
                         <TableRow
                           key={clo.id}
-                          className="cursor-pointer hover:bg-gray-50"
+                          className="cursor-pointer hover:bg-surface-2"
                           onClick={() => setSelectedCLO(clo.id)}
                         >
                           <TableCell className="font-medium">{clo.code}</TableCell>
@@ -582,7 +582,7 @@ const CLOAttainmentsPage = () => {
                           <TableCell>{attainment.studentsAchieved}</TableCell>
                           <TableCell>
                             {attainment.unassessedStudents > 0 ? (
-                              <span className="text-yellow-600 dark:text-yellow-400">
+                              <span className="text-warn dark:text-warn">
                                 {attainment.unassessedStudents}
                               </span>
                             ) : (
@@ -706,7 +706,7 @@ const CLOAttainmentsPage = () => {
                             </TableCell>
                             <TableCell>
                               {student.achieved ? (
-                                <Badge variant="default" className="bg-green-600">
+                                <Badge variant="default" className="bg-good">
                                   Achieved
                                 </Badge>
                               ) : (

@@ -317,11 +317,11 @@ function PEOAttainmentsContent() {
                       </td>
                       <td className="p-3">
                         {peo.isAchieved === null ? (
-                          <Badge className="bg-gray-500 text-white text-[10px] px-1.5 py-0.5" variant="secondary">No Data</Badge>
+                          <Badge className="bg-surface-2 text-white text-[10px] px-1.5 py-0.5" variant="secondary">No Data</Badge>
                         ) : peo.isAchieved ? (
                           <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Achieved</Badge>
                         ) : (
-                          <Badge className="bg-red-500 text-white text-[10px] px-1.5 py-0.5" variant="secondary">Below Threshold</Badge>
+                          <Badge className="bg-bad text-white text-[10px] px-1.5 py-0.5" variant="secondary">Below Threshold</Badge>
                         )}
                       </td>
                     </tr>
@@ -339,7 +339,7 @@ function PEOAttainmentsContent() {
                         <td className="p-2">
                           {plo.attainmentPercent !== null && (
                             <Badge
-                              className={`text-[10px] px-1.5 py-0.5 ${plo.attainmentPercent >= (meta?.threshold ?? 50) ? 'bg-[var(--success-green)] text-white' : 'bg-red-500 text-white'}`}
+                              className={`text-[10px] px-1.5 py-0.5 ${plo.attainmentPercent >= (meta?.threshold ?? 50) ? 'bg-[var(--success-green)] text-white' : 'bg-bad text-white'}`}
                               variant="secondary"
                             >
                               {plo.attainmentPercent >= (meta?.threshold ?? 50) ? 'Met' : 'Not Met'}
