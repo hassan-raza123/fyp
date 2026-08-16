@@ -480,7 +480,7 @@ export default function DashboardLayout({
 
             {/* App Name */}
             {isSidebarOpen && (
-              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-ink'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_rgba(252,153,40,0.2)]' : ''}`}>
+              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${'text-ink'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_rgba(252,153,40,0.2)]' : ''}`}>
                 {PRODUCT_NAME}
               </h1>
             )}
@@ -534,7 +534,7 @@ export default function DashboardLayout({
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
-              className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-ink-muted hover:text-warn hover:bg-warn/10' : 'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
+              className={`p-2 rounded-lg transition-all duration-200 ${'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
               onClick={() => setSidebarOpen(!isSidebarOpen)}
               aria-label={isSidebarOpen ? 'Collapse navigation' : 'Expand navigation'}
               aria-expanded={isSidebarOpen}
@@ -601,7 +601,7 @@ export default function DashboardLayout({
                         role="option"
                         aria-selected={false}
                         onClick={() => goToMatch(match.href)}
-                        className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors ${isDarkMode ? 'text-ink-muted hover:bg-surface-2' : 'text-ink hover:bg-surface-2'}`}
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors ${'text-ink hover:bg-surface-2'}`}
                       >
                         <span>{match.label}</span>
                         <span className="text-xs text-ink-muted">
@@ -621,7 +621,7 @@ export default function DashboardLayout({
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
               aria-label='Search'
               aria-expanded={isMobileSearchOpen}
-              className={`md:hidden p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-ink-muted hover:text-warn hover:bg-warn/10' : 'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
+              className={`md:hidden p-2 rounded-lg transition-all duration-200 ${'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
             >
               <Search size={18} />
             </button>
@@ -638,7 +638,7 @@ export default function DashboardLayout({
                     setTheme(theme === 'dark' ? 'light' : 'dark');
                   }
                 }}
-                className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-ink-muted hover:text-warn hover:bg-warn/10' : 'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
+                className={`p-2 rounded-lg transition-all duration-200 ${'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                 aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
@@ -652,7 +652,7 @@ export default function DashboardLayout({
                 onClick={() => setShowNotifications(!showNotifications)}
                 aria-label='Notifications'
                 aria-expanded={showNotifications}
-                className={`p-2 rounded-lg transition-all duration-200 relative ${isDarkMode ? 'text-ink-muted hover:text-warn hover:bg-warn/10' : 'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
+                className={`p-2 rounded-lg transition-all duration-200 relative ${'text-ink-2 hover:text-primary hover:bg-primary/10'} hover:scale-105 active:scale-95`}
               >
                 <Bell size={18} />
                 {/* Notification Badge */}
@@ -670,7 +670,7 @@ export default function DashboardLayout({
                   className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${'border-subtle bg-surface'}`}
                 >
                   <div
-                    className={`border-b px-4 py-2.5 text-sm font-medium ${isDarkMode ? 'border-subtle text-ink-muted' : 'border-subtle text-ink'}`}
+                    className={`border-b px-4 py-2.5 text-sm font-medium ${'border-subtle text-ink'}`}
                   >
                     Notifications
                   </div>
@@ -693,7 +693,7 @@ export default function DashboardLayout({
                           className={`border-b px-4 py-3 last:border-b-0 ${'border-subtle'}`}
                         >
                           <p
-                            className={`text-sm ${n.isRead ? 'font-normal' : 'font-semibold'} ${isDarkMode ? 'text-ink-muted' : 'text-ink'}`}
+                            className={`text-sm ${n.isRead ? 'font-normal' : 'font-semibold'} ${'text-ink'}`}
                           >
                             {n.title}
                           </p>
@@ -710,7 +710,7 @@ export default function DashboardLayout({
                       setShowNotifications(false);
                       router.push(notificationsHref);
                     }}
-                    className={`w-full border-t px-4 py-2.5 text-sm font-medium transition-colors ${isDarkMode ? 'border-subtle text-warn hover:bg-surface-2' : 'border-subtle text-primary hover:bg-surface-2'}`}
+                    className={`w-full border-t px-4 py-2.5 text-sm font-medium transition-colors ${'border-subtle text-primary hover:bg-surface-2'}`}
                   >
                     View all notifications
                   </button>
@@ -752,8 +752,8 @@ export default function DashboardLayout({
               {showProfileMenu && (
                 <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(252,153,40,0.1)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(38,40,149,0.05)]'}`}>
                   {/* User Info Section */}
-                  <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-subtle/60 bg-gradient-to-r from-ink/50 to-transparent' : 'border-subtle/60 bg-gradient-to-r from-surface-2/50 to-transparent'}`}>
-                    <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-ink'}`}>
+                  <div className={`px-4 py-3 border-b ${'border-subtle/60 bg-gradient-to-r from-surface-2/50 to-transparent'}`}>
+                    <p className={`text-sm font-bold ${'text-ink'}`}>
                       {user?.userData.firstName} {user?.userData.lastName}
                     </p>
                     <p className={`text-xs mt-0.5 truncate ${'text-ink-muted'}`}>
@@ -769,11 +769,11 @@ export default function DashboardLayout({
                         setShowProfileMenu(false);
                         router.push(getProfilePath());
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-surface-2/50' : 'text-ink hover:bg-surface-2/50'} rounded-lg mx-1`}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${'text-ink hover:bg-surface-2/50'} rounded-lg mx-1`}
                     >
-                      <User className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-warn' : 'group-hover:text-primary'}`} />
+                      <User className={`w-4 h-4 transition-colors ${'group-hover:text-primary'}`} />
                       <span className="flex-1 text-left font-medium">Profile</span>
-                      <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-warn' : 'bg-primary'} opacity-0 group-hover:opacity-100`}></div>
+                      <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${'bg-primary'} opacity-0 group-hover:opacity-100`}></div>
                     </button>
 
                     {/* Settings - Hide for super_admin */}
@@ -789,11 +789,11 @@ export default function DashboardLayout({
                             if (role === 'faculty') router.push('/faculty/settings');
                             if (role === 'student') router.push('/student/settings');
                       }}
-                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-surface-2/50' : 'text-ink hover:bg-surface-2/50'} rounded-lg mx-1`}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${'text-ink hover:bg-surface-2/50'} rounded-lg mx-1`}
                         >
-                          <Settings className={`w-4 h-4 transition-colors ${isDarkMode ? 'group-hover:text-warn' : 'group-hover:text-primary'}`} />
+                          <Settings className={`w-4 h-4 transition-colors ${'group-hover:text-primary'}`} />
                           <span className="flex-1 text-left font-medium">Settings</span>
-                          <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${isDarkMode ? 'bg-warn' : 'bg-primary'} opacity-0 group-hover:opacity-100`}></div>
+                          <div className={`absolute right-0 top-0 bottom-0 w-1 rounded-l-full transition-opacity duration-200 ${'bg-primary'} opacity-0 group-hover:opacity-100`}></div>
                     </button>
 
                     {/* Divider */}
@@ -809,7 +809,7 @@ export default function DashboardLayout({
                     {/* Log out */}
                     <button
                       onClick={() => setShowLogoutDialog(true)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${isDarkMode ? 'text-white hover:bg-bad/10 hover:text-bad' : 'text-ink hover:bg-bad-wash hover:text-bad'} rounded-lg mx-1`}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm relative transition-all duration-200 group ${'text-ink hover:bg-bad-wash hover:text-bad'} rounded-lg mx-1`}
                     >
                       <LogOut className="w-4 h-4" />
                       <span className="flex-1 text-left font-medium">Log out</span>
