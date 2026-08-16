@@ -520,11 +520,21 @@
   .border-card-border {
     border-color: var(--card-border);
   }
-  
+
+  /* `.dark` already redefines --card-border, so this override is redundant
+     and was pinning the border to a fixed grey. Kept as a no-op alias so any
+     stylesheet ordering that relied on it still resolves. */
   .dark .border-card-border {
-    border-color: var(--gray-800);
+    border-color: var(--card-border);
   }
-  
+
+  /* Used in four components but never defined, so the divider rendered with
+     no colour at all. */
+  .divide-card-border > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--card-border);
+  }
+
+
   /* Card Background - Auto dark mode */
   .dark .bg-card {
     background-color: var(--gray-900);
@@ -735,7 +745,13 @@
 
   /* Background Colors */
   .bg-brand-primary {
-    background-color: var(--blue);
+    background-color: var(--brand-primary);
+  }
+
+  /* Referenced by a component but never defined — the element rendered with
+     no background. */
+  .bg-brand-primary-dark {
+    background-color: var(--brand-primary-dark);
   }
 
   .bg-brand-secondary {
