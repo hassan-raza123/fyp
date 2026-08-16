@@ -7,7 +7,7 @@ export default function FeaturesSection() {
     <div
       id="modules"
       className='relative bg-fixed bg-center bg-cover scroll-mt-20'
-      style={{ backgroundImage: "url('/bg/graduation-ceremony.webp')" }}
+      style={{ background: 'linear-gradient(140deg, var(--surface-2) 0%, var(--surface) 50%, var(--surface-2) 100%)' }}
     >
       <div 
         style={{

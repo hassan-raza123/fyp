@@ -33,33 +33,22 @@ export default async function AuthLayout({
       className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden light'
       style={{ colorScheme: 'light' }}
     >
-      {/* Preload Background Image */}
-      <img
-        src='/bg/login-background.jpg'
-        alt=''
-        className='hidden'
-        fetchPriority='high'
-        loading='eager'
-        style={{ display: 'none' }}
-      />
-      
-      {/* Background Image - Optimized */}
+      {/*
+        Background.
+
+        This was a stock photograph of a street with no licence on file, sitting
+        behind the sign-in form of a product sold to universities. It is now
+        drawn from the palette: an ink ground with two soft accent washes. No
+        third-party imagery, nothing to license, no 400KB download before a user
+        can type their password, and it inherits any future palette change.
+      */}
       <div
         className='absolute inset-0 -z-10'
         style={{
-          backgroundImage: 'url(/bg/login-background.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
-      {/* Dark Blur Overlay */}
-      <div 
-        className='absolute inset-0'
-        style={{
-          background: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(4px)'
+          background:
+            'radial-gradient(1200px 600px at 15% 20%, var(--brand-primary-opacity-30), transparent 60%), ' +
+            'radial-gradient(900px 500px at 85% 85%, var(--brand-primary-opacity-15), transparent 60%), ' +
+            'linear-gradient(160deg, #10131A 0%, #171B21 55%, #1D2230 100%)',
         }}
       />
 

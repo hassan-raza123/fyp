@@ -90,7 +90,7 @@ export default function OBEShowcaseSection() {
     <div 
       id='obe-showcase'
       className='relative bg-fixed bg-center bg-cover py-24 overflow-hidden scroll-mt-20'
-      style={{ backgroundImage: "url('/bg/obe-showcase-bg.webp')" }}
+      style={{ background: 'linear-gradient(200deg, var(--surface) 0%, var(--surface-2) 100%)' }}
     >
       {/* Dark Overlay */}
       <div 

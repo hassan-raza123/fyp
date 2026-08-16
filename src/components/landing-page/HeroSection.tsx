@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
+import { ArrowRight, GraduationCap, BookOpen, Users } from 'lucide-react';
 import NavbarClient from './NavbarClient';
 import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants/branding';
 
@@ -8,18 +7,11 @@ export default function HeroSection() {
   return (
     <div 
       className='relative overflow-hidden bg-fixed bg-center bg-cover'
-      style={{ backgroundImage: "url('/bg/hero-university-building.jpg')" }}
+      style={{ background: 'radial-gradient(1000px 520px at 20% 15%, var(--brand-primary-opacity-30), transparent 60%), radial-gradient(900px 480px at 85% 90%, var(--brand-primary-opacity-15), transparent 60%), linear-gradient(155deg, #10131A 0%, #171B21 55%, #1D2230 100%)' }}
     >
-      {/* Preload Background Image - Same as Login Page */}
-      <Image
-        src='/bg/hero-university-building.jpg'
-        alt=''
-        width={1920}
-        height={1080}
-        className='hidden'
-        priority
-        style={{ display: 'none' }}
-      />
+      {/* The hero preloaded a 1.5MB photograph of one university's campus, then
+          hid it with display:none. Background is now drawn from the palette, so
+          there is nothing to preload. */}
       <NavbarClient />
 
       {/* Dark Overlay */}
