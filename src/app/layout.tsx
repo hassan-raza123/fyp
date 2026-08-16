@@ -18,8 +18,13 @@ export const metadata: Metadata = {
   // One SVG covers every size. The previous entries claimed `image/png` for
   // three copies of the same file, and that file was the university's crest.
   icons: {
-    icon: [{ url: '/brand/attainly-mark.svg', type: 'image/svg+xml', sizes: 'any' }],
-    apple: '/brand/attainly-mark.svg',
+    icon: [
+      { url: '/brand/attainly-mark.svg', type: 'image/svg+xml', sizes: 'any' },
+      // Fallback for the browsers that ignore SVG favicons, and for the
+      // unconditional /favicon.ico request some still make.
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: '/brand/apple-touch-icon.png',
   },
 };
 

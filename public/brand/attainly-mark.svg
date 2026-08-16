@@ -2,24 +2,22 @@
   <!--
     Attainly mark.
 
-    Three ascending bars crossing a target line: the product's whole job is
-    measuring attainment against a threshold, so the mark encodes that rather
-    than decorating around it. The tallest bar clears the line; the other two
-    do not, which is exactly what a PLO matrix shows.
+    An "A" whose crossbar is the attainment threshold — it runs past both legs,
+    so it reads as a measurement line rather than a letterform detail, and the
+    apex rises through it. That is the product in one shape: a value measured
+    against a target it has cleared.
 
-    Drawn on a 64px grid with 14px corner radius so it stays legible at 16px
-    favicon size — no thin strokes, no gradients, no text.
+    Constraints it is drawn to: no gradients, no thin strokes and no text, so it
+    survives a 16px favicon; a single flat indigo so it prints and inverts
+    cleanly; geometry on a 64px grid.
   -->
-  <rect width="64" height="64" rx="14" fill="#4F46E5"/>
+  <rect width="64" height="64" rx="15" fill="#4F46E5"/>
 
-  <!-- target line: the attainment threshold -->
-  <path d="M11 24h42" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"
-        stroke-linecap="round" stroke-dasharray="4 4"/>
+  <!-- threshold: extends past both legs so it reads as a target line -->
+  <path d="M12 37h40" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="4"
+        stroke-linecap="round"/>
 
-  <!-- below target -->
-  <rect x="14" y="36" width="10" height="12" rx="2" fill="#FFFFFF" fill-opacity="0.55"/>
-  <!-- approaching target -->
-  <rect x="27" y="28" width="10" height="20" rx="2" fill="#FFFFFF" fill-opacity="0.75"/>
-  <!-- attained: clears the line -->
-  <rect x="40" y="17" width="10" height="31" rx="2" fill="#FFFFFF"/>
+  <!-- the A, clearing it -->
+  <path d="M17 49 L32 15 L47 49" stroke="#FFFFFF" stroke-width="7.5"
+        stroke-linejoin="round" stroke-linecap="round" fill="none"/>
 </svg>
