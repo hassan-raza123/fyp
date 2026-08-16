@@ -36,7 +36,7 @@ export default function BackToTopButton() {
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
-        e.currentTarget.style.boxShadow = '0 4px 15px rgba(38, 40, 149, 0.3)';
+        e.currentTarget.style.boxShadow = '0 4px 15px var(--brand-primary-opacity-30)';
       }}
     >
       <ArrowUp className='w-5 h-5 group-hover:-translate-y-1 transition-transform' />

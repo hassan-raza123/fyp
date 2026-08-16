@@ -26,8 +26,8 @@ export default function ResultsPage() {
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
   const cardHoverBg = 'var(--black-opacity-05)';
 
   useEffect(() => {
@@ -147,8 +147,8 @@ export default function ResultsPage() {
                 style={{ backgroundColor: iconBgColor, color: primaryColor }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isDarkMode
-                    ? 'rgba(252, 153, 40, 0.2)'
-                    : 'rgba(38, 40, 149, 0.2)';
+                    ? 'var(--brand-primary-opacity-20)'
+                    : 'var(--brand-primary-opacity-20)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = iconBgColor;

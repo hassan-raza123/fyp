@@ -60,8 +60,8 @@ function PEOPLOMappingsPageContent() {
   const primaryColor = 'var(--accent)';
   const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   const searchParams = useSearchParams();
   const highlightedPeoId = searchParams.get('peoId')
@@ -432,8 +432,8 @@ function PEOPLOMappingsPageContent() {
                           className="text-xs font-bold px-2 py-0.5 rounded"
                           style={{
                             backgroundColor: isDarkMode
-                              ? 'rgba(252, 153, 40, 0.25)'
-                              : 'rgba(38, 40, 149, 0.2)',
+                              ? 'var(--brand-primary-opacity-20)'
+                              : 'var(--brand-primary-opacity-20)',
                             color: primaryColor,
                           }}
                         >

@@ -31,7 +31,7 @@ export default function FloatingChatButton() {
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
-          e.currentTarget.style.boxShadow = '0 10px 25px rgba(38, 40, 149, 0.3)';
+          e.currentTarget.style.boxShadow = '0 10px 25px var(--brand-primary-opacity-30)';
         }}
       >
         <MessageCircle className='w-7 h-7 group-hover:scale-110 transition-transform' />

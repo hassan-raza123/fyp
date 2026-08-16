@@ -47,8 +47,8 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: StatCardProps) => {
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
   const iconColor = 'var(--accent)';
 
   return (
@@ -96,8 +96,8 @@ interface ActivityItemProps {
 
 const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: ActivityItemProps) => {
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.1)'
-    : 'rgba(38, 40, 149, 0.1)';
+    ? 'var(--brand-primary-opacity-10)'
+    : 'var(--brand-primary-opacity-10)';
   const iconColor = 'var(--accent)';
 
   return (
@@ -299,19 +299,19 @@ export default function FacultyOverview() {
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
               style={{
                 backgroundColor: isDarkMode
-                  ? 'rgba(252, 153, 40, 0.1)'
-                  : 'rgba(38, 40, 149, 0.1)',
+                  ? 'var(--brand-primary-opacity-10)'
+                  : 'var(--brand-primary-opacity-10)',
                 color: primaryColor,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
-                  ? 'rgba(252, 153, 40, 0.2)'
-                  : 'rgba(38, 40, 149, 0.2)';
+                  ? 'var(--brand-primary-opacity-20)'
+                  : 'var(--brand-primary-opacity-20)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
-                  ? 'rgba(252, 153, 40, 0.1)'
-                  : 'rgba(38, 40, 149, 0.1)';
+                  ? 'var(--brand-primary-opacity-10)'
+                  : 'var(--brand-primary-opacity-10)';
               }}
             >
               <FileText className="w-3.5 h-3.5 inline mr-1.5" />

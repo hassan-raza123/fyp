@@ -62,8 +62,8 @@ export function AssessmentList() {
   const primaryColor = 'var(--accent)';
   const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>([]);
@@ -391,8 +391,8 @@ export function AssessmentList() {
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = isDarkMode
-                            ? 'rgba(252, 153, 40, 0.2)'
-                            : 'rgba(38, 40, 149, 0.2)';
+                            ? 'var(--brand-primary-opacity-20)'
+                            : 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -417,8 +417,8 @@ export function AssessmentList() {
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = isDarkMode
-                                ? 'rgba(252, 153, 40, 0.2)'
-                                : 'rgba(38, 40, 149, 0.2)';
+                                ? 'var(--brand-primary-opacity-20)'
+                                : 'var(--brand-primary-opacity-20)';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor =

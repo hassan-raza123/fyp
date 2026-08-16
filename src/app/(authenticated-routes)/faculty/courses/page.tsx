@@ -134,8 +134,8 @@ export default function CoursesPage() {
   if (loading) return <PageLoading message="Loading courses..." fullScreen={false} />;
 
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   return (
     <div className="space-y-4">

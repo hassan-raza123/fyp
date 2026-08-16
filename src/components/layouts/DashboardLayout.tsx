@@ -420,8 +420,8 @@ export default function DashboardLayout({
         }
         border-r ${'border-subtle/60'}
         ${isDarkMode 
-          ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_rgba(252,153,40,0.1)]' 
-          : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_rgba(38,40,149,0.05)]'
+          ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_var(--brand-primary-opacity-10)]' 
+          : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_var(--brand-primary-opacity-06)]'
         }
         ${isSidebarOpen ? 'w-64' : 'w-16'}
         ${!isSidebarOpen && 'lg:w-16'}
@@ -480,7 +480,7 @@ export default function DashboardLayout({
 
             {/* App Name */}
             {isSidebarOpen && (
-              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${'text-ink'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_rgba(252,153,40,0.2)]' : ''}`}>
+              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${'text-ink'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_var(--brand-primary-opacity-20)]' : ''}`}>
                 {PRODUCT_NAME}
               </h1>
             )}
@@ -530,7 +530,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Compact Header - Enhanced Design with Theme Classes */}
-        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
+        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_2px_8px_var(--brand-primary-opacity-10)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-b border-subtle/60 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_2px_8px_var(--brand-primary-opacity-06)]'} transition-all duration-200`}>
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
@@ -740,8 +740,8 @@ export default function DashboardLayout({
                       ? `linear-gradient(135deg, var(--orange), var(--orange-dark))`
                       : `linear-gradient(135deg, var(--blue), var(--blue-dark))`,
                     boxShadow: isDarkMode 
-                      ? '0 4px 12px rgba(252, 153, 40, 0.3)' 
-                      : '0 4px 12px rgba(38, 40, 149, 0.2)'
+                      ? '0 4px 12px var(--brand-primary-opacity-30)' 
+                      : '0 4px 12px var(--brand-primary-opacity-20)'
                   }}
                 >
                   <User className="w-4 h-4 text-white" />
@@ -750,7 +750,7 @@ export default function DashboardLayout({
 
               {/* Profile Menu Dropdown - Image Style with Theme Classes */}
               {showProfileMenu && (
-                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_rgba(252,153,40,0.1)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(38,40,149,0.05)]'}`}>
+                <div className={`absolute right-0 mt-2 w-64 rounded-2xl z-50 transform transition-all duration-200 origin-top-right overflow-hidden backdrop-blur-md ${isDarkMode ? 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.4),0_10px_10px_-5px_var(--brand-primary-opacity-10)]' : 'bg-white/95 border border-subtle/60 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_var(--brand-primary-opacity-06)]'}`}>
                   {/* User Info Section */}
                   <div className={`px-4 py-3 border-b ${'border-subtle/60 bg-gradient-to-r from-surface-2/50 to-transparent'}`}>
                     <p className={`text-sm font-bold ${'text-ink'}`}>
@@ -823,12 +823,12 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content - Enhanced Design with Theme Classes */}
-        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/30' : 'bg-gradient-to-br from-surface-2 via-white to-surface-2/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.05),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.05),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,rgba(38,40,149,0.03),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(252,153,40,0.03),transparent_50%)]'}`}>
+        <main className={`p-6 min-h-[calc(100vh-112px)] transition-colors duration-200 ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/30' : 'bg-gradient-to-br from-surface-2 via-white to-surface-2/50'} ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_50%,var(--brand-primary-opacity-06),transparent_50%),radial-gradient(circle_at_80%_80%,var(--brand-primary-opacity-06),transparent_50%)]'}`}>
           {children}
         </main>
 
         {/* Full Page Footer - Fixed at Bottom */}
-        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
+        <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_var(--brand-primary-opacity-10)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_var(--brand-primary-opacity-06)]'} transition-all duration-200`}>
           <p className={`text-xs font-medium ${'text-ink-muted'}`}>
             © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
           </p>

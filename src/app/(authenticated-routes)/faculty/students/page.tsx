@@ -57,8 +57,8 @@ export default function StudentsPage() {
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);

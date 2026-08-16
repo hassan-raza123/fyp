@@ -68,8 +68,8 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: StatCardProps) => {
   const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.15)' 
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)' 
+    : 'var(--brand-primary-opacity-15)';
   const iconColor = isDarkMode 
     ? 'var(--orange)' 
     : 'var(--blue)';
@@ -129,8 +129,8 @@ interface ActivityItemProps {
 
 const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: ActivityItemProps) => {
   const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.1)' 
-    : 'rgba(38, 40, 149, 0.1)';
+    ? 'var(--brand-primary-opacity-10)' 
+    : 'var(--brand-primary-opacity-10)';
   const iconColor = isDarkMode 
     ? 'var(--orange)' 
     : 'var(--blue)';

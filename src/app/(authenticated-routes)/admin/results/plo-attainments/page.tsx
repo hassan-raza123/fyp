@@ -61,8 +61,8 @@ const PLOAttainmentsPage = () => {
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   const [activeTab, setActiveTab] = useState<'attainments' | 'trends'>('attainments');
   const [programs, setPrograms] = useState<Program[]>([]);

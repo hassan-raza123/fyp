@@ -22,8 +22,8 @@ export default function ResultsPage() {
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
     setMounted(true);

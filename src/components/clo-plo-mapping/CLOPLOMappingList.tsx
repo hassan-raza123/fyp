@@ -75,8 +75,8 @@ export function CLOPLOMappingList() {
   const primaryColor = 'var(--accent)';
   const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
-    ? 'rgba(252, 153, 40, 0.15)'
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)'
+    : 'var(--brand-primary-opacity-15)';
 
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -290,8 +290,8 @@ export function CLOPLOMappingList() {
           style={{ backgroundColor: iconBgColor, color: primaryColor }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = isDarkMode
-              ? 'rgba(252, 153, 40, 0.2)'
-              : 'rgba(38, 40, 149, 0.2)';
+              ? 'var(--brand-primary-opacity-20)'
+              : 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;

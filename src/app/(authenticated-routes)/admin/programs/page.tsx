@@ -345,8 +345,8 @@ export default function ProgramsPage() {
   const primaryColor = 'var(--accent)';
   const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
-    ? 'rgba(252, 153, 40, 0.15)' 
-    : 'rgba(38, 40, 149, 0.15)';
+    ? 'var(--brand-primary-opacity-15)' 
+    : 'var(--brand-primary-opacity-15)';
 
   if (!mounted || loading) return <PageLoading message="Loading programs..." />;
 
