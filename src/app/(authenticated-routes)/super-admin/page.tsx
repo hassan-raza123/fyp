@@ -252,12 +252,15 @@ export default function SuperAdminDashboard() {
             icon={<Shield className="w-5 h-5" />}
             isDarkMode={isDarkMode}
           />
+          {/* No `trend` prop: it was hardcoded to 8, so every installation
+              reported "+8% vs last month" regardless of its data — including
+              a fresh one showing 0 students. An invented number on a
+              dashboard is worse than no number, because staff act on it. */}
           <StatCard
           title="Students"
           value={analyticsData.stats.totalStudents.toLocaleString()}
           subtitle="Total enrolled"
           icon={<Users className="w-5 h-5" />}
-          trend={8}
             isDarkMode={isDarkMode}
           />
           <StatCard
@@ -337,8 +340,9 @@ export default function SuperAdminDashboard() {
               />
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: 'var(--white)',
+                  backgroundColor: 'var(--surface)',
                   border: `1px solid ${'var(--border-color)'}`,
+                  color: 'var(--text-primary)',
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',
@@ -390,8 +394,9 @@ export default function SuperAdminDashboard() {
               </Pie>
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: 'var(--white)',
+                  backgroundColor: 'var(--surface)',
                   border: `1px solid ${'var(--border-color)'}`,
+                  color: 'var(--text-primary)',
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',

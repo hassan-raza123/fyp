@@ -373,8 +373,9 @@ export default function AdminOverview() {
                         />
                         <Tooltip 
                           contentStyle={{
-                            backgroundColor: 'var(--white)',
+                            backgroundColor: 'var(--surface)',
                             border: `1px solid ${'var(--border-color)'}`,
+                            color: 'var(--text-primary)',
                             borderRadius: '8px',
                             fontSize: '12px',
                             padding: '8px 12px',
@@ -430,8 +431,9 @@ export default function AdminOverview() {
                         </Pie>
                         <Tooltip 
                           contentStyle={{
-                            backgroundColor: 'var(--white)',
+                            backgroundColor: 'var(--surface)',
                             border: `1px solid ${'var(--border-color)'}`,
+                            color: 'var(--text-primary)',
                             borderRadius: '8px',
                           }}
                         />
@@ -486,8 +488,9 @@ export default function AdminOverview() {
                     />
                     <Tooltip 
                       contentStyle={{
-                        backgroundColor: 'var(--white)',
+                        backgroundColor: 'var(--surface)',
                         border: `1px solid ${'var(--border-color)'}`,
+                        color: 'var(--text-primary)',
                         borderRadius: '8px',
                         fontSize: '12px',
                         padding: '8px 12px',

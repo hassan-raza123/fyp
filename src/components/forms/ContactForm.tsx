@@ -74,7 +74,7 @@ export default function ContactForm() {
   const inputClasses = 'block w-full px-4 py-3 rounded-lg border-2 transition-all duration-200'
   const inputBaseStyle: React.CSSProperties = {
     borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--white)',
+    backgroundColor: 'var(--surface)',
   }
   const inputFocusStyle: React.CSSProperties = {
     borderColor: 'var(--brand-primary)',

@@ -469,8 +469,9 @@ function FacultyChartsView({
   const gridStroke = 'var(--border-color)';
   const axisStyle = { fontSize: 10, fill: 'var(--text-muted)' };
   const tooltipStyle = {
-    backgroundColor: 'var(--white)',
+    backgroundColor: 'var(--surface)',
     border: `1px solid ${'var(--border-color)'}`,
+    color: 'var(--text-primary)',
     borderRadius: '8px',
     fontSize: 12,
     padding: '8px 12px',

@@ -769,8 +769,9 @@ const GradeManagementPage = () => {
                       <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'var(--white)',
+                          backgroundColor: 'var(--surface)',
                           border: `1px solid ${'var(--border-color)'}`,
+                          color: 'var(--text-primary)',
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}
@@ -927,8 +928,9 @@ const GradeManagementPage = () => {
                       <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'var(--white)',
+                          backgroundColor: 'var(--surface)',
                           border: `1px solid ${'var(--border-color)'}`,
+                          color: 'var(--text-primary)',
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}

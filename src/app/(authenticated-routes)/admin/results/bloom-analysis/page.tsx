@@ -314,7 +314,7 @@ function BloomAnalysisContent() {
                   <YAxis tick={{ fontSize: 10, fill: tickColor }} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'var(--white)',
+                      backgroundColor: 'var(--surface)',
                       border: `1px solid ${gridColor}`,
                       borderRadius: '6px',
                       fontSize: '11px',
@@ -382,7 +382,7 @@ function BloomAnalysisContent() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'var(--white)',
+                        backgroundColor: 'var(--surface)',
                         border: `1px solid ${gridColor}`,
                         borderRadius: '6px',
                         fontSize: '11px',

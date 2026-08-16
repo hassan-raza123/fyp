@@ -255,7 +255,7 @@ function PEOAttainmentsContent() {
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} unit="%" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--white)', border: '1px solid var(--gray-700)', borderRadius: '6px', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--gray-700)', borderRadius: '6px', fontSize: '11px' }}
                     formatter={(value: number) => [`${value.toFixed(1)}%`, 'Attainment']}
                   />
                   <ReferenceLine
