@@ -241,10 +241,10 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-  const iconColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
+  const iconColor = 'var(--accent)';
 
   useEffect(() => {
     setMounted(true);
@@ -526,7 +526,7 @@ export default function StudentDashboard() {
             className="rounded-lg shadow-sm p-4 text-white"
             style={{
               background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColorDark})`,
-              boxShadow: isDarkMode ? '0 4px 12px rgba(252, 153, 40, 0.25)' : '0 4px 12px rgba(38, 40, 149, 0.2)',
+              boxShadow: '0 4px 12px var(--brand-primary-opacity-20)',
             }}
           >
             <h2 className="text-sm font-semibold mb-2">Quick Actions</h2>

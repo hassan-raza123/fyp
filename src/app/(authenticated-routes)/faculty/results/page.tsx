@@ -24,11 +24,11 @@ export default function ResultsPage() {
   const [mounted, setMounted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
-  const cardHoverBg = isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const cardHoverBg = 'var(--black-opacity-05)';
 
   useEffect(() => {
     setMounted(true);

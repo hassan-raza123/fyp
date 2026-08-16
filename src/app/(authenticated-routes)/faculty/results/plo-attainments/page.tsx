@@ -29,7 +29,7 @@ const PLOAttainmentsPage = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';

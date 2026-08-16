@@ -72,8 +72,8 @@ export function CLOPLOMappingList() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -506,8 +506,8 @@ export function CLOPLOMappingList() {
               onClick={() => setIsDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
@@ -553,8 +553,8 @@ export function CLOPLOMappingList() {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode

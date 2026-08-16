@@ -91,7 +91,7 @@ const MarksEntryPage = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -693,7 +693,7 @@ const MarksEntryPage = () => {
 
       {/* Warnings */}
       {warnings.length > 0 && (
-        <div className="rounded-lg border border-[var(--warning)]/50 p-4" style={{ backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.08)' : 'rgba(252, 153, 40, 0.08)' }}>
+        <div className="rounded-lg border border-[var(--warning)]/50 p-4" style={{ backgroundColor: 'var(--brand-primary-opacity-08)' }}>
           <h3 className="text-sm font-semibold text-primary-text flex items-center gap-2 mb-2">
             <AlertCircle className="w-4 h-4" style={{ color: primaryColor }} />
             Warnings

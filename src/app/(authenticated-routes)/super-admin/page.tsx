@@ -190,8 +190,8 @@ export default function SuperAdminDashboard() {
     return <PageError message="Failed to load dashboard data" fullScreen={false} />;
   }
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   
   // Calculate assignment rate
   const assignmentRate = dashboardData.stats.totalDepartments > 0
@@ -274,8 +274,8 @@ export default function SuperAdminDashboard() {
         <div 
           className="rounded-xl p-4 border-2 flex items-center gap-3"
           style={{
-            backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(252, 153, 40, 0.05)',
-            borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.3)' : 'rgba(252, 153, 40, 0.2)',
+            backgroundColor: 'var(--brand-primary-opacity-08)',
+            borderColor: 'var(--brand-primary-opacity-30)',
           }}
           >
           <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--orange)' }} />
@@ -321,30 +321,30 @@ export default function SuperAdminDashboard() {
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={analyticsData.enrollmentTrend} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
+              <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
-                stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                stroke={'var(--border-firm)'}
                 angle={-35}
                 textAnchor="end"
                 height={60}
               />
               <YAxis 
-                tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
-                stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
+                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                stroke={'var(--border-firm)'}
                 width={45}
               />
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                  border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                  backgroundColor: 'var(--white)',
+                  border: `1px solid ${'var(--border-color)'}`,
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',
                 }}
                 labelStyle={{ 
-                  color: isDarkMode ? 'var(--white)' : 'var(--black)', 
+                  color: 'var(--text-primary)', 
                   marginBottom: '6px',
                   fontWeight: 600,
                 }}
@@ -354,7 +354,7 @@ export default function SuperAdminDashboard() {
                 dataKey="students" 
                 stroke={primaryColor}
                 strokeWidth={3}
-                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: isDarkMode ? 'var(--text-primary)' : 'var(--white)' }}
+                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: 'var(--white)' }}
                 activeDot={{ r: 6, strokeWidth: 2 }}
               />
             </LineChart>
@@ -390,8 +390,8 @@ export default function SuperAdminDashboard() {
               </Pie>
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                  border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                  backgroundColor: 'var(--white)',
+                  border: `1px solid ${'var(--border-color)'}`,
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',

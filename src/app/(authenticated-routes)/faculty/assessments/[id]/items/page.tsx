@@ -35,7 +35,7 @@ export default function AssessmentItemsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
 
   const [assessment, setAssessment] = useState<any>(null);
   const [clos, setClos] = useState<any[]>([]);

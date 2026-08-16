@@ -158,8 +158,8 @@ const COLORS = [
 const AnalyticsPage = () => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
 
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -652,14 +652,14 @@ const AnalyticsPage = () => {
             onClick={() => handleExport('csv')}
             className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center"
             style={{
-              backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
+              backgroundColor: 'var(--brand-primary-opacity-10)',
               color: primaryColor,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-10)';
             }}
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -669,14 +669,14 @@ const AnalyticsPage = () => {
             onClick={() => handleExport('pdf')}
             className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center"
             style={{
-              backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)',
+              backgroundColor: 'var(--brand-primary-opacity-10)',
               color: primaryColor,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.1)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-10)';
             }}
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -798,14 +798,14 @@ const AnalyticsPage = () => {
             <h2 className="text-sm font-semibold text-primary-text mb-3">Course Performance</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={performanceChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                 <Tooltip
                   formatter={(value: number) => `${value.toFixed(1)}%`}
                   contentStyle={{
-                    backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                    backgroundColor: 'var(--white)',
+                    border: `1px solid ${'var(--border-color)'}`,
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
@@ -891,14 +891,14 @@ const AnalyticsPage = () => {
             <h2 className="text-sm font-semibold text-primary-text mb-3">CLO Attainment Trends</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={cloTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                 <Tooltip
                   formatter={(value: number) => `${value.toFixed(1)}%`}
                   contentStyle={{
-                    backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                    backgroundColor: 'var(--white)',
+                    border: `1px solid ${'var(--border-color)'}`,
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
@@ -990,8 +990,8 @@ const AnalyticsPage = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                      border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                      backgroundColor: 'var(--white)',
+                      border: `1px solid ${'var(--border-color)'}`,
                       borderRadius: '8px',
                       fontSize: '12px',
                     }}
@@ -1004,13 +1004,13 @@ const AnalyticsPage = () => {
               <h2 className="text-sm font-semibold text-primary-text mb-3">Grade Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={gradeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
-                  <YAxis tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
+                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                      border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                      backgroundColor: 'var(--white)',
+                      border: `1px solid ${'var(--border-color)'}`,
                       borderRadius: '8px',
                       fontSize: '12px',
                     }}

@@ -101,10 +101,10 @@ function BloomAnalysisContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-  const gridColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-  const tickColor = isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
+  const gridColor = 'var(--border-color)';
+  const tickColor = 'var(--text-secondary)';
 
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState('');
@@ -172,8 +172,8 @@ function BloomAnalysisContent() {
       <div
         className="flex items-start gap-2 p-3 rounded-lg border text-xs"
         style={{
-          backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.08)' : 'rgba(38, 40, 149, 0.06)',
-          borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.15)',
+          backgroundColor: 'var(--brand-primary-opacity-08)',
+          borderColor: 'var(--brand-primary-opacity-20)',
           color: primaryColor,
         }}
       >
@@ -223,7 +223,7 @@ function BloomAnalysisContent() {
             style={{
               backgroundColor:
                 data.hec_compliant === null
-                  ? isDarkMode ? 'rgba(107,114,128,0.08)' : 'rgba(107,114,128,0.06)'
+                  ? 'var(--black-opacity-05)'
                   : data.hec_compliant
                   ? 'rgba(34,197,94,0.08)'
                   : 'rgba(239,68,68,0.08)',
@@ -314,7 +314,7 @@ function BloomAnalysisContent() {
                   <YAxis tick={{ fontSize: 10, fill: tickColor }} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                      backgroundColor: 'var(--white)',
                       border: `1px solid ${gridColor}`,
                       borderRadius: '6px',
                       fontSize: '11px',
@@ -382,7 +382,7 @@ function BloomAnalysisContent() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                        backgroundColor: 'var(--white)',
                         border: `1px solid ${gridColor}`,
                         borderRadius: '6px',
                         fontSize: '11px',

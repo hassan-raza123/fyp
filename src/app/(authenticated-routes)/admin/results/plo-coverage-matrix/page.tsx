@@ -190,7 +190,7 @@ function PLOCoverageMatrixContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -603,7 +603,7 @@ function PLOCoverageMatrixContent() {
                       <td
                         className="sticky left-0 z-10 px-4 py-2.5 border-r border-card-border text-xs font-semibold text-secondary-text whitespace-nowrap"
                         style={{
-                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--surface-2)',
+                          backgroundColor: 'var(--surface-2)',
                         }}
                       >
                         Coverage (# courses)

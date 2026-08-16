@@ -57,8 +57,8 @@ function PEOPLOMappingsPageContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -416,7 +416,7 @@ function PEOPLOMappingsPageContent() {
                 style={{
                   borderColor: isHighlighted ? primaryColor : 'var(--card-border)',
                   boxShadow: isHighlighted
-                    ? `0 0 0 2px ${isDarkMode ? 'rgba(252, 153, 40, 0.3)' : 'rgba(38, 40, 149, 0.3)'}`
+                    ? `0 0 0 2px ${'var(--brand-primary-opacity-30)'}`
                     : undefined,
                 }}
               >
@@ -618,8 +618,8 @@ function PEOPLOMappingsPageContent() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
@@ -673,8 +673,8 @@ function PEOPLOMappingsPageContent() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode

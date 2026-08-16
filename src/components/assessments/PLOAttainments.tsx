@@ -69,7 +69,7 @@ interface PLOAttainmentsProps {
 export function PLOAttainments({ programId, semesterId, apiUrl = '/api/plo-attainments' }: PLOAttainmentsProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -256,7 +256,7 @@ export function PLOAttainments({ programId, semesterId, apiUrl = '/api/plo-attai
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                 <Bar
                   dataKey='attainment'
-                  fill={isDarkMode ? 'var(--accent)' : 'var(--accent)'}
+                  fill={'var(--accent)'}
                   name='PLO Attainment'
                   radius={[4, 4, 0, 0]}
                 />

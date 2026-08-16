@@ -83,7 +83,7 @@ export default function LLOAttainmentsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -474,8 +474,8 @@ export default function LLOAttainmentsPage() {
               disabled={isCalculating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCalculating)

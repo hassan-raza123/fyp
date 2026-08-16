@@ -113,9 +113,9 @@ export default function AssessmentDetailsPage() {
   const [cloCoverage, setCloCoverage] = useState<CLOCoverage[]>([]);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
     setMounted(true);
@@ -222,7 +222,7 @@ export default function AssessmentDetailsPage() {
           <button
             onClick={() => router.push('/student/assessments')}
             className="px-3 py-1.5 rounded-lg border border-card-border bg-transparent text-xs font-medium h-8 flex items-center gap-2 mx-auto"
-            style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
+            style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Assessments
@@ -249,7 +249,7 @@ export default function AssessmentDetailsPage() {
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
           style={{ backgroundColor: iconBgColor, color: primaryColor }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;

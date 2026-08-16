@@ -341,8 +341,8 @@ export default function CourseOfferingsPage() {
     }
   };
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
@@ -374,7 +374,7 @@ export default function CourseOfferingsPage() {
             color: primaryColor,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;
@@ -471,7 +471,7 @@ export default function CourseOfferingsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -491,7 +491,7 @@ export default function CourseOfferingsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -631,12 +631,12 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCreating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -755,8 +755,8 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onClick={() => {
                 setShowViewModal(false);
@@ -876,12 +876,12 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs border-card-border bg-transparent"
               style={{
-                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -901,7 +901,7 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs text-white"
               style={{
-                backgroundColor: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
+                backgroundColor: isUpdating ? ('var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating && !e.currentTarget.disabled) {
@@ -910,7 +910,7 @@ export default function CourseOfferingsPage() {
               }}
               onMouseLeave={(e) => {
                 if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor;
+                  e.currentTarget.style.backgroundColor = isUpdating ? ('var(--text-muted)') : primaryColor;
                 }
               }}
               onClick={handleUpdateOffering}
@@ -944,12 +944,12 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs border-card-border bg-transparent"
               style={{
-                color: isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isDeleting ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -969,7 +969,7 @@ export default function CourseOfferingsPage() {
               size="sm"
               className="h-8 text-xs text-white"
               style={{
-                backgroundColor: isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : 'var(--error)',
+                backgroundColor: isDeleting ? ('var(--text-muted)') : 'var(--error)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting && !e.currentTarget.disabled) {
@@ -978,7 +978,7 @@ export default function CourseOfferingsPage() {
               }}
               onMouseLeave={(e) => {
                 if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : 'var(--error)';
+                  e.currentTarget.style.backgroundColor = isDeleting ? ('var(--text-muted)') : 'var(--error)';
                 }
               }}
               onClick={handleDelete}

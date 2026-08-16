@@ -59,7 +59,7 @@ const PLOAttainmentsPage = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -322,23 +322,23 @@ const PLOAttainmentsPage = () => {
                 <LineChart data={chartRows} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}
+                    stroke={'var(--black-opacity-05)'}
                   />
                   <XAxis
                     dataKey="semester"
-                    tick={{ fontSize: 11, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
                     tickLine={false}
                   />
                   <YAxis
                     domain={[0, 100]}
-                    tick={{ fontSize: 11, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
                     tickLine={false}
                     tickFormatter={(v) => `${v}%`}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                      border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                      backgroundColor: 'var(--white)',
+                      border: `1px solid ${'var(--border-color)'}`,
                       borderRadius: '8px',
                       fontSize: '11px',
                     }}

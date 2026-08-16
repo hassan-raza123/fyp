@@ -69,8 +69,8 @@ function PEOAttainmentsContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [programs, setPrograms] = useState<Program[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -168,8 +168,8 @@ function PEOAttainmentsContent() {
       <div
         className="flex items-start gap-2 p-3 rounded-lg border text-xs"
         style={{
-          backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.08)' : 'rgba(38, 40, 149, 0.06)',
-          borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.15)',
+          backgroundColor: 'var(--brand-primary-opacity-08)',
+          borderColor: 'var(--brand-primary-opacity-20)',
           color: primaryColor,
         }}
       >
@@ -251,11 +251,11 @@ function PEOAttainmentsContent() {
               <h3 className="text-xs font-semibold text-primary-text mb-3">PEO Attainment Chart</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }} unit="%" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} unit="%" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)', border: '1px solid var(--gray-700)', borderRadius: '6px', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: 'var(--white)', border: '1px solid var(--gray-700)', borderRadius: '6px', fontSize: '11px' }}
                     formatter={(value: number) => [`${value.toFixed(1)}%`, 'Attainment']}
                   />
                   <ReferenceLine

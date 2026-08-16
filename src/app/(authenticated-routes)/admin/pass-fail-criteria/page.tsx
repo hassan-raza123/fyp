@@ -44,8 +44,8 @@ interface Criterion {
 export default function PassFailCriteriaPage() {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
@@ -204,7 +204,7 @@ export default function PassFailCriteriaPage() {
             onClick={() => setCreateOpen(true)}
             className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
             style={{ backgroundColor: iconBgColor, color: primaryColor }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
           >
             <Plus className="h-3.5 w-3.5" />

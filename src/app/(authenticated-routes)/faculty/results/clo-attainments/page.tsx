@@ -152,7 +152,7 @@ const CLOAttainmentsPage = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -745,11 +745,11 @@ const CLOAttainmentsPage = () => {
                         attainment: parseFloat(a.attainmentPercent.toFixed(1)),
                         threshold: a.threshold,
                       }))}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#333' : '#eee'} />
-                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
-                        <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={'var(--chart-grid)'} />
+                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
+                        <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
                         <Tooltip
-                          contentStyle={{ background: isDarkMode ? 'var(--text-primary)' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          contentStyle={{ background: 'var(--white)', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
                           formatter={(value: number, name: string) => [`${value}%`, name === 'attainment' ? 'Attainment' : 'Threshold']}
                         />
                         <Line type="monotone" dataKey="attainment" stroke={primaryColor} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="attainment" />
@@ -779,11 +779,11 @@ const CLOAttainmentsPage = () => {
                         notAchieved: a.totalStudents - a.studentsAchieved,
                         total: a.totalStudents,
                       }))}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#333' : '#eee'} />
-                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
-                        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={'var(--chart-grid)'} />
+                        <XAxis dataKey="semester" tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
                         <Tooltip
-                          contentStyle={{ background: isDarkMode ? 'var(--text-primary)' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          contentStyle={{ background: 'var(--white)', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
                           formatter={(value: number, name: string) => [value, name === 'achieved' ? 'Achieved' : 'Not Achieved']}
                         />
                         <Bar dataKey="achieved" stackId="a" fill="var(--success-green)" name="achieved" radius={[0, 0, 0, 0]} />

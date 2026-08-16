@@ -55,8 +55,8 @@ export default function BulkImportStudentsPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loadingRefs, setLoadingRefs] = useState(true);
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
@@ -267,7 +267,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
             color: primaryColor,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;
@@ -311,11 +311,11 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
                   onClick={() => downloadTemplate()}
                   className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent"
                   style={{
-                    color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                    borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-color)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                    e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -333,7 +333,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
                     color: primaryColor,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                    e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = iconBgColor;
@@ -405,12 +405,12 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
               disabled={loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -426,7 +426,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
               disabled={!file || loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: loading || !file ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
+                backgroundColor: loading || !file ? ('var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!loading && file) {

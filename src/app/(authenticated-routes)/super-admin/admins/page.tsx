@@ -491,8 +491,8 @@ export default function SuperAdminAdminsPage() {
     withoutDepartment: admins.filter(a => a.department === null).length,
   };
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
 
   if (!mounted || loading) {
     return <PageLoading message="Loading admins..." fullScreen={false} />;
@@ -656,19 +656,19 @@ export default function SuperAdminAdminsPage() {
                             disabled={!admin.userId}
                             className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
-                              color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                              color: 'var(--text-primary)',
+                              borderColor: 'var(--border-color)',
                               backgroundColor: 'transparent',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-15)';
                               e.currentTarget.style.borderColor = primaryColor;
                               e.currentTarget.style.color = primaryColor;
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-                              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                              e.currentTarget.style.borderColor = 'var(--border-color)';
+                              e.currentTarget.style.color = 'var(--text-primary)';
                             }}
                           >
                             <Eye className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
@@ -681,19 +681,19 @@ export default function SuperAdminAdminsPage() {
                             disabled={!admin.userId}
                             className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
-                              color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                              color: 'var(--text-primary)',
+                              borderColor: 'var(--border-color)',
                               backgroundColor: 'transparent',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-15)';
                               e.currentTarget.style.borderColor = primaryColor;
                               e.currentTarget.style.color = primaryColor;
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-                              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                              e.currentTarget.style.borderColor = 'var(--border-color)';
+                              e.currentTarget.style.color = 'var(--text-primary)';
                             }}
                           >
                             <Edit className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
@@ -708,19 +708,19 @@ export default function SuperAdminAdminsPage() {
                             }}
                             className="border-card-border transition-all hover:scale-105 text-xs px-3 h-8 bg-transparent"
                             style={{
-                              color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                              color: 'var(--text-primary)',
+                              borderColor: 'var(--border-color)',
                               backgroundColor: 'transparent',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+                              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-15)';
                               e.currentTarget.style.borderColor = primaryColor;
                               e.currentTarget.style.color = primaryColor;
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-                              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                              e.currentTarget.style.borderColor = 'var(--border-color)';
+                              e.currentTarget.style.color = 'var(--text-primary)';
                             }}
                           >
                             <Key className="h-3.5 w-3.5 mr-1.5" style={{ color: 'inherit' }} />
@@ -879,17 +879,17 @@ export default function SuperAdminAdminsPage() {
               }}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
                 backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
             >
               Cancel
@@ -899,9 +899,9 @@ export default function SuperAdminAdminsPage() {
               disabled={isCreating}
               className="text-white"
               style={{
-                backgroundColor: isCreating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
                 color: 'var(--white)',
-                borderColor: isCreating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                borderColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
@@ -1008,8 +1008,8 @@ export default function SuperAdminAdminsPage() {
               }}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
             >
               Close
@@ -1184,8 +1184,8 @@ export default function SuperAdminAdminsPage() {
               disabled={isUpdating}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
               }}
             >
               Cancel
@@ -1241,8 +1241,8 @@ export default function SuperAdminAdminsPage() {
               disabled={isResettingPassword}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isResettingPassword ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isResettingPassword ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
                 backgroundColor: 'transparent',
                 opacity: isResettingPassword ? 0.5 : 1,
               }}
@@ -1301,20 +1301,20 @@ export default function SuperAdminAdminsPage() {
               disabled={isDeleting}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isDeleting ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
                 backgroundColor: 'transparent',
                 opacity: isDeleting ? 0.5 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                  e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
                 }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)');
+                e.currentTarget.style.color = isDeleting ? ('var(--text-muted)') : ('var(--text-primary)');
               }}
             >
               Cancel

@@ -122,9 +122,9 @@ const PLOAttainmentsPage = () => {
   const [expandedPLOLLO, setExpandedPLOLLO] = useState<number | null>(null);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
     setMounted(true);
@@ -303,7 +303,7 @@ const PLOAttainmentsPage = () => {
             className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
             style={{ backgroundColor: iconBgColor, color: primaryColor }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = iconBgColor;

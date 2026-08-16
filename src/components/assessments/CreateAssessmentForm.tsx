@@ -69,7 +69,7 @@ export function CreateAssessmentForm({
 }: CreateAssessmentFormProps) {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const primaryColorDark = isDarkMode
     ? 'var(--orange-dark)'
     : 'var(--blue-dark)';

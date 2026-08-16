@@ -158,8 +158,8 @@ export default function SuperAdminProfilePage() {
     }
   };
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
 
   if (!mounted || loading) {
     return <PageLoading message="Loading profile..." fullScreen={false} />;

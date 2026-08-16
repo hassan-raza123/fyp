@@ -110,8 +110,8 @@ const COLORS = [
 const GradeManagementPage = () => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -523,7 +523,7 @@ const GradeManagementPage = () => {
             className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
             style={btnStyle()}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = iconBgColor;
@@ -539,7 +539,7 @@ const GradeManagementPage = () => {
                 className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
                 style={btnStyle()}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = iconBgColor;
@@ -553,7 +553,7 @@ const GradeManagementPage = () => {
                 className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 inline-flex items-center gap-1.5"
                 style={btnStyle()}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = iconBgColor;
@@ -729,7 +729,7 @@ const GradeManagementPage = () => {
                               className="px-2 py-1 rounded-md text-xs font-medium h-7 inline-flex items-center gap-1 disabled:opacity-50"
                               style={{ backgroundColor: iconBgColor, color: primaryColor }}
                               onMouseEnter={(e) => {
-                                if (grade.status !== 'final') e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                                if (grade.status !== 'final') e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = iconBgColor;
@@ -764,13 +764,13 @@ const GradeManagementPage = () => {
                 {gradeDistributionData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={gradeDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
-                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                          border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                          backgroundColor: 'var(--white)',
+                          border: `1px solid ${'var(--border-color)'}`,
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}
@@ -922,13 +922,13 @@ const GradeManagementPage = () => {
                 {gradeDistributionData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={gradeDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
-                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} stroke={'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-                          border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+                          backgroundColor: 'var(--white)',
+                          border: `1px solid ${'var(--border-color)'}`,
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}
@@ -989,8 +989,8 @@ const GradeManagementPage = () => {
             <div
               className="p-3 rounded-lg text-xs text-primary-text"
               style={{
-                backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.1)' : 'rgba(38, 40, 149, 0.08)',
-                border: `1px solid ${isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.15)'}`,
+                backgroundColor: 'var(--brand-primary-opacity-10)',
+                border: `1px solid ${'var(--brand-primary-opacity-20)'}`,
               }}
             >
               Grades will be calculated based on weighted average of all assessments. Grade scale from the program will be applied.

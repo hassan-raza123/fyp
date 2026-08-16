@@ -53,9 +53,9 @@ function GraduationCriteriaContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [data, setData] = useState<ProgramWithCriteria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,8 +213,8 @@ function GraduationCriteriaContent() {
       <div
         className="flex items-start gap-2 p-3 rounded-lg border text-xs"
         style={{
-          backgroundColor: isDarkMode ? 'rgba(252, 153, 40, 0.08)' : 'rgba(38, 40, 149, 0.06)',
-          borderColor: isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.15)',
+          backgroundColor: 'var(--brand-primary-opacity-08)',
+          borderColor: 'var(--brand-primary-opacity-20)',
           color: primaryColor,
         }}
       >
@@ -292,7 +292,7 @@ function GraduationCriteriaContent() {
                       className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center gap-1"
                       style={{ backgroundColor: iconBgColor, color: primaryColor }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                        e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = iconBgColor;
@@ -404,8 +404,8 @@ function GraduationCriteriaContent() {
             <button
               onClick={() => setIsDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'; }}
+              style={{ color: 'var(--text-primary)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel

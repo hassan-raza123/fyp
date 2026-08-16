@@ -72,9 +72,9 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
     setMounted(true);
@@ -401,7 +401,7 @@ const CalendarPage = () => {
           className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 transition-colors"
           style={{ backgroundColor: iconBgColor, color: primaryColor }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;
@@ -455,7 +455,7 @@ const CalendarPage = () => {
                   className="p-2 rounded-lg transition-colors"
                   style={{ backgroundColor: iconBgColor, color: primaryColor }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                    e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = iconBgColor;
@@ -476,7 +476,7 @@ const CalendarPage = () => {
                   className="p-2 rounded-lg transition-colors"
                   style={{ backgroundColor: iconBgColor, color: primaryColor }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                    e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = iconBgColor;
@@ -594,8 +594,8 @@ const CalendarPage = () => {
                       <button
                         type="button"
                         className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent transition-colors"
-                        style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+                        style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                       >
                         View Assessment Details

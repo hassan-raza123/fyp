@@ -65,8 +65,8 @@ export default function CoursesPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -263,7 +263,7 @@ export default function CoursesPage() {
                     className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 flex items-center justify-center"
                     style={{ backgroundColor: iconBgColor, color: primaryColor }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                      e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = iconBgColor;

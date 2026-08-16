@@ -311,8 +311,8 @@ export default function TranscriptsPage() {
     return null;
   }
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   return (
     <div className="space-y-4">
@@ -337,7 +337,7 @@ export default function TranscriptsPage() {
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5"
           style={{ backgroundColor: iconBgColor, color: primaryColor }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;
@@ -440,7 +440,7 @@ export default function TranscriptsPage() {
                           onClick={() => window.open(transcript.filePath || '', '_blank')}
                           className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                           style={{ backgroundColor: iconBgColor, color: primaryColor }}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                         >
                           <Download className="h-3 w-3" />
@@ -450,7 +450,7 @@ export default function TranscriptsPage() {
                         onClick={() => router.push(`/admin/transcripts/${transcript.id}`)}
                         className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
                         style={{ backgroundColor: iconBgColor, color: primaryColor }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
                       >
                         <Eye className="h-3 w-3" />
@@ -565,8 +565,8 @@ export default function TranscriptsPage() {
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50"
-              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
-              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
@@ -577,7 +577,7 @@ export default function TranscriptsPage() {
               disabled={isGenerating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: iconBgColor, color: primaryColor, borderColor: 'transparent' }}
-              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)'; }}
+              onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = iconBgColor; }}
             >
               {isGenerating ? (
@@ -606,8 +606,8 @@ export default function TranscriptsPage() {
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
+              style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel

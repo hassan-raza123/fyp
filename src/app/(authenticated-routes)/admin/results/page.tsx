@@ -20,7 +20,7 @@ export default function ResultsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const primaryColor = 'var(--accent)';
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
@@ -170,7 +170,7 @@ export default function ResultsPage() {
                 className='w-full px-3 py-2.5 rounded-lg transition-colors text-xs font-medium h-9 flex items-center gap-2 border border-transparent'
                 style={{ backgroundColor: iconBgColor, color: primaryColor }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                  e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = iconBgColor;

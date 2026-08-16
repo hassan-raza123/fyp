@@ -54,8 +54,8 @@ export default function StudentsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
@@ -441,8 +441,8 @@ export default function StudentsPage() {
             onClick={() => router.push('/admin/students/bulk-import')}
             className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
             style={{
-              color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-              borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-color)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = iconBgColor;
@@ -451,8 +451,8 @@ export default function StudentsPage() {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-              e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.color = 'var(--text-primary)';
             }}
           >
             Bulk Import
@@ -465,7 +465,7 @@ export default function StudentsPage() {
               color: primaryColor,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+              e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = iconBgColor;
@@ -590,7 +590,7 @@ export default function StudentsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -607,7 +607,7 @@ export default function StudentsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -659,7 +659,7 @@ export default function StudentsPage() {
             }}
             onMouseEnter={(e) => {
               if (page !== 1) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
               }
             }}
             onMouseLeave={(e) => {
@@ -686,7 +686,7 @@ export default function StudentsPage() {
             }}
             onMouseEnter={(e) => {
               if (page !== totalPages) {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
               }
             }}
             onMouseLeave={(e) => {
@@ -831,12 +831,12 @@ export default function StudentsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -852,7 +852,7 @@ export default function StudentsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isCreating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -989,11 +989,11 @@ export default function StudentsPage() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
@@ -1165,12 +1165,12 @@ export default function StudentsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -1186,7 +1186,7 @@ export default function StudentsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isUpdating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -1236,12 +1236,12 @@ export default function StudentsPage() {
               disabled={deleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!deleting) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {

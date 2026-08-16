@@ -113,8 +113,8 @@ export default function FacultyAcademicRecordsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const iconBgColor = isDarkMode ? 'rgba(252,153,40,0.15)' : 'rgba(38,40,149,0.15)';
+  const primaryColor = 'var(--accent)';
+  const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [data, setData] = useState<RecordsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -466,11 +466,11 @@ function FacultyChartsView({
 }) {
   if (!data) return null;
 
-  const gridStroke = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
-  const axisStyle = { fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' };
+  const gridStroke = 'var(--border-color)';
+  const axisStyle = { fontSize: 10, fill: 'var(--text-muted)' };
   const tooltipStyle = {
-    backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
-    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
+    backgroundColor: 'var(--white)',
+    border: `1px solid ${'var(--border-color)'}`,
     borderRadius: '8px',
     fontSize: 12,
     padding: '8px 12px',

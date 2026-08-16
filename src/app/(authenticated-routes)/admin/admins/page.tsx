@@ -321,8 +321,8 @@ export default function AdminsPage() {
     }
   };
 
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
     ? 'rgba(252, 153, 40, 0.15)' 
     : 'rgba(38, 40, 149, 0.15)';
@@ -349,7 +349,7 @@ export default function AdminsPage() {
             color: primaryColor,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+            e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = iconBgColor;
@@ -434,7 +434,7 @@ export default function AdminsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -450,7 +450,7 @@ export default function AdminsPage() {
                           color: primaryColor,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(252, 153, 40, 0.2)' : 'rgba(38, 40, 149, 0.2)';
+                          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-20)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = iconBgColor;
@@ -551,8 +551,8 @@ export default function AdminsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="p-4 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(38, 40, 149, 0.15)' : 'rgba(38, 40, 149, 0.1)' }}>
-              <p className="text-xs" style={{ color: isDarkMode ? 'var(--orange)' : 'var(--blue)' }}>
+            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--brand-primary-opacity-15)' }}>
+              <p className="text-xs" style={{ color: 'var(--accent)' }}>
                 <strong>Note:</strong> A user account will be created automatically with a randomly generated password, which is shown once after creation and emailed to the user. They must change it on first sign-in.
                 Admin user can login and change their password.
               </p>
@@ -573,12 +573,12 @@ export default function AdminsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -594,7 +594,7 @@ export default function AdminsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isCreating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -696,11 +696,11 @@ export default function AdminsPage() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
@@ -824,12 +824,12 @@ export default function AdminsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -845,7 +845,7 @@ export default function AdminsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isUpdating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
+                backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -895,12 +895,12 @@ export default function AdminsPage() {
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
                 }
               }}
               onMouseLeave={(e) => {

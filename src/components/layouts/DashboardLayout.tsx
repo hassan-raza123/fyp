@@ -139,7 +139,7 @@ const SidebarNavLink = ({
         <div 
           className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
           style={{
-            backgroundColor: isDarkMode ? 'var(--orange)' : 'var(--blue)',
+            backgroundColor: 'var(--accent)',
           }}
         />
       )}
@@ -418,7 +418,7 @@ export default function DashboardLayout({
           ? 'bg-gradient-to-b from-ink via-ink/98 to-ink/95' 
           : 'bg-gradient-to-b from-white via-white/98 to-surface-2/95'
         }
-        border-r ${isDarkMode ? 'border-subtle/60' : 'border-subtle/60'}
+        border-r ${'border-subtle/60'}
         ${isDarkMode 
           ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_rgba(252,153,40,0.1)]' 
           : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_rgba(38,40,149,0.05)]'
@@ -432,7 +432,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${isDarkMode ? 'border-subtle/60' : 'border-subtle/60'} ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/50' : 'bg-gradient-to-br from-white via-white to-surface-2/50'}`}>
+        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${'border-subtle/60'} ${isDarkMode ? 'bg-gradient-to-br from-ink via-ink to-ink/50' : 'bg-gradient-to-br from-white via-white to-surface-2/50'}`}>
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -492,14 +492,14 @@ export default function DashboardLayout({
           className="px-3 py-3 overflow-y-auto flex-1 min-h-0"
           style={{
             scrollbarWidth: 'thin',
-            scrollbarColor: `${isDarkMode ? 'var(--gray-700)' : 'var(--gray-300)'} transparent`,
+            scrollbarColor: `${'var(--border-firm)'} transparent`,
             maxHeight: 'calc(100vh - 4rem)',
           } as React.CSSProperties}
         >
           {navigationSections.map((section, idx) => (
             <div key={idx} className="mb-4">
               {isSidebarOpen && (
-                <h2 className={`px-2 mb-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-ink-muted' : 'text-ink-muted'}`}>
+                <h2 className={`px-2 mb-2 text-[10px] font-bold uppercase tracking-widest ${'text-ink-muted'}`}>
                   {section.title}
                 </h2>
               )}
@@ -563,7 +563,7 @@ export default function DashboardLayout({
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10"
                   size={14}
                   style={{
-                    color: isDarkMode ? 'var(--gray-400)' : 'var(--gray-500)',
+                    color: 'var(--text-muted)',
                   }}
                 />
                 <input
@@ -588,7 +588,7 @@ export default function DashboardLayout({
                 <div
                   id="header-search-results"
                   role="listbox"
-                  className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-surface'}`}
+                  className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border shadow-lg ${'border-subtle bg-surface'}`}
                 >
                   {searchMatches.length === 0 ? (
                     <p className="px-3 py-3 text-sm text-ink-muted">
@@ -667,7 +667,7 @@ export default function DashboardLayout({
                 <div
                   role="menu"
                   aria-label="Notifications"
-                  className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${isDarkMode ? 'border-subtle bg-surface' : 'border-subtle bg-surface'}`}
+                  className={`absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg ${'border-subtle bg-surface'}`}
                 >
                   <div
                     className={`border-b px-4 py-2.5 text-sm font-medium ${isDarkMode ? 'border-subtle text-ink-muted' : 'border-subtle text-ink'}`}
@@ -690,7 +690,7 @@ export default function DashboardLayout({
                           key={n.id}
                           role="menuitem"
                           tabIndex={0}
-                          className={`border-b px-4 py-3 last:border-b-0 ${isDarkMode ? 'border-subtle' : 'border-subtle'}`}
+                          className={`border-b px-4 py-3 last:border-b-0 ${'border-subtle'}`}
                         >
                           <p
                             className={`text-sm ${n.isRead ? 'font-normal' : 'font-semibold'} ${isDarkMode ? 'text-ink-muted' : 'text-ink'}`}
@@ -726,8 +726,8 @@ export default function DashboardLayout({
                 aria-expanded={showProfileMenu}
                 className="p-0 rounded-full transition-all duration-200"
                 onMouseEnter={(e) => {
-                  const color = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-                  e.currentTarget.style.boxShadow = `0 0 0 2px ${color}, 0 0 0 4px ${isDarkMode ? 'var(--gray-900)' : 'var(--white)'}`;
+                  const color = 'var(--accent)';
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${color}, 0 0 0 4px ${'var(--surface)'}`;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.boxShadow = '';
@@ -756,7 +756,7 @@ export default function DashboardLayout({
                     <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-ink'}`}>
                       {user?.userData.firstName} {user?.userData.lastName}
                     </p>
-                    <p className={`text-xs mt-0.5 truncate ${isDarkMode ? 'text-ink-muted' : 'text-ink-muted'}`}>
+                    <p className={`text-xs mt-0.5 truncate ${'text-ink-muted'}`}>
                       {user?.email}
                     </p>
                   </div>
@@ -780,7 +780,7 @@ export default function DashboardLayout({
                     {role !== 'super_admin' && (
                       <>
                     {/* Divider */}
-                        <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-surface-2/60' : 'bg-surface-2/60'}`} />
+                        <div className={`h-px my-1 mx-2 ${'bg-surface-2/60'}`} />
 
                     <button
                       onClick={() => {
@@ -797,13 +797,13 @@ export default function DashboardLayout({
                     </button>
 
                     {/* Divider */}
-                        <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-surface-2/60' : 'bg-surface-2/60'}`} />
+                        <div className={`h-px my-1 mx-2 ${'bg-surface-2/60'}`} />
                       </>
                     )}
 
                     {/* Divider for super_admin (only if Settings is hidden) */}
                     {role === 'super_admin' && (
-                      <div className={`h-px my-1 mx-2 ${isDarkMode ? 'bg-surface-2/60' : 'bg-surface-2/60'}`} />
+                      <div className={`h-px my-1 mx-2 ${'bg-surface-2/60'}`} />
                     )}
 
                     {/* Log out */}
@@ -829,7 +829,7 @@ export default function DashboardLayout({
 
         {/* Full Page Footer - Fixed at Bottom */}
         <footer className={`h-12 flex items-center justify-center px-4 lg:px-6 sticky bottom-0 z-40 backdrop-blur-md ${isDarkMode ? 'bg-gradient-to-r from-ink/98 via-ink/95 to-ink/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3),0_-2px_8px_rgba(252,153,40,0.1)]' : 'bg-gradient-to-r from-white/98 via-white/95 to-white/98 border-t border-subtle/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08),0_-2px_8px_rgba(38,40,149,0.05)]'} transition-all duration-200`}>
-          <p className={`text-xs font-medium ${isDarkMode ? 'text-ink-muted' : 'text-ink-muted'}`}>
+          <p className={`text-xs font-medium ${'text-ink-muted'}`}>
             © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
           </p>
         </footer>
@@ -850,17 +850,17 @@ export default function DashboardLayout({
               onClick={() => setShowLogoutDialog(false)}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
-                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)',
                 backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
             >
               Cancel

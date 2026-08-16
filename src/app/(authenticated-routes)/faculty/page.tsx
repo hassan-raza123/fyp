@@ -49,7 +49,7 @@ const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: Sta
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.15)'
     : 'rgba(38, 40, 149, 0.15)';
-  const iconColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconColor = 'var(--accent)';
 
   return (
     <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border transition-all duration-200 hover:shadow-md">
@@ -98,7 +98,7 @@ const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: Activit
   const iconBgColor = isDarkMode
     ? 'rgba(252, 153, 40, 0.1)'
     : 'rgba(38, 40, 149, 0.1)';
-  const iconColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
+  const iconColor = 'var(--accent)';
 
   return (
     <div
@@ -241,8 +241,8 @@ export default function FacultyOverview() {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
 
   const isDarkMode = resolvedTheme === 'dark';
-  const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
-  const primaryColorDark = isDarkMode ? 'var(--orange-dark)' : 'var(--blue-dark)';
+  const primaryColor = 'var(--accent)';
+  const primaryColorDark = 'var(--accent-hover)';
 
   useEffect(() => {
     setMounted(true);
@@ -407,7 +407,7 @@ export default function FacultyOverview() {
                       className="p-3 border rounded-lg text-xs"
                       style={{
                         borderColor: 'var(--error)',
-                        backgroundColor: isDarkMode ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.08)',
+                        backgroundColor: 'var(--error-opacity-10)',
                       }}
                     >
                       <div className="flex items-start justify-between">
@@ -469,8 +469,8 @@ export default function FacultyOverview() {
               <div
                 className="flex items-center justify-between p-4 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? 'rgba(252,153,40,0.1)' : 'rgba(38,40,149,0.08)',
-                  borderColor: isDarkMode ? 'rgba(252,153,40,0.25)' : 'rgba(38,40,149,0.2)',
+                  backgroundColor: 'var(--brand-primary-opacity-10)',
+                  borderColor: 'var(--brand-primary-opacity-20)',
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -487,8 +487,8 @@ export default function FacultyOverview() {
               <div
                 className="flex items-center justify-between p-4 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? 'rgba(252,153,40,0.08)' : 'rgba(38,40,149,0.06)',
-                  borderColor: isDarkMode ? 'rgba(252,153,40,0.2)' : 'rgba(38,40,149,0.15)',
+                  backgroundColor: 'var(--brand-primary-opacity-08)',
+                  borderColor: 'var(--brand-primary-opacity-20)',
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -533,8 +533,8 @@ export default function FacultyOverview() {
               <div
                 className="flex items-center justify-between p-4 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? 'rgba(252,153,40,0.1)' : 'rgba(38,40,149,0.08)',
-                  borderColor: isDarkMode ? 'rgba(252,153,40,0.2)' : 'rgba(38,40,149,0.15)',
+                  backgroundColor: 'var(--brand-primary-opacity-10)',
+                  borderColor: 'var(--brand-primary-opacity-20)',
                 }}
               >
                 <div>
@@ -593,8 +593,8 @@ export default function FacultyOverview() {
               <div
                 className="p-4 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? 'rgba(252,153,40,0.08)' : 'rgba(38,40,149,0.06)',
-                  borderColor: isDarkMode ? 'rgba(252,153,40,0.2)' : 'rgba(38,40,149,0.15)',
+                  backgroundColor: 'var(--brand-primary-opacity-08)',
+                  borderColor: 'var(--brand-primary-opacity-20)',
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -618,7 +618,7 @@ export default function FacultyOverview() {
                       <div
                         key={student.studentId}
                         className="p-2 rounded text-xs border bg-card"
-                        style={{ borderColor: 'var(--error)', backgroundColor: isDarkMode ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.06)' }}
+                        style={{ borderColor: 'var(--error)', backgroundColor: 'var(--error-opacity-05)' }}
                       >
                         <p className="font-medium text-primary-text">
                           {student.studentName} ({student.rollNumber})
