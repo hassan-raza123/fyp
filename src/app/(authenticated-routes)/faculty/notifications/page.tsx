@@ -132,15 +132,18 @@ export default function FacultyNotificationsPage() {
     }
   };
 
+  /**
+   * Notification type is a *category*, not a status, so almost every type
+   * wears the accent. Only `alert` gets a status colour, because an alert
+   * genuinely signals something wrong.
+   *
+   * This used to paint `grade` green and `result` orange, which collide with
+   * attained and partially-attained. A green badge next to a grade
+   * notification reads as "you passed" when it only means "a grade was
+   * published".
+   */
   const getNotificationBadgeColor = (type: notification_type) => {
-    switch (type) {
-      case 'assessment': return 'bg-[var(--blue)]';
-      case 'grade': return 'bg-[var(--success-green)]';
-      case 'result': return 'bg-[var(--orange)]';
-      case 'course': return 'bg-[var(--orange)]';
-      case 'alert': return 'bg-[var(--error)]';
-      default: return primaryColor === 'var(--orange)' ? 'bg-[var(--orange)]' : 'bg-[var(--blue)]';
-    }
+    return type === 'alert' ? 'bg-bad' : 'bg-primary';
   };
 
   const filteredNotifications = notifications.filter((notification) => {
