@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 /* ================================
-/* ================================
    ATTAINLY GLOBAL COLOUR THEME
    Slate chrome · indigo accent · attainment red/amber/green
    ================================ */
@@ -175,6 +174,9 @@
   --brand-secondary-light: var(--primary-400);
 
   --brand-primary-opacity-10: rgba(79, 70, 229, 0.10);
+  --brand-primary-opacity-06: rgba(79, 70, 229, 0.06);
+  --brand-primary-opacity-08: rgba(79, 70, 229, 0.08);
+  --brand-primary-opacity-15: rgba(79, 70, 229, 0.15);
   --brand-primary-opacity-20: rgba(79, 70, 229, 0.20);
   --brand-primary-opacity-30: rgba(79, 70, 229, 0.30);
   --brand-primary-opacity-40: rgba(79, 70, 229, 0.40);
@@ -369,6 +371,9 @@
     --warning-opacity-10:       rgba(240, 179, 84, 0.10);
 
     --brand-primary-opacity-10: rgba(139, 138, 245, 0.10);
+    --brand-primary-opacity-06: rgba(139, 138, 245, 0.08);
+    --brand-primary-opacity-08: rgba(139, 138, 245, 0.10);
+    --brand-primary-opacity-15: rgba(139, 138, 245, 0.18);
     --brand-primary-opacity-20: rgba(139, 138, 245, 0.20);
     --brand-primary-opacity-30: rgba(139, 138, 245, 0.30);
     --brand-primary-opacity-40: rgba(139, 138, 245, 0.40);
