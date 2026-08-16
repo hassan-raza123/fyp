@@ -140,11 +140,11 @@ export default function CoursesPage() {
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge className="bg-[var(--blue)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
+        return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
         return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'THEORY_LAB':
-        return <Badge className="bg-[var(--orange)] text-white text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
+        return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
       case 'PROJECT':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':

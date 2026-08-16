@@ -71,8 +71,8 @@ const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: Sta
     ? 'var(--brand-primary-opacity-15)' 
     : 'var(--brand-primary-opacity-15)';
   const iconColor = isDarkMode 
-    ? 'var(--orange)' 
-    : 'var(--blue)';
+    ? 'var(--accent)' 
+    : 'var(--accent)';
   
   return (
     <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border transition-all duration-200 hover:shadow-md">
@@ -132,8 +132,8 @@ const ActivityItem = ({ summary, user, time, icon, isDarkMode = false }: Activit
     ? 'var(--brand-primary-opacity-10)' 
     : 'var(--brand-primary-opacity-10)';
   const iconColor = isDarkMode 
-    ? 'var(--orange)' 
-    : 'var(--blue)';
+    ? 'var(--accent)' 
+    : 'var(--accent)';
   
   return (
     <div 

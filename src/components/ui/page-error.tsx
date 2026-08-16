@@ -23,11 +23,11 @@ export function PageError({
   }, []);
 
   const primaryColor =
-    mounted && resolvedTheme === 'dark' ? 'var(--orange)' : 'var(--blue)';
+    mounted && resolvedTheme === 'dark' ? 'var(--accent)' : 'var(--accent)';
   const primaryColorDark =
     mounted && resolvedTheme === 'dark'
-      ? 'var(--orange-dark)'
-      : 'var(--blue-dark)';
+      ? 'var(--accent-hover)'
+      : 'var(--accent-hover)';
 
   return (
     <div

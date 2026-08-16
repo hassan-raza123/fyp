@@ -108,24 +108,12 @@ const SidebarNavLink = ({
         group
       `}
       style={{
-        color: isActive
-          ? isDarkMode 
-            ? 'var(--orange)' // Orange for active in dark mode
-            : 'var(--blue)' // Blue for active in light mode
-          : isDarkMode
-          ? 'var(--gray-400)'
-          : 'var(--gray-600)',
-        backgroundColor: isActive
-          ? isDarkMode
-            ? 'var(--brand-secondary-opacity-20)' // Orange background in dark mode
-            : 'var(--brand-primary-opacity-10)' // Blue background in light mode
-          : 'transparent',
+        color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+        backgroundColor: isActive ? 'var(--brand-primary-opacity-10)' : 'transparent',
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
-          e.currentTarget.style.backgroundColor = isDarkMode
-            ? 'var(--brand-secondary-opacity-10)' // Orange hover in dark mode
-            : 'var(--brand-primary-opacity-10)'; // Blue hover in light mode
+          e.currentTarget.style.backgroundColor = 'var(--brand-primary-opacity-10)'; // Blue hover in light mode
         }
       }}
       onMouseLeave={(e) => {
@@ -134,7 +122,7 @@ const SidebarNavLink = ({
         }
       }}
     >
-      {/* Vertical bar for active item - Orange in dark mode, Blue in light mode */}
+      {/* Active-item rail */}
       {isActive && (
         <div 
           className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
@@ -148,11 +136,7 @@ const SidebarNavLink = ({
       <item.icon
         className={`flex-shrink-0 ${isSidebarOpen ? 'w-4 h-4' : 'w-5 h-5'}`}
         style={{
-          color: isActive 
-            ? isDarkMode 
-              ? 'var(--orange)' 
-              : 'var(--blue)' 
-            : 'currentColor',
+          color: isActive ? 'var(--accent)' : 'currentColor',
         }}
       />
       
@@ -166,20 +150,8 @@ const SidebarNavLink = ({
         <span
           className="px-1.5 py-0.5 text-[10px] rounded-full font-semibold"
           style={{
-            backgroundColor: isActive 
-              ? isDarkMode 
-                ? 'var(--brand-secondary-opacity-20)' 
-                : 'var(--brand-primary-opacity-20)'
-              : isDarkMode
-              ? 'var(--brand-secondary-opacity-10)'
-              : 'var(--brand-primary-opacity-10)',
-            color: isActive
-              ? isDarkMode 
-                ? 'var(--orange)' 
-                : 'var(--blue)'
-              : isDarkMode
-              ? 'var(--orange)'
-              : 'var(--blue)',
+            backgroundColor: isActive ? 'var(--brand-primary-opacity-20)' : 'var(--brand-primary-opacity-10)',
+            color: 'var(--accent)',
           }}
         >
           {item.badge}
@@ -464,7 +436,7 @@ export default function DashboardLayout({
                 style={{ zIndex: 1 }}
               >
                 <img
-                  src="/logo's/logo.png"
+                  src="/brand/attainly-mark.svg"
                   alt="Logo"
                   className="w-full h-full object-contain relative"
                   style={{
@@ -734,8 +706,8 @@ export default function DashboardLayout({
                   className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shadow-lg transition-transform duration-200 hover:scale-110"
                   style={{
                     background: isDarkMode
-                      ? `linear-gradient(135deg, var(--orange), var(--orange-dark))`
-                      : `linear-gradient(135deg, var(--blue), var(--blue-dark))`,
+                      ? `linear-gradient(135deg, var(--accent), var(--accent-hover))`
+                      : `linear-gradient(135deg, var(--accent), var(--accent-hover))`,
                     boxShadow: isDarkMode 
                       ? '0 4px 12px var(--brand-primary-opacity-30)' 
                       : '0 4px 12px var(--brand-primary-opacity-20)'

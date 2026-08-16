@@ -82,8 +82,8 @@ const StatCard = ({ title, value, icon, subtitle, trend, isDarkMode = false }: S
     ? 'var(--brand-primary-opacity-15)' 
     : 'var(--brand-primary-opacity-15)';
   const iconColor = isDarkMode 
-    ? 'var(--orange)' 
-    : 'var(--blue)';
+    ? 'var(--accent)' 
+    : 'var(--accent)';
   
   return (
     <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
@@ -278,7 +278,7 @@ export default function SuperAdminDashboard() {
             borderColor: 'var(--brand-primary-opacity-30)',
           }}
           >
-          <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--orange)' }} />
+          <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
           <div className="flex-1">
             <p className="text-sm font-semibold text-primary-text">
               {dashboardData.stats.unassignedDepartments} Department{dashboardData.stats.unassignedDepartments > 1 ? 's' : ''} Unassigned
@@ -291,14 +291,14 @@ export default function SuperAdminDashboard() {
             onClick={() => window.location.href = '/super-admin/departments'}
             className="text-xs h-7 px-3"
             style={{
-              backgroundColor: 'var(--orange)',
+              backgroundColor: 'var(--accent)',
               color: 'white',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--orange-dark)';
+              e.currentTarget.style.backgroundColor = 'var(--accent-hover)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--orange)';
+              e.currentTarget.style.backgroundColor = 'var(--accent)';
             }}
           >
             Assign Now
@@ -437,7 +437,7 @@ export default function SuperAdminDashboard() {
                 className="text-sm font-bold"
               style={{
                   color: dashboardData.stats.unassignedDepartments > 0 
-                    ? 'var(--orange)' 
+                    ? 'var(--accent)' 
                     : 'var(--primary-text)' 
                 }}
               >

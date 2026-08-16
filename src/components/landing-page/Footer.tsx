@@ -59,7 +59,7 @@ export default function Footer() {
                   <div className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full blur-2xl opacity-70 group-hover:opacity-90 transition-all' 
                     style={{ backgroundColor: 'var(--brand-secondary)' }}>
                   </div>
-                  <img src="/logo's/logo.png" alt={`${PRODUCT_NAME} logo`} className='relative z-10 w-20 h-20 object-contain transition-transform group-hover:scale-110' />
+                  <img src="/brand/attainly-mark.svg" alt={`${PRODUCT_NAME} logo`} className='relative z-10 w-20 h-20 object-contain transition-transform group-hover:scale-110' />
                 </div>
                 <div>
                   <h3 className='text-3xl font-black text-white mb-1'>{PRODUCT_NAME}</h3>

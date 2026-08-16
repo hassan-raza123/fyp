@@ -268,7 +268,7 @@ export default function SettingsPage() {
     if (password.length === 0) return { strength: 0, label: '', color: '' };
     if (password.length < 6) return { strength: 1, label: 'Weak', color: 'bg-[var(--error)]' };
     if (password.length < 8) return { strength: 2, label: 'Fair', color: 'bg-[var(--warning)]' };
-    if (password.length < 12) return { strength: 3, label: 'Good', color: 'bg-[var(--blue)]' };
+    if (password.length < 12) return { strength: 3, label: 'Good', color: 'bg-[var(--accent)]' };
     return { strength: 4, label: 'Strong', color: 'bg-[var(--success-green)]' };
   };
 

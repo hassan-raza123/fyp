@@ -76,7 +76,7 @@ export default async function AuthLayout({
           />
           {/* Logo - Direct, No Box */}
           <Image
-            src="/logo's/logo.png"
+            src="/brand/attainly-mark.svg"
             alt={`${PRODUCT_NAME} logo`}
             width={70}
             height={70}

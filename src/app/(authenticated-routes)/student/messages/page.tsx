@@ -188,13 +188,13 @@ const MessagesPage = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'announcement':
-        return 'bg-[var(--brand-primary-opacity-10)] text-[var(--blue)] dark:bg-[var(--brand-secondary-opacity-10)] dark:text-[var(--orange)] border border-card-border';
+        return 'bg-[var(--brand-primary-opacity-10)] text-[var(--accent)] dark:bg-[var(--brand-secondary-opacity-10)] dark:text-[var(--accent)] border border-card-border';
       case 'course':
         return 'bg-[var(--success-green-opacity-10)] text-[var(--success-green)] border border-card-border';
       case 'assessment':
         return 'bg-primary/10 text-primary dark:text-primary border border-card-border';
       case 'grade':
-        return 'bg-[var(--brand-secondary-opacity-10)] text-[var(--orange)] dark:text-[var(--orange)] border border-card-border';
+        return 'bg-[var(--brand-secondary-opacity-10)] text-[var(--accent)] dark:text-[var(--accent)] border border-card-border';
       case 'system':
         return 'bg-hover-bg text-primary-text border border-card-border';
       default:

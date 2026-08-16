@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Attainly">
+  <!--
+    Attainly mark.
+
+    Three ascending bars crossing a target line: the product's whole job is
+    measuring attainment against a threshold, so the mark encodes that rather
+    than decorating around it. The tallest bar clears the line; the other two
+    do not, which is exactly what a PLO matrix shows.
+
+    Drawn on a 64px grid with 14px corner radius so it stays legible at 16px
+    favicon size — no thin strokes, no gradients, no text.
+  -->
+  <rect width="64" height="64" rx="14" fill="#4F46E5"/>
+
+  <!-- target line: the attainment threshold -->
+  <path d="M11 24h42" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"
+        stroke-linecap="round" stroke-dasharray="4 4"/>
+
+  <!-- below target -->
+  <rect x="14" y="36" width="10" height="12" rx="2" fill="#FFFFFF" fill-opacity="0.55"/>
+  <!-- approaching target -->
+  <rect x="27" y="28" width="10" height="20" rx="2" fill="#FFFFFF" fill-opacity="0.75"/>
+  <!-- attained: clears the line -->
+  <rect x="40" y="17" width="10" height="31" rx="2" fill="#FFFFFF"/>
+</svg>

@@ -63,8 +63,8 @@ const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCard
     ? 'var(--brand-primary-opacity-15)' 
     : 'var(--brand-primary-opacity-15)';
   const iconColor = isDarkMode 
-    ? 'var(--orange)' 
-    : 'var(--blue)';
+    ? 'var(--accent)' 
+    : 'var(--accent)';
   
   return (
     <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">

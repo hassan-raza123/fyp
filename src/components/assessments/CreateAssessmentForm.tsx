@@ -71,8 +71,8 @@ export function CreateAssessmentForm({
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
   const primaryColorDark = isDarkMode
-    ? 'var(--orange-dark)'
-    : 'var(--blue-dark)';
+    ? 'var(--accent-hover)'
+    : 'var(--accent-hover)';
 
   const [formData, setFormData] = useState({
     title: '',

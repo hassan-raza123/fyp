@@ -20,7 +20,7 @@ export function PageLoading({
   }, []);
 
   const color =
-    mounted && resolvedTheme === 'dark' ? 'var(--orange)' : 'var(--blue)';
+    mounted && resolvedTheme === 'dark' ? 'var(--accent)' : 'var(--accent)';
 
   return (
     <div

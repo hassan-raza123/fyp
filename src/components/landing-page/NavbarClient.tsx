@@ -78,7 +78,7 @@ export default function NavbarClient() {
                 {/* Logo */}
                 <div className='relative w-20 h-20 transform group-hover:scale-110 transition-all duration-300'>
                   <img
-                    src="/logo's/logo.png"
+                    src="/brand/attainly-mark.svg"
                     alt={`${PRODUCT_NAME} logo`}
                     className='w-full h-full object-contain drop-shadow-lg'
                   />

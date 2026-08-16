@@ -103,7 +103,7 @@ const CourseCard = ({
         <p className="text-[10px] text-muted-text mt-1">Prof. {instructor}</p>
       </div>
       {grade && (
-        <span className="px-2 py-0.5 rounded text-xs font-medium bg-[var(--brand-primary-opacity-20)] text-[var(--blue)] dark:bg-[var(--brand-secondary-opacity-20)] dark:text-[var(--orange)]">
+        <span className="px-2 py-0.5 rounded text-xs font-medium bg-[var(--brand-primary-opacity-20)] text-[var(--accent)] dark:bg-[var(--brand-secondary-opacity-20)] dark:text-[var(--accent)]">
           {grade}
         </span>
       )}

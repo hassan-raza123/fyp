@@ -154,17 +154,17 @@ export default function StudentNotificationsPage() {
   const getNotificationBadgeColor = (type: notification_type) => {
     switch (type) {
       case 'assessment':
-        return 'bg-[var(--blue)]';
+        return 'bg-[var(--accent)]';
       case 'grade':
         return 'bg-[var(--success-green)]';
       case 'result':
-        return 'bg-[var(--blue)]';
+        return 'bg-[var(--accent)]';
       case 'course':
-        return 'bg-[var(--orange)] dark:bg-[var(--orange)]';
+        return 'bg-[var(--accent)] dark:bg-[var(--accent)]';
       case 'alert':
         return 'bg-[var(--error)]';
       case 'announcement':
-        return 'bg-[var(--blue)]';
+        return 'bg-[var(--accent)]';
       case 'system':
         return 'bg-[var(--gray-500)]';
       default:

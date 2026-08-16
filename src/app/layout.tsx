@@ -15,13 +15,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: PRODUCT_FULL_NAME,
   description: PRODUCT_DESCRIPTION,
+  // One SVG covers every size. The previous entries claimed `image/png` for
+  // three copies of the same file, and that file was the university's crest.
   icons: {
-    icon: [
-      { url: "/logo's/logo.png", sizes: 'any' },
-      { url: "/logo's/logo.png", sizes: '32x32', type: 'image/png' },
-      { url: "/logo's/logo.png", sizes: '16x16', type: 'image/png' },
-    ],
-    apple: "/logo's/logo.png",
+    icon: [{ url: '/brand/attainly-mark.svg', type: 'image/svg+xml', sizes: 'any' }],
+    apple: '/brand/attainly-mark.svg',
   },
 };
 
