@@ -91,9 +91,9 @@ export default async function AuthLayout({
         <div>
           <h1 
             className='text-2xl font-bold'
-            style={{ 
-              color: 'var(--brand-secondary)',
-              textShadow: `0 2px 8px var(--brand-secondary-opacity-50)`
+            style={{
+              color: 'var(--white)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
             }}
           >
             {PRODUCT_NAME}
@@ -110,9 +110,9 @@ export default async function AuthLayout({
         <div className='hidden lg:block max-w-xl ml-auto'>
           <h1 
             className='text-3xl font-bold mb-4 leading-tight'
-            style={{ 
-              color: 'var(--brand-secondary)',
-              textShadow: '0 2px 8px rgba(0,0,0,0.5)'
+            style={{
+              color: 'var(--primary-200)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
             }}
           >
             {PRODUCT_TAGLINE}
