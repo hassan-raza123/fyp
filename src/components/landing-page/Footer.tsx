@@ -227,11 +227,11 @@ export default function Footer() {
               <p className='font-medium'>&copy; {new Date().getFullYear()} <span className='text-white'>{PRODUCT_NAME}</span> — All rights reserved.</p>
             </div>
             <div className='flex items-center gap-6 text-sm'>
-              <Link href='/privacy' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
+              <Link href='/legal/privacy' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
                 Privacy Policy
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>
-              <Link href='/terms' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
+              <Link href='/legal/terms' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
                 Terms of Service
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>

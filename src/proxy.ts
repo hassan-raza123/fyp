@@ -36,6 +36,8 @@ const publicWebRoutes = [
   '/about',
   '/contact',
   '/surveys',
+  // Terms and privacy: procurement reads these before anyone has an account.
+  '/legal',
 ];
 
 // Public API routes that don't require authentication (exact match)

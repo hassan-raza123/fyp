@@ -486,65 +486,56 @@
     color: var(--text-muted);
   }
 
-  /* Page Background - Auto dark mode */
+  /* ============================================================
+     Surface / text / border utilities.
+
+     There are deliberately NO `.dark .x` overrides here. Every token
+     below is already redefined in the `.dark` block, so one
+     definition serves both themes.
+
+     The overrides that used to sit here reached for raw greys —
+     `.dark .bg-card { background-color: var(--gray-900) }` — from
+     when the dark palette left the grey scale untouched. The dark
+     block now inverts that scale, so `--gray-900` resolves to
+     #E6E9EE: `bg-card` painted every dashboard card near-white in
+     dark mode and then wrote near-white text on it. `.border-page`
+     and `.border-card` had the same fault via `--gray-800`.
+
+     `.bg-card` never had a light definition at all — only the dark
+     override — so it depended on Tailwind's `card` colour in light
+     and broke in dark. It is defined properly now.
+     ============================================================ */
+
   .bg-page {
     background-color: var(--background);
   }
-  
-  .dark .bg-page {
-    background-color: var(--black);
+
+  .bg-card {
+    background-color: var(--card-bg);
   }
 
-  /* Text Colors - Auto dark mode */
   .text-page {
     color: var(--foreground);
-  }
-  
-  .dark .text-page {
-    color: var(--white);
   }
 
   .text-primary-text {
     color: var(--text-primary);
   }
-  
-  .dark .text-primary-text {
-    color: var(--white);
-  }
 
   .text-secondary-text {
     color: var(--text-secondary);
-  }
-  
-  .dark .text-secondary-text {
-    color: var(--gray-400);
   }
 
   .text-muted-text {
     color: var(--text-muted);
   }
-  
-  .dark .text-muted-text {
-    color: var(--gray-500);
-  }
 
-  /* Border Colors - Auto dark mode */
   .border-page {
     border-color: var(--border-color);
   }
-  
-  .dark .border-page {
-    border-color: var(--gray-800);
-  }
 
+  .border-card,
   .border-card-border {
-    border-color: var(--card-border);
-  }
-
-  /* `.dark` already redefines --card-border, so this override is redundant
-     and was pinning the border to a fixed grey. Kept as a no-op alias so any
-     stylesheet ordering that relied on it still resolves. */
-  .dark .border-card-border {
     border-color: var(--card-border);
   }
 
@@ -552,16 +543,6 @@
      no colour at all. */
   .divide-card-border > :not([hidden]) ~ :not([hidden]) {
     border-color: var(--card-border);
-  }
-
-
-  /* Card Background - Auto dark mode */
-  .dark .bg-card {
-    background-color: var(--gray-900);
-  }
-  
-  .dark .border-card {
-    border-color: var(--gray-800);
   }
 
   /* Button Styles */

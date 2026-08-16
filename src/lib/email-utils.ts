@@ -5,14 +5,91 @@ import { PRODUCT_NAME } from '@/constants/branding';
 // product constant so a rename is one edit, not a search across nine files.
 const APPLICATION_NAME = PRODUCT_NAME;
 
-// Create reusable transporter object using SMTP transport
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+/**
+ * Outbound mail transport.
+ *
+ * Any SMTP provider, configured by environment. This used to be pinned to
+ * `service: 'gmail'` with a personal account and an app password, which is a
+ * development convenience that does not survive production: Gmail throttles app
+ * passwords, and mail from a consumer account lands in spam. When that happens
+ * the visible symptom is that password resets and OTP sign-in silently stop
+ * working — the two flows a locked-out user needs most.
+ *
+ * Set SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASSWORD / MAIL_FROM against a
+ * real provider on a domain you control, with SPF, DKIM and DMARC.
+ *
+ * GMAIL_USER / GMAIL_APP_PASSWORD still work as a fallback so existing
+ * development setups keep running, but they are deprecated.
+ */
+function resolveTransport() {
+  const host = process.env.SMTP_HOST;
+
+  if (host) {
+    const port = Number(process.env.SMTP_PORT ?? 587);
+    return nodemailer.createTransport({
+      host,
+      port,
+      // 465 is implicit TLS; 587 upgrades with STARTTLS.
+      secure: port === 465,
+      auth:
+        process.env.SMTP_USER && process.env.SMTP_PASSWORD
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
+          : undefined,
+    });
+  }
+
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(
+        '[email] Falling back to Gmail in production. App passwords get ' +
+          'throttled and the mail lands in spam, which breaks password reset ' +
+          'and OTP sign-in. Set SMTP_HOST and friends instead.'
+      );
+    }
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+
+  throw new Error(
+    'No mail transport configured. Set SMTP_HOST (and SMTP_PORT, SMTP_USER, ' +
+      'SMTP_PASSWORD, MAIL_FROM), or GMAIL_USER and GMAIL_APP_PASSWORD for ' +
+      'local development.'
+  );
+}
+
+/**
+ * Built on first use, not at module load.
+ *
+ * Resolving eagerly meant `next build` — which imports every route, and so this
+ * module — failed outright on any machine without mail credentials, CI
+ * included. A missing transport should stop the send, not the build.
+ */
+let cached: ReturnType<typeof resolveTransport> | null = null;
+
+export function getTransporter() {
+  if (!cached) cached = resolveTransport();
+  return cached;
+}
+
+const transporter = new Proxy({} as ReturnType<typeof resolveTransport>, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getTransporter() as object, prop, receiver);
   },
 });
+
+/**
+ * The envelope sender. Falls back to the Gmail account so existing
+ * installations keep sending, but a real deployment sets MAIL_FROM to an
+ * address on its own domain — mail whose From: disagrees with the sending
+ * domain fails DMARC and gets filtered.
+ */
+export const MAIL_FROM =
+  process.env.MAIL_FROM ?? process.env.SMTP_USER ?? process.env.GMAIL_USER ?? '';
 
 // Export transporter for use in other files if needed
 export { transporter };
@@ -45,7 +122,7 @@ export async function sendAdminAssignmentEmail(
   const mailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
     to: email,
     subject: `Department Admin Account - ${departmentName} - ${APPLICATION_NAME}`,
@@ -151,7 +228,7 @@ export async function sendOTPEmail(email: string, otp: string): Promise<void> {
   const mailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
     to: email,
     subject: `Your Login Verification Code - ${APPLICATION_NAME}`,
@@ -204,7 +281,7 @@ export async function sendPasswordResetEmail(
   const mailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
     to: email,
     subject: `Password Reset Request - ${APPLICATION_NAME}`,
@@ -280,7 +357,7 @@ export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<
   const mailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
     to,
     subject: `Survey Invitation: ${surveyTitle} — ${APPLICATION_NAME}`,
@@ -360,9 +437,9 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
   const supportMailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
-    to: process.env.GMAIL_USER!,
+    to: MAIL_FROM,
     replyTo: {
       name: name,
       address: email,
@@ -411,7 +488,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
   const userMailOptions = {
     from: {
       name: APPLICATION_NAME,
-      address: process.env.GMAIL_USER!,
+      address: MAIL_FROM,
     },
     to: email,
     subject: `Thank you for contacting ${APPLICATION_NAME}`,

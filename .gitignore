@@ -50,3 +50,12 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /e2e/.auth/
+
+# Final-year-project source material: the thesis, another institution's
+# curriculum documents, Postman collections and scratch spreadsheets. Kept on
+# disk because the thesis is personal, but it does not belong in a commercial
+# product's repository.
+/fyp-data
+
+# Local audit notes
+/PRODUCTION-READINESS-AUDIT.md
