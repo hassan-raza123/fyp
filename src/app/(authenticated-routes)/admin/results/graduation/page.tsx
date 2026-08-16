@@ -356,10 +356,10 @@ export default function GraduationTrackerPage() {
                             style={{
                               width: `${student.completionPercent}%`,
                               backgroundColor: student.completionPercent === 100
-                                ? '#10b981'
+                                ? 'var(--success-green)'
                                 : student.completionPercent >= 60
                                 ? primaryColor
-                                : '#ef4444',
+                                : 'var(--error)',
                             }}
                           />
                         </div>

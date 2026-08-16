@@ -311,8 +311,8 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
                   onClick={() => downloadTemplate()}
                   className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent"
                   style={{
-                    color: isDarkMode ? '#ffffff' : '#111827',
-                    borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                    color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                    borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
@@ -405,8 +405,8 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
               disabled={loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
@@ -426,7 +426,7 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
               disabled={!file || loading}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: loading || !file ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+                backgroundColor: loading || !file ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!loading && file) {

@@ -276,12 +276,12 @@ function PEOPLOMappingsPageContent() {
 
   // Badge color cycling for PLO badges
   const PLO_BADGE_COLORS = [
-    { bg: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' },
-    { bg: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: 'rgba(16, 185, 129, 0.3)' },
-    { bg: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
-    { bg: 'rgba(139, 92, 246, 0.12)', color: '#8b5cf6', border: 'rgba(139, 92, 246, 0.3)' },
-    { bg: 'rgba(236, 72, 153, 0.12)', color: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' },
-    { bg: 'rgba(20, 184, 166, 0.12)', color: '#14b8a6', border: 'rgba(20, 184, 166, 0.3)' },
+    { bg: 'rgba(59, 130, 246, 0.12)', color: 'var(--accent)', border: 'rgba(59, 130, 246, 0.3)' },
+    { bg: 'rgba(16, 185, 129, 0.12)', color: 'var(--success-green)', border: 'rgba(16, 185, 129, 0.3)' },
+    { bg: 'rgba(245, 158, 11, 0.12)', color: 'var(--warning)', border: 'rgba(245, 158, 11, 0.3)' },
+    { bg: 'rgba(139, 92, 246, 0.12)', color: 'var(--accent)', border: 'rgba(139, 92, 246, 0.3)' },
+    { bg: 'rgba(236, 72, 153, 0.12)', color: 'var(--chart-3)', border: 'rgba(236, 72, 153, 0.3)' },
+    { bg: 'rgba(20, 184, 166, 0.12)', color: 'var(--chart-2)', border: 'rgba(20, 184, 166, 0.3)' },
   ];
 
   const getPLOBadgeColor = (index: number) =>
@@ -618,8 +618,8 @@ function PEOPLOMappingsPageContent() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
@@ -636,7 +636,7 @@ function PEOPLOMappingsPageContent() {
               onClick={handleAddMapping}
               disabled={!selectedPLO || isSubmitting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
               onMouseEnter={(e) => {
                 if (!isSubmitting && selectedPLO) {
                   e.currentTarget.style.backgroundColor = primaryColorDark;
@@ -673,8 +673,8 @@ function PEOPLOMappingsPageContent() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border bg-transparent"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode
@@ -691,12 +691,12 @@ function PEOPLOMappingsPageContent() {
               onClick={handleDeleteMapping}
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
               onMouseEnter={(e) => {
-                if (!isDeleting) e.currentTarget.style.backgroundColor = '#b91c1c';
+                if (!isDeleting) e.currentTarget.style.backgroundColor = 'var(--error-dark)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#dc2626';
+                e.currentTarget.style.backgroundColor = 'var(--error)';
               }}
             >
               {isDeleting ? 'Removing...' : 'Remove'}

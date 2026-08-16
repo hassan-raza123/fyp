@@ -357,30 +357,30 @@ export default function AdminOverview() {
                   <div className="h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={data.enrollmentTrend}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
                         <XAxis 
                           dataKey="month" 
-                          tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                          stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                          tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                          stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
                           angle={-35}
                           textAnchor="end"
                           height={50}
                         />
                         <YAxis 
-                          tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                          stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                          tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                          stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
                           width={40}
                         />
                         <Tooltip 
                           contentStyle={{
-                            backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                            border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                            backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                            border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                             borderRadius: '8px',
                             fontSize: '12px',
                             padding: '8px 12px',
                           }}
                           labelStyle={{ 
-                            color: isDarkMode ? '#ffffff' : '#000000', 
+                            color: isDarkMode ? 'var(--white)' : 'var(--black)', 
                             marginBottom: '6px',
                             fontWeight: 600,
                           }}
@@ -390,7 +390,7 @@ export default function AdminOverview() {
                           dataKey="students"
                           stroke={primaryColor}
                           strokeWidth={2}
-                          dot={{ fill: primaryColor, r: 3, strokeWidth: 2, stroke: isDarkMode ? '#171717' : '#ffffff' }}
+                          dot={{ fill: primaryColor, r: 3, strokeWidth: 2, stroke: isDarkMode ? 'var(--text-primary)' : 'var(--white)' }}
                           activeDot={{ r: 5 }}
                         />
                       </LineChart>
@@ -414,12 +414,12 @@ export default function AdminOverview() {
                           cy="50%"
                           innerRadius={50}
                           outerRadius={70}
-                          fill="#8884d8"
+                          fill="var(--chart-1)"
                           paddingAngle={3}
                           dataKey="value"
                         >
                           {data.programDistribution.map((entry, index) => {
-                            const COLORS = ['#262895', '#433ea7', '#1c1e74', '#fc9928', '#e6891f'];
+                            const COLORS = ['var(--accent)', 'var(--primary-400)', 'var(--accent-hover)', 'var(--accent)', 'var(--accent-hover)'];
                             return (
                               <Cell
                                 key={`cell-${index}`}
@@ -430,8 +430,8 @@ export default function AdminOverview() {
                         </Pie>
                         <Tooltip 
                           contentStyle={{
-                            backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                            border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                            backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                            border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                             borderRadius: '8px',
                           }}
                         />
@@ -440,7 +440,7 @@ export default function AdminOverview() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-3">
                     {data.programDistribution.slice(0, 4).map((program, index) => {
-                      const COLORS = ['#262895', '#433ea7', '#1c1e74', '#fc9928', '#e6891f'];
+                      const COLORS = ['var(--accent)', 'var(--primary-400)', 'var(--accent-hover)', 'var(--accent)', 'var(--accent-hover)'];
                       return (
                         <div key={program.name} className="flex items-center space-x-2">
                           <div
@@ -471,29 +471,29 @@ export default function AdminOverview() {
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.gpaDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
                     <XAxis 
                       dataKey="gpa" 
-                      tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                      stroke={isDarkMode ? '#525252' : '#d4d4d4'}
-                      label={{ value: 'GPA Range', position: 'insideBottom', offset: -5, style: { fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' } }}
+                      tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                      stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
+                      label={{ value: 'GPA Range', position: 'insideBottom', offset: -5, style: { fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' } }}
                     />
                     <YAxis 
-                      tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                      stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                      tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                      stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
                       width={40}
-                      label={{ value: 'Students', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' } }}
+                      label={{ value: 'Students', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' } }}
                     />
                     <Tooltip 
                       contentStyle={{
-                        backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                        border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                        backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                        border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                         borderRadius: '8px',
                         fontSize: '12px',
                         padding: '8px 12px',
                       }}
                       labelStyle={{ 
-                        color: isDarkMode ? '#ffffff' : '#000000', 
+                        color: isDarkMode ? 'var(--white)' : 'var(--black)', 
                         marginBottom: '6px',
                         fontWeight: 600,
                       }}

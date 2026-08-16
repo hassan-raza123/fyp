@@ -474,8 +474,8 @@ export default function LLOAttainmentsPage() {
               disabled={isCalculating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCalculating)

@@ -850,17 +850,17 @@ export default function DashboardLayout({
               onClick={() => setShowLogoutDialog(false)}
               className="border-card-border transition-all bg-transparent"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
                 backgroundColor: 'transparent',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#111827';
+                e.currentTarget.style.color = isDarkMode ? 'var(--white)' : 'var(--text-primary)';
               }}
             >
               Cancel
@@ -870,15 +870,15 @@ export default function DashboardLayout({
               onClick={handleLogout}
               className="text-white"
               style={{
-                backgroundColor: '#dc2626',
-                color: '#ffffff',
-                borderColor: '#dc2626',
+                backgroundColor: 'var(--error)',
+                color: 'var(--white)',
+                borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#b91c1c';
+                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#dc2626';
+                e.currentTarget.style.backgroundColor = 'var(--error)';
               }}
             >
               Logout

@@ -309,7 +309,7 @@ export const CLOAttainments: React.FC<CLOAttainmentsProps> = ({
                 <Bar
                   dataKey='attainmentPercentage'
                   name='Attainment %'
-                  fill='#4f46e5'
+                  fill='var(--accent)'
                 />
               </BarChart>
             </ResponsiveContainer>

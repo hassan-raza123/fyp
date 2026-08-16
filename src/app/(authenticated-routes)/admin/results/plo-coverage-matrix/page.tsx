@@ -107,12 +107,12 @@ const BLOOM_CELL_CLASSES: Record<BloomLevel, string> = {
 
 // Dot colors for the legend (visible in both modes)
 const BLOOM_DOT_STYLE: Record<BloomLevel, string> = {
-  Remember: '#3b82f6',
-  Understand: '#06b6d4',
-  Apply: '#22c55e',
-  Analyze: '#eab308',
-  Evaluate: '#f97316',
-  Create: '#ef4444',
+  Remember: 'var(--accent)',
+  Understand: 'var(--chart-2)',
+  Apply: 'var(--success-green)',
+  Analyze: 'var(--warning)',
+  Evaluate: 'var(--warning)',
+  Create: 'var(--error)',
 };
 
 /** Return the higher Bloom level of two */
@@ -443,7 +443,7 @@ function PLOCoverageMatrixContent() {
               <p
                 className="text-2xl font-bold"
                 style={{
-                  color: zeroCoveragePloIds.length === 0 ? '#22c55e' : '#f97316',
+                  color: zeroCoveragePloIds.length === 0 ? 'var(--success-green)' : 'var(--warning)',
                 }}
               >
                 {plos.length - zeroCoveragePloIds.length}/{plos.length}
@@ -546,11 +546,11 @@ function PLOCoverageMatrixContent() {
                           style={{
                             backgroundColor: isDarkMode
                               ? rowIdx % 2 === 0
-                                ? '#1a1a2e'
-                                : '#16213e'
+                                ? 'var(--text-primary)'
+                                : 'var(--text-primary)'
                               : rowIdx % 2 === 0
-                              ? '#ffffff'
-                              : '#f9fafb',
+                              ? 'var(--white)'
+                              : 'var(--gray-50)',
                           }}
                         >
                           <div className="font-semibold text-primary-text whitespace-nowrap">
@@ -603,7 +603,7 @@ function PLOCoverageMatrixContent() {
                       <td
                         className="sticky left-0 z-10 px-4 py-2.5 border-r border-card-border text-xs font-semibold text-secondary-text whitespace-nowrap"
                         style={{
-                          backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
+                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--surface-2)',
                         }}
                       >
                         Coverage (# courses)
@@ -649,10 +649,10 @@ function PLOCoverageMatrixContent() {
                     className="mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
                     style={{
                       backgroundColor: zeroCoveragePloIds.includes(plo.id)
-                        ? '#fef3c7'
+                        ? 'var(--warn-wash)'
                         : `${primaryColor}22`,
                       color: zeroCoveragePloIds.includes(plo.id)
-                        ? '#d97706'
+                        ? 'var(--warning)'
                         : primaryColor,
                     }}
                   >

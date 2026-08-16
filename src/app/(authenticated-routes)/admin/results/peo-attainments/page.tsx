@@ -217,7 +217,7 @@ function PEOAttainmentsContent() {
           onClick={fetchPEOAttainments}
           disabled={!selectedProgram || loading}
           className="px-4 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-          style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+          style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
         >
           {loading ? 'Loading...' : 'Calculate'}
         </button>
@@ -251,22 +251,22 @@ function PEOAttainmentsContent() {
               <h3 className="text-xs font-semibold text-primary-text mb-3">PEO Attainment Chart</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#9ca3af' : '#6b7280' }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? '#9ca3af' : '#6b7280' }} unit="%" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }} unit="%" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', border: '1px solid #374151', borderRadius: '6px', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)', border: '1px solid var(--gray-700)', borderRadius: '6px', fontSize: '11px' }}
                     formatter={(value: number) => [`${value.toFixed(1)}%`, 'Attainment']}
                   />
                   <ReferenceLine
                     y={meta?.threshold ?? 50}
-                    stroke="#f59e0b"
+                    stroke="var(--warning)"
                     strokeDasharray="4 4"
-                    label={{ value: `Threshold ${meta?.threshold ?? 50}%`, position: 'insideTopRight', fontSize: 10, fill: '#f59e0b' }}
+                    label={{ value: `Threshold ${meta?.threshold ?? 50}%`, position: 'insideTopRight', fontSize: 10, fill: 'var(--warning)' }}
                   />
                   <Bar dataKey="attainment" radius={[3, 3, 0, 0]}>
                     {chartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.achieved ? '#22c55e' : '#ef4444'} />
+                      <Cell key={i} fill={entry.achieved ? 'var(--success-green)' : 'var(--error)'} />
                     ))}
                   </Bar>
                 </BarChart>

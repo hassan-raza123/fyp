@@ -85,15 +85,15 @@ interface Program {
 // ─── Bloom level color mapping ────────────────────────────────────────────────
 
 const BLOOM_COLORS: Record<string, string> = {
-  Remember: '#94a3b8',
-  Understand: '#64748b',
-  Apply: '#3b82f6',
-  Analyze: '#f59e0b',
-  Evaluate: '#f97316',
-  Create: '#22c55e',
+  Remember: 'var(--text-muted)',
+  Understand: 'var(--text-muted)',
+  Apply: 'var(--accent)',
+  Analyze: 'var(--warning)',
+  Evaluate: 'var(--warning)',
+  Create: 'var(--success-green)',
 };
 
-const DOMAIN_COLORS = ['#6366f1', '#f59e0b', '#22c55e', '#94a3b8'];
+const DOMAIN_COLORS = ['var(--accent)', 'var(--warning)', 'var(--success-green)', 'var(--text-muted)'];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -103,8 +103,8 @@ function BloomAnalysisContent() {
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = isDarkMode ? 'var(--orange)' : 'var(--blue)';
   const iconBgColor = isDarkMode ? 'rgba(252, 153, 40, 0.15)' : 'rgba(38, 40, 149, 0.15)';
-  const gridColor = isDarkMode ? '#374151' : '#e5e7eb';
-  const tickColor = isDarkMode ? '#9ca3af' : '#6b7280';
+  const gridColor = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
+  const tickColor = isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)';
 
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState('');
@@ -235,10 +235,10 @@ function BloomAnalysisContent() {
                   : 'rgba(239,68,68,0.25)',
               color:
                 data.hec_compliant === null
-                  ? '#6b7280'
+                  ? 'var(--text-secondary)'
                   : data.hec_compliant
-                  ? '#16a34a'
-                  : '#dc2626',
+                  ? 'var(--success-green)'
+                  : 'var(--error)',
             }}
           >
             {data.hec_compliant ? (
@@ -263,21 +263,21 @@ function BloomAnalysisContent() {
                 label: 'HOT (High Order)',
                 value: `${data.hotPercent}%`,
                 sub: `${data.hotCount} outcomes — Analyze/Evaluate/Create`,
-                color: '#22c55e',
+                color: 'var(--success-green)',
                 bg: 'rgba(34,197,94,0.1)',
               },
               {
                 label: 'LOT (Low Order)',
                 value: `${data.lotPercent}%`,
                 sub: `${data.lotCount} outcomes — Remember/Understand/Apply`,
-                color: '#3b82f6',
+                color: 'var(--accent)',
                 bg: 'rgba(59,130,246,0.1)',
               },
               {
                 label: 'Unassigned',
                 value: data.total - data.totalWithLevel,
                 sub: `${data.unsetPercent}% without Bloom level`,
-                color: '#f59e0b',
+                color: 'var(--warning)',
                 bg: 'rgba(245,158,11,0.1)',
               },
             ].map((card) => (
@@ -314,7 +314,7 @@ function BloomAnalysisContent() {
                   <YAxis tick={{ fontSize: 10, fill: tickColor }} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
                       border: `1px solid ${gridColor}`,
                       borderRadius: '6px',
                       fontSize: '11px',
@@ -325,7 +325,7 @@ function BloomAnalysisContent() {
                     {data.levelBreakdown.map((entry) => (
                       <Cell
                         key={entry.level}
-                        fill={BLOOM_COLORS[entry.level] ?? '#94a3b8'}
+                        fill={BLOOM_COLORS[entry.level] ?? 'var(--text-muted)'}
                         opacity={0.9}
                       />
                     ))}
@@ -334,7 +334,7 @@ function BloomAnalysisContent() {
                     {data.levelBreakdown.map((entry) => (
                       <Cell
                         key={entry.level}
-                        fill={BLOOM_COLORS[entry.level] ?? '#94a3b8'}
+                        fill={BLOOM_COLORS[entry.level] ?? 'var(--text-muted)'}
                         opacity={0.6}
                       />
                     ))}
@@ -382,7 +382,7 @@ function BloomAnalysisContent() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
                         border: `1px solid ${gridColor}`,
                         borderRadius: '6px',
                         fontSize: '11px',
@@ -510,7 +510,7 @@ function BloomAnalysisContent() {
                                   backgroundColor: row.llos.some((l) => l.id === o.id)
                                     ? 'rgba(139,92,246,0.15)'
                                     : iconBgColor,
-                                  color: row.llos.some((l) => l.id === o.id) ? '#7c3aed' : primaryColor,
+                                  color: row.llos.some((l) => l.id === o.id) ? 'var(--accent)' : primaryColor,
                                 }}
                                 variant="secondary"
                               >

@@ -361,8 +361,8 @@ const LLOAttainmentsPage = () => {
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                         <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                         <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-                        <Bar dataKey="attainment" name="Attainment %" fill="#8884d8" />
-                        <Bar dataKey="threshold" name="Threshold %" fill="#82ca9d" />
+                        <Bar dataKey="attainment" name="Attainment %" fill="var(--chart-1)" />
+                        <Bar dataKey="threshold" name="Threshold %" fill="var(--chart-4)" />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (

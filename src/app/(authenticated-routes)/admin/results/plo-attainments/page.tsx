@@ -51,8 +51,8 @@ interface TrendData {
 
 // Distinct colours for up to 10 PLO lines
 const PLO_COLORS = [
-  '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#14b8a6',
+  'var(--accent)', 'var(--success-green)', 'var(--warning)', 'var(--error)', 'var(--accent)',
+  'var(--chart-2)', 'var(--warning)', 'var(--chart-4)', 'var(--chart-3)', 'var(--chart-2)',
 ];
 
 const PLOAttainmentsPage = () => {
@@ -326,19 +326,19 @@ const PLOAttainmentsPage = () => {
                   />
                   <XAxis
                     dataKey="semester"
-                    tick={{ fontSize: 11, fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
+                    tick={{ fontSize: 11, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }}
                     tickLine={false}
                   />
                   <YAxis
                     domain={[0, 100]}
-                    tick={{ fontSize: 11, fill: isDarkMode ? '#9ca3af' : '#6b7280' }}
+                    tick={{ fontSize: 11, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-secondary)' }}
                     tickLine={false}
                     tickFormatter={(v) => `${v}%`}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                      border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
+                      backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                      border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                       borderRadius: '8px',
                       fontSize: '11px',
                     }}
@@ -352,9 +352,9 @@ const PLOAttainmentsPage = () => {
                   {/* 60% threshold line */}
                   <ReferenceLine
                     y={60}
-                    stroke="#ef4444"
+                    stroke="var(--error)"
                     strokeDasharray="4 4"
-                    label={{ value: '60% threshold', position: 'insideTopRight', fontSize: 10, fill: '#ef4444' }}
+                    label={{ value: '60% threshold', position: 'insideTopRight', fontSize: 10, fill: 'var(--error)' }}
                   />
                   {trendData.series.map((s, i) => (
                     <Line

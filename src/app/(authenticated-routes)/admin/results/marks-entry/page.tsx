@@ -223,7 +223,7 @@ const MarksEntryPage = () => {
                 backgroundColor: isResultsLocked
                   ? 'rgba(239,68,68,0.1)'
                   : 'rgba(16,185,129,0.1)',
-                color: isResultsLocked ? '#ef4444' : '#10b981',
+                color: isResultsLocked ? 'var(--error)' : 'var(--success-green)',
               }}
             >
               {isResultsLocked ? (

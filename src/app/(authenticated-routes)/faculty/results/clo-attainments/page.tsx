@@ -298,7 +298,7 @@ const CLOAttainmentsPage = () => {
       }))
     : [];
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00'];
+  const COLORS = ['var(--chart-1)', 'var(--chart-4)', 'var(--chart-3)', 'var(--chart-3)', 'var(--success-green)'];
 
   if (!mounted) return <PageLoading message="Loading..." fullScreen={false} />;
 
@@ -422,8 +422,8 @@ const CLOAttainmentsPage = () => {
                         <Tooltip
                           formatter={(value: number) => `${value.toFixed(1)}%`}
                         />
-                        <Bar dataKey="attainment" fill="#8884d8" />
-                        <Bar dataKey="threshold" fill="#82ca9d" />
+                        <Bar dataKey="attainment" fill="var(--chart-1)" />
+                        <Bar dataKey="threshold" fill="var(--chart-4)" />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -749,11 +749,11 @@ const CLOAttainmentsPage = () => {
                         <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
                         <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
                         <Tooltip
-                          contentStyle={{ background: isDarkMode ? '#1e1e2e' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          contentStyle={{ background: isDarkMode ? 'var(--text-primary)' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
                           formatter={(value: number, name: string) => [`${value}%`, name === 'attainment' ? 'Attainment' : 'Threshold']}
                         />
                         <Line type="monotone" dataKey="attainment" stroke={primaryColor} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="attainment" />
-                        <Line type="monotone" dataKey="threshold" stroke="#f97316" strokeWidth={1.5} strokeDasharray="5 5" dot={false} name="threshold" />
+                        <Line type="monotone" dataKey="threshold" stroke="var(--warning)" strokeWidth={1.5} strokeDasharray="5 5" dot={false} name="threshold" />
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
@@ -783,11 +783,11 @@ const CLOAttainmentsPage = () => {
                         <XAxis dataKey="semester" tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: isDarkMode ? '#aaa' : '#555' }} />
                         <Tooltip
-                          contentStyle={{ background: isDarkMode ? '#1e1e2e' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
+                          contentStyle={{ background: isDarkMode ? 'var(--text-primary)' : '#fff', border: '1px solid #ccc', borderRadius: 6, fontSize: 12 }}
                           formatter={(value: number, name: string) => [value, name === 'achieved' ? 'Achieved' : 'Not Achieved']}
                         />
-                        <Bar dataKey="achieved" stackId="a" fill="#22c55e" name="achieved" radius={[0, 0, 0, 0]} />
-                        <Bar dataKey="notAchieved" stackId="a" fill="#ef4444" name="notAchieved" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="achieved" stackId="a" fill="var(--success-green)" name="achieved" radius={[0, 0, 0, 0]} />
+                        <Bar dataKey="notAchieved" stackId="a" fill="var(--error)" name="notAchieved" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (

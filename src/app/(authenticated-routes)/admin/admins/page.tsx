@@ -573,8 +573,8 @@ export default function AdminsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
@@ -594,7 +594,7 @@ export default function AdminsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isCreating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                backgroundColor: isCreating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -696,8 +696,8 @@ export default function AdminsPage() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
@@ -824,8 +824,8 @@ export default function AdminsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating) {
@@ -845,7 +845,7 @@ export default function AdminsPage() {
               disabled={isUpdating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isUpdating ? (isDarkMode ? '#9a3412' : '#1e40af') : primaryColor,
+                backgroundColor: isUpdating ? (isDarkMode ? 'var(--warning)' : 'var(--accent-hover)') : primaryColor,
                 color: 'white',
               }}
               onMouseEnter={(e) => {
@@ -895,8 +895,8 @@ export default function AdminsPage() {
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
@@ -916,18 +916,18 @@ export default function AdminsPage() {
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: '#dc2626',
-                color: '#ffffff',
-                borderColor: '#dc2626',
+                backgroundColor: 'var(--error)',
+                color: 'var(--white)',
+                borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                  e.currentTarget.style.backgroundColor = 'var(--error-dark)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#dc2626';
+                  e.currentTarget.style.backgroundColor = 'var(--error)';
                 }
               }}
             >

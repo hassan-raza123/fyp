@@ -107,7 +107,7 @@ export const ResultAnalytics: React.FC<ResultAnalyticsProps> = ({
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey='count' fill='#3b82f6' name='Number of Students' />
+              <Bar dataKey='count' fill='var(--accent)' name='Number of Students' />
             </BarChart>
           </ResponsiveContainer>
         </div>

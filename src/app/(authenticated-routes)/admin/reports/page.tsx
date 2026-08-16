@@ -553,7 +553,7 @@ export default function ReportsPage() {
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isGenerating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { if (!isGenerating) e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -593,7 +593,7 @@ export default function ReportsPage() {
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -602,7 +602,7 @@ export default function ReportsPage() {
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error)', color: '#ffffff' }}
+              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-dark)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error)'; }}
             >

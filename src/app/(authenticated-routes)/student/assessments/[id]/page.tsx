@@ -222,7 +222,7 @@ export default function AssessmentDetailsPage() {
           <button
             onClick={() => router.push('/student/assessments')}
             className="px-3 py-1.5 rounded-lg border border-card-border bg-transparent text-xs font-medium h-8 flex items-center gap-2 mx-auto"
-            style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+            style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Assessments

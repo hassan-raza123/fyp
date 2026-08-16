@@ -275,8 +275,8 @@ export function CreateAssessmentForm({
                       : 'rgba(16,185,129,0.12)',
                   color:
                     100 - usedWeightage < formData.weightage
-                      ? '#ef4444'
-                      : '#10b981',
+                      ? 'var(--error)'
+                      : 'var(--success-green)',
                 }}
               >
                 {usedWeightage}% used · {(100 - usedWeightage).toFixed(0)}% left
@@ -379,7 +379,7 @@ export function CreateAssessmentForm({
           type="submit"
           disabled={isLoading}
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50"
-          style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+          style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
           onMouseEnter={(e) => {
             if (!isLoading)
               e.currentTarget.style.backgroundColor = primaryColorDark;

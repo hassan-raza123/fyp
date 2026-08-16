@@ -256,7 +256,7 @@ export function PLOAttainments({ programId, semesterId, apiUrl = '/api/plo-attai
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                 <Bar
                   dataKey='attainment'
-                  fill={isDarkMode ? '#fc9928' : '#262895'}
+                  fill={isDarkMode ? 'var(--accent)' : 'var(--accent)'}
                   name='PLO Attainment'
                   radius={[4, 4, 0, 0]}
                 />

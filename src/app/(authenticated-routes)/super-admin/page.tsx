@@ -123,7 +123,7 @@ const StatCard = ({ title, value, icon, subtitle, trend, isDarkMode = false }: S
   );
 };
 
-const CHART_COLORS = ['#262895', '#fc9928', '#433ea7', '#e6891f', '#1c1e74', '#ffb347'];
+const CHART_COLORS = ['var(--accent)', 'var(--accent)', 'var(--primary-400)', 'var(--accent-hover)', 'var(--accent-hover)', 'var(--primary-400)'];
 
 export default function SuperAdminDashboard() {
   const { resolvedTheme } = useTheme();
@@ -321,30 +321,30 @@ export default function SuperAdminDashboard() {
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={analyticsData.enrollmentTrend} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
                 angle={-35}
                 textAnchor="end"
                 height={60}
               />
               <YAxis 
-                tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }}
-                stroke={isDarkMode ? '#525252' : '#d4d4d4'}
+                tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }}
+                stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'}
                 width={45}
               />
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                  border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                  backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                  border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',
                 }}
                 labelStyle={{ 
-                  color: isDarkMode ? '#ffffff' : '#000000', 
+                  color: isDarkMode ? 'var(--white)' : 'var(--black)', 
                   marginBottom: '6px',
                   fontWeight: 600,
                 }}
@@ -354,7 +354,7 @@ export default function SuperAdminDashboard() {
                 dataKey="students" 
                 stroke={primaryColor}
                 strokeWidth={3}
-                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: isDarkMode ? '#171717' : '#ffffff' }}
+                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: isDarkMode ? 'var(--text-primary)' : 'var(--white)' }}
                 activeDot={{ r: 6, strokeWidth: 2 }}
               />
             </LineChart>
@@ -381,7 +381,7 @@ export default function SuperAdminDashboard() {
                 labelLine={false}
                 label={({ name, percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
                 outerRadius={75}
-                fill="#8884d8"
+                fill="var(--chart-1)"
                 dataKey="value"
               >
                 {analyticsData.departmentDistribution.map((entry, index) => (
@@ -390,8 +390,8 @@ export default function SuperAdminDashboard() {
               </Pie>
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                  border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                  backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                  border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                   borderRadius: '8px',
                   fontSize: '12px',
                   padding: '8px 12px',

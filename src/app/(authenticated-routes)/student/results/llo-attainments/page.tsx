@@ -310,9 +310,9 @@ const StudentLLOAttainmentsPage = () => {
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                     <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
                     <Legend />
-                    <Bar dataKey="student" name="Your Attainment" fill="#8b5cf6" />
-                    <Bar dataKey="class" name="Class Average" fill="#10b981" />
-                    <Bar dataKey="threshold" name="Threshold" fill="#ef4444" />
+                    <Bar dataKey="student" name="Your Attainment" fill="var(--accent)" />
+                    <Bar dataKey="class" name="Class Average" fill="var(--success-green)" />
+                    <Bar dataKey="threshold" name="Threshold" fill="var(--error)" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

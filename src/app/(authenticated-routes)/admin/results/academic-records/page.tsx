@@ -107,7 +107,7 @@ function cgpaColor(cgpa: number): string {
   return 'text-red-600 dark:text-red-400';
 }
 
-const PIE_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#6b7280'];
+const PIE_COLORS = ['var(--success-green)', 'var(--accent)', 'var(--warning)', 'var(--warning)', 'var(--error)', 'var(--accent)', 'var(--chart-3)', 'var(--text-secondary)'];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -523,11 +523,11 @@ function ChartsView({
 }) {
   if (!data) return null;
 
-  const gridStroke = isDarkMode ? '#404040' : '#e5e5e5';
-  const axisStyle = { fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' };
+  const gridStroke = isDarkMode ? 'var(--gray-700)' : 'var(--border-color)';
+  const axisStyle = { fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' };
   const tooltipStyle = {
-    backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-    border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+    backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+    border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
     borderRadius: '8px',
     fontSize: 12,
     padding: '8px 12px',
@@ -567,7 +567,7 @@ function ChartsView({
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                   <Line type="monotone" dataKey="avgGPA" name="Avg GPA" stroke={primaryColor} strokeWidth={2} dot={{ r: 4, fill: primaryColor }} />
-                  <Line type="monotone" dataKey="passRate" name="Pass Rate %" stroke={isDarkMode ? '#22c55e' : '#16a34a'} strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="passRate" name="Pass Rate %" stroke={isDarkMode ? 'var(--success-green)' : 'var(--success-green)'} strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -652,7 +652,7 @@ function ChartsView({
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="studentCount" name="Students" fill={primaryColor} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="passRate" name="Pass Rate %" fill={isDarkMode ? '#22c55e' : '#16a34a'} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="passRate" name="Pass Rate %" fill={isDarkMode ? 'var(--success-green)' : 'var(--success-green)'} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

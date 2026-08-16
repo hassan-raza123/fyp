@@ -694,7 +694,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsViewDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -873,7 +873,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsCreateDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -882,7 +882,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={handleCreateCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
             >
@@ -1055,7 +1055,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsEditDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -1064,7 +1064,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={handleUpdateCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
             >
@@ -1087,7 +1087,7 @@ export default function AdminCLOsPage() {
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827', borderColor: isDarkMode ? '#404040' : '#e5e7eb' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)', borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -1096,9 +1096,9 @@ export default function AdminCLOsPage() {
             <button
               onClick={handleDeleteCLO}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b91c1c'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
+              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-dark)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error)'; }}
             >
               Delete
             </button>

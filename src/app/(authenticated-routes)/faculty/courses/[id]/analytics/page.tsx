@@ -65,7 +65,7 @@ interface CourseAnalytics {
   }>;
 }
 
-const COLORS = ['#8B5CF6', '#6366F1', '#4F46E5', '#3730A3', '#312E81'];
+const COLORS = ['var(--accent)', 'var(--accent)', 'var(--accent)', 'var(--accent-active)', 'var(--accent-active)'];
 
 export default function CourseAnalyticsPage() {
   const params = useParams();
@@ -246,7 +246,7 @@ export default function CourseAnalyticsPage() {
                   <Line
                     type="monotone"
                     dataKey="enrollment"
-                    stroke="#8B5CF6"
+                    stroke="var(--accent)"
                     strokeWidth={2}
                   />
                 </LineChart>
@@ -272,7 +272,7 @@ export default function CourseAnalyticsPage() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="performance" fill="#6366F1" />
+                  <Bar dataKey="performance" fill="var(--accent)" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

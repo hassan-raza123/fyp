@@ -297,8 +297,8 @@ export default function SuperAdminProfilePage() {
                 disabled={saving}
                 className="text-white"
                 style={{
-                  backgroundColor: saving ? '#9ca3af' : primaryColor,
-                  color: '#ffffff',
+                  backgroundColor: saving ? 'var(--text-muted)' : primaryColor,
+                  color: 'var(--white)',
                   opacity: saving ? 0.6 : 1,
                 }}
                 onMouseEnter={(e) => {
@@ -380,8 +380,8 @@ export default function SuperAdminProfilePage() {
                 disabled={saving}
                 className="text-white"
                 style={{
-                  backgroundColor: saving ? '#9ca3af' : primaryColor,
-                  color: '#ffffff',
+                  backgroundColor: saving ? 'var(--text-muted)' : primaryColor,
+                  color: 'var(--white)',
                   opacity: saving ? 0.6 : 1,
                 }}
                 onMouseEnter={(e) => {

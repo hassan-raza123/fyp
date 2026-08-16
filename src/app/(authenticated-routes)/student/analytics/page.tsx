@@ -33,7 +33,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = ['var(--accent)', 'var(--success-green)', 'var(--warning)', 'var(--error)', 'var(--accent)', 'var(--chart-3)'];
 
 interface AnalyticsData {
   student: {
@@ -347,7 +347,7 @@ const AnalyticsPage = () => {
                   <Line
                     type='monotone'
                     dataKey='gpa'
-                    stroke='#4f46e5'
+                    stroke='var(--accent)'
                     strokeWidth={2}
                     name='GPA'
                   />
@@ -374,7 +374,7 @@ const AnalyticsPage = () => {
                   <Line
                     type='monotone'
                     dataKey='percentage'
-                    stroke='#10b981'
+                    stroke='var(--success-green)'
                     strokeWidth={2}
                     name='Average %'
                   />
@@ -402,7 +402,7 @@ const AnalyticsPage = () => {
                       `${name}: ${(percent * 100).toFixed(0)}%`
                     }
                     outerRadius={80}
-                    fill='#8884d8'
+                    fill='var(--chart-1)'
                     dataKey='value'
                   >
                     {gradeDistributionData.map((entry, index) => (
@@ -433,7 +433,7 @@ const AnalyticsPage = () => {
                   <YAxis domain={[0, 100]} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey='average' fill='#4f46e5' name='Average %' />
+                  <Bar dataKey='average' fill='var(--accent)' name='Average %' />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -455,7 +455,7 @@ const AnalyticsPage = () => {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey='percentage' fill='#10b981' name='Average %' />
+                <Bar dataKey='percentage' fill='var(--success-green)' name='Average %' />
               </BarChart>
             </ResponsiveContainer>
           </div>

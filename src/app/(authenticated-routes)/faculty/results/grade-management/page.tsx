@@ -99,12 +99,12 @@ interface CourseOffering {
 }
 
 const COLORS = [
-  '#8884d8',
-  '#82ca9d',
-  '#ffc658',
-  '#ff7300',
-  '#00ff00',
-  '#0088fe',
+  'var(--chart-1)',
+  'var(--chart-4)',
+  'var(--chart-3)',
+  'var(--chart-3)',
+  'var(--success-green)',
+  'var(--chart-2)',
 ];
 
 const GradeManagementPage = () => {
@@ -764,13 +764,13 @@ const GradeManagementPage = () => {
                 {gradeDistributionData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={gradeDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
-                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                          border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                          border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}
@@ -922,13 +922,13 @@ const GradeManagementPage = () => {
                 {gradeDistributionData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={gradeDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#404040' : '#e5e5e5'} opacity={0.2} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
-                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? '#a3a3a3' : '#737373' }} stroke={isDarkMode ? '#525252' : '#d4d4d4'} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'} opacity={0.2} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
+                      <YAxis tick={{ fontSize: 10, fill: isDarkMode ? 'var(--text-muted)' : 'var(--text-muted)' }} stroke={isDarkMode ? 'var(--text-secondary)' : 'var(--border-firm)'} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-                          border: `1px solid ${isDarkMode ? '#404040' : '#e5e5e5'}`,
+                          backgroundColor: isDarkMode ? 'var(--text-primary)' : 'var(--white)',
+                          border: `1px solid ${isDarkMode ? 'var(--gray-700)' : 'var(--border-color)'}`,
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}

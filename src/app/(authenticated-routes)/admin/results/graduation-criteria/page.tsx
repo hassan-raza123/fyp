@@ -404,7 +404,7 @@ function GraduationCriteriaContent() {
             <button
               onClick={() => setIsDialogOpen(false)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent"
-              style={{ color: isDarkMode ? '#ffffff' : '#111827' }}
+              style={{ color: isDarkMode ? 'var(--white)' : 'var(--text-primary)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -414,7 +414,7 @@ function GraduationCriteriaContent() {
               onClick={handleSave}
               disabled={saving}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
             >

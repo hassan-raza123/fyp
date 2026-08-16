@@ -428,7 +428,7 @@ export default function SettingsPage() {
                     onClick={handleSaveProfile}
                     disabled={saving}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
-                    style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                    style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
                     onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
                   >
@@ -527,7 +527,7 @@ export default function SettingsPage() {
                 onClick={handleChangePassword}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
-                style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
                 onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
               >
@@ -730,7 +730,7 @@ export default function SettingsPage() {
                 onClick={handleSavePreferences}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 flex items-center gap-1.5 transition-colors"
-                style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
                 onMouseEnter={(e) => { if (!saving) e.currentTarget.style.backgroundColor = primaryColorDark; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
               >

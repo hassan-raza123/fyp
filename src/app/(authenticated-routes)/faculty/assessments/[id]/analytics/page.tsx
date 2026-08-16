@@ -65,7 +65,7 @@ interface AnalyticsData {
   }>;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658'];
+const COLORS = ['var(--chart-2)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-3)', 'var(--chart-1)', 'var(--chart-4)', 'var(--chart-3)'];
 
 // A number that has not been computed yet is not zero — render it as such
 // rather than crashing on .toFixed of null.
@@ -176,7 +176,7 @@ export default function AssessmentAnalyticsPage() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="count" fill="#8884d8" />
+              <Bar dataKey="count" fill="var(--chart-1)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -196,7 +196,7 @@ export default function AssessmentAnalyticsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="averagePercentage" fill="#82ca9d" name="Average %" />
+                <Bar dataKey="averagePercentage" fill="var(--chart-4)" name="Average %" />
               </BarChart>
             </ResponsiveContainer>
             <Table>

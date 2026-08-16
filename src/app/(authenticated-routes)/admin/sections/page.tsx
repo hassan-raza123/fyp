@@ -912,8 +912,8 @@ export default function SectionsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
@@ -933,7 +933,7 @@ export default function SectionsPage() {
               disabled={isCreating}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isCreating ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+                backgroundColor: isCreating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isCreating) {
@@ -1083,8 +1083,8 @@ export default function SectionsPage() {
               }}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
@@ -1284,8 +1284,8 @@ export default function SectionsPage() {
             <button
               className="h-8 text-xs border-card-border bg-transparent px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating && !e.currentTarget.disabled) {
@@ -1308,7 +1308,7 @@ export default function SectionsPage() {
             <button
               className="h-8 text-xs text-white px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+                backgroundColor: isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isUpdating && !e.currentTarget.disabled) {
@@ -1317,7 +1317,7 @@ export default function SectionsPage() {
               }}
               onMouseLeave={(e) => {
                 if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = isUpdating ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor;
+                  e.currentTarget.style.backgroundColor = isUpdating ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor;
                 }
               }}
               onClick={handleUpdateSection}
@@ -1354,8 +1354,8 @@ export default function SectionsPage() {
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : (isDarkMode ? '#ffffff' : '#111827'),
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : (isDarkMode ? 'var(--white)' : 'var(--text-primary)'),
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
@@ -1375,16 +1375,16 @@ export default function SectionsPage() {
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isDeleting ? (isDarkMode ? '#6b7280' : '#9ca3af') : '#dc2626',
+                backgroundColor: isDeleting ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : 'var(--error)',
               }}
               onMouseEnter={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#b91c1c';
+                  e.currentTarget.style.backgroundColor = 'var(--error-dark)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#dc2626';
+                  e.currentTarget.style.backgroundColor = 'var(--error)';
                 }
               }}
             >
@@ -1502,8 +1502,8 @@ export default function SectionsPage() {
               disabled={isAddingStudent}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
             >
               Cancel
@@ -1513,7 +1513,7 @@ export default function SectionsPage() {
               disabled={isAddingStudent || !selectedStudentId}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isAddingStudent ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+                backgroundColor: isAddingStudent ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isAddingStudent && !e.currentTarget.disabled) {
@@ -1663,8 +1663,8 @@ export default function SectionsPage() {
               disabled={isBulkEnrolling}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: isDarkMode ? '#ffffff' : '#111827',
-                borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+                color: isDarkMode ? 'var(--white)' : 'var(--text-primary)',
+                borderColor: isDarkMode ? 'var(--gray-700)' : 'var(--border-color)',
               }}
             >
               Cancel
@@ -1674,7 +1674,7 @@ export default function SectionsPage() {
               disabled={isBulkEnrolling || selectedStudentIds.length === 0}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               style={{
-                backgroundColor: isBulkEnrolling ? (isDarkMode ? '#6b7280' : '#9ca3af') : primaryColor,
+                backgroundColor: isBulkEnrolling ? (isDarkMode ? 'var(--text-secondary)' : 'var(--text-muted)') : primaryColor,
               }}
               onMouseEnter={(e) => {
                 if (!isBulkEnrolling && !e.currentTarget.disabled) {

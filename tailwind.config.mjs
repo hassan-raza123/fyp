@@ -72,6 +72,45 @@ const config = {
         border: 'var(--border-color)',
         input: 'var(--border-color)',
         ring: 'var(--primary-600)',
+
+        // ---- Semantic surface + text scale ----------------------
+        // Named so component code never needs a literal colour.
+        // `bg-surface` / `text-muted-fg` / `border-subtle` replace
+        // `bg-white` / `text-gray-500` / `border-gray-200`, and pick
+        // up dark mode for free.
+        surface: {
+          DEFAULT: 'var(--surface)',
+          2: 'var(--surface-2)',
+        },
+        subtle: 'var(--border-color)',
+        firm: 'var(--border-firm)',
+        ink: {
+          DEFAULT: 'var(--text-primary)',
+          2: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+        },
+
+        // ---- Attainment ----------------------------------------
+        // Reserved. Never use these for branding, buttons or
+        // decoration — they carry meaning in the PLO matrix and in
+        // every attainment badge.
+        good: {
+          DEFAULT: 'var(--good)',
+          wash: 'var(--good-wash)',
+        },
+        warn: {
+          DEFAULT: 'var(--warn)',
+          wash: 'var(--warn-wash)',
+        },
+        bad: {
+          DEFAULT: 'var(--bad)',
+          wash: 'var(--bad-wash)',
+        },
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        DEFAULT: 'var(--shadow)',
+        md: 'var(--shadow-md)',
       },
       borderRadius: {
         lg: 'var(--radius)',
