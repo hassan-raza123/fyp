@@ -9,6 +9,7 @@ import {
   forbidden,
   forbiddenResponse,
 } from '@/lib/authz';
+import { validateComplexity } from '@/constants/complexity';
 
 export async function POST(
   req: NextRequest,
@@ -46,6 +47,7 @@ export async function POST(
 
     const data = await req.json();
     const { questionNo, description, marks, cloId, lloId, rubricId } = data;
+    const { complexity, complexAttributes } = data;
 
     // Validate: must have either cloId (theory) or lloId (lab), not both, not neither
     const hasClo = cloId !== undefined && cloId !== null && cloId !== '';
@@ -79,6 +81,24 @@ export async function POST(
       );
     }
 
+    // Complex Engineering Problem / Activity, if the course team designated
+    // this item as one. PEC requires rubric-based evaluation and at least one
+    // declared attribute, so a malformed designation is rejected here rather
+    // than surfacing as a hole in the evidence at an accreditation visit.
+    if (complexity) {
+      const complexityErrors = validateComplexity(
+        complexity,
+        complexAttributes,
+        Boolean(rubricId)
+      );
+      if (complexityErrors.length) {
+        return NextResponse.json(
+          { error: complexityErrors.join(' ') },
+          { status: 400 }
+        );
+      }
+    }
+
     const itemData: any = {
       assessmentId: parseInt(params.id),
       questionNo,
@@ -88,6 +108,9 @@ export async function POST(
       ...(hasLlo && { lloId: Number(lloId) }),
       // Optional: when set, the item is scored via /assessment-results/[id]/rubric-score
       ...(rubricId ? { rubricId: Number(rubricId) } : {}),
+      ...(complexity
+        ? { complexity, complexAttributes: complexAttributes ?? [] }
+        : {}),
     };
 
     const assessmentItem = await prisma.assessmentitems.create({

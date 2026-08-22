@@ -432,6 +432,15 @@ export const roleBasedNavigation: RoleBasedNavigation = {
           href: '/faculty/rubrics',
         },
         {
+          // The per-offering course file is what a PEC evaluator asks for.
+          // It lives under an offering id, so it needs an index page rather
+          // than a direct link.
+          id: 'course-files',
+          label: 'Course Files',
+          icon: FileText,
+          href: '/faculty/course-offerings',
+        },
+        {
           id: 'results',
           label: 'Grade Management',
           icon: Award,

@@ -10,12 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  attributesFor,
+  CEP_REQUIRED_ATTRIBUTE,
+  validateComplexity,
+  type ComplexityKind,
+} from '@/constants/complexity';
 
 interface AssessmentItemFormProps {
   assessmentId: number;
   clos: Array<{ id: number; code?: string; description: string }>;
   llos?: Array<{ id: number; code?: string; description: string }>;
   isLabAssessment?: boolean;
+  /** Rubrics available on this course offering. A CEP/CEA needs one. */
+  rubrics?: Array<{ id: number; title: string }>;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
   initialData?: any;
@@ -26,6 +35,7 @@ export function AssessmentItemForm({
   clos,
   llos = [],
   isLabAssessment = false,
+  rubrics = [],
   onSubmit,
   isLoading = false,
   initialData,
@@ -36,7 +46,28 @@ export function AssessmentItemForm({
     marks: initialData?.marks || 0,
     cloId: initialData?.cloId?.toString() || '',
     lloId: initialData?.lloId?.toString() || '',
+    rubricId: initialData?.rubricId?.toString() || '',
   });
+
+  // Complex Engineering Problem / Activity. PEC requires these on core
+  // engineering courses and the FYDP, evaluated by rubric and by no other
+  // means — so the rubric selector above is not optional once this is set.
+  const [complexity, setComplexity] = useState<ComplexityKind | ''>(
+    initialData?.complexity || ''
+  );
+  const [complexAttributes, setComplexAttributes] = useState<string[]>(
+    Array.isArray(initialData?.complexAttributes)
+      ? initialData.complexAttributes
+      : []
+  );
+  const [complexityErrors, setComplexityErrors] = useState<string[]>([]);
+
+  const toggleAttribute = (code: string) =>
+    setComplexAttributes((current) =>
+      current.includes(code)
+        ? current.filter((c) => c !== code)
+        : [...current, code]
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +85,26 @@ export function AssessmentItemForm({
       payload.cloId = formData.cloId ? Number(formData.cloId) : null;
     }
 
+    payload.rubricId = formData.rubricId ? Number(formData.rubricId) : null;
+
+    if (complexity) {
+      // Checked here as well as server-side so the course team sees the
+      // problem while the form is still open, rather than as a toast after
+      // the round trip.
+      const errors = validateComplexity(
+        complexity,
+        complexAttributes,
+        Boolean(formData.rubricId)
+      );
+      if (errors.length) {
+        setComplexityErrors(errors);
+        return;
+      }
+      payload.complexity = complexity;
+      payload.complexAttributes = complexAttributes;
+    }
+
+    setComplexityErrors([]);
     onSubmit(payload);
   };
 
@@ -148,6 +199,103 @@ export function AssessmentItemForm({
               </SelectContent>
             </Select>
           </div>
+        )}
+      </div>
+
+      {/* Rubric — optional for an ordinary question, mandatory for a CEP/CEA */}
+      <div className="space-y-2">
+        <Label htmlFor="rubricId">Rubric</Label>
+        <Select
+          value={formData.rubricId}
+          onValueChange={(value) =>
+            setFormData({ ...formData, rubricId: value === 'none' ? '' : value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="No rubric — scored as a single mark" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No rubric</SelectItem>
+            {rubrics.map((r) => (
+              <SelectItem key={r.id} value={r.id.toString()}>
+                {r.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* ── Complex Engineering Problem / Activity ───────────────────────── */}
+      <div className="rounded-lg border border-subtle p-4 space-y-3">
+        <div>
+          <Label htmlFor="complexity">Complex Engineering Problem / Activity</Label>
+          <p className="text-xs text-ink-muted mt-1">
+            PEC requires core engineering courses and the FYDP to include CEPs,
+            evaluated by a pre-defined rubric and by no other means.
+          </p>
+        </div>
+
+        <Select
+          value={complexity || 'none'}
+          onValueChange={(value) => {
+            setComplexity(value === 'none' ? '' : (value as ComplexityKind));
+            setComplexAttributes([]);
+            setComplexityErrors([]);
+          }}
+        >
+          <SelectTrigger id="complexity">
+            <SelectValue placeholder="Not a complex problem" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Not a complex problem</SelectItem>
+            <SelectItem value="cep">Complex Engineering Problem (CEP)</SelectItem>
+            <SelectItem value="cea">Complex Engineering Activity (CEA)</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {complexity && (
+          <div className="space-y-2 pt-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+              Attributes exercised
+              {complexity === 'cep' && (
+                <span className="ml-2 normal-case font-normal tracking-normal text-ink-muted">
+                  ({CEP_REQUIRED_ATTRIBUTE} is required)
+                </span>
+              )}
+            </p>
+            <div className="grid gap-2">
+              {attributesFor(complexity).map((attr) => (
+                <label
+                  key={attr.code}
+                  className="flex items-start gap-2.5 cursor-pointer rounded-md p-2 hover:bg-surface-2"
+                >
+                  <Checkbox
+                    checked={complexAttributes.includes(attr.code)}
+                    onCheckedChange={() => toggleAttribute(attr.code)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm leading-snug">
+                    <span className="font-semibold">{attr.code}</span>
+                    {' — '}
+                    <span className="font-medium">{attr.label}</span>
+                    <span className="block text-xs text-ink-muted mt-0.5">
+                      {attr.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {complexityErrors.length > 0 && (
+          <ul className="space-y-1 rounded-md bg-bad-wash p-3">
+            {complexityErrors.map((e) => (
+              <li key={e} className="text-xs text-bad">
+                {e}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

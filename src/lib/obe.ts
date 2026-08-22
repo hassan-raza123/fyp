@@ -120,6 +120,56 @@ export function roundPercentage(value: number): number {
  * indistinguishable from a genuinely poor result. They are reported separately
  * as `unassessedStudents` so a partial calculation is visible.
  */
+/**
+ * Whether a cognitive CLO's evidence includes the final examination.
+ *
+ * PEC's rule is that a CLO in the cognitive domain is attained on an average of
+ * at least 50% across all attempts, and that the attempts **must include the
+ * final examination**. A CLO evidenced only by quizzes and assignments does not
+ * qualify, however high the average — an evaluator will strike it out, and with
+ * it the PLO attainment computed from it.
+ *
+ * This does not change the arithmetic; it reports whether the evidence is
+ * admissible, so a course team can see the hole while there is still a semester
+ * left to fix it.
+ */
+export function hasFinalExamEvidence(
+  assessmentTypes: Iterable<string>
+): boolean {
+  for (const type of assessmentTypes) {
+    if (type === 'final_exam') return true;
+  }
+  return false;
+}
+
+/**
+ * PEC's final-examination rule applies to the cognitive domain only.
+ * Psychomotor lab outcomes are assessed in the lab and carry no such
+ * requirement, and `clos.bloomDomain` records this directly.
+ */
+export function isCognitiveOutcome(
+  bloomDomain: string | null | undefined
+): boolean {
+  return bloomDomain === 'Cognitive';
+}
+
+export function cloEvidenceAdmissibility(
+  bloomDomain: string | null | undefined,
+  assessmentTypes: Iterable<string>
+): { admissible: boolean; reason: string | null } {
+  if (!isCognitiveOutcome(bloomDomain)) {
+    return { admissible: true, reason: null };
+  }
+  if (hasFinalExamEvidence(assessmentTypes)) {
+    return { admissible: true, reason: null };
+  }
+  return {
+    admissible: false,
+    reason:
+      'Cognitive CLO with no final-examination evidence. PEC requires the final exam among the attempts before this attainment can be claimed.',
+  };
+}
+
 export function computeCohortAttainment(
   performanceByStudent: Map<number, { obtained: number; total: number }>,
   enrolledStudentCount: number,

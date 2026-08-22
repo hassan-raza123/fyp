@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AssessmentAttachments } from '@/components/assessments/AssessmentAttachments';
 
 const LAB_ASSESSMENT_TYPES = ['lab_exam', 'lab_report'];
 
@@ -41,6 +42,7 @@ export default function AssessmentItemsPage() {
   const [clos, setClos] = useState<any[]>([]);
   const [llos, setLlos] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [rubrics, setRubrics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -62,6 +64,18 @@ export default function AssessmentItemsPage() {
         const assessmentData = await assessmentRes.json();
         setAssessment(assessmentData);
         setItems(assessmentData.assessmentItems || []);
+
+      // Rubrics for this offering. A CEP/CEA cannot be saved without one, so
+      // the form needs the list up front rather than after a failed submit.
+      try {
+        const rubricRes = await fetch('/api/rubrics', { credentials: 'include' });
+        if (rubricRes.ok) {
+          const list = await rubricRes.json();
+          setRubrics(Array.isArray(list) ? list : []);
+        }
+      } catch {
+        // Non-fatal: the item form simply offers no rubric to attach.
+      }
 
         const isLab = LAB_ASSESSMENT_TYPES.includes(assessmentData?.type);
 
@@ -367,6 +381,7 @@ export default function AssessmentItemsPage() {
                 clos={clos}
                 llos={llos}
                 isLabAssessment={isLabAssessment}
+                rubrics={rubrics}
                 onSubmit={handleSubmit}
                 isLoading={isSubmitting}
                 initialData={editingItem}
@@ -375,6 +390,8 @@ export default function AssessmentItemsPage() {
           </Dialog>
         </div>
       </div>
+
+      <AssessmentAttachments assessmentId={assessmentId} />
 
       <div className="rounded-lg border border-card-border bg-card overflow-hidden">
         <div className="p-4 border-b border-card-border">

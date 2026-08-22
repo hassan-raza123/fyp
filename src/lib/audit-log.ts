@@ -51,6 +51,10 @@ export type AuditAction =
   | 'eligibility.override'
   // closing the loop
   | 'action_plan.auto_create'
+  // accreditation evidence — who attached or removed a marked script matters
+  // as much as who changed a grade
+  | 'attachment.upload'
+  | 'attachment.delete'
   // reports
   | 'report.generate'
   | 'report.update'
