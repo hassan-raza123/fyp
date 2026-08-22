@@ -23,55 +23,8 @@ import {
   CalendarCheck,
   AlertTriangle,
 } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  change?: number;
-  trend?: 'up' | 'down';
-  iconBgColor: string;
-  iconColor: string;
-}
-
-const StatCard = ({
-  title,
-  value,
-  icon,
-  change,
-  trend,
-  iconBgColor,
-  iconColor,
-}: StatCardProps) => (
-  <div className="bg-card border border-card-border rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-md">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-xs font-medium text-secondary-text">{title}</p>
-        <h3 className="text-lg font-bold mt-1 text-primary-text">{value}</h3>
-        {change !== undefined && (
-          <div className='flex items-center mt-2'>
-            <span
-              className={`text-sm font-medium ${
-                trend === 'up' ? 'text-[var(--success-green)]' : 'text-[var(--error)]'
-              }`}
-            >
-              {trend === 'up' ? (
-                <TrendingUp className='inline w-4 h-4' />
-              ) : (
-                <TrendingUp className='inline w-4 h-4 rotate-180' />
-              )}
-              {change}%
-            </span>
-            <span className="text-xs text-muted-text ml-2">vs last semester</span>
-          </div>
-        )}
-      </div>
-      <div className="p-2 rounded-lg transition-transform duration-200 hover:scale-110" style={{ backgroundColor: iconBgColor }}>
-        <div style={{ color: iconColor }}>{icon}</div>
-      </div>
-    </div>
-  </div>
-);
 
 interface CourseCardProps {
   courseCode: string;
@@ -350,45 +303,35 @@ export default function StudentDashboard() {
       {/* Stats Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6'>
         <StatCard
-          title='Enrolled Courses'
+          label='Enrolled Courses'
           value={data.stats.enrolledCourses}
           icon={<BookOpen className='w-6 h-6' />}
-          iconBgColor={iconBgColor}
-          iconColor={iconColor}
         />
         <StatCard
-          title='Average Grade'
+          label='Average Grade'
           value={`${data.stats.averageGrade}%`}
           icon={<Award className='w-6 h-6' />}
-          iconBgColor={iconBgColor}
-          iconColor={iconColor}
         />
         <StatCard
-          title='Completed Assignments'
+          label='Completed Assignments'
           value={data.stats.completedAssignments}
           icon={<FileText className='w-6 h-6' />}
-          iconBgColor={iconBgColor}
-          iconColor={iconColor}
         />
         {data.stats.pendingAssignments !== undefined && (
           <StatCard
-            title='Pending Assignments'
+            label='Pending Assignments'
             value={data.stats.pendingAssignments}
             icon={<Clock className='w-6 h-6' />}
-            iconBgColor={iconBgColor}
-            iconColor={iconColor}
           />
         )}
         <StatCard
-          title='Attendance'
+          label='Attendance'
           value={
             data.attendance?.hasData
               ? `${data.attendance.overallPercent}%`
               : '—'
           }
           icon={<CalendarCheck className='w-6 h-6' />}
-          iconBgColor={iconBgColor}
-          iconColor={iconColor}
         />
       </div>
 

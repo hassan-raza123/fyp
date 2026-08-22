@@ -539,6 +539,60 @@
     border-color: var(--card-border);
   }
 
+  /* ============================================================
+     Raw <table> baseline.
+
+     Sixty pages use the shared <Table> component and pick up its
+     styling. Fifteen hand-roll a plain <table> — mostly the dense
+     OBE grids: result sheets, the PLO coverage matrix, graduation
+     criteria. Those were rendering with browser defaults next to
+     properly styled tables elsewhere in the same app.
+
+     These are element selectors, so any utility class on the shared
+     component still wins. Nothing here needs the 15 files edited.
+     ============================================================ */
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  thead th {
+    background-color: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: left;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  tbody td {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover td {
+    background-color: var(--surface-2);
+  }
+
+  /* Marks, percentages and attainment figures line up in columns; without
+     tabular figures the digits jitter and the eye cannot scan a result
+     sheet down its own column. */
+  td, th {
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Used in four components but never defined, so the divider rendered with
      no colour at all. */
   .divide-card-border > :not([hidden]) ~ :not([hidden]) {

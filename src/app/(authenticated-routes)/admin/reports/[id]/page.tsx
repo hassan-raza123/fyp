@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { obe_report_type, report_status } from '@prisma/client';
+import { PDF_ACCENT } from '@/constants/pdf-theme';
 
 interface ReportSection {
   heading: string;
@@ -208,7 +209,7 @@ export default function ReportViewPage() {
         head: [section.columns],
         body: section.rows.map((r) => r.map((c) => String(c ?? ''))),
         styles: { fontSize: 7 },
-        headStyles: { fillColor: [124, 58, 237] },
+        headStyles: { fillColor: PDF_ACCENT },
         didDrawPage: () => undefined,
       });
       cursorY = (doc as any).lastAutoTable.finalY + 8;

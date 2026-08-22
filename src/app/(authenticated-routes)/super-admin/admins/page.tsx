@@ -35,6 +35,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface Admin {
   id: number | null;
@@ -60,51 +61,6 @@ interface Department {
   name: string;
   code: string;
 }
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  subtitle?: string;
-  isDarkMode?: boolean;
-}
-
-const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCardProps) => {
-  const iconBgColor = isDarkMode 
-    ? 'var(--brand-primary-opacity-15)' 
-    : 'var(--brand-primary-opacity-15)';
-  const iconColor = isDarkMode 
-    ? 'var(--accent)' 
-    : 'var(--accent)';
-  
-  return (
-    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-secondary-text mb-1.5">
-            {title}
-          </p>
-          <h3 className="text-2xl font-bold text-primary-text mb-1">
-            {value}
-          </h3>
-          {subtitle && (
-            <p className="text-[10px] text-muted-text">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <div 
-          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <div style={{ color: iconColor }}>
-            {icon}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function SuperAdminAdminsPage() {
   const router = useRouter();
@@ -542,32 +498,28 @@ export default function SuperAdminAdminsPage() {
       {/* Key Stats - Essential Only */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
-          title="Total Admins"
+          label="Total Admins"
           value={stats.total}
-          subtitle={`${stats.active} active`}
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.active} active`}
+          icon={<Shield />}
         />
         <StatCard
-          title="Active"
+          label="Active"
           value={stats.active}
-          subtitle={`${stats.inactive} inactive`}
-          icon={<UserCheck className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.inactive} inactive`}
+          icon={<UserCheck />}
         />
         <StatCard
-          title="With Department"
+          label="With Department"
           value={stats.withDepartment}
-          subtitle={`${stats.withoutDepartment} unassigned`}
-          icon={<Users className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.withoutDepartment} unassigned`}
+          icon={<Users />}
         />
         <StatCard
-          title="Without Department"
+          label="Without Department"
           value={stats.withoutDepartment}
-          subtitle="Need assignment"
-          icon={<Users className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint="Need assignment"
+          icon={<Users />}
         />
       </div>
 

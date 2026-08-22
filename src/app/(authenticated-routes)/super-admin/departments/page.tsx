@@ -52,6 +52,7 @@ import {
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { PageLoading } from '@/components/ui/page-loading';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface Department {
   id: number;
@@ -80,51 +81,6 @@ interface AdminUser {
   email: string;
   status: string;
 }
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  subtitle?: string;
-  isDarkMode?: boolean;
-}
-
-const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCardProps) => {
-  const iconBgColor = isDarkMode 
-    ? 'var(--brand-primary-opacity-15)' 
-    : 'var(--brand-primary-opacity-15)';
-  const iconColor = isDarkMode 
-    ? 'var(--accent)' 
-    : 'var(--accent)';
-  
-  return (
-    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-secondary-text mb-1.5">
-            {title}
-          </p>
-          <h3 className="text-2xl font-bold text-primary-text mb-1">
-            {value}
-          </h3>
-          {subtitle && (
-            <p className="text-[10px] text-muted-text">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <div 
-          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <div style={{ color: iconColor }}>
-            {icon}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function SuperAdminDepartmentsPage() {
   const { resolvedTheme } = useTheme();
@@ -486,32 +442,28 @@ export default function SuperAdminDepartmentsPage() {
       {/* Key Stats - Essential Only */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
-          title="Total Departments"
+          label="Total Departments"
           value={stats.total}
-          subtitle={`${stats.assigned} assigned`}
-          icon={<Building2 className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.assigned} assigned`}
+          icon={<Building2 />}
         />
         <StatCard
-          title="Assigned"
+          label="Assigned"
           value={stats.assigned}
-          subtitle={`${stats.unassigned} unassigned`}
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.unassigned} unassigned`}
+          icon={<Shield />}
         />
         <StatCard
-          title="Total Faculty"
+          label="Total Faculty"
           value={stats.totalFaculties}
-          subtitle="Active members"
-          icon={<UserCheck className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint="Active members"
+          icon={<UserCheck />}
         />
         <StatCard
-          title="Total Students"
+          label="Total Students"
           value={stats.totalStudents.toLocaleString()}
-          subtitle="Enrolled"
-          icon={<GraduationCap className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint="Enrolled"
+          icon={<GraduationCap />}
         />
       </div>
 

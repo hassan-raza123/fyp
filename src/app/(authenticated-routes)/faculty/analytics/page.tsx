@@ -55,6 +55,7 @@ import {
 } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { PDF_ACCENT, PDF_BAD, PDF_GOOD, PDF_WARN } from '@/constants/pdf-theme';
 
 interface AnalyticsData {
   performance: {
@@ -340,7 +341,7 @@ const AnalyticsPage = () => {
           ],
           body: performanceData,
           theme: 'striped',
-          headStyles: { fillColor: [136, 132, 216] },
+          headStyles: { fillColor: PDF_ACCENT },
         });
 
         yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -376,7 +377,7 @@ const AnalyticsPage = () => {
             ],
             body: sectionData,
             theme: 'striped',
-            headStyles: { fillColor: [136, 132, 216] },
+            headStyles: { fillColor: PDF_ACCENT },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -404,7 +405,7 @@ const AnalyticsPage = () => {
             head: [['CLO Code', 'Description', 'Latest', 'Average', 'Trend']],
             body: cloData,
             theme: 'striped',
-            headStyles: { fillColor: [130, 202, 157] },
+            headStyles: { fillColor: PDF_GOOD },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -427,7 +428,7 @@ const AnalyticsPage = () => {
               head: [['CLO Code', 'Attainment', 'Suggestion']],
               body: weakCLOData,
               theme: 'striped',
-              headStyles: { fillColor: [239, 68, 68] },
+              headStyles: { fillColor: PDF_BAD },
             });
 
             yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -465,7 +466,7 @@ const AnalyticsPage = () => {
               head: [['Roll Number', 'Name', 'Average %', 'Assessments']],
               body: topPerformersData,
               theme: 'striped',
-              headStyles: { fillColor: [34, 197, 94] },
+              headStyles: { fillColor: PDF_GOOD },
             });
 
             yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -489,7 +490,7 @@ const AnalyticsPage = () => {
               head: [['Roll Number', 'Name', 'Average %', 'Assessments']],
               body: atRiskData,
               theme: 'striped',
-              headStyles: { fillColor: [239, 68, 68] },
+              headStyles: { fillColor: PDF_BAD },
             });
 
             yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -515,7 +516,7 @@ const AnalyticsPage = () => {
             head: [['Category', 'Count']],
             body: distributionData,
             theme: 'striped',
-            headStyles: { fillColor: [136, 132, 216] },
+            headStyles: { fillColor: PDF_ACCENT },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -534,7 +535,7 @@ const AnalyticsPage = () => {
             head: [['Grade', 'Count']],
             body: gradeDistData,
             theme: 'striped',
-            headStyles: { fillColor: [136, 132, 216] },
+            headStyles: { fillColor: PDF_ACCENT },
           });
         }
 
@@ -574,7 +575,7 @@ const AnalyticsPage = () => {
             ],
             body: assessmentData,
             theme: 'striped',
-            headStyles: { fillColor: [255, 198, 88] },
+            headStyles: { fillColor: PDF_WARN },
           });
         }
 

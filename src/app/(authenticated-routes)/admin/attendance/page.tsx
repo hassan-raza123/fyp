@@ -37,6 +37,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import PageTitle from '@/components/ui/PageTitle';
 import { PageLoading } from '@/components/ui/page-loading';
+import { PDF_ACCENT } from '@/constants/pdf-theme';
 
 interface Semester {
   id: number;
@@ -231,7 +232,7 @@ export default function AdminAttendancePage() {
           `${row.threshold}%`,
         ]),
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [38, 40, 149] },
+        headStyles: { fillColor: PDF_ACCENT },
       });
 
       doc.save(`attendance-defaulters-${semesterName || 'report'}.pdf`);

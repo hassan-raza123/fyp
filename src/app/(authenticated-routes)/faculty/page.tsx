@@ -35,56 +35,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import ContactForm from '@/components/forms/ContactForm';
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  change?: number;
-  trend?: 'up' | 'down';
-  isDarkMode?: boolean;
-}
-
-const StatCard = ({ title, value, icon, change, trend, isDarkMode = false }: StatCardProps) => {
-  const iconBgColor = isDarkMode
-    ? 'var(--brand-primary-opacity-15)'
-    : 'var(--brand-primary-opacity-15)';
-  const iconColor = 'var(--accent)';
-
-  return (
-    <div className="bg-card border-card-border rounded-xl p-4 shadow-sm border transition-all duration-200 hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-medium text-secondary-text">{title}</p>
-          <h3 className="text-lg font-bold mt-1 text-primary-text">{value}</h3>
-          {change !== undefined && (
-            <div className="flex items-center mt-2">
-              <span
-                className={`text-xs font-medium ${
-                  trend === 'up' ? 'text-[var(--success-green)]' : 'text-[var(--error)]'
-                }`}
-              >
-                {trend === 'up' ? (
-                  <ArrowUpRight className="inline w-3 h-3" />
-                ) : (
-                  <ArrowDownRight className="inline w-3 h-3" />
-                )}
-                {change}%
-              </span>
-              <span className="text-xs text-secondary-text ml-2">vs last month</span>
-            </div>
-          )}
-        </div>
-        <div
-          className="p-2 rounded-lg transition-transform duration-200 hover:scale-110"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <div style={{ color: iconColor }}>{icon}</div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { StatCard } from '@/components/ui/stat-card';
 
 interface ActivityItemProps {
   summary: string;
@@ -350,28 +301,24 @@ export default function FacultyOverview() {
         {/* Stats Grid - admin style */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="My Students"
+            label="My Students"
             value={data.stats.totalStudents.toLocaleString()}
-            icon={<Users className="w-6 h-6" />}
-            isDarkMode={isDarkMode}
+            icon={<Users />}
           />
           <StatCard
-            title="My Courses"
+            label="My Courses"
             value={data.stats.totalCourses}
-            icon={<BookOpen className="w-6 h-6" />}
-            isDarkMode={isDarkMode}
+            icon={<BookOpen />}
           />
           <StatCard
-            title="My Sections"
+            label="My Sections"
             value={data.stats.totalSections}
-            icon={<GraduationCap className="w-6 h-6" />}
-            isDarkMode={isDarkMode}
+            icon={<GraduationCap />}
           />
           <StatCard
-            title="Active Assessments"
+            label="Active Assessments"
             value={data.stats.activeAssessments}
-            icon={<Target className="w-6 h-6" />}
-            isDarkMode={isDarkMode}
+            icon={<Target />}
           />
         </div>
 
@@ -851,8 +798,7 @@ export default function FacultyOverview() {
                     }
                     user={activity.user}
                     time={new Date(activity.createdAt).toLocaleString()}
-                    icon={<FileText className="w-4 h-4" />}
-                    isDarkMode={isDarkMode}
+                    icon={<FileText />}
                   />
                 ))
               )}

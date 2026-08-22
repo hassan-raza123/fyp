@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface SuperAdmin {
   userId: number;
@@ -49,51 +50,6 @@ interface SuperAdmin {
   };
   role: string;
 }
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  subtitle?: string;
-  isDarkMode?: boolean;
-}
-
-const StatCard = ({ title, value, icon, subtitle, isDarkMode = false }: StatCardProps) => {
-  const iconBgColor = isDarkMode 
-    ? 'var(--brand-primary-opacity-15)' 
-    : 'var(--brand-primary-opacity-15)';
-  const iconColor = isDarkMode 
-    ? 'var(--accent)' 
-    : 'var(--accent)';
-  
-  return (
-    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-secondary-text mb-1.5">
-            {title}
-          </p>
-          <h3 className="text-2xl font-bold text-primary-text mb-1">
-            {value}
-          </h3>
-          {subtitle && (
-            <p className="text-[10px] text-muted-text">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <div 
-          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <div style={{ color: iconColor }}>
-            {icon}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function SuperAdminsPage() {
   const router = useRouter();
@@ -456,25 +412,22 @@ export default function SuperAdminsPage() {
       {/* Key Stats */}
       <div className="grid grid-cols-3 gap-3">
         <StatCard
-          title="Total Super Admins"
+          label="Total Super Admins"
           value={stats.total}
-          subtitle={`${stats.active} active`}
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.active} active`}
+          icon={<Shield />}
         />
         <StatCard
-          title="Active"
+          label="Active"
           value={stats.active}
-          subtitle={`${stats.inactive} inactive`}
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint={`${stats.inactive} inactive`}
+          icon={<Shield />}
         />
         <StatCard
-          title="Inactive"
+          label="Inactive"
           value={stats.inactive}
-          subtitle="Need activation"
-          icon={<Shield className="w-5 h-5" />}
-          isDarkMode={isDarkMode}
+          hint="Need activation"
+          icon={<Shield />}
         />
       </div>
 

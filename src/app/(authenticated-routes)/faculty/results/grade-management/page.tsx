@@ -58,6 +58,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { PDF_ACCENT, PDF_GOOD } from '@/constants/pdf-theme';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -369,7 +370,7 @@ const GradeManagementPage = () => {
           head: [['Metric', 'Value']],
           body: statsData,
           theme: 'striped',
-          headStyles: { fillColor: [136, 132, 216] },
+          headStyles: { fillColor: PDF_ACCENT },
         });
 
         yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -391,7 +392,7 @@ const GradeManagementPage = () => {
             head: [['Grade', 'Count']],
             body: gradeDistData,
             theme: 'striped',
-            headStyles: { fillColor: [130, 202, 157] },
+            headStyles: { fillColor: PDF_GOOD },
           });
 
           yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -433,7 +434,7 @@ const GradeManagementPage = () => {
           ],
           body: gradesData,
           theme: 'striped',
-          headStyles: { fillColor: [136, 132, 216] },
+          headStyles: { fillColor: PDF_ACCENT },
           styles: { fontSize: 8 },
         });
 
