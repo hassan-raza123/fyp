@@ -32,12 +32,28 @@ const authRoutes = [
 // who have no account — the token in the URL is the credential.
 const publicWebRoutes = [
   '/',
-  '/features',
-  '/about',
-  '/contact',
   '/surveys',
   // Terms and privacy: procurement reads these before anyone has an account.
   '/legal',
+];
+
+/**
+ * Every top-level segment that has pages behind a session.
+ *
+ * Together with `publicWebRoutes` and `authRoutes` above, this covers every
+ * page route in `src/app`: the only top-level segments that exist are the
+ * three public ones, the four auth ones, and the five here. That is why a
+ * path matching none of the three lists can be answered with a 404 rather
+ * than a redirect — there is no page there to protect.
+ *
+ * Adding a new top-level protected segment means adding it here too.
+ */
+const protectedWebPrefixes = [
+  '/super-admin',
+  '/admin',
+  '/faculty',
+  '/student',
+  CHANGE_PASSWORD_PATH,
 ];
 
 // Public API routes that don't require authentication (exact match)
@@ -282,9 +298,28 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For all other routes (protected routes), authentication is required
+  // For all other routes (protected routes), authentication is required.
+  //
+  // Unless the path matches nothing the app serves. Every page route lives
+  // under `publicWebRoutes`, `authRoutes` or `protectedWebPrefixes`, so a
+  // path outside all three is a URL that does not exist — and answering it
+  // with a redirect to /login meant `not-found.tsx` could never render for a
+  // signed-out visitor. A mistyped address or a stale inbound link on the
+  // marketing site landed on a sign-in form, which reads as "you need an
+  // account to see this" rather than "there is nothing here", and let a
+  // crawler follow any dead link to a 200. Signed-in users already saw the
+  // 404, because their token carried them past this branch.
+  const isProtectedWebRoute = protectedWebPrefixes.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`)
+  );
+
   if (!token) {
-    return createLoginRedirect(request);
+    if (isProtectedWebRoute) {
+      return createLoginRedirect(request);
+    }
+    // Hand it to the router, which matches nothing and renders
+    // `not-found.tsx` with a 404 of its own.
+    return NextResponse.next();
   }
 
   // Verify token — once. The result is reused below for the headers rather
@@ -306,14 +341,13 @@ export async function proxy(request: NextRequest) {
   // Store it in a const to help TypeScript understand the type narrowing
   const verifiedUserRole: string = userRole;
 
-  // Check if the route is a role-specific protected route
-  const isProtectedRoute =
-    path.startsWith('/super-admin') ||
-    path.startsWith('/admin') ||
-    path.startsWith('/faculty') ||
-    path.startsWith('/student');
+  // Role-specific protected routes. `/change-password` is in
+  // `protectedWebPrefixes` but is not role-specific — every role reaches it —
+  // so it is excluded here.
+  const isRoleScopedRoute =
+    isProtectedWebRoute && path !== CHANGE_PASSWORD_PATH;
 
-  if (isProtectedRoute) {
+  if (isRoleScopedRoute) {
     // Check if user has permission for this route
     if (!isRouteAllowedForRole(path, verifiedUserRole)) {
       return createLoginRedirect(request);

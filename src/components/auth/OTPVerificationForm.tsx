@@ -101,7 +101,7 @@ function OTPVerificationFormContent() {
 
       setTimer(60);
       setCanResend(false);
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsResending(false);
@@ -140,7 +140,7 @@ function OTPVerificationFormContent() {
       }
 
       window.location.href = data.data.redirectTo;
-    } catch (error) {
+    } catch {
       setError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
@@ -158,7 +158,7 @@ function OTPVerificationFormContent() {
           Verify Your Email
         </h2>
         <p className='text-base' style={{ color: 'var(--gray-600)' }}>
-          We've sent a 6-digit code to <span className='font-medium'>{email}</span>
+          We&apos;ve sent a 6-digit code to <span className='font-medium'>{email}</span>
         </p>
       </div>
 

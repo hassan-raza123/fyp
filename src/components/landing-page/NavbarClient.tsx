@@ -40,15 +40,29 @@ const navigation = [
   { name: 'Modules', href: '/#modules' },
 ];
 
-export default function NavbarClient() {
+export default function NavbarClient({
+  /**
+   * Force the opaque treatment.
+   *
+   * The bar is transparent with white type until the page scrolls, which is
+   * right over the hero and wrong everywhere else: on the legal pages, the
+   * 404 and any other light page it would paint white text on a white
+   * background at scroll position zero. Those pages pass `solid`.
+   */
+  solid = false,
+}: {
+  solid?: boolean;
+} = {}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const isScrolled = useSyncExternalStore(
+  const scrolledPastHero = useSyncExternalStore(
     subscribeScroll,
     () => window.scrollY > 20,
     () => false,
   );
+
+  const isScrolled = solid || scrolledPastHero;
 
   const activeHash = useSyncExternalStore(
     subscribeHash,
@@ -62,7 +76,7 @@ export default function NavbarClient() {
     }
     // Returned `activeHash && ...` — the empty string, not false, whenever
     // there was no hash.
-    return Boolean(activeHash) && href.endsWith(activeHash);
+    return pathname === '/' && Boolean(activeHash) && href.endsWith(activeHash);
   };
 
   return (
@@ -154,8 +168,15 @@ export default function NavbarClient() {
             </div>
 
             {/* Mobile menu button - Enhanced */}
+            {/* The only content was an icon, so the button had no accessible
+                name at all: a screen reader announced "button", with nothing
+                to say what it opened or whether it was open. */}
             <button
+              type='button'
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls='mobile-menu'
               className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 ${
                 isScrolled
                   ? 'text-ink hover:bg-surface-2'
@@ -184,7 +205,10 @@ export default function NavbarClient() {
           />
           
           {/* Menu Panel */}
-          <div className='fixed top-20 inset-x-4 bg-surface rounded-2xl border border-subtle shadow-2xl animate-slide-down overflow-hidden'>
+          <div
+            id='mobile-menu'
+            className='fixed top-20 inset-x-4 bg-surface rounded-2xl border border-subtle shadow-2xl animate-slide-down overflow-hidden'
+          >
             <div className='p-6 space-y-2'>
               {navigation.map((item) => (
                 <Link

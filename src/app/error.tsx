@@ -34,9 +34,11 @@ export default function Error({
 
       <div className='space-y-1'>
         <h1 className='text-lg font-semibold'>Something went wrong</h1>
+        {/* Said "go back to your dashboard" beside a button labelled "Go
+            home" pointing at `/`, which is the marketing page. */}
         <p className='max-w-md text-sm text-muted-foreground'>
-          This page could not be displayed. You can try again, or go back to
-          your dashboard.
+          This page could not be displayed. You can try again, or start over
+          from the home page.
         </p>
         {error.digest && (
           <p className='pt-1 text-xs text-muted-foreground'>

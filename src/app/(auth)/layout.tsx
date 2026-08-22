@@ -5,9 +5,18 @@ import Link from 'next/link';
 import { getBranding } from '@/lib/branding';
 import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants/branding';
 
+/**
+ * Group-level fallback only. This set `title: 'Login | Attainly'` for every
+ * page in the group, so /forgot-password, /verify-otp and /reset-password all
+ * called themselves the login screen. Each page now sets its own title and
+ * overrides this.
+ */
 export const metadata: Metadata = {
-  title: `Login | ${PRODUCT_NAME}`,
-  description: `Login to access your ${PRODUCT_NAME} portal`,
+  title: {
+    default: `Sign in | ${PRODUCT_NAME}`,
+    template: `%s | ${PRODUCT_NAME}`,
+  },
+  description: `Sign in to your ${PRODUCT_NAME} portal.`,
 };
 
 /**

@@ -37,8 +37,23 @@ export interface LoginSuccess {
   data: {
     user: UserData;
     redirectTo: string;
-    token: string;
+    /**
+     * Only present on the OTP-challenge response. The success response sets
+     * the session as an httpOnly cookie and never puts the token in the body,
+     * so this cannot be required.
+     */
+    token?: string;
     userType: AllRoles;
+    /**
+     * Set when the sign-in completed without an OTP challenge and the client
+     * should navigate straight to `redirectTo`.
+     *
+     * `/api/auth/login` has always returned this; it was simply missing from
+     * the type, which is why every read of `data` in LoginForm went through
+     * `(data as any)` — four casts that switched off type checking on the
+     * whole response object to reach one undeclared boolean.
+     */
+    shouldRedirect?: boolean;
   };
 }
 

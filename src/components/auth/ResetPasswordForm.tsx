@@ -151,10 +151,14 @@ function ResetPasswordFormContent() {
           >
             <AlertCircle className='w-8 h-8' style={{ color: 'var(--error-dark)' }} />
           </div>
-          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--error-darker)' }}>
-            Invalid Reset Link
-          </h3>
-          <p className='text-sm mb-6' style={{ color: 'var(--error-light)' }}>
+          {/* Was an <h3> directly under the layout's <h1>, skipping a level.
+              The body text was `--error-light`, which measures 4.30:1 on this
+              wash — under the 4.5 AA needs, on the one line that explains why
+              the visitor cannot get in. */}
+          <h2 className='font-bold text-xl mb-2' style={{ color: 'var(--error-darker)' }}>
+            Invalid reset link
+          </h2>
+          <p className='text-sm mb-6' style={{ color: 'var(--error-dark)' }}>
             This password reset link is invalid or has expired.
           </p>
           <Link
@@ -196,11 +200,14 @@ function ResetPasswordFormContent() {
           >
             <CheckCircle2 className='w-8 h-8' style={{ color: 'var(--success-green)' }} />
           </div>
-          <h3 className='font-bold text-xl mb-2' style={{ color: 'var(--success-green-dark)' }}>
-            Password Reset Successful! 🎉
-          </h3>
-          <p className='text-sm' style={{ color: 'var(--success-green-light)' }}>
-            Your password has been reset successfully. Redirecting to login page...
+          {/* Same level skip. `--success-green-light` measured 3.21:1 here,
+              a clear AA failure. The emoji is dropped: it was the only one in
+              the product's auth flow. */}
+          <h2 className='font-bold text-xl mb-2' style={{ color: 'var(--success-green-dark)' }}>
+            Password reset
+          </h2>
+          <p className='text-sm' style={{ color: 'var(--success-green-dark)' }}>
+            Your password has been reset. Taking you to the sign-in page…
           </p>
         </div>
       </div>
