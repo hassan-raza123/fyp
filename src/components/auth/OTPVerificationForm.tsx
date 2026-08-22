@@ -219,7 +219,7 @@ function OTPVerificationFormContent() {
             {isResending
               ? '⏳ Sending...'
               : canResend
-              ? '🔄 Resend Code'
+              ? '🔄 Resend code'
               : `⏱️ Resend in ${timer}s`}
           </button>
           <Link
@@ -227,7 +227,7 @@ function OTPVerificationFormContent() {
             className='font-medium hover:underline'
             style={{ color: 'var(--brand-primary)' }}
           >
-            Back to Login
+            Back to sign in
           </Link>
         </div>
 
@@ -235,22 +235,7 @@ function OTPVerificationFormContent() {
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
-          style={{
-            background: 'var(--brand-primary)'
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.background = 'var(--brand-primary)';
-            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
-          }}
+          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
         >
           {isLoading ? (
             <span className='flex items-center justify-center'>

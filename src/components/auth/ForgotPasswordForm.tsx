@@ -91,7 +91,7 @@ export default function ForgotPasswordForm() {
               htmlFor='email'
               className='block text-sm font-medium mb-2 text-ink-2'
             >
-              Email Address
+              Email address
             </label>
             <input
               id='email'
@@ -128,7 +128,7 @@ export default function ForgotPasswordForm() {
             </div>
           )}
 
-          {/* Back to Login */}
+          {/* Back to sign in */}
           <div className='flex items-center justify-between pt-2'>
             <Link
               href='/login'
@@ -136,7 +136,7 @@ export default function ForgotPasswordForm() {
               style={{ color: 'var(--brand-primary)' }}
             >
               <ArrowLeft className='w-4 h-4 mr-1' />
-              Back to Login
+              Back to sign in
             </Link>
           </div>
 
@@ -144,30 +144,15 @@ export default function ForgotPasswordForm() {
           <button
             type='submit'
             disabled={isLoading}
-          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
-          style={{
-            background: 'var(--brand-primary)'
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.background = 'var(--brand-primary)';
-            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
-          }}
-          >
+          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
+        >
             {isLoading ? (
               <span className='flex items-center justify-center'>
                 <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
                 Sending...
               </span>
             ) : (
-              'Send Reset Instructions'
+              'Send reset instructions'
             )}
           </button>
         </form>
@@ -191,7 +176,7 @@ export default function ForgotPasswordForm() {
             style={{ color: 'var(--brand-primary)' }}
           >
             <ArrowLeft className='w-4 h-4 mr-1' />
-            Back to Login
+            Back to sign in
           </Link>
         </div>
       )}

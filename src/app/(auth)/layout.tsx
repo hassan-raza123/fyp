@@ -102,44 +102,57 @@ export default async function AuthLayout({
         </div>
       </Link>
 
-      {/* Main Content Area */}
-      <div className='w-full max-w-6xl mx-auto relative z-10 flex items-center gap-4'>
+      {/*
+        Main content.
+
+        The two columns were `flex items-center gap-4` inside a `max-w-6xl`,
+        with `ml-auto` on the left one — so the text hugged the middle, the
+        card hugged the right, and the pair floated with a large dead gap
+        between them and another below. A 12-column grid puts the copy and the
+        card in a fixed relationship at any width.
+      */}
+      <div className='w-full max-w-6xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center'>
         {/* Left Side - Content */}
-        <div className='hidden lg:block max-w-xl ml-auto'>
+        <div className='hidden lg:block lg:col-span-6'>
+          {/* The badge, heading weight and body size are the hero's, so the
+              sign-in page reads as the same site rather than a separate app
+              that happens to share a logo. */}
+          <span className='inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold tracking-wide text-white/90'>
+            Built for PEC, HEC &amp; NCEAC accreditation
+          </span>
+
           {/* This and the wordmark above were both `<h1>` — two first-level
               headings on one page, and the wordmark is not the heading. */}
           <h1
-            className='text-3xl font-bold mb-4 leading-tight'
+            className='mt-6 text-3xl xl:text-4xl font-extrabold tracking-tight leading-tight'
             style={{ color: 'var(--primary-200)' }}
           >
             {PRODUCT_TAGLINE}
           </h1>
-          <p className='text-base text-white/80 leading-relaxed'>
+          <p className='mt-4 text-base text-white/80 leading-relaxed'>
             {branding.isUnbranded
               ? 'Track CLO & PLO attainments, manage assessments, and generate OBE compliance reports.'
               : `${branding.institutionName}'s platform for tracking CLO & PLO attainments, managing assessments, and generating OBE compliance reports.`}
           </p>
         </div>
 
-        {/* Right Side - Login Form Card */}
-        <div 
-          className='w-full lg:w-auto lg:min-w-[450px] p-10 rounded-3xl shadow-2xl'
-          style={{
-            background: 'var(--surface)',
-            backdropFilter: 'blur(20px)',
-          }}
-        >
+        {/* Right Side - Login Form Card.
+
+            Was `rounded-3xl` with no border and a backdrop blur behind an
+            already-opaque surface. Every other card on the site is a
+            `rounded-2xl` surface with a hairline border. */}
+        <div className='w-full lg:col-span-6 p-8 sm:p-10 rounded-2xl border border-subtle shadow-2xl bg-surface'>
           {children}
 
           {branding.supportEmail && (
-            <p className='text-center text-sm mt-4' style={{ color: 'var(--gray-500)' }}>
+            <p className='text-center text-sm mt-6 pt-6 border-t border-subtle text-ink-muted'>
               Need help? Contact{' '}
               <a
                 href={`mailto:${branding.supportEmail}`}
                 className='font-medium hover:underline'
-                style={{ color: 'var(--brand-primary)' }}
+                style={{ color: 'var(--accent)' }}
               >
-                IT Support
+                IT support
               </a>
             </p>
           )}

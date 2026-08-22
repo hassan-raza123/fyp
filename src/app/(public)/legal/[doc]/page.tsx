@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import PublicShell from '@/components/landing-page/PublicShell';
 import { PRODUCT_NAME, COMPANY_CONTACT } from '@/constants/branding';
 
 /**
@@ -81,25 +81,19 @@ export default async function LegalPage({
   if (!entry) notFound();
 
   return (
-    <PublicShell>
-      <div className='max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
-        {/* The eyebrow, heading scale and body size are the landing page's,
-            so a reader arriving from the footer link stays on the same site
-            rather than landing on an unstyled document. */}
-        <span
-          className='inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider'
-          style={{
-            backgroundColor: 'var(--accent-wash)',
-            color: 'var(--accent-active)',
-          }}
+    <main className='min-h-screen bg-background text-ink'>
+      <div className='max-w-3xl mx-auto px-6 py-16'>
+        <Link
+          href='/'
+          className='text-sm font-medium text-primary hover:underline'
         >
-          LEGAL
-        </span>
+          ← {PRODUCT_NAME}
+        </Link>
 
-        <h1 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-ink mt-6 mb-3'>
+        <h1 className='text-4xl font-bold mt-8 mb-3 tracking-tight'>
           {entry.title}
         </h1>
-        <p className='text-ink-2 text-base sm:text-lg mb-8'>{entry.intro}</p>
+        <p className='text-ink-2 text-lg mb-8'>{entry.intro}</p>
 
         {/* The label was `text-warn` on `bg-warn-wash` — #B45309 on #FBF0DF,
             which measures 4.46:1 and misses AA for 14px text by a hair. It
@@ -107,7 +101,7 @@ export default async function LegalPage({
             the palette states at the top of globals.css: red, amber and green
             mean attainment and nothing else uses them. The amber wash and
             border still carry the warning; the label reads in ink. */}
-        <div className='rounded-xl border border-warn/40 bg-warn-wash p-4 mb-12'>
+        <div className='rounded-lg border border-warn/40 bg-warn-wash p-4 mb-12'>
           <p className='text-sm text-ink font-semibold mb-1'>
             Draft — not yet in force
           </p>
@@ -151,6 +145,6 @@ export default async function LegalPage({
           )}
         </p>
       </div>
-    </PublicShell>
+    </main>
   );
 }

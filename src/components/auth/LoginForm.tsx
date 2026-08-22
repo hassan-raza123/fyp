@@ -194,28 +194,21 @@ export default function LoginForm() {
             key={type}
             type='button'
             onClick={() => handleUserTypeChange(type)}
-            className='flex-1 py-3 text-sm font-medium rounded-lg transition-all'
+            aria-pressed={formData.userType === type}
+            /* The idle and hover fills were `--gray-100` / `--gray-200`, raw
+               ramp values that do not move with the theme, applied through
+               onMouseEnter/onMouseLeave handlers. `bg-surface-2` and the
+               accent are the same tokens the rest of the site uses. */
+            className={`flex-1 py-3 text-sm font-medium rounded-xl transition-colors ${
+              formData.userType === type
+                ? 'text-white'
+                : 'bg-surface-2 text-ink-2 hover:bg-subtle hover:text-ink'
+            }`}
             style={
               formData.userType === type
-                ? {
-                    background: 'var(--brand-primary)',
-                    color: 'var(--white)'
-                  }
-                : {
-                    background: 'var(--gray-100)',
-                    color: 'var(--gray-700)'
-                  }
+                ? { backgroundColor: 'var(--accent)' }
+                : undefined
             }
-            onMouseEnter={(e) => {
-              if (formData.userType !== type) {
-                e.currentTarget.style.background = 'var(--gray-200)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (formData.userType !== type) {
-                e.currentTarget.style.background = 'var(--gray-100)';
-              }
-            }}
           >
             {getUserTypeDisplay(type)}
           </button>
@@ -306,20 +299,7 @@ export default function LoginForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full text-white py-3.5 rounded-lg font-semibold transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm'
-          style={{
-            background: 'var(--brand-primary)'
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.background = 'var(--brand-primary-dark)';
-              e.currentTarget.style.boxShadow = `0 4px 12px var(--brand-primary-opacity-30)`;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--brand-primary)';
-          }}
+          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
         >
           {isLoading ? (
             <span className='flex items-center justify-center'>
