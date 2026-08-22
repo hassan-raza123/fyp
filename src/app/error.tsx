@@ -27,40 +27,43 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center'>
-      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10'>
-        <AlertTriangle className='h-6 w-6 text-destructive' />
-      </div>
+    <div className='flex min-h-[70vh] flex-col items-center justify-center px-4 sm:px-6 py-16 text-center'>
+      <span
+        className='inline-flex w-14 h-14 rounded-2xl items-center justify-center'
+        style={{ backgroundColor: 'var(--bad-wash)' }}
+      >
+        <AlertTriangle className='h-7 w-7 text-bad' />
+      </span>
 
-      <div className='space-y-1'>
-        <h1 className='text-lg font-semibold'>Something went wrong</h1>
-        {/* Said "go back to your dashboard" beside a button labelled "Go
-            home" pointing at `/`, which is the marketing page. */}
-        <p className='max-w-md text-sm text-muted-foreground'>
-          This page could not be displayed. You can try again, or start over
-          from the home page.
+      <h1 className='mt-8 text-2xl sm:text-3xl font-extrabold tracking-tight text-ink'>
+        Something went wrong
+      </h1>
+      {/* Said "go back to your dashboard" beside a button labelled "Go home"
+          pointing at `/`, which is the marketing page. */}
+      <p className='mt-4 max-w-md text-base text-ink-2'>
+        This page could not be displayed. You can try again, or start over from
+        the home page.
+      </p>
+      {error.digest && (
+        <p className='mt-3 text-xs text-ink-muted'>
+          Reference: <code className='font-mono'>{error.digest}</code>
         </p>
-        {error.digest && (
-          <p className='pt-1 text-xs text-muted-foreground'>
-            Reference: <code>{error.digest}</code>
-          </p>
-        )}
-      </div>
+      )}
 
-      <div className='flex flex-wrap items-center justify-center gap-2'>
+      <div className='mt-10 flex flex-col sm:flex-row items-center justify-center gap-3'>
         <button
           type='button'
           onClick={reset}
-          className='inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
+          className='accent-btn inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-colors'
         >
           <RotateCw className='h-4 w-4' />
           Try again
         </button>
         <Link
           href='/'
-          className='inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent'
+          className='inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-surface border border-firm text-ink font-semibold text-base hover:bg-surface-2 transition-colors'
         >
-          Go home
+          Go to the home page
         </Link>
       </div>
     </div>

@@ -182,10 +182,7 @@ export default function LoginForm() {
     <div className='w-full'>
       {/* Header */}
       <div className='mb-8'>
-        <h2 
-          className='text-3xl font-bold mb-2'
-          style={{ color: 'var(--brand-primary)' }}
-        >
+        <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mb-2'>
           Sign in to {PRODUCT_NAME}
         </h2>
       </div>

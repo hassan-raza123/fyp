@@ -73,13 +73,10 @@ export default function ForgotPasswordForm() {
     <div className='w-full'>
       {/* Header */}
       <div className='mb-8'>
-        <h2 
-          className='text-3xl font-bold mb-2'
-          style={{ color: 'var(--brand-primary)' }}
-        >
-          Forgot Password?
+        <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mb-2'>
+          Forgot your password?
         </h2>
-        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
+        <p className='text-base text-ink-2'>
           {!isEmailSent
             ? "No worries, we'll send you reset instructions"
             : 'Check your email for reset instructions'}

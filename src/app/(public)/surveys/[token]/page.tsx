@@ -148,11 +148,11 @@ export default function PublicSurveyPage() {
   if (error && !survey) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-surface-2 p-4'>
-        <div className='bg-surface rounded-xl shadow border border-subtle p-8 max-w-md w-full text-center'>
-          <div className='inline-flex w-12 h-12 rounded-full items-center justify-center mb-4 bg-bad-wash'>
-            <AlertTriangle className='w-6 h-6 text-bad' aria-hidden />
-          </div>
-          <h1 className='text-xl font-semibold text-ink mb-2'>
+        <div className='bg-surface rounded-2xl shadow-sm border border-subtle p-8 max-w-md w-full text-center'>
+          <span className='inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-6 bg-bad-wash'>
+            <AlertTriangle className='w-7 h-7 text-bad' aria-hidden />
+          </span>
+          <h1 className='text-2xl font-extrabold tracking-tight text-ink mb-2'>
             This survey is not available
           </h1>
           <p className='text-sm text-ink-2'>{error}</p>
@@ -167,11 +167,13 @@ export default function PublicSurveyPage() {
   if (submitted) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-surface-2 p-4'>
-        <div className='bg-surface rounded-xl shadow border border-subtle p-8 max-w-md w-full text-center'>
-          <div className='inline-flex w-12 h-12 rounded-full items-center justify-center mb-4 bg-good-wash'>
-            <CheckCircle2 className='w-6 h-6 text-good' aria-hidden />
-          </div>
-          <h1 className='text-xl font-semibold text-ink mb-2'>Thank you</h1>
+        <div className='bg-surface rounded-2xl shadow-sm border border-subtle p-8 max-w-md w-full text-center'>
+          <span className='inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-6 bg-good-wash'>
+            <CheckCircle2 className='w-7 h-7 text-good' aria-hidden />
+          </span>
+          <h1 className='text-2xl font-extrabold tracking-tight text-ink mb-2'>
+            Thank you
+          </h1>
           <p className='text-sm text-ink-2'>
             Your response has been recorded. You can close this page.
           </p>
@@ -198,11 +200,19 @@ export default function PublicSurveyPage() {
     <div className="min-h-screen bg-surface-2 py-10 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className='bg-surface rounded-xl shadow border border-subtle p-6 mb-6'>
-          <div className='text-xs font-semibold text-primary uppercase tracking-wide mb-1'>
+        <div className='bg-surface rounded-2xl shadow-sm border border-subtle p-6 mb-6'>
+          <span
+            className='inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase mb-3'
+            style={{
+              backgroundColor: 'var(--accent-wash)',
+              color: 'var(--accent-active)',
+            }}
+          >
             {surveyTypeLabel[survey.type] ?? survey.type}
-          </div>
-          <h1 className='text-2xl font-bold text-ink mb-2'>{survey.title}</h1>
+          </span>
+          <h1 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mb-2'>
+            {survey.title}
+          </h1>
           {survey.description && (
             <p className="text-ink-muted text-sm">{survey.description}</p>
           )}
@@ -220,7 +230,7 @@ export default function PublicSurveyPage() {
               input nested inside them, so neither was associated with its
               field: a screen reader announced two unlabelled text boxes, and
               clicking a label did not focus anything. */}
-          <div className='bg-surface rounded-xl shadow border border-subtle p-6'>
+          <div className='bg-surface rounded-2xl shadow-sm border border-subtle p-6'>
             <h2 className='font-semibold text-ink mb-1'>Your details</h2>
             <p className='text-sm text-ink-muted mb-4'>
               Optional — leave blank to respond anonymously.
@@ -277,7 +287,7 @@ export default function PublicSurveyPage() {
             return (
               <fieldset
                 key={q.id}
-                className='bg-surface rounded-xl shadow border border-subtle p-6 m-0'
+                className='bg-surface rounded-2xl shadow-sm border border-subtle p-6 m-0'
               >
                 <div className='flex items-start gap-3 mb-4'>
                   <span
@@ -370,7 +380,7 @@ export default function PublicSurveyPage() {
           <button
             type='submit'
             disabled={submitting}
-            className='w-full bg-primary hover:bg-primary-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className='accent-btn w-full text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {submitting ? 'Submitting…' : 'Submit survey'}
           </button>

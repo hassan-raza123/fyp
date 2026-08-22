@@ -218,13 +218,10 @@ function ResetPasswordFormContent() {
     <div className='w-full'>
       {/* Header */}
       <div className='mb-8'>
-        <h2 
-          className='text-3xl font-bold mb-2'
-          style={{ color: 'var(--brand-primary)' }}
-        >
-          Reset Password
+        <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mb-2'>
+          Reset your password
         </h2>
-        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
+        <p className='text-base text-ink-2'>
           Enter your new password below
         </p>
       </div>
@@ -317,7 +314,7 @@ function ResetPasswordFormContent() {
           <p className='font-semibold mb-2' style={{ color: 'var(--brand-primary)' }}>
             Password must contain:
           </p>
-          <ul className='space-y-1' style={{ color: 'var(--gray-600)' }}>
+          <ul className='space-y-1 text-ink-2'>
             <li className='text-xs'>• At least 8 characters</li>
             <li className='text-xs'>• One uppercase letter (A-Z)</li>
             <li className='text-xs'>• One lowercase letter (a-z)</li>

@@ -151,13 +151,10 @@ function OTPVerificationFormContent() {
     <div className='w-full'>
       {/* Header */}
       <div className='mb-8'>
-        <h2 
-          className='text-3xl font-bold mb-2'
-          style={{ color: 'var(--brand-primary)' }}
-        >
-          Verify Your Email
+        <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mb-2'>
+          Verify your email
         </h2>
-        <p className='text-base' style={{ color: 'var(--gray-600)' }}>
+        <p className='text-base text-ink-2'>
           We&apos;ve sent a 6-digit code to <span className='font-medium'>{email}</span>
         </p>
       </div>

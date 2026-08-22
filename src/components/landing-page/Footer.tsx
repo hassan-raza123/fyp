@@ -94,9 +94,9 @@ export default function Footer() {
                   className='w-14 h-14 object-contain shrink-0'
                 />
                 <div>
-                  <h3 className='text-2xl font-bold text-white'>
+                  <p className='text-2xl font-bold text-white'>
                     {PRODUCT_NAME}
-                  </h3>
+                  </p>
                   {/* `--brand-secondary` is the same indigo as the primary and
                       sits near 3:1 here; the lighter step reads. */}
                   <p
@@ -116,10 +116,10 @@ export default function Footer() {
                 It previously listed the university's own official accounts. */}
             {COMPANY_SOCIAL.length > 0 && (
             <div>
-              <h4 className='text-sm font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2'>
+              <h2 className='text-sm font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2'>
                 <span className='w-8 h-0.5 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
                 Follow Us
-              </h4>
+              </h2>
               <div className='grid grid-cols-6 gap-3'>
                 {COMPANY_SOCIAL.map(({ label, href }) => {
                   const Icon = SOCIAL_ICONS[label] ?? ArrowRight;
@@ -161,10 +161,10 @@ export default function Footer() {
           <div
             className={`space-y-6 ${hasContact ? 'md:col-span-3' : 'md:col-span-5'}`}
           >
-            <h4 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
+            <h2 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
               <span className='w-1 h-6 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
               Quick Links
-            </h4>
+            </h2>
             <ul className='space-y-3'>
               {[
                 { href: '/#how-it-works', label: 'How it works', icon: Workflow },
@@ -198,10 +198,10 @@ export default function Footer() {
               which would route this product's enquiries to them. */}
           {hasContact && (
           <div className='md:col-span-4 space-y-6'>
-            <h4 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
+            <h2 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
               <span className='w-1 h-6 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
               Get In Touch
-            </h4>
+            </h2>
             <ul className='space-y-4'>
               {COMPANY_CONTACT.address && (
               <li className='group'>
