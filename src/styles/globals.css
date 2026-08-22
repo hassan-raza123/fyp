@@ -205,6 +205,30 @@
   --overlay-dark-92:  rgba(11, 13, 17, 0.92);
   --overlay-slate-85: rgba(22, 25, 31, 0.85);
 
+  /* ---- Ink ground --------------------------------------------
+     The dark ground the marketing hero, the dark marketing bands,
+     the footer and the sign-in page are painted on.
+
+     These five were referenced by those four surfaces and never
+     defined. An undefined var() inside a `background` shorthand
+     makes the whole declaration invalid at computed-value time,
+     so the property fell back to `transparent` — the hero, the
+     footer and the entire sign-in page lost their background and
+     rendered white type on a near-white page.
+
+     Deliberately not theme-swapped in step with the app chrome:
+     these surfaces are dark in both themes, and the white type on
+     them has to stay legible either way. `.dark` deepens them a
+     step so the marketing page never glows brighter than the app.
+
+     Ordered light -> dark: `lift` is the raised end of the hero
+     gradient, `floor` the bottom of the footer. */
+  --ground-lift:  #2A3245;
+  --ground-mid:   #1D2331;
+  --ground-deep:  #141926;
+  --ground-foot:  #131824;
+  --ground-floor: #0C1017;
+
   /* ---- Elevation --------------------------------------------- */
   --shadow-sm: 0 1px 2px rgba(16, 20, 28, 0.06);
   --shadow:    0 1px 2px rgba(16, 20, 28, 0.06), 0 1px 3px rgba(16, 20, 28, 0.04);
@@ -415,6 +439,13 @@
   --overlay-dark-80:  rgba(0, 0, 0, 0.85);
   --overlay-dark-92:  rgba(0, 0, 0, 0.94);
   --overlay-slate-85: rgba(9, 11, 14, 0.88);
+
+  /* Ink ground, a step deeper — see the :root block. */
+  --ground-lift:  #1A2030;
+  --ground-mid:   #12161F;
+  --ground-deep:  #0C1017;
+  --ground-foot:  #0B0E14;
+  --ground-floor: #06080C;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow:    0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -675,10 +706,11 @@
     background: linear-gradient(135deg, rgba(38, 40, 149, 0.95) 0%, rgba(28, 30, 116, 0.95) 100%);
   }
 
-  /* Landing Page Components */
-  .landing-hero-bg {
-    background: linear-gradient(135deg, var(--hero-bg-from), var(--hero-bg-via), var(--hero-bg-to));
-  }
+  /* `.landing-hero-bg` was here, built from --hero-bg-from/-via/-to. None of
+     the three were ever defined, so the rule produced no background at all —
+     the same failure that blanked the hero, the footer and the sign-in page.
+     Nothing referenced the class, so it is removed rather than repaired;
+     `.section-ink` below is what the dark bands actually use. */
 
   .modern-card {
     position: relative;
@@ -823,23 +855,66 @@
   }
 
   /* Navbar Specific */
+  /* `color-mix` rather than a flat rgba(255,255,255,.95): the old
+     value pinned the scrolled navbar to white in both themes, so
+     in dark mode a white bar sat above a near-black page. */
   .navbar-glass {
-    background: rgba(255, 255, 255, 0.95);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   .navbar-link {
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease;
   }
 
   .navbar-link:hover {
-    color: var(--blue);
+    color: var(--accent);
   }
 
+  /* The wash was rgba(38, 40, 149, 0.1) — the old university crest
+     blue, left behind by the move to the indigo accent. */
   .navbar-link-active {
-    color: var(--blue);
-    background-color: rgba(38, 40, 149, 0.1);
+    color: var(--accent);
+    background-color: var(--accent-wash);
+  }
+
+  /* ---- Marketing section grounds ------------------------------
+     The dark marketing bands used to paint a *light* surface
+     gradient and then cover it with a 40-55% black overlay. Two
+     layers cancelling each other out land on flat dishwater grey,
+     which is what the modules and portal bands rendered as. One
+     layer, straight off the ink ramp, instead. */
+  .section-ink {
+    background: linear-gradient(
+      165deg,
+      var(--ground-mid) 0%,
+      var(--ground-deep) 60%,
+      var(--ground-floor) 100%
+    );
+  }
+
+  /* The one solid accent button, so its hover and its shadow are
+     declared once instead of being re-implemented with inline
+     onMouseEnter/onMouseLeave handlers on every landing CTA. */
+  .accent-btn {
+    background-color: var(--accent);
+    box-shadow: 0 8px 24px var(--brand-primary-opacity-30);
+  }
+
+  .accent-btn:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 10px 28px var(--brand-primary-opacity-40);
+  }
+
+  /* The light counterpart, so the page can alternate ink / paper
+     rather than stacking three dark bands in a row. */
+  .section-paper {
+    background: linear-gradient(
+      180deg,
+      var(--surface) 0%,
+      var(--background) 100%
+    );
   }
 
   .navbar-cta {
@@ -1196,5 +1271,29 @@
   }
   .print\:mt-8 {
     margin-top: 2rem !important;
+  }
+}
+
+/* ================================
+   REDUCED MOTION
+   ================================
+   The marketing page animates a lot: slide-ins on the OBE showcase,
+   translate-and-scale on every card hover, a floating contact button, a
+   fade-in on the mobile menu. None of it was gated. A visitor who has asked
+   their OS for less motion — which for a vestibular disorder is a medical
+   setting, not a taste — got all of it.
+
+   `.scroll-animate` was already inside a `no-preference` query, so it was the
+   one thing that respected the setting. This covers everything else: motion
+   is reduced to a near-instant state change rather than removed, so an
+   element that animates in still becomes visible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

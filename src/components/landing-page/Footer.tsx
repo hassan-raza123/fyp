@@ -1,8 +1,23 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { Linkedin, Mail, Twitter, Instagram, MapPin, Phone, BookOpen, Users, Facebook, Youtube, MessageCircle, ArrowRight } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Twitter,
+  Users,
+  Workflow,
+  Youtube,
+} from 'lucide-react';
 import {
   COMPANY_CONTACT,
   COMPANY_SOCIAL,
@@ -22,48 +37,74 @@ const SOCIAL_ICONS: Record<string, typeof Linkedin> = {
 };
 
 export default function Footer() {
+  /*
+    The contact column only renders once COMPANY_CONTACT is filled in, and the
+    social row only once COMPANY_SOCIAL is. Both start empty. The grid was a
+    fixed 5 + 3 + 4 of twelve columns, so with contact absent the footer laid
+    out eight columns of content and four of empty space, and the whole thing
+    sat hard against the left edge. The spans adapt instead.
+  */
+  const hasContact = Boolean(
+    COMPANY_CONTACT.address || COMPANY_CONTACT.phone || COMPANY_CONTACT.email,
+  );
 
   return (
-    <footer className='relative overflow-hidden'>
-      {/* Background Image */}
-      <div 
-        className='absolute inset-0 bg-cover bg-no-repeat'
-        style={{ 
-          background: 'radial-gradient(800px 420px at 10% 0%, var(--brand-primary-opacity-20), transparent 60%), linear-gradient(180deg, var(--ground-foot) 0%, var(--ground-floor) 100%)',
-          backgroundPosition: 'center top'
-        }}
-      ></div>
-      
-      {/* Modern Dark Gradient Overlay */}
-      <div 
+    <footer
+      className='relative overflow-hidden'
+      style={{
+        background:
+          'linear-gradient(180deg, var(--ground-foot) 0%, var(--ground-floor) 100%)',
+      }}
+    >
+      {/*
+        The ground used to be a `background` shorthand referencing
+        `--ground-foot` and `--ground-floor`, neither of which existed — one
+        undefined var invalidates the whole declaration, so the footer had no
+        background and its white type sat on the page colour. A 92%-opaque
+        overlay was then stacked on top of it, which would have flattened the
+        wash even had the ground resolved. Ground below, wash above, one of
+        each.
+      */}
+      <div
+        aria-hidden
         className='absolute inset-0'
-        style={{ 
-          background: `linear-gradient(135deg, var(--overlay-slate-85), var(--overlay-dark-92))`
+        style={{
+          background:
+            'radial-gradient(800px 420px at 10% 0%, var(--brand-primary-opacity-20), transparent 60%)',
         }}
-      ></div>
-
-      {/* Decorative Elements */}
-      <div className='absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10' style={{ background: 'var(--brand-secondary)' }}></div>
-      <div className='absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10' style={{ background: 'var(--brand-primary)' }}></div>
+      />
 
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 z-10'>
         {/* Top Section */}
         <div className='grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 mb-16'>
           {/* Brand Section - Wider */}
-          <div className='md:col-span-5 space-y-8'>
+          <div
+            className={`space-y-8 ${hasContact ? 'md:col-span-5' : 'md:col-span-7'}`}
+          >
             {/* Logo & Brand */}
             <div>
               <div className='flex items-center gap-4 mb-4'>
-                <div className='relative group'>
-                  {/* Orange Spot Under Logo */}
-                  <div className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full blur-2xl opacity-70 group-hover:opacity-90 transition-all' 
-                    style={{ backgroundColor: 'var(--brand-secondary)' }}>
-                  </div>
-                  <img src="/brand/attainly-mark.svg" alt={`${PRODUCT_NAME} logo`} className='relative z-10 w-20 h-20 object-contain transition-transform group-hover:scale-110' />
-                </div>
+                {/* Was a raw <img>, bypassing next/image, behind a blurred
+                    indigo halo that read as a smudge on the dark ground. */}
+                <Image
+                  src='/brand/attainly-mark.svg'
+                  alt={`${PRODUCT_NAME} logo`}
+                  width={56}
+                  height={56}
+                  className='w-14 h-14 object-contain shrink-0'
+                />
                 <div>
-                  <h3 className='text-3xl font-black text-white mb-1'>{PRODUCT_NAME}</h3>
-                  <p className='text-base font-semibold' style={{ color: 'var(--brand-secondary)' }}>{PRODUCT_TAGLINE}</p>
+                  <h3 className='text-2xl font-bold text-white'>
+                    {PRODUCT_NAME}
+                  </h3>
+                  {/* `--brand-secondary` is the same indigo as the primary and
+                      sits near 3:1 here; the lighter step reads. */}
+                  <p
+                    className='text-sm font-medium'
+                    style={{ color: 'var(--primary-300)' }}
+                  >
+                    {PRODUCT_TAGLINE}
+                  </p>
                 </div>
               </div>
               <p className='text-base text-white/80 leading-relaxed'>
@@ -117,15 +158,18 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className='md:col-span-3 space-y-6'>
+          <div
+            className={`space-y-6 ${hasContact ? 'md:col-span-3' : 'md:col-span-5'}`}
+          >
             <h4 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
               <span className='w-1 h-6 rounded' style={{ background: 'var(--brand-secondary)' }}></span>
               Quick Links
             </h4>
             <ul className='space-y-3'>
               {[
-                { href: '/#modules', label: 'Features', icon: BookOpen },
-                { href: '/#portal', label: 'Access Portal', icon: Users },
+                { href: '/#how-it-works', label: 'How it works', icon: Workflow },
+                { href: '/#roles', label: 'Who uses it', icon: Users },
+                { href: '/#modules', label: 'Modules', icon: BookOpen },
               ].map(({ href, label, icon: Icon }) => (
                 <li key={label}>
                   <Link
@@ -152,7 +196,7 @@ export default function Footer() {
               Each entry renders only when COMPANY_CONTACT supplies it. These
               slots held one university's real address, switchboard and inbox,
               which would route this product's enquiries to them. */}
-          {(COMPANY_CONTACT.address || COMPANY_CONTACT.phone || COMPANY_CONTACT.email) && (
+          {hasContact && (
           <div className='md:col-span-4 space-y-6'>
             <h4 className='text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2'>
               <span className='w-1 h-6 rounded' style={{ background: 'var(--brand-secondary)' }}></span>

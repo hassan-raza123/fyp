@@ -1,118 +1,78 @@
-'use client';
+import { steps } from '@/constants/landing-page';
 
-import { LogIn, BarChart3, CheckCircle } from 'lucide-react';
-import { PRODUCT_NAME } from '@/constants/branding';
-
-export default function UniversityStatsBar() {
-  const steps = [
-    {
-      number: '01',
-      icon: LogIn,
-      title: 'Login to Portal',
-      description: 'Access your role-based dashboard using university credentials',
-      color: 'var(--brand-primary)'
-    },
-    {
-      number: '02',
-      icon: BarChart3,
-      title: 'Track Progress',
-      description: 'Monitor CLO/PLO attainment, grades, and learning outcomes in real-time',
-      color: 'var(--brand-secondary)'
-    },
-    {
-      number: '03',
-      icon: CheckCircle,
-      title: 'Achieve Excellence',
-      description: 'Generate comprehensive OBE reports and ensure accreditation compliance',
-      color: 'var(--brand-primary)'
-    }
-  ];
-
+/**
+ * The three steps of the evidence lifecycle.
+ *
+ * The steps themselves — and why the old three were wrong — are documented
+ * where they are defined, in `@/constants/landing-page`. The heading here
+ * read "Simple & Efficient Process", which described the page's opinion of
+ * itself rather than the process.
+ *
+ * The component is named UniversityStatsBar and has never shown statistics.
+ */
+export default function HowItWorksSection() {
   return (
-    <section id='how-it-works' className='relative py-20 overflow-hidden bg-surface scroll-mt-20'>
-      {/* Decorative Background */}
-      <div className='absolute inset-0'>
-        <div className='absolute top-1/4 left-0 w-96 h-96 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-primary)' }}></div>
-        <div className='absolute bottom-1/4 right-0 w-96 h-96 rounded-full blur-3xl opacity-5' style={{ background: 'var(--brand-secondary)' }}></div>
-      </div>
-
+    <section
+      id='how-it-works'
+      className='relative py-24 overflow-hidden section-paper scroll-mt-24'
+    >
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/10 border border-subtle text-sm font-bold mb-4' style={{ color: 'var(--brand-primary)' }}>
+          {/* The badge was `bg-gradient-to-r from-primary/10 to-primary/10` —
+              a gradient between one colour and itself. */}
+          <span
+            className='inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider'
+            style={{
+              backgroundColor: 'var(--accent-wash)',
+              color: 'var(--accent-active)',
+            }}
+          >
             HOW IT WORKS
           </span>
-          <h2 className='text-3xl sm:text-4xl font-black text-ink mb-4'>
-            Simple & Efficient Process
+          <h2 className='mt-6 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ink'>
+            From course outcomes to accreditation evidence
           </h2>
-          <p className='text-lg text-ink-2 max-w-2xl mx-auto'>
-            {PRODUCT_NAME} makes OBE management straightforward in three easy steps
+          <p className='mt-4 text-base sm:text-lg text-ink-2 max-w-2xl mx-auto'>
+            Three steps, and only the middle one is work your faculty were not
+            already doing.
           </p>
         </div>
 
         {/* Steps Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 relative'>
-          {/* Connecting Line (Desktop) */}
-          <div className='hidden md:block absolute top-24 left-1/4 right-1/4 h-1 bg-gradient-to-r from-transparent via-subtle to-transparent'></div>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 relative'>
+          {/* Connecting line (desktop) */}
+          <div
+            aria-hidden
+            className='hidden md:block absolute top-24 left-[16%] right-[16%] h-px'
+            style={{ background: 'var(--border-color)' }}
+          />
 
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={index}
-                className='group relative'
-              >
-                {/* Card */}
-                <div className='relative bg-surface rounded-2xl p-8 border-2 border-subtle hover:border-subtle transition-all duration-300 hover:shadow-xl hover:-translate-y-2'>
-                  {/* Number Badge */}
-                  <div 
-                    className='absolute -top-6 left-8 w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg z-10'
-                    style={{ 
-                      backgroundColor: step.color,
-                      boxShadow: `0 4px 20px ${step.color}30`
-                    }}
-                  >
-                    {step.number}
-                  </div>
-
-                  {/* Icon */}
-                  <div 
-                    className='inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 mt-8 transition-transform duration-300 group-hover:scale-110'
-                    style={{ 
-                      backgroundColor: `${step.color}10`,
-                      border: `2px solid ${step.color}30`
-                    }}
-                  >
-                    <Icon 
-                      className='w-8 h-8' 
-                      style={{ color: step.color }}
-                    />
-                  </div>
-
-                  {/* Title */}
-                  <h3 className='text-xl font-bold text-ink mb-3'>
-                    {step.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className='text-ink-2 leading-relaxed'>
-                    {step.description}
-                  </p>
-
-                  {/* Decorative Corner */}
-                  <div 
-                    className='absolute bottom-0 right-0 w-24 h-24 rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300'
-                    style={{ 
-                      backgroundColor: `${step.color}05`
-                    }}
-                  ></div>
+          {steps.map((step) => (
+            <div key={step.number} className='group relative'>
+              {/* The card declared `border-2 border-subtle` and
+                  `hover:border-subtle` — the same colour on both sides, so
+                  the hover did nothing. */}
+              <div className='relative h-full bg-surface rounded-2xl p-8 pt-10 border border-subtle hover:border-firm hover:shadow-md hover:-translate-y-1 transition-all duration-300'>
+                {/* Number badge */}
+                <div
+                  className='absolute -top-5 left-8 w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md z-10'
+                  style={{ backgroundColor: 'var(--accent)' }}
+                >
+                  {step.number}
                 </div>
+
+                <h3 className='text-lg font-semibold text-ink mb-3'>
+                  {step.title}
+                </h3>
+                <p className='text-sm text-ink-2 leading-relaxed'>
+                  {step.description}
+                </p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-

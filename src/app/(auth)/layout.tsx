@@ -42,54 +42,54 @@ export default async function AuthLayout({
         third-party imagery, nothing to license, no 400KB download before a user
         can type their password, and it inherits any future palette change.
       */}
-      <div
-        className='absolute inset-0 -z-10'
-        style={{
-          background:
-            'radial-gradient(1200px 600px at 15% 20%, var(--brand-primary-opacity-30), transparent 60%), ' +
-            'radial-gradient(900px 500px at 85% 85%, var(--brand-primary-opacity-15), transparent 60%), ' +
-            'linear-gradient(160deg, var(--ground-deep) 0%, var(--ground-mid) 55%, var(--ground-lift) 100%)',
-        }}
-      />
+      <div className='absolute inset-0 -z-10 section-ink'>
+        {/*
+          The three layers were packed into one `background` shorthand, and
+          the three `--ground-*` tokens it named were never defined. An
+          undefined var() makes the whole declaration invalid at
+          computed-value time, so the property fell back to `transparent` —
+          this page rendered white type on the near-white page colour: the
+          logo wordmark, the institution name, the tagline, the description
+          and the copyright line were all invisible.
+
+          The ground now comes from `.section-ink`, which is defined in the
+          same stylesheet as the tokens it uses, and the accent washes sit in
+          their own layer above it. A missing token can now cost the wash but
+          never the ground the type is read against.
+        */}
+        <div
+          aria-hidden
+          className='absolute inset-0'
+          style={{
+            background:
+              'radial-gradient(1200px 600px at 15% 20%, var(--brand-primary-opacity-30), transparent 60%), ' +
+              'radial-gradient(900px 500px at 85% 85%, var(--brand-primary-opacity-15), transparent 60%)',
+          }}
+        />
+      </div>
 
       {/* Logo - Top Left Corner */}
       <Link href='/' className='absolute top-6 left-6 z-30 flex items-center gap-3 hover:opacity-90 transition-opacity cursor-pointer'>
-        <div className='relative'>
-          {/* White Spot Below Logo */}
-          <div 
-            className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full blur-2xl'
-            style={{
-              background: 'var(--white)',
-              opacity: 0.6
-            }}
-          />
-          {/* Logo - Direct, No Box */}
-          <Image
-            src="/brand/attainly-mark.svg"
-            alt={`${PRODUCT_NAME} logo`}
-            width={70}
-            height={70}
-            className='object-contain relative z-10'
-            priority
-            style={{
-              filter: 'drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5))',
-              display: 'block'
-            }}
-          />
-        </div>
+        {/* The mark had a 60%-opaque white blur behind it and a black
+            drop-shadow on top — two effects fighting on a 70px logo. */}
+        <Image
+          src='/brand/attainly-mark.svg'
+          alt={`${PRODUCT_NAME} logo`}
+          width={44}
+          height={44}
+          priority
+          className='object-contain block shrink-0'
+        />
         <div>
-          <h1 
-            className='text-2xl font-bold'
-            style={{
-              color: 'var(--white)',
-              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
-            }}
-          >
+          {/* The text-shadows here and on the left-hand column were
+              compensating for a background that never rendered. With real
+              ink under the type they only muddy it. */}
+          <span className='block text-xl font-bold text-white'>
             {PRODUCT_NAME}
-          </h1>
-          <p className='text-xs text-white mt-0.5' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
+          </span>
+          <span className='block text-xs text-white/70 mt-0.5'>
             {branding.institutionName}
-          </p>
+          </span>
         </div>
       </Link>
 
@@ -97,16 +97,15 @@ export default async function AuthLayout({
       <div className='w-full max-w-6xl mx-auto relative z-10 flex items-center gap-4'>
         {/* Left Side - Content */}
         <div className='hidden lg:block max-w-xl ml-auto'>
-          <h1 
+          {/* This and the wordmark above were both `<h1>` — two first-level
+              headings on one page, and the wordmark is not the heading. */}
+          <h1
             className='text-3xl font-bold mb-4 leading-tight'
-            style={{
-              color: 'var(--primary-200)',
-              textShadow: '0 2px 8px rgba(0,0,0,0.6)'
-            }}
+            style={{ color: 'var(--primary-200)' }}
           >
             {PRODUCT_TAGLINE}
           </h1>
-          <p className='text-base text-white/90 leading-relaxed'>
+          <p className='text-base text-white/80 leading-relaxed'>
             {branding.isUnbranded
               ? 'Track CLO & PLO attainments, manage assessments, and generate OBE compliance reports.'
               : `${branding.institutionName}'s platform for tracking CLO & PLO attainments, managing assessments, and generating OBE compliance reports.`}
@@ -117,8 +116,8 @@ export default async function AuthLayout({
         <div 
           className='w-full lg:w-auto lg:min-w-[450px] p-10 rounded-3xl shadow-2xl'
           style={{
-            background: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)'
+            background: 'var(--surface)',
+            backdropFilter: 'blur(20px)',
           }}
         >
           {children}
@@ -139,7 +138,7 @@ export default async function AuthLayout({
       </div>
 
       {/* Footer */}
-      <div className='absolute bottom-6 left-8 text-white/60 text-sm z-20'>
+      <div className='absolute bottom-6 left-8 text-white/50 text-xs z-20'>
         © {new Date().getFullYear()} {PRODUCT_NAME}. All rights reserved.
       </div>
     </div>

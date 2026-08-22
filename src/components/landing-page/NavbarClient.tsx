@@ -1,51 +1,68 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import { PRODUCT_NAME } from '@/constants/branding';
 
+/*
+  Scroll position and the URL hash are browser state, not React state.
+
+  They used to be mirrored into `useState` from an effect that called
+  `setActiveHash` synchronously in its body — a cascading render on mount —
+  and `setIsScrolled` on every single scroll event, so the navbar re-rendered
+  continuously while the page moved rather than only when it crossed the
+  20px threshold. `useSyncExternalStore` subscribes to each source and
+  re-renders only when the derived value actually changes, and returns the
+  server snapshot during SSR instead of reading `window` during render.
+*/
+const subscribeScroll = (onChange: () => void) => {
+  window.addEventListener('scroll', onChange, { passive: true });
+  return () => window.removeEventListener('scroll', onChange);
+};
+
+const subscribeHash = (onChange: () => void) => {
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+};
+
+/* "Portal" pointed at the band that repeated the hero's role cards. That
+   band is now a single call to action, so the slot goes to the roles
+   section, which is what a reader looking for "is there a student view?"
+   actually wants. */
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'How It Works', href: '/#how-it-works' },
-  { name: 'Features', href: '/#modules' },
-  { name: 'Portal', href: '/#portal' },
+  { name: 'How it works', href: '/#how-it-works' },
+  { name: 'Capabilities', href: '/#obe-showcase' },
+  { name: 'Who uses it', href: '/#roles' },
+  { name: 'Modules', href: '/#modules' },
 ];
 
 export default function NavbarClient() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeHash, setActiveHash] = useState('');
   const pathname = usePathname();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+  const isScrolled = useSyncExternalStore(
+    subscribeScroll,
+    () => window.scrollY > 20,
+    () => false,
+  );
 
-    const handleHashChange = () => {
-      setActiveHash(window.location.hash);
-    };
+  const activeHash = useSyncExternalStore(
+    subscribeHash,
+    () => window.location.hash,
+    () => '',
+  );
 
-    // Set initial hash from URL
-    setActiveHash(window.location.hash);
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
-
-  const isActive = (href: string) => {
+  const isActive = (href: string): boolean => {
     if (href === '/') {
       return pathname === '/' && !activeHash;
     }
-    // Check if the hash part matches exactly with URL hash
-    return activeHash && href.includes(activeHash);
+    // Returned `activeHash && ...` — the empty string, not false, whenever
+    // there was no hash.
+    return Boolean(activeHash) && href.endsWith(activeHash);
   };
 
   return (
@@ -64,42 +81,39 @@ export default function NavbarClient() {
               href='/'
               className='flex items-center space-x-3 group relative'
             >
-              {/* Logo Container */}
-              <div className='relative'>
-                {/* Orange Spot Behind Logo */}
-                <div 
-                  className='absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-300'
-                  style={{ 
-                    background: 'var(--brand-secondary)',
-                    transform: 'scale(1.3)'
-                  }}
-                ></div>
-                
-                {/* Logo */}
-                <div className='relative w-20 h-20 transform group-hover:scale-110 transition-all duration-300'>
-                  <img
-                    src="/brand/attainly-mark.svg"
-                    alt={`${PRODUCT_NAME} logo`}
-                    className='w-full h-full object-contain drop-shadow-lg'
-                  />
-                </div>
+              {/* Logo. Was a raw <img> at 80x80 inside a 80px-tall navbar —
+                  the mark filled the bar edge to edge with no breathing room,
+                  and bypassed next/image entirely. */}
+              <div className='relative w-11 h-11 transition-transform duration-300 group-hover:scale-105'>
+                <Image
+                  src='/brand/attainly-mark.svg'
+                  alt={`${PRODUCT_NAME} logo`}
+                  width={44}
+                  height={44}
+                  priority
+                  className='w-full h-full object-contain'
+                />
               </div>
               
               {/* Brand Text */}
               <div className='relative'>
                 <div className='flex items-center gap-2'>
                   <span
-                    className={`text-2xl font-black tracking-tight transition-colors duration-300 ${
+                    className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
                       isScrolled ? 'text-ink' : 'text-white'
                     }`}
                   >
                     {PRODUCT_NAME}
                   </span>
                 </div>
-                <div 
-                  className='text-xs font-bold tracking-wide transition-colors duration-300'
-                  style={{ 
-                    color: isScrolled ? 'var(--brand-secondary)' : 'var(--white-opacity-80)'
+                {/* `--brand-secondary` is the same indigo as the primary, so
+                    scrolled-state subtitle sat at ~3:1 on white. */}
+                <div
+                  className='text-[11px] font-semibold tracking-wide transition-colors duration-300'
+                  style={{
+                    color: isScrolled
+                      ? 'var(--text-muted)'
+                      : 'var(--white-opacity-70)',
                   }}
                 >
                   OBE Management System
@@ -132,25 +146,10 @@ export default function NavbarClient() {
             <div className='hidden lg:flex items-center space-x-4'>
               <Link
                 href='/login'
-                className='px-8 py-3 rounded-xl text-sm font-bold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 shadow-lg'
-                style={{
-                  backgroundColor: 'var(--brand-secondary)',
-                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
-                }}
+                className='accent-btn px-6 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center gap-2 group transition-colors'
               >
-                <span className='relative z-10 flex items-center gap-2'>
-                  Login
-                  <svg className='w-4 h-4 group-hover:translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
-                  </svg>
-                </span>
-                {/* Shine effect */}
-                <div 
-                  className='absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000'
-                  style={{
-                    background: `linear-gradient(to right, transparent, var(--white-opacity-20), transparent)`
-                  }}
-                ></div>
+                Login
+                <ArrowRight className='w-4 h-4 transition-transform group-hover:translate-x-0.5' />
               </Link>
             </div>
 
@@ -177,8 +176,10 @@ export default function NavbarClient() {
       {isMobileMenuOpen && (
         <div className='fixed inset-0 z-40 lg:hidden'>
           {/* Backdrop */}
-          <div 
-            className='fixed inset-0 bg-white/50 backdrop-blur-sm animate-fade-in'
+          {/* Was `bg-white/50` — a white scrim over a dark hero, which
+              washed the page out instead of dimming it. */}
+          <div
+            className='fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in'
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
@@ -204,11 +205,7 @@ export default function NavbarClient() {
               <Link
                 href='/login'
                 onClick={() => setIsMobileMenuOpen(false)}
-                className='block px-4 py-4 rounded-xl text-base font-bold text-white text-center mt-4 shadow-lg'
-                style={{
-                  backgroundColor: 'var(--brand-secondary)',
-                  boxShadow: `0 4px 20px var(--brand-secondary-opacity-30)`
-                }}
+                className='accent-btn block px-4 py-3.5 rounded-xl text-base font-semibold text-white text-center mt-4'
               >
                 Login to Portal
               </Link>

@@ -24,22 +24,14 @@ export default function BackToTopButton() {
   return (
     <button
       onClick={scrollToTop}
-      className='fixed bottom-28 left-6 z-40 w-12 h-12 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-primary-dark transition-all duration-300 hover:scale-110 flex items-center justify-center group'
+      /* Was sitting bottom-28 left-6 — alone in the bottom-left corner,
+         diagonally opposite the contact button, so the page had a floating
+         control in each of two corners. It now stacks above the contact
+         button on the right. Hover moved from JS handlers to CSS. */
+      className='accent-btn fixed bottom-24 right-6 z-40 w-11 h-11 rounded-full text-white transition-transform duration-300 hover:scale-105 flex items-center justify-center'
       aria-label='Back to top'
-      style={{
-        backgroundColor: 'var(--brand-primary)',
-        boxShadow: `0 4px 15px var(--brand-primary-opacity-30)`
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'var(--brand-primary-dark)';
-        e.currentTarget.style.boxShadow = `0 6px 20px var(--brand-primary-opacity-40)`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'var(--brand-primary)';
-        e.currentTarget.style.boxShadow = '0 4px 15px var(--brand-primary-opacity-30)';
-      }}
     >
-      <ArrowUp className='w-5 h-5 group-hover:-translate-y-1 transition-transform' />
+      <ArrowUp className='w-5 h-5' />
     </button>
   );
 }

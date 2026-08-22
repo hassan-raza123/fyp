@@ -95,8 +95,14 @@ export default async function LegalPage({
         </h1>
         <p className='text-ink-2 text-lg mb-8'>{entry.intro}</p>
 
+        {/* The label was `text-warn` on `bg-warn-wash` — #B45309 on #FBF0DF,
+            which measures 4.46:1 and misses AA for 14px text by a hair. It
+            also spent an attainment colour on page chrome, against the rule
+            the palette states at the top of globals.css: red, amber and green
+            mean attainment and nothing else uses them. The amber wash and
+            border still carry the warning; the label reads in ink. */}
         <div className='rounded-lg border border-warn/40 bg-warn-wash p-4 mb-12'>
-          <p className='text-sm text-warn font-semibold mb-1'>
+          <p className='text-sm text-ink font-semibold mb-1'>
             Draft — not yet in force
           </p>
           <p className='text-sm text-ink-2'>

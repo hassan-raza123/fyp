@@ -1,223 +1,268 @@
 'use client';
 
-import Image from 'next/image';
-import { Target, Award, BarChart3, Zap, Workflow, RefreshCw, GitBranch } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { PRODUCT_NAME } from '@/constants/branding';
+import {
+  BarChart3,
+  ClipboardCheck,
+  FileCheck2,
+  GitBranch,
+  Layers,
+  Network,
+  Repeat,
+  ScrollText,
+  SlidersHorizontal,
+  Target,
+} from 'lucide-react';
+import {
+  AssessmentVisual,
+  AttainmentVisual,
+  OutcomeHierarchyVisual,
+} from './ShowcaseVisuals';
 
+/**
+ * The three capability areas.
+ *
+ * The tabs used to be "Why Attainly?", "PDCA Framework" and "CLO-PLO
+ * Mapping". The first listed features rather than reasons, and its four
+ * bullets — "Automated CLO & PLO Tracking", "Real-time Analytics & Reports",
+ * "Smart Outcome Mapping", "Paperless Assessment System" — were repeated
+ * almost word for word by the module grid further down the page. The second
+ * explained Plan-Do-Check-Act, a textbook concept every reader of this page
+ * already knows, on the page's most valuable real estate. Only the third
+ * described the product.
+ *
+ * These three are the actual shape of the system: define the outcomes,
+ * capture evidence against them, read what came out.
+ */
 const showcaseItems = [
   {
-    id: 'benefits',
-    title: `Why ${PRODUCT_NAME}?`,
-    subtitle: 'Smart OBE Management',
-    image: '/info-images/obe-benefits.webp',
-    icon: Zap,
-    features: [
-      { icon: Target, text: 'Automated CLO & PLO Tracking' },
-      { icon: BarChart3, text: 'Real-time Analytics & Reports' },
-      { icon: Award, text: 'Smart Outcome Mapping' },
-      { icon: Zap, text: 'Paperless Assessment System' }
-    ]
-  },
-  {
-    id: 'framework',
-    title: 'PDCA Framework',
-    subtitle: `How ${PRODUCT_NAME} Works`,
-    image: '/info-images/pdca-framework.png',
-    icon: Workflow,
-    features: [
-      { icon: Workflow, text: 'Plan: Define CLOs & PLOs' },
-      { icon: Target, text: 'Do: Conduct Assessments' },
-      { icon: BarChart3, text: 'Check: Analyze Performance' },
-      { icon: RefreshCw, text: 'Act: Improve Curriculum' }
-    ]
-  },
-  {
     id: 'mapping',
-    title: 'CLO-PLO Mapping',
-    subtitle: 'Intelligent Outcome Alignment',
-    image: '/info-images/clo-plo-mapping.jpg',
-    icon: GitBranch,
+    title: 'Outcome mapping',
+    subtitle: 'The spine of OBE',
+    heading: 'One hierarchy, mapped end to end',
+    body: 'PEOs, PLOs, CLOs and LLOs are not four separate lists. Map them once and every attainment figure on every screen is traceable back through the mapping that produced it.',
+    icon: Network,
+    Visual: OutcomeHierarchyVisual,
     features: [
-      { icon: Target, text: 'Automated CLO Tracking' },
-      { icon: GitBranch, text: 'Real-time PLO Alignment' },
-      { icon: Award, text: 'Instant Attainment %' },
-      { icon: BarChart3, text: 'Dynamic Analytics' }
-    ]
-  }
+      { icon: Layers, text: 'PEO, PLO, CLO and LLO hierarchy' },
+      { icon: GitBranch, text: 'PEO–PLO, CLO–PLO and LLO–PLO matrices' },
+      { icon: Target, text: 'Programme curriculum mapping' },
+      { icon: BarChart3, text: 'PLO coverage matrix' },
+    ],
+  },
+  {
+    id: 'assessment',
+    title: 'Assessment & grading',
+    subtitle: 'Where the evidence comes from',
+    heading: 'Captured while teaching, not afterwards',
+    body: 'Each question on each paper carries the CLO it tests and its Bloom level. Faculty enter marks the way they always have; the attainment evidence is a by-product, not a second exercise.',
+    icon: ClipboardCheck,
+    Visual: AssessmentVisual,
+    features: [
+      { icon: Target, text: 'Assessment items tagged to a CLO' },
+      { icon: SlidersHorizontal, text: 'Rubric-based marking' },
+      { icon: Layers, text: "Bloom's taxonomy analysis" },
+      { icon: ScrollText, text: 'Marks entry, evaluation and result sheets' },
+    ],
+  },
+  {
+    id: 'attainment',
+    title: 'Attainment & reporting',
+    subtitle: 'What a panel asks for',
+    heading: 'Evidence that is already assembled',
+    body: 'Attainment is computed from live marks at every level, against thresholds you set. When a review comes, the course files and OBE reports are generated from the same records the figures came from.',
+    icon: FileCheck2,
+    Visual: AttainmentVisual,
+    features: [
+      { icon: BarChart3, text: 'CLO, LLO, PLO and PEO attainment' },
+      { icon: SlidersHorizontal, text: 'Configurable pass/fail and graduation criteria' },
+      { icon: FileCheck2, text: 'Course files and OBE reports' },
+      { icon: Repeat, text: 'Action plans that close the loop' },
+    ],
+  },
 ];
 
 export default function OBEShowcaseSection() {
-  const [activeTab, setActiveTab] = useState('benefits');
-  const [isVisible, setIsVisible] = useState(false);
-  const [triggerAnimation, setTriggerAnimation] = useState(0);
+  const [activeTab, setActiveTab] = useState(showcaseItems[0].id);
+  const [hasEntered, setHasEntered] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const activeItem = showcaseItems.find(item => item.id === activeTab) || showcaseItems[0];
+  const activeItem =
+    showcaseItems.find((item) => item.id === activeTab) ?? showcaseItems[0];
   const IconComponent = activeItem.icon;
+  const Visual = activeItem.Visual;
 
-  // Intersection Observer for scroll detection
+  /*
+    Reveal-on-scroll, as an enhancement only.
+
+    This used to gate the content itself: until the observer fired, both
+    columns carried `opacity-0`. So the entire section — the diagram and all
+    four feature cards — was invisible on first paint, and stayed invisible
+    for anyone whose JavaScript was slow, blocked or errored, and in any
+    render that does not scroll (print, a link preview, a full-page capture).
+    A threshold of 0.3 on a two-column grid this tall also never resolves on
+    a short viewport.
+
+    Now the markup is visible by default and the animation is added once the
+    section is reached.
+  */
   useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-          setTriggerAnimation(prev => prev + 1);
+          setHasEntered(true);
+          observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
+    observer.observe(node);
+    // Captured above: reading `sectionRef.current` in the cleanup could
+    // unobserve a different node than the one observed.
+    return () => observer.disconnect();
   }, []);
 
-  // Re-trigger animation on tab change
-  useEffect(() => {
-    if (isVisible) {
-      setTriggerAnimation(prev => prev + 1);
-    }
-  }, [activeTab, isVisible]);
-
   return (
-    <div 
+    <section
       id='obe-showcase'
-      className='relative bg-fixed bg-center bg-cover py-24 overflow-hidden scroll-mt-20'
-      style={{ background: 'linear-gradient(200deg, var(--surface) 0%, var(--surface-2) 100%)' }}
+      className='relative section-ink py-24 overflow-hidden scroll-mt-24'
     >
-      {/* Dark Overlay */}
-      <div 
-        className='absolute inset-0'
-        style={{ 
-          background: `linear-gradient(135deg, var(--overlay-slate-85), var(--overlay-dark-75))`
-        }}
-      ></div>
-
-      <div className='relative'>
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
-        <div className='text-center mb-16'>
-          <span className='inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur text-sm font-semibold mb-4 text-white'>
-            OBE ECOSYSTEM
+        <div className='text-center mb-12'>
+          <span className='inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/15 text-xs font-semibold tracking-wider text-white/90'>
+            HOW IT FITS TOGETHER
           </span>
-          <h2 className='text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight'>
-            Complete OBE Solution
+          <h2 className='mt-6 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white'>
+            Three parts, one chain of evidence
           </h2>
-          <p className='text-xl max-w-2xl mx-auto' style={{ color: 'var(--white-opacity-90)' }}>
-            Everything you need for outcome-based education in one intelligent platform
+          <p className='mt-4 text-base sm:text-lg max-w-2xl mx-auto text-white/75'>
+            Every number a panel is shown can be traced back to the question a
+            student answered.
           </p>
         </div>
 
         {/* Tab Navigation */}
-        <div className='flex justify-center gap-4 mb-12 flex-wrap'>
+        <div
+          role='tablist'
+          aria-label='Capability areas'
+          className='flex justify-center gap-3 mb-12 flex-wrap'
+        >
           {showcaseItems.map((item) => {
             const TabIcon = item.icon;
+            const selected = activeTab === item.id;
             return (
               <button
                 key={item.id}
+                type='button'
+                role='tab'
+                id={`tab-${item.id}`}
+                aria-selected={selected}
+                aria-controls={`panel-${item.id}`}
                 onClick={() => setActiveTab(item.id)}
-                className={`group flex items-center gap-3 px-6 py-4 rounded-2xl transition-all duration-300 ${
-                  activeTab === item.id 
-                    ? 'bg-brand-secondary text-white scale-105 shadow-xl' 
-                    : 'bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-white/15'
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                  selected
+                    ? 'accent-btn text-white'
+                    : 'bg-white/[0.08] backdrop-blur border border-white/15 text-white/85 hover:bg-white/15 hover:text-white'
                 }`}
               >
-                <TabIcon className='w-5 h-5' />
-                <span className='font-bold text-base hidden sm:inline'>{item.title}</span>
+                <TabIcon className='w-4 h-4' />
+                {/* The label was `hidden sm:inline`, so on a phone the three
+                    tabs were three unlabelled icons. */}
+                <span>{item.title}</span>
               </button>
             );
           })}
         </div>
 
-         {/* Content Area */}
-         <div ref={sectionRef} className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-           {/* Left - Image */}
-           <div className='order-2 lg:order-1'>
-             <div 
-               key={`image-${triggerAnimation}`}
-               className={`relative group ${isVisible ? 'animate-slide-left' : 'opacity-0'}`}
-             >
-              <div 
-                className='absolute -inset-4 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity'
-                style={{ 
-                  background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))'
-                }}
-              ></div>
-              <div className='relative bg-surface rounded-3xl overflow-hidden shadow-2xl border-2 border-subtle transform hover:scale-[1.02] transition-all duration-500'>
-                <Image
-                  src={activeItem.image}
-                  alt={activeItem.title}
-                  width={800}
-                  height={600}
-                  className='w-full h-auto'
-                  priority
-                />
-               </div>
-             </div>
-           </div>
-
-           {/* Right - Content */}
-           <div className='order-1 lg:order-2'>
-             <div 
-               key={`content-${triggerAnimation}`}
-               className={`space-y-8 ${isVisible ? 'animate-slide-right' : 'opacity-0'}`}
-             >
-            {/* Title with Icon */}
-            <div>
-              <div 
-                className='inline-flex items-center gap-3 px-4 py-2 rounded-xl mb-4 bg-white/10 backdrop-blur border border-white/20'
-              >
-                <IconComponent className='w-6 h-6 text-brand-secondary' />
-                <span className='text-sm font-bold uppercase tracking-wide text-brand-secondary'>
-                  {activeItem.subtitle}
-                </span>
+        {/* Content Area */}
+        <div
+          ref={sectionRef}
+          role='tabpanel'
+          id={`panel-${activeItem.id}`}
+          aria-labelledby={`tab-${activeItem.id}`}
+          className='grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center'
+        >
+          {/* Left - the diagram */}
+          <div className='order-2 lg:order-1'>
+            <div
+              key={`visual-${activeTab}`}
+              className={`relative group ${hasEntered ? 'animate-slide-left' : ''}`}
+            >
+              <div
+                aria-hidden
+                className='absolute -inset-4 rounded-3xl blur-2xl opacity-25 group-hover:opacity-40 transition-opacity'
+                style={{ background: 'var(--accent)' }}
+              />
+              <div className='relative bg-surface rounded-2xl overflow-hidden shadow-2xl border border-white/10'>
+                <Visual />
               </div>
-              <h3 className='text-4xl font-bold mb-4 text-white'>
-                {activeItem.title}
-              </h3>
             </div>
+          </div>
 
-            {/* Features Grid */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-              {activeItem.features.map((feature, index) => {
-                const FeatureIcon = feature.icon;
-                return (
-                  <div
-                    key={index}
-                    className='group flex items-start gap-3 p-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 transition-all duration-300 hover:bg-white/15'
+          {/* Right - Content */}
+          <div className='order-1 lg:order-2'>
+            <div
+              key={`content-${activeTab}`}
+              className={`space-y-7 ${hasEntered ? 'animate-slide-right' : ''}`}
+            >
+              <div>
+                <div className='inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg mb-4 bg-white/[0.08] backdrop-blur border border-white/15'>
+                  {/* Both were `text-brand-secondary`. That token resolves to
+                      the same indigo as the primary, landing near 2:1 on this
+                      ground — the eyebrow was effectively unreadable. */}
+                  <IconComponent
+                    className='w-4 h-4'
+                    style={{ color: 'var(--primary-300)' }}
+                  />
+                  <span
+                    className='text-xs font-semibold uppercase tracking-wider'
+                    style={{ color: 'var(--primary-300)' }}
                   >
-                    <div 
-                      className='w-10 h-10 rounded-lg flex items-center justify-center shrink-0'
-                      style={{ 
-                        background: index % 2 === 0 
-                          ? 'var(--brand-primary)' 
-                          : 'var(--brand-secondary)'
-                      }}
+                    {activeItem.subtitle}
+                  </span>
+                </div>
+                <h3 className='text-2xl sm:text-3xl font-bold text-white'>
+                  {activeItem.heading}
+                </h3>
+                <p className='mt-3 text-base leading-relaxed text-white/75'>
+                  {activeItem.body}
+                </p>
+              </div>
+
+              {/* Features Grid */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                {activeItem.features.map((feature) => {
+                  const FeatureIcon = feature.icon;
+                  return (
+                    <div
+                      key={feature.text}
+                      className='flex items-start gap-3 p-4 rounded-xl bg-white/[0.06] backdrop-blur border border-white/12 transition-colors hover:bg-white/[0.1]'
                     >
-                      <FeatureIcon className='w-5 h-5 text-white' />
-                    </div>
-                    <div>
-                      <p className='text-sm font-semibold leading-relaxed text-white'>
+                      {/* The icon plate alternated brand-primary and
+                          brand-secondary by index. Both are the same indigo,
+                          so the alternation was invisible. */}
+                      <span
+                        className='w-9 h-9 rounded-lg flex items-center justify-center shrink-0'
+                        style={{ backgroundColor: 'var(--accent)' }}
+                      >
+                        <FeatureIcon className='w-4 h-4 text-white' />
+                      </span>
+                      <p className='text-sm font-medium leading-snug text-white/90 pt-1.5'>
                         {feature.text}
                       </p>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-           </div>
           </div>
         </div>
       </div>
-      </div>
-    </div>
+    </section>
   );
 }
-
