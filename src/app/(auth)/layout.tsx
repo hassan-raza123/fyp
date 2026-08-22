@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { getBranding } from '@/lib/branding';
 import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants/branding';
 
@@ -39,7 +40,7 @@ export default async function AuthLayout({
 
   return (
     <div 
-      className='min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden light'
+      className='min-h-screen flex items-center justify-center px-4 lg:px-8 pt-28 pb-20 relative overflow-hidden light'
       style={{ colorScheme: 'light' }}
     >
       {/*
@@ -77,30 +78,63 @@ export default async function AuthLayout({
         />
       </div>
 
-      {/* Logo - Top Left Corner */}
-      <Link href='/' className='absolute top-6 left-6 z-30 flex items-center gap-3 hover:opacity-90 transition-opacity cursor-pointer'>
-        {/* The mark had a 60%-opaque white blur behind it and a black
-            drop-shadow on top — two effects fighting on a 70px logo. */}
-        <Image
-          src='/brand/attainly-mark.svg'
-          alt={`${PRODUCT_NAME} logo`}
-          width={44}
-          height={44}
-          priority
-          className='object-contain block shrink-0'
-        />
-        <div>
-          {/* The text-shadows here and on the left-hand column were
-              compensating for a background that never rendered. With real
-              ink under the type they only muddy it. */}
-          <span className='block text-xl font-bold text-white'>
-            {PRODUCT_NAME}
-          </span>
-          <span className='block text-xs text-white/70 mt-0.5'>
-            {branding.institutionName}
-          </span>
+      {/*
+        Header.
+
+        The logo was pinned `absolute top-6 left-6` — a lockup stuck in the
+        corner rather than a header, so it sat at a different height and a
+        different left edge from the navbar on every other page, and moving
+        between the marketing site and the sign-in screen made it jump.
+
+        It is a real bar now, on the same `max-w-7xl` container, the same
+        `h-20` height and the same 44px mark as `NavbarClient`, so the logo
+        lands on exactly the same pixel on both. It is not the marketing
+        navbar: this is a focused task page and a row of "How it works /
+        Modules / Login" links belongs on the site, not over a password field.
+        The one link out is the way back.
+      */}
+      <header className='absolute top-0 inset-x-0 z-30'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='flex items-center justify-between h-20'>
+            <Link
+              href='/'
+              className='flex items-center gap-3 group hover:opacity-90 transition-opacity'
+            >
+              {/* The mark had a 60%-opaque white blur behind it and a black
+                  drop-shadow on top — two effects fighting on a 70px logo. */}
+              <div className='relative w-11 h-11 transition-transform duration-300 group-hover:scale-105'>
+                <Image
+                  src='/brand/attainly-mark.svg'
+                  alt={`${PRODUCT_NAME} logo`}
+                  width={44}
+                  height={44}
+                  priority
+                  className='w-full h-full object-contain'
+                />
+              </div>
+              <div>
+                {/* The text-shadows here and on the left-hand column were
+                    compensating for a background that never rendered. With
+                    real ink under the type they only muddy it. */}
+                <span className='block text-xl font-bold tracking-tight text-white'>
+                  {PRODUCT_NAME}
+                </span>
+                <span className='block text-[11px] font-semibold tracking-wide text-white/70'>
+                  {branding.institutionName}
+                </span>
+              </div>
+            </Link>
+
+            <Link
+              href='/'
+              className='hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white/85 hover:text-white hover:bg-white/10 transition-colors'
+            >
+              <ArrowLeft className='w-4 h-4' />
+              Back to site
+            </Link>
+          </div>
         </div>
-      </Link>
+      </header>
 
       {/*
         Main content.
