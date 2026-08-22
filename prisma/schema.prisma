@@ -27,6 +27,7 @@ model users {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   auditlogs              auditlogs[]
+  attachments            attachments[]
   departmentAdmin        departments?       @relation("DepartmentAdmin")
   faculty                faculties?
   notifications          notifications[]
@@ -190,6 +191,7 @@ model courseofferings {
   updatedAt        DateTime               @updatedAt
   assessments      assessments[]
   closAttainments  closattainments[]
+  attachments      attachments[]
   llosAttainments  llosattainments[]
   course           courses                @relation(fields: [courseId], references: [id])
   semester         semesters              @relation(fields: [semesterId], references: [id])
@@ -582,9 +584,57 @@ model assessments {
   faculty          faculties                  @relation(fields: [conductedBy], references: [id])
   courseOffering   courseofferings            @relation(fields: [courseOfferingId], references: [id])
   studentResults   studentassessmentresults[]
+  attachments      attachments[]
 
   @@index([courseOfferingId])
   @@index([conductedBy])
+}
+
+/// A stored file: a question paper, a marked script, a rubric scan.
+///
+/// PEC course files are expected to carry the assessment instrument itself and
+/// samples of marked student work — conventionally the best, an average and the
+/// weakest script per assessment. The product could not hold a file at all, so
+/// this was the one piece of accreditation evidence it could never produce.
+///
+/// Bytes live in object storage, not in MySQL: a semester of scanned scripts is
+/// gigabytes, and putting that in the same database as the grades makes every
+/// backup and restore an order of magnitude slower.
+model attachments {
+  id            Int              @id @default(autoincrement())
+  /// Opaque key in the storage backend. Never a user-supplied path.
+  storageKey    String           @unique
+  originalName  String
+  mimeType      String
+  sizeBytes     Int
+  kind          attachment_kind
+  /// Free-text label — "Best script", "Q3 model answer".
+  label         String?
+  uploadedBy    Int
+  createdAt     DateTime         @default(now())
+
+  /// Exactly one owner is set. Which one decides who may read the file.
+  assessmentId     Int?
+  courseOfferingId Int?
+
+  uploader       users            @relation(fields: [uploadedBy], references: [id])
+  assessment     assessments?     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  courseOffering courseofferings? @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+  @@index([courseOfferingId])
+  @@index([uploadedBy])
+}
+
+enum attachment_kind {
+  /// The paper, quiz or assignment brief as issued to students.
+  question_paper
+  /// A marked script kept as evidence of the standard applied.
+  marked_script
+  /// The rubric used to score a CEP/CEA.
+  rubric_document
+  /// Course outline, lesson plan, anything else in the course file.
+  supporting_document
 }
 
 model assessmentitems {
@@ -598,6 +648,18 @@ model assessmentitems {
   /// Optional rubric used to score this item. When set, evaluation records a
   /// per-criterion breakdown instead of a single opaque mark.
   rubricId           Int?
+  /// Marks this item as a Complex Engineering Problem or Activity.
+  ///
+  /// PEC's Manual of Accreditation requires core engineering courses and the
+  /// final-year design project to include CEPs, and requires that they be
+  /// evaluated through a pre-defined rubric and by no other means. An
+  /// evaluator asks to see the CEPs first; without this flag the system could
+  /// not answer the question at all.
+  complexity         complexity_kind?
+  /// Which of PEC's CEP/CEA attributes (Manual 2019, Tables 9 and 10) this
+  /// item exercises. Stored as a list because one problem normally covers
+  /// several, and the evaluator checks coverage across the programme.
+  complexAttributes  Json?
   createdAt          DateTime                       @default(now())
   updatedAt          DateTime                       @updatedAt
   assessment         assessments                    @relation(fields: [assessmentId], references: [id])
@@ -1012,6 +1074,14 @@ enum course_type {
   THEORY_LAB
   PROJECT
   THESIS
+}
+
+/// PEC distinguishes Complex Engineering *Problems* (Table 9, knowledge-profile
+/// driven) from Complex Engineering *Activities* (Table 10, resource and
+/// consequence driven). A given item is one or the other, not both.
+enum complexity_kind {
+  cep
+  cea
 }
 
 enum assessment_type {

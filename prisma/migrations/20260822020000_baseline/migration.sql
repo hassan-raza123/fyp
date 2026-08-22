@@ -1,3 +1,13 @@
+-- Consolidated baseline.
+--
+-- The four migrations this replaces had drifted from both databases: the
+-- development database reported them unapplied while the tables existed, and
+-- the test database failed `migrate deploy` on a duplicate column. Neither
+-- could be fixed forward, and a history that cannot be replayed onto an empty
+-- database is not a history — it is a liability at the first customer install.
+--
+-- This is generated from schema.prisma with `migrate diff --from-empty`, so it
+-- is exactly the schema the code expects, and it replays cleanly.
 -- CreateTable
 CREATE TABLE `users` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -227,12 +237,54 @@ CREATE TABLE `studentsections` (
     `sectionId` INTEGER NOT NULL,
     `enrollmentDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `status` ENUM('active', 'inactive', 'completed') NOT NULL DEFAULT 'active',
+    `eligibilityOverride` ENUM('none', 'eligible', 'ineligible') NOT NULL DEFAULT 'none',
+    `eligibilityRemarks` TEXT NULL,
+    `eligibilitySetBy` INTEGER NULL,
+    `eligibilitySetAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
     INDEX `studentsections_sectionId_idx`(`sectionId`),
     INDEX `studentsections_studentId_idx`(`studentId`),
+    INDEX `studentsections_eligibilitySetBy_idx`(`eligibilitySetBy`),
     UNIQUE INDEX `studentsections_studentId_sectionId_key`(`studentId`, `sectionId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `attendance_sessions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `sectionId` INTEGER NOT NULL,
+    `date` DATE NOT NULL,
+    `slot` INTEGER NOT NULL DEFAULT 1,
+    `topic` TEXT NULL,
+    `durationMinutes` INTEGER NOT NULL DEFAULT 60,
+    `status` ENUM('open', 'finalized') NOT NULL DEFAULT 'open',
+    `markedBy` INTEGER NOT NULL,
+    `finalizedAt` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `attendance_sessions_sectionId_idx`(`sectionId`),
+    INDEX `attendance_sessions_markedBy_idx`(`markedBy`),
+    INDEX `attendance_sessions_date_idx`(`date`),
+    UNIQUE INDEX `attendance_sessions_sectionId_date_slot_key`(`sectionId`, `date`, `slot`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `attendance_records` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `sessionId` INTEGER NOT NULL,
+    `studentId` INTEGER NOT NULL,
+    `status` ENUM('present', 'absent', 'late', 'excused') NOT NULL DEFAULT 'present',
+    `remarks` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `attendance_records_sessionId_idx`(`sessionId`),
+    INDEX `attendance_records_studentId_idx`(`studentId`),
+    UNIQUE INDEX `attendance_records_sessionId_studentId_key`(`sessionId`, `studentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -429,6 +481,27 @@ CREATE TABLE `assessments` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `attachments` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `storageKey` VARCHAR(191) NOT NULL,
+    `originalName` VARCHAR(191) NOT NULL,
+    `mimeType` VARCHAR(191) NOT NULL,
+    `sizeBytes` INTEGER NOT NULL,
+    `kind` ENUM('question_paper', 'marked_script', 'rubric_document', 'supporting_document') NOT NULL,
+    `label` VARCHAR(191) NULL,
+    `uploadedBy` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `assessmentId` INTEGER NULL,
+    `courseOfferingId` INTEGER NULL,
+
+    UNIQUE INDEX `attachments_storageKey_key`(`storageKey`),
+    INDEX `attachments_assessmentId_idx`(`assessmentId`),
+    INDEX `attachments_courseOfferingId_idx`(`courseOfferingId`),
+    INDEX `attachments_uploadedBy_idx`(`uploadedBy`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `assessmentitems` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `assessmentId` INTEGER NOT NULL,
@@ -438,6 +511,8 @@ CREATE TABLE `assessmentitems` (
     `cloId` INTEGER NULL,
     `lloId` INTEGER NULL,
     `rubricId` INTEGER NULL,
+    `complexity` ENUM('cep', 'cea') NULL,
+    `complexAttributes` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -577,7 +652,7 @@ CREATE TABLE `notifications` (
     `title` VARCHAR(191) NOT NULL,
     `message` VARCHAR(191) NOT NULL,
     `isRead` BOOLEAN NOT NULL DEFAULT false,
-    `type` ENUM('system', 'course', 'announcement', 'alert', 'grade', 'result', 'assessment') NOT NULL,
+    `type` ENUM('system', 'course', 'announcement', 'alert', 'grade', 'result', 'assessment', 'attendance') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -663,6 +738,7 @@ CREATE TABLE `passfailcriteria` (
     `minPassPercent` DOUBLE NOT NULL DEFAULT 50,
     `minCloAttainmentPercent` DOUBLE NULL,
     `minLloAttainmentPercent` DOUBLE NULL,
+    `minAttendancePercent` DOUBLE NULL,
     `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -1042,6 +1118,21 @@ ALTER TABLE `studentsections` ADD CONSTRAINT `studentsections_sectionId_fkey` FO
 ALTER TABLE `studentsections` ADD CONSTRAINT `studentsections_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `studentsections` ADD CONSTRAINT `studentsections_eligibilitySetBy_fkey` FOREIGN KEY (`eligibilitySetBy`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attendance_sessions` ADD CONSTRAINT `attendance_sessions_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `sections`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attendance_sessions` ADD CONSTRAINT `attendance_sessions_markedBy_fkey` FOREIGN KEY (`markedBy`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attendance_records` ADD CONSTRAINT `attendance_records_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `attendance_sessions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attendance_records` ADD CONSTRAINT `attendance_records_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `plos` ADD CONSTRAINT `plos_programId_fkey` FOREIGN KEY (`programId`) REFERENCES `programs`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1106,6 +1197,15 @@ ALTER TABLE `assessments` ADD CONSTRAINT `assessments_conductedBy_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `assessments` ADD CONSTRAINT `assessments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attachments` ADD CONSTRAINT `attachments_uploadedBy_fkey` FOREIGN KEY (`uploadedBy`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attachments` ADD CONSTRAINT `attachments_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `attachments` ADD CONSTRAINT `attachments_courseOfferingId_fkey` FOREIGN KEY (`courseOfferingId`) REFERENCES `courseofferings`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `assessmentitems` ADD CONSTRAINT `assessmentitems_assessmentId_fkey` FOREIGN KEY (`assessmentId`) REFERENCES `assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

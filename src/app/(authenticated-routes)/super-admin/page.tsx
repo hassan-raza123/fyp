@@ -28,6 +28,8 @@ import {
   Cell,
 } from 'recharts';
 import { toast } from 'sonner';
+import { EmptyChart } from '@/components/ui/empty-chart';
+import { StatCard } from '@/components/ui/stat-card';
 import { PageLoading } from '@/components/ui/page-loading';
 import { PageError } from '@/components/ui/page-error';
 import { Button } from '@/components/ui/button';
@@ -67,61 +69,6 @@ interface AnalyticsData {
     totalAdmins: number;
   };
 }
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  subtitle?: string;
-  trend?: number;
-  isDarkMode?: boolean;
-}
-
-const StatCard = ({ title, value, icon, subtitle, trend, isDarkMode = false }: StatCardProps) => {
-  const iconBgColor = isDarkMode 
-    ? 'var(--brand-primary-opacity-15)' 
-    : 'var(--brand-primary-opacity-15)';
-  const iconColor = isDarkMode 
-    ? 'var(--accent)' 
-    : 'var(--accent)';
-  
-  return (
-    <div className="rounded-xl p-4 shadow-sm border bg-card border-card-border transition-all duration-200 hover:shadow-md hover:border-primary/20 dark:hover:border-secondary/20 group">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-secondary-text mb-1.5">
-            {title}
-          </p>
-          <h3 className="text-2xl font-bold text-primary-text mb-1">
-            {value}
-          </h3>
-          {subtitle && (
-            <p className="text-[10px] text-muted-text">
-              {subtitle}
-            </p>
-          )}
-          {trend !== undefined && (
-            <div className="flex items-center mt-2">
-              <ArrowUpRight className={`w-3 h-3 mr-1 ${trend >= 0 ? 'text-good' : 'text-bad'}`} />
-              <span className={`text-xs font-semibold ${trend >= 0 ? 'text-good' : 'text-bad'}`}>
-                {trend >= 0 ? '+' : ''}{trend}%
-              </span>
-              <span className="text-xs text-muted-text ml-1.5">vs last month</span>
-            </div>
-          )}
-        </div>
-        <div 
-          className="p-2.5 rounded-lg transition-transform duration-200 group-hover:scale-110"
-          style={{ backgroundColor: iconBgColor }}
-        >
-          <div style={{ color: iconColor }}>
-            {icon}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const CHART_COLORS = ['var(--accent)', 'var(--accent)', 'var(--primary-400)', 'var(--accent-hover)', 'var(--accent-hover)', 'var(--primary-400)'];
 
@@ -239,36 +186,32 @@ export default function SuperAdminDashboard() {
       {/* Key Stats - Essential Only */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
-          title="Departments"
-          value={analyticsData.stats.totalDepartments}
-          subtitle={`${dashboardData.stats.assignedDepartments} assigned`}
-            icon={<Building2 className="w-5 h-5" />}
-            isDarkMode={isDarkMode}
+            label="Departments"
+            value={analyticsData.stats.totalDepartments}
+            hint={`${dashboardData.stats.assignedDepartments} assigned`}
+            icon={<Building2 />}
           />
           <StatCard
-          title="Admins"
-          value={analyticsData.stats.totalAdmins}
-          subtitle={`${assignmentRate}% assigned`}
-            icon={<Shield className="w-5 h-5" />}
-            isDarkMode={isDarkMode}
+            label="Admins"
+            value={analyticsData.stats.totalAdmins}
+            hint={`${assignmentRate}% assigned`}
+            icon={<Shield />}
           />
           {/* No `trend` prop: it was hardcoded to 8, so every installation
               reported "+8% vs last month" regardless of its data — including
               a fresh one showing 0 students. An invented number on a
               dashboard is worse than no number, because staff act on it. */}
           <StatCard
-          title="Students"
-          value={analyticsData.stats.totalStudents.toLocaleString()}
-          subtitle="Total enrolled"
-          icon={<Users className="w-5 h-5" />}
-            isDarkMode={isDarkMode}
+            label="Students"
+            value={analyticsData.stats.totalStudents.toLocaleString()}
+            hint="Total enrolled"
+            icon={<Users />}
           />
           <StatCard
-          title="Faculty"
-          value={analyticsData.stats.totalFaculty}
-          subtitle="Active members"
-          icon={<UserCheck className="w-5 h-5" />}
-            isDarkMode={isDarkMode}
+            label="Faculty"
+            value={analyticsData.stats.totalFaculty}
+            hint="Active members"
+            icon={<UserCheck />}
           />
         </div>
 
@@ -322,16 +265,22 @@ export default function SuperAdminDashboard() {
               <p className="text-[10px] text-secondary-text mt-0.5">Last 12 months</p>
             </div>
           </div>
+          {analyticsData.enrollmentTrend.some((d) => d.students > 0) ? (
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={analyticsData.enrollmentTrend} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={'var(--border-color)'} opacity={0.2} />
-              <XAxis 
-                dataKey="month" 
+            {/* `left: -15` pulled the plot outside its own box, which clipped
+                the first x-axis label to "ep 2025". Rotated labels also need
+                real bottom margin or they collide with each other. */}
+            <LineChart data={analyticsData.enrollmentTrend} margin={{ top: 5, right: 12, left: 0, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={'var(--chart-grid)'} opacity={0.35} vertical={false} />
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-                stroke={'var(--border-firm)'}
+                stroke={'var(--chart-grid)'}
                 angle={-35}
                 textAnchor="end"
-                height={60}
+                height={64}
+                interval="preserveStartEnd"
+                minTickGap={4}
               />
               <YAxis 
                 tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
@@ -358,11 +307,18 @@ export default function SuperAdminDashboard() {
                 dataKey="students" 
                 stroke={primaryColor}
                 strokeWidth={3}
-                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: 'var(--white)' }}
+                dot={{ fill: primaryColor, r: 4, strokeWidth: 2, stroke: 'var(--surface)' }}
                 activeDot={{ r: 6, strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
+          ) : (
+            <EmptyChart
+              height={220}
+              message="No enrolment yet"
+              hint="This fills in once students are added to a batch."
+            />
+          )}
           </div>
 
         {/* Department Distribution - Important for Super Admin */}
@@ -376,6 +332,8 @@ export default function SuperAdminDashboard() {
               <p className="text-[10px] text-secondary-text mt-0.5">Students by department</p>
             </div>
           </div>
+          {analyticsData.departmentDistribution.length > 0 ? (
+          <>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
@@ -418,6 +376,14 @@ export default function SuperAdminDashboard() {
                   </div>
             ))}
                 </div>
+          </>
+          ) : (
+            <EmptyChart
+              height={220}
+              message="No departments yet"
+              hint="Create a department and enrol students to see the split here."
+            />
+          )}
               </div>
             </div>
 

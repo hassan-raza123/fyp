@@ -387,12 +387,9 @@ export default function DashboardLayout({
         transition-all duration-300 ease-in-out
         backdrop-blur-md
         bg-gradient-to-b from-surface via-surface/98 to-surface-2/95
-        border-r border-subtle/60
-        ${isDarkMode 
-          ? 'shadow-[4px_0_20px_rgba(0,0,0,0.4),2px_0_8px_var(--brand-primary-opacity-10)]' 
-          : 'shadow-[4px_0_20px_rgba(0,0,0,0.08),2px_0_8px_var(--brand-primary-opacity-06)]'
-        }
-        ${isSidebarOpen ? 'w-64' : 'w-16'}
+        border-r border-subtle
+        
+        ${isSidebarOpen ? 'w-[228px]' : 'w-16'}
         ${!isSidebarOpen && 'lg:w-16'}
         ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
@@ -401,7 +398,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Sidebar Header - Enhanced Design with Theme Classes */}
-        <div className={`h-16 flex-shrink-0 flex items-center px-4 border-b ${'border-subtle/60'} ${'bg-gradient-to-br from-surface via-surface to-surface-2/50'}`}>
+        <div className={`h-14 flex-shrink-0 flex items-center px-4 border-b ${'border-subtle'} `}>
           <Link
             href={
               role === 'super_admin' ? '/super-admin' :
@@ -499,7 +496,7 @@ export default function DashboardLayout({
       `}
       >
         {/* Compact Header - Enhanced Design with Theme Classes */}
-        <header className={`h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${'bg-surface/95 border-b border-subtle/60 shadow-sm'} transition-all duration-200`}>
+        <header className={`h-14 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 backdrop-blur-md ${'bg-surface/95 border-b border-subtle'} transition-all duration-200`}>
           <div className="flex items-center flex-1 min-w-0 gap-2">
             {/* Menu Toggle Button */}
             <button
