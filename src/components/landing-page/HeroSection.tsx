@@ -7,7 +7,7 @@ export default function HeroSection() {
   return (
     <div 
       className='relative overflow-hidden bg-fixed bg-center bg-cover'
-      style={{ background: 'radial-gradient(1000px 520px at 20% 15%, var(--brand-primary-opacity-30), transparent 60%), radial-gradient(900px 480px at 85% 90%, var(--brand-primary-opacity-15), transparent 60%), linear-gradient(155deg, #10131A 0%, #171B21 55%, #1D2230 100%)' }}
+      style={{ background: 'radial-gradient(1000px 520px at 20% 15%, var(--brand-primary-opacity-30), transparent 60%), radial-gradient(900px 480px at 85% 90%, var(--brand-primary-opacity-15), transparent 60%), linear-gradient(155deg, var(--ground-deep) 0%, var(--ground-mid) 55%, var(--ground-lift) 100%)' }}
     >
       {/* The hero preloaded a 1.5MB photograph of one university's campus, then
           hid it with display:none. Background is now drawn from the palette, so
@@ -44,8 +44,11 @@ export default function HeroSection() {
 
           {/* Description */}
           <p className='text-xl mb-12 max-w-3xl mx-auto leading-relaxed' style={{ color: 'var(--white-opacity-90)' }}>
-            Comprehensive platform for managing Outcome-Based Education at MNS UET. 
-            Track learning outcomes, manage assessments, and access detailed reports.
+            {/* Named one university until now — with a space, so the earlier
+                sweep for "MNSUET" walked straight past it. */}
+            Continuous CLO and PLO attainment evidence for PEC, HEC and NCEAC
+            accreditation — gathered as your faculty teach, not assembled the
+            month before a visit.
           </p>
 
           {/* CTA Buttons */}

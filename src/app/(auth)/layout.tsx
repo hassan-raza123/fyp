@@ -48,7 +48,7 @@ export default async function AuthLayout({
           background:
             'radial-gradient(1200px 600px at 15% 20%, var(--brand-primary-opacity-30), transparent 60%), ' +
             'radial-gradient(900px 500px at 85% 85%, var(--brand-primary-opacity-15), transparent 60%), ' +
-            'linear-gradient(160deg, #10131A 0%, #171B21 55%, #1D2230 100%)',
+            'linear-gradient(160deg, var(--ground-deep) 0%, var(--ground-mid) 55%, var(--ground-lift) 100%)',
         }}
       />
 

@@ -29,7 +29,7 @@ export default function Footer() {
       <div 
         className='absolute inset-0 bg-cover bg-no-repeat'
         style={{ 
-          background: 'radial-gradient(800px 420px at 10% 0%, var(--brand-primary-opacity-20), transparent 60%), linear-gradient(180deg, #12151C 0%, #0F1216 100%)',
+          background: 'radial-gradient(800px 420px at 10% 0%, var(--brand-primary-opacity-20), transparent 60%), linear-gradient(180deg, var(--ground-foot) 0%, var(--ground-floor) 100%)',
           backgroundPosition: 'center top'
         }}
       ></div>

@@ -6,6 +6,17 @@ import { PRODUCT_NAME } from '@/constants/branding';
 const APPLICATION_NAME = PRODUCT_NAME;
 
 /**
+ * Accent, as a literal.
+ *
+ * Email clients strip CSS custom properties, so these templates cannot
+ * read `--accent` and every colour here has to be inlined. Keep this in
+ * step with `--accent` in globals.css by hand: it sat at the old #6B46C1
+ * purple long after the product moved to indigo, so every password reset
+ * arrived branded in a colour that appears nowhere in the app.
+ */
+const BRAND_HEX = '#4F46E5';
+
+/**
  * Outbound mail transport.
  *
  * Any SMTP provider, configured by environment. This used to be pinned to
@@ -129,7 +140,7 @@ export async function sendAdminAssignmentEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Department Admin Account Assignment</p>
         </div>
 
@@ -180,7 +191,7 @@ export async function sendAdminAssignmentEmail(
           </div>
 
           <div style="margin: 25px 0;">
-            <a href="${loginLink}" style="display: inline-block; background: #6B46C1; color: #FFFFFF; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; text-align: center;">
+            <a href="${loginLink}" style="display: inline-block; background: ${BRAND_HEX}; color: #FFFFFF; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; text-align: center;">
               Login to Your Account
             </a>
           </div>
@@ -202,7 +213,7 @@ export async function sendAdminAssignmentEmail(
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 12px;">
           <p style="margin: 5px 0;">This is an automated email. Please do not reply to this message.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">${APPLICATION_NAME}</p>
+          <p style="margin: 5px 0; color: ${BRAND_HEX}; font-weight: 500;">${APPLICATION_NAME}</p>
           <p style="margin: 5px 0;">© ${new Date().getFullYear()} All rights reserved</p>
         </div>
       </div>
@@ -235,7 +246,7 @@ export async function sendOTPEmail(email: string, otp: string): Promise<void> {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Login Verification Code</p>
         </div>
 
@@ -253,7 +264,7 @@ export async function sendOTPEmail(email: string, otp: string): Promise<void> {
 
         <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
           <p>If you have any questions, please contact our support team.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+          <p style="margin: 5px 0; color: ${BRAND_HEX}; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
         </div>
       </div>
     `,
@@ -288,7 +299,7 @@ export async function sendPasswordResetEmail(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Password Reset Request</p>
         </div>
 
@@ -298,7 +309,7 @@ export async function sendPasswordResetEmail(
           <p style="color: #4B5563; line-height: 1.5;">To reset your password, click the button below:</p>
           
           <div style="margin: 20px 0; text-align: center;">
-            <a href="${resetUrl}" style="display: inline-block; background: #6B46C1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+            <a href="${resetUrl}" style="display: inline-block; background: ${BRAND_HEX}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
               Reset Password
             </a>
           </div>
@@ -311,7 +322,7 @@ export async function sendPasswordResetEmail(
 
         <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
           <p>If you have any questions, please contact our support team.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+          <p style="margin: 5px 0; color: ${BRAND_HEX}; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
         </div>
       </div>
     `,
@@ -364,7 +375,7 @@ export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Survey Invitation</p>
         </div>
 
@@ -388,7 +399,7 @@ export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<
           </p>
 
           <div style="margin: 25px 0; text-align: center;">
-            <a href="${surveyUrl}" style="display: inline-block; background: #6B46C1; color: #FFFFFF; text-decoration: none; padding: 14px 35px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+            <a href="${surveyUrl}" style="display: inline-block; background: ${BRAND_HEX}; color: #FFFFFF; text-decoration: none; padding: 14px 35px; border-radius: 6px; font-weight: 600; font-size: 16px;">
               Take Survey
             </a>
           </div>
@@ -401,7 +412,7 @@ export async function sendSurveyInvitation(data: SurveyInvitationData): Promise<
 
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 12px;">
           <p style="margin: 5px 0;">This survey link is unique to your invitation. Please do not share it.</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">${APPLICATION_NAME}</p>
+          <p style="margin: 5px 0; color: ${BRAND_HEX}; font-weight: 500;">${APPLICATION_NAME}</p>
           <p style="margin: 5px 0;">© ${new Date().getFullYear()} All rights reserved</p>
         </div>
       </div>
@@ -448,7 +459,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">New Contact Form Submission</p>
         </div>
         
@@ -462,7 +473,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
             <tr>
               <td style="padding: 8px 0; color: #6B7280;">Email:</td>
               <td style="padding: 8px 0; color: #111827;">
-                <a href="mailto:${email}" style="color: #6B46C1; text-decoration: none;">${email}</a>
+                <a href="mailto:${email}" style="color: ${BRAND_HEX}; text-decoration: none;">${email}</a>
               </td>
             </tr>
             <tr>
@@ -478,7 +489,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
         </div>
 
         <div style="margin-top: 20px; text-align: center;">
-          <a href="mailto:${email}" style="display: inline-block; background: #6B46C1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply to ${name}</a>
+          <a href="mailto:${email}" style="display: inline-block; background: ${BRAND_HEX}; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply to ${name}</a>
         </div>
       </div>
     `,
@@ -495,7 +506,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #6B46C1; margin: 0;">${APPLICATION_NAME}</h1>
+          <h1 style="color: ${BRAND_HEX}; margin: 0;">${APPLICATION_NAME}</h1>
           <p style="color: #4B5563; margin: 5px 0;">Thank you for reaching out!</p>
         </div>
 
@@ -508,7 +519,7 @@ export async function sendContactEmails(data: ContactEmailData): Promise<void> {
 
         <div style="margin-top: 20px; text-align: center; color: #6B7280; font-size: 14px;">
           <p>Best regards,</p>
-          <p style="margin: 5px 0; color: #6B46C1; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
+          <p style="margin: 5px 0; color: ${BRAND_HEX}; font-weight: 500;">The ${APPLICATION_NAME} Team</p>
         </div>
       </div>
     `,
