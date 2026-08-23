@@ -411,7 +411,7 @@ export default function NotificationsPage() {
                   </TableCell>
                   <TableCell>
                     {notification.isRead ? (
-                      <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Read</Badge>
+                      <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5" variant="secondary">Read</Badge>
                     ) : (
                       <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5" variant="secondary">Unread</Badge>
                     )}

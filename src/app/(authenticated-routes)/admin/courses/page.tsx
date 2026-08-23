@@ -369,7 +369,6 @@ export default function CoursesPage() {
   };
 
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode 
     ? 'var(--brand-primary-opacity-15)' 
     : 'var(--brand-primary-opacity-15)';

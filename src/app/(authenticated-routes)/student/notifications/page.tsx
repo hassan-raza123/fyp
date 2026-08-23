@@ -47,7 +47,6 @@ export default function StudentNotificationsPage() {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {

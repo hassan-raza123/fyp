@@ -140,7 +140,6 @@ const AnalyticsPage = () => {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
@@ -502,7 +501,7 @@ const AnalyticsPage = () => {
                       <p className='text-xs font-semibold text-primary-text'>{clo.cloCode}</p>
                       <p className='text-xs text-secondary-text'>{clo.courseCode}</p>
                     </div>
-                    <Badge className="bg-[var(--warning)] text-white text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
+                    <Badge className="bg-[var(--warning)] text-warn-fg text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}

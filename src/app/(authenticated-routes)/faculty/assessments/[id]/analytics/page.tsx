@@ -78,7 +78,6 @@ export default function AssessmentAnalyticsPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
-  const primaryColor = 'var(--accent)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [data, setData] = useState<AnalyticsData | null>(null);

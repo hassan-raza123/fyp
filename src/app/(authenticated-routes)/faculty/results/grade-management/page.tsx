@@ -465,7 +465,7 @@ const GradeManagementPage = () => {
   const getStatusBadge = (status: string) => {
     if (status === 'final') {
       return (
-        <Badge className="text-[10px] bg-[var(--gray-500)] text-white">
+        <Badge className="text-[10px] bg-[var(--gray-500)] text-neutral-fg">
           <Lock className="w-3 h-3 mr-1" />
           Final
         </Badge>

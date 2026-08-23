@@ -255,7 +255,7 @@ const ResultEvaluationPage = () => {
       case 'evaluated':
         return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Evaluated</Badge>;
       case 'pending':
-        return <Badge className={`bg-[var(--gray-500)] text-white ${baseClass}`} variant="secondary">Pending</Badge>;
+        return <Badge className={`bg-[var(--gray-500)] text-neutral-fg ${baseClass}`} variant="secondary">Pending</Badge>;
       case 'draft':
         return <Badge className={`bg-[var(--gray-400)] text-white ${baseClass}`} variant="secondary">Draft</Badge>;
       default:

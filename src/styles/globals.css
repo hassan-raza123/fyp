@@ -153,6 +153,7 @@
      --accent-fg: the attainment colour is a *text* colour on a page
      background, and reusing it as a fill needs its own foreground.
      Light fills are dark, so white reads (5.02 / 5.02 / 6.57). */
+  --neutral-fg: var(--white);
   --good-fg:   var(--white);
   --warn-fg:   var(--white);
   --bad-fg:    var(--white);
@@ -427,6 +428,7 @@
      them measures 1.74 (good), 1.86 (warn) and 2.28 (bad). Ink gives
      10.10 / 9.46 / 7.71. Literal, because --gray-900 is inverted in
      this block. */
+  --neutral-fg: #16191F;
   --good-fg:   #16191F;
   --warn-fg:   #16191F;
   --bad-fg:    #16191F;
@@ -912,6 +914,7 @@
   .text-accent-fg { color: var(--accent-fg); }
 
   /* Foreground for a solid attainment fill. */
+  .text-neutral-fg { color: var(--neutral-fg); }
   .text-good-fg { color: var(--good-fg); }
   .text-warn-fg { color: var(--warn-fg); }
   .text-bad-fg  { color: var(--bad-fg); }

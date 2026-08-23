@@ -123,7 +123,6 @@ const PLOAttainmentsPage = () => {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
@@ -216,7 +215,7 @@ const PLOAttainmentsPage = () => {
       status === 'attained'
         ? 'bg-[var(--success-green)] text-good-fg'
         : status === 'not_assessed'
-          ? 'bg-[var(--gray-500)] text-white'
+          ? 'bg-[var(--gray-500)] text-neutral-fg'
           : 'bg-[var(--error)] text-bad-fg';
 
     return (

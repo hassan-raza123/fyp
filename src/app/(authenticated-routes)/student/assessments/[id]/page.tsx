@@ -114,7 +114,6 @@ export default function AssessmentDetailsPage() {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
@@ -198,7 +197,7 @@ export default function AssessmentDetailsPage() {
         return <Badge className="bg-[var(--accent)] text-accent-fg text-[10px] px-1.5 py-0.5 dark:bg-[var(--accent)]">Submitted</Badge>;
       case 'not_submitted':
       case 'pending':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Pending</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5">Pending</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }

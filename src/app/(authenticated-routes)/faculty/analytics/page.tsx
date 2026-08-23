@@ -160,7 +160,6 @@ const AnalyticsPage = () => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
 
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);

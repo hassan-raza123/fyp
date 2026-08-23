@@ -59,7 +59,6 @@ export default function ResultsPage() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -206,7 +205,7 @@ export default function ResultsPage() {
   const getGradeBadgeColor = (grade: string) => {
     if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-good-fg';
     if (['B+', 'B'].includes(grade)) return 'bg-[var(--accent)] text-accent-fg dark:bg-[var(--accent)] dark:text-white';
-    if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
+    if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-warn-fg';
     return 'bg-[var(--error)] text-bad-fg';
   };
 

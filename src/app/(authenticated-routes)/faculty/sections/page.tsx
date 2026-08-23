@@ -116,13 +116,13 @@ export default function SectionsPage() {
       case 'active':
         return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
       case 'suspended':
         return 'bg-warn text-warn-fg';
       case 'deleted':
         return 'bg-[var(--error)] text-bad-fg';
       default:
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
     }
   };
 

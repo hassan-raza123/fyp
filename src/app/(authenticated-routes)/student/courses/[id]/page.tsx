@@ -82,7 +82,6 @@ export default function CourseDetailsPage() {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
@@ -140,7 +139,7 @@ export default function CourseDetailsPage() {
       case 'LAB':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'PROJECT':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
         return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
@@ -153,7 +152,7 @@ export default function CourseDetailsPage() {
       case 'active':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Active</Badge>;
       case 'inactive':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'archived':
         return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:

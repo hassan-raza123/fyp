@@ -267,7 +267,7 @@ export default function ReportsPage() {
       case 'published':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5" variant="secondary">Published</Badge>;
       case 'archived':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Archived</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5" variant="secondary">Archived</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5" variant="secondary">{status}</Badge>;
     }

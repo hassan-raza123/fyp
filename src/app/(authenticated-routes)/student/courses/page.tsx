@@ -146,7 +146,7 @@ export default function CoursesPage() {
       case 'THEORY_LAB':
         return <Badge className="bg-[var(--accent)] text-accent-fg text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
       case 'PROJECT':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
         return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
@@ -159,7 +159,7 @@ export default function CoursesPage() {
       case 'ACTIVE':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Active</Badge>;
       case 'INACTIVE':
-        return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
+        return <Badge className="bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'ARCHIVED':
         return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:

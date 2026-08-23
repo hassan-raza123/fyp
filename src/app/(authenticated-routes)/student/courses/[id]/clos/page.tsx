@@ -43,7 +43,6 @@ export default function CourseCLOsPage() {
 
   const isDarkMode = mounted && resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   useEffect(() => {
@@ -143,7 +142,7 @@ export default function CourseCLOsPage() {
                           clo.status === 'active'
                             ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5'
                             : clo.status === 'inactive'
-                            ? 'bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5'
+                            ? 'bg-[var(--gray-500)] text-neutral-fg text-[10px] px-1.5 py-0.5'
                             : 'bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5'
                         }
                         variant="secondary"

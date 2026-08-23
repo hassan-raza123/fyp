@@ -197,7 +197,7 @@ export default function LLOAttainmentsPage() {
     const attained = isAttained(attainment);
     if (attained === null) {
       return (
-        <Badge className="text-[10px] px-1.5 py-0.5 bg-[var(--gray-500)] text-white" variant="secondary">
+        <Badge className="text-[10px] px-1.5 py-0.5 bg-[var(--gray-500)] text-neutral-fg" variant="secondary">
           No Target
         </Badge>
       );

@@ -57,7 +57,6 @@ function PEOsPageContent() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
     ? 'var(--brand-primary-opacity-15)'
     : 'var(--brand-primary-opacity-15)';
@@ -247,11 +246,11 @@ function PEOsPageContent() {
       case 'active':
         return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
       case 'archived':
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
       default:
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
     }
   };
 

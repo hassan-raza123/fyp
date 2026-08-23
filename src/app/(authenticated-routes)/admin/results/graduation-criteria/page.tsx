@@ -54,7 +54,6 @@ function GraduationCriteriaContent() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = 'var(--brand-primary-opacity-15)';
 
   const [data, setData] = useState<ProgramWithCriteria[]>([]);
@@ -263,7 +262,7 @@ function GraduationCriteriaContent() {
                   <TableCell className="text-xs text-primary-text">
                     {row.criteria ? (
                       <Badge
-                        className={`text-[10px] px-1.5 py-0.5 ${row.criteria.requireAllCourses ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--gray-500)] text-white'}`}
+                        className={`text-[10px] px-1.5 py-0.5 ${row.criteria.requireAllCourses ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--gray-500)] text-neutral-fg'}`}
                         variant="secondary"
                       >
                         {row.criteria.requireAllCourses ? 'Yes' : 'No'}

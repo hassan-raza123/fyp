@@ -181,9 +181,9 @@ export default function StudentsPage() {
       case 'active':
         return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
       default:
-        return 'bg-[var(--gray-500)] text-white';
+        return 'bg-[var(--gray-500)] text-neutral-fg';
     }
   };
 
@@ -347,6 +347,7 @@ export default function StudentsPage() {
               <TableHead className="w-[40px]">
                 <input
                   type="checkbox"
+                  aria-label="Select all students"
                   className="rounded border-card-border"
                   onChange={(e) => {
                     if (e.target.checked) {
@@ -396,6 +397,7 @@ export default function StudentsPage() {
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
+                      aria-label={`Select ${student.user.firstName} ${student.user.lastName}`}
                       className="rounded border-card-border"
                       checked={selectedStudentsForNotification.includes(student.id)}
                       onChange={(e) => {

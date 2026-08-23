@@ -94,7 +94,7 @@ const AssignmentItem = ({
       case 'overdue':
         return 'bg-[var(--error)] text-bad-fg';
       default:
-        return 'bg-[var(--warning)] text-white';
+        return 'bg-[var(--warning)] text-warn-fg';
     }
   };
 

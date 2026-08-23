@@ -73,7 +73,6 @@ export function CLOPLOMappingList() {
   const [mounted, setMounted] = useState(false);
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
   const iconBgColor = isDarkMode
     ? 'var(--brand-primary-opacity-15)'
     : 'var(--brand-primary-opacity-15)';

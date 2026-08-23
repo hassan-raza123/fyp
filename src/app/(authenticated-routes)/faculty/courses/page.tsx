@@ -59,7 +59,6 @@ export default function CoursesPage() {
   const router = useRouter();
   const isDarkMode = resolvedTheme === 'dark';
   const primaryColor = 'var(--accent)';
-  const primaryColorDark = 'var(--accent-hover)';
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
