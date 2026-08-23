@@ -75,7 +75,7 @@ export default function HeroSection() {
           <div className='mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4'>
             <Link
               href='/login'
-              className='inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-colors accent-btn'
+              className='inline-flex items-center justify-center px-8 py-3.5 rounded-xl font-semibold text-base transition-colors accent-btn'
             >
               Access portal
               <ArrowRight className='ml-2 w-5 h-5' />

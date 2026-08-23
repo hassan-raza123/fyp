@@ -31,7 +31,7 @@ const config = {
           800: 'var(--primary-800)',
           900: 'var(--primary-900)',
           DEFAULT: 'var(--primary-600)',
-          foreground: 'var(--white)',
+          foreground: 'var(--accent-fg)',
         },
         secondary: {
           50: 'var(--secondary-50)',
@@ -45,7 +45,7 @@ const config = {
           800: 'var(--secondary-800)',
           900: 'var(--secondary-900)',
           DEFAULT: 'var(--secondary-600)',
-          foreground: 'var(--white)',
+          foreground: 'var(--accent-fg)',
         },
         accent: {
           50: 'var(--accent-50)',
@@ -59,7 +59,7 @@ const config = {
           800: 'var(--accent-800)',
           900: 'var(--accent-900)',
           DEFAULT: 'var(--accent-500)',
-          foreground: 'var(--white)',
+          foreground: 'var(--accent-fg)',
         },
         muted: {
           DEFAULT: 'var(--neutral-100)',
@@ -67,7 +67,7 @@ const config = {
         },
         destructive: {
           DEFAULT: 'var(--error)',
-          foreground: 'var(--white)',
+          foreground: 'var(--accent-fg)',
         },
         border: 'var(--border-color)',
         input: 'var(--border-color)',

@@ -15,7 +15,7 @@ export default function FloatingChatButton() {
     <ContactDialog>
       <button
         type='button'
-        className='accent-btn fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full text-white flex items-center justify-center transition-transform duration-300 hover:scale-105'
+        className='accent-btn fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-105'
         aria-label='Contact us'
       >
         <MessageCircle className='w-6 h-6' />

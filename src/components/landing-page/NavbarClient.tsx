@@ -160,7 +160,7 @@ export default function NavbarClient({
             <div className='hidden lg:flex items-center space-x-4'>
               <Link
                 href='/login'
-                className='accent-btn px-6 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center gap-2 group transition-colors'
+                className='accent-btn px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 group transition-colors'
               >
                 Login
                 <ArrowRight className='w-4 h-4 transition-transform group-hover:translate-x-0.5' />
@@ -229,7 +229,7 @@ export default function NavbarClient({
               <Link
                 href='/login'
                 onClick={() => setIsMobileMenuOpen(false)}
-                className='accent-btn block px-4 py-3.5 rounded-xl text-base font-semibold text-white text-center mt-4'
+                className='accent-btn block px-4 py-3.5 rounded-xl text-base font-semibold text-center mt-4'
               >
                 Login to Portal
               </Link>

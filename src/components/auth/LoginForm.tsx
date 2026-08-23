@@ -199,14 +199,20 @@ export default function LoginForm() {
                ramp values that do not move with the theme, applied through
                onMouseEnter/onMouseLeave handlers. `bg-surface-2` and the
                accent are the same tokens the rest of the site uses. */
+            /* The selected tab is an accent fill, so its label is
+               `--accent-fg`, not white — white on the dark-theme accent
+               (#8B8AF5) measures 2.98:1. */
             className={`flex-1 py-3 text-sm font-medium rounded-xl transition-colors ${
               formData.userType === type
-                ? 'text-white'
+                ? ''
                 : 'bg-surface-2 text-ink-2 hover:bg-subtle hover:text-ink'
             }`}
             style={
               formData.userType === type
-                ? { backgroundColor: 'var(--accent)' }
+                ? {
+                    backgroundColor: 'var(--accent)',
+                    color: 'var(--accent-fg)',
+                  }
                 : undefined
             }
           >
@@ -299,7 +305,7 @@ export default function LoginForm() {
         <button
           type='submit'
           disabled={isLoading}
-          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
+          className='accent-btn w-full py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
         >
           {isLoading ? (
             <span className='flex items-center justify-center'>

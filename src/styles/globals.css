@@ -58,6 +58,14 @@
   --accent-active: #3730A3;
   --accent-wash:   #EEEDFD;
 
+  /* The label colour that sits ON an accent fill — not the same thing as
+     the accent itself, which is a *text* colour on a page background.
+     Conflating the two is a light-theme-only illusion: white happens to
+     read on #4F46E5. In dark mode the accent lightens to #8B8AF5 so the
+     accent text stays legible on the dark ground, and white-on-that is
+     2.98:1 — every primary button in the app failed AA in dark mode. */
+  --accent-fg:     #ffffff;
+
   /* Legacy names. The codebase refers to the accent as `--blue`
      and `--orange` from when the palette was derived from a
      university crest. Both now resolve to the one accent; the
@@ -136,9 +144,9 @@
      because 500-level green and amber fail contrast on white,
      which is precisely where the meaning would be lost. */
   --good:      #15803D;   /* attained            5.02:1 */
-  --good-wash: #E7F5EC;
+  --good-wash: #EDF8F1;   /* was #E7F5EC — 4.46:1 with --good */
   --warn:      #B45309;   /* partially attained  5.02:1 */
-  --warn-wash: #FBF0DF;
+  --warn-wash: #FDF6EB;   /* was #FBF0DF — 4.46:1 with --warn */
   --bad:       #B42318;   /* not attained        6.57:1 */
   --bad-wash:  #FCEBE9;
 
@@ -370,6 +378,11 @@
   /* Accent lifts so it stays legible on a dark ground. */
   --accent:        #8B8AF5;
   --accent-hover:  #A5A4F8;
+  /* Ink, not white: 5.91:1 on the fill and 7.77:1 on its hover.
+     A literal rather than `var(--gray-900)` — the neutral ramp is inverted
+     in this block, so --gray-900 resolves to #E6E9EE here and the label
+     came out lighter than the fill it sits on. */
+  --accent-fg:     #16191F;
   --accent-active: #BDBCFA;
   --accent-wash:   #22243D;
 
@@ -917,6 +930,7 @@
      onMouseEnter/onMouseLeave handlers on every landing CTA. */
   .accent-btn {
     background-color: var(--accent);
+    color: var(--accent-fg);
     box-shadow: 0 8px 24px var(--brand-primary-opacity-30);
   }
 

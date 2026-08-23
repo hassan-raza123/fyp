@@ -42,7 +42,7 @@ export default function CTASection() {
         <div className='mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4'>
           <Link
             href='/login'
-            className='accent-btn inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-colors'
+            className='accent-btn inline-flex items-center justify-center px-8 py-3.5 rounded-xl font-semibold text-base transition-colors'
           >
             Sign in
             <ArrowRight className='ml-2 h-5 w-5' />

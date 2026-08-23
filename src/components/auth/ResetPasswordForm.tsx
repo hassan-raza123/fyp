@@ -163,7 +163,7 @@ function ResetPasswordFormContent() {
           </p>
           <Link
             href='/forgot-password'
-            className='accent-btn inline-block font-semibold text-white py-3 px-6 rounded-xl transition-colors'
+            className='accent-btn inline-block font-semibold py-3 px-6 rounded-xl transition-colors'
           >
             Request a new link
           </Link>
@@ -333,7 +333,7 @@ function ResetPasswordFormContent() {
         <button
           type='submit'
           disabled={isLoading}
-          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
+          className='accent-btn w-full py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
         >
           {isLoading ? (
             <span className='flex items-center justify-center'>

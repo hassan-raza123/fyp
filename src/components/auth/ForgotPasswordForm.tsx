@@ -144,7 +144,7 @@ export default function ForgotPasswordForm() {
           <button
             type='submit'
             disabled={isLoading}
-          className='accent-btn w-full text-white py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
+          className='accent-btn w-full py-3.5 rounded-xl font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
         >
             {isLoading ? (
               <span className='flex items-center justify-center'>

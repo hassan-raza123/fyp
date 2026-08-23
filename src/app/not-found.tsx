@@ -51,7 +51,7 @@ export default async function NotFound() {
       <div className='mt-10 flex flex-col sm:flex-row justify-center gap-3'>
         <Link
           href='/'
-          className='accent-btn inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-colors'
+          className='accent-btn inline-flex items-center justify-center px-8 py-3.5 rounded-xl font-semibold text-base transition-colors'
         >
           Go home
           <ArrowRight className='ml-2 w-5 h-5' />

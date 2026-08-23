@@ -380,7 +380,7 @@ export default function PublicSurveyPage() {
           <button
             type='submit'
             disabled={submitting}
-            className='accent-btn w-full text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className='accent-btn w-full font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {submitting ? 'Submitting…' : 'Submit survey'}
           </button>

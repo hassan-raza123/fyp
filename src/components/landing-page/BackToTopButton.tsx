@@ -28,7 +28,7 @@ export default function BackToTopButton() {
          diagonally opposite the contact button, so the page had a floating
          control in each of two corners. It now stacks above the contact
          button on the right. Hover moved from JS handlers to CSS. */
-      className='accent-btn fixed bottom-24 right-6 z-40 w-11 h-11 rounded-full text-white transition-transform duration-300 hover:scale-105 flex items-center justify-center'
+      className='accent-btn fixed bottom-24 right-6 z-40 w-11 h-11 rounded-full transition-transform duration-300 hover:scale-105 flex items-center justify-center'
       aria-label='Back to top'
     >
       <ArrowUp className='w-5 h-5' />

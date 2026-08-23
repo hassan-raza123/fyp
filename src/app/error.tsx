@@ -54,7 +54,7 @@ export default function Error({
         <button
           type='button'
           onClick={reset}
-          className='accent-btn inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-white font-semibold text-base transition-colors'
+          className='accent-btn inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-base transition-colors'
         >
           <RotateCw className='h-4 w-4' />
           Try again

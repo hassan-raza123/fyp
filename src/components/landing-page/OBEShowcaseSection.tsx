@@ -166,7 +166,7 @@ export default function OBEShowcaseSection() {
                 onClick={() => setActiveTab(item.id)}
                 className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-colors ${
                   selected
-                    ? 'accent-btn text-white'
+                    ? 'accent-btn'
                     : 'bg-white/[0.08] backdrop-blur border border-white/15 text-white/85 hover:bg-white/15 hover:text-white'
                 }`}
               >
