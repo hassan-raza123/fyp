@@ -1,9 +1,10 @@
 /**
  * The three diagrams on the OBE showcase band.
  *
- * These replace three stock infographics that were sitting in
- * `/public/info-images`: a generic "Benefits of Outcome-Based Education"
- * poster, a PDCA wheel, and a CLO-PLO clip-art. Three problems with them:
+ * These replace three stock infographics that used to sit in
+ * `/public/info-images` — a generic "Benefits of Outcome-Based Education"
+ * poster, a PDCA wheel and a CLO-PLO clip-art. That directory is gone now;
+ * three problems with what was in it:
  *
  *  - None of them showed *this* product. They illustrated OBE as a concept,
  *    which anyone evaluating an OBE system already knows.

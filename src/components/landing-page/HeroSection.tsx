@@ -64,8 +64,9 @@ export default function HeroSection() {
           </p>
 
           <p className='mt-6 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed text-white/80'>
-            {/* Named one university until now — with a space, so the earlier
-                sweep for "MNSUET" walked straight past it. */}
+            {/* Named one university until now. It was written with a space
+                in the middle, so the earlier search for the short form went
+                straight past it — worth remembering if another one turns up. */}
             Every mark your faculty enter becomes CLO and PLO attainment
             evidence — computed as the semester runs, not reconstructed from
             spreadsheets the month before a visit.

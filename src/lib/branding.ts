@@ -22,9 +22,9 @@ export interface Branding {
   /** Our product. Constant across installations. */
   productName: string;
   productTagline: string;
-  /** The customer. "MNS University of Engineering & Technology", say. */
+  /** The customer's own name, e.g. "Riverside Institute of Technology". */
   institutionName: string;
-  /** Short form for tight spaces — "MNSUET". Falls back to the full name. */
+  /** Short form for tight spaces — "RIT". Falls back to the full name. */
   institutionShortName: string;
   /**
    * The institution's own IT support address, shown on the login screen.
@@ -79,9 +79,9 @@ export async function getBranding(): Promise<Branding> {
     const institutionName =
       asNonEmptyString(system.institutionName) ??
       // `applicationName` is what the settings screen has always written. It
-      // held a value like "Smart Campus for MNSUET" — the institution's name
-      // with a product name wrapped around it — so it is a usable fallback
-      // for installations that predate `institutionName`.
+      // held the institution's name with a product name wrapped around it —
+      // "<Some Product> for <Institution>" — so it is a usable fallback for
+      // installations that predate `institutionName`.
       asNonEmptyString(system.applicationName);
 
     if (!institutionName) return FALLBACK;

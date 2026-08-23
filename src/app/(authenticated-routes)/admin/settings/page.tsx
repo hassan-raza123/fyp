@@ -211,7 +211,7 @@ export default function SettingsPage() {
               <div className='space-y-2'>
                 <Label>Institution Name</Label>
                 <Input
-                  placeholder='e.g. MNS University of Engineering & Technology'
+                  placeholder='e.g. Riverside Institute of Technology'
                   value={settings.system.institutionName}
                   onChange={(e) =>
                     setSettings({
@@ -231,7 +231,7 @@ export default function SettingsPage() {
               <div className='space-y-2'>
                 <Label>Institution Short Name</Label>
                 <Input
-                  placeholder='e.g. MNSUET'
+                  placeholder='e.g. RIT'
                   value={settings.system.institutionShortName}
                   onChange={(e) =>
                     setSettings({
