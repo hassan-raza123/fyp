@@ -101,7 +101,7 @@ const CLOAttainmentsPage = () => {
             onValueChange={setSelectedSection}
             disabled={loading}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a section" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a section" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

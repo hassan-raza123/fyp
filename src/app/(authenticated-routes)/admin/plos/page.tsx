@@ -577,7 +577,7 @@ function PLOsPageContent() {
                   setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger id="bloomLevel" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select Bloom's level (optional)" id="bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -676,7 +676,7 @@ function PLOsPageContent() {
                   setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select Bloom's level (optional)" id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

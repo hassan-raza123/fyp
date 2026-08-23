@@ -453,8 +453,7 @@ export default function FacultyOverview() {
                 <button
                   type="button"
                   onClick={() => router.push('/faculty/results/marks-entry')}
-                  className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center justify-center gap-1.5 text-white btn-accent-flat"
-                  style={{ backgroundColor: primaryColor }}
+                  className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center justify-center gap-1.5 btn-accent-flat"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   Go to Marks Entry

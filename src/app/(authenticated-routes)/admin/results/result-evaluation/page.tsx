@@ -295,7 +295,7 @@ const ResultEvaluationPage = () => {
           <div className="space-y-2">
             <Label htmlFor="section" className="text-xs text-primary-text">Section *</Label>
             <Select value={selectedSection} onValueChange={setSelectedSection}>
-              <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
+              <SelectTrigger aria-label="Select a section" id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
                 <SelectValue placeholder="Select a section" />
               </SelectTrigger>
               <SelectContent className="bg-card border-card-border">

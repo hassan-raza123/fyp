@@ -360,7 +360,7 @@ export default function SectionDetailsPage() {
               <button
                 type='button'
                 className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2'
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <Plus className='w-3.5 h-3.5' />
                 Add Student
@@ -420,7 +420,7 @@ export default function SectionDetailsPage() {
                   <button
                     type='submit'
                     className='w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50'
-                    style={{ backgroundColor: primaryColor, color: '#fff' }}
+                    style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
                     disabled={addStudentMutation.isPending}
                   >
                     {addStudentMutation.isPending && (

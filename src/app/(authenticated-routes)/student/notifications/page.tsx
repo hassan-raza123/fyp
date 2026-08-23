@@ -269,7 +269,7 @@ export default function StudentNotificationsPage() {
             <div className="space-y-2">
               <label className="text-xs font-medium text-primary-text">Filter by Type</label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="All Types" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -287,7 +287,7 @@ export default function StudentNotificationsPage() {
             <div className="space-y-2">
               <label className="text-xs font-medium text-primary-text">Filter by Status</label>
               <Select value={readFilter} onValueChange={setReadFilter}>
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="All Status" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

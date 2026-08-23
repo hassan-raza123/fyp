@@ -643,7 +643,7 @@ export default function SectionsPage() {
             </div>
         </div>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -826,7 +826,7 @@ export default function SectionsPage() {
                   value={newSection.courseOfferingId}
                   onValueChange={(value) => setNewSection({ ...newSection, courseOfferingId: value })}
                 >
-                  <SelectTrigger id="create_courseOffering" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select course offering" id="create_courseOffering" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select course offering" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -844,7 +844,7 @@ export default function SectionsPage() {
                   value={newSection.batchId}
                   onValueChange={(value) => setNewSection({ ...newSection, batchId: value })}
                 >
-                  <SelectTrigger id="create_batch" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select batch" id="create_batch" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select batch" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -864,7 +864,7 @@ export default function SectionsPage() {
                   value={newSection.facultyId}
                   onValueChange={(value) => setNewSection({ ...newSection, facultyId: value })}
                 >
-                  <SelectTrigger id="create_faculty" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select faculty (optional)" id="create_faculty" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select faculty (optional)" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -925,7 +925,7 @@ export default function SectionsPage() {
             <button
               onClick={handleCreateSection}
               disabled={isCreating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--text-muted)') : primaryColor,
               }}
@@ -1110,7 +1110,7 @@ export default function SectionsPage() {
                     fetchFaculty();
                     handleEditSection(selectedSection);
                   }}
-                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 text-white btn-accent-flat"
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 btn-accent-flat"
                   style={{
                   }}
                 >
@@ -1161,7 +1161,7 @@ export default function SectionsPage() {
                     value={editSection.courseOfferingId}
                     onValueChange={(value) => setEditSection({ ...editSection, courseOfferingId: value })}
                   >
-                    <SelectTrigger id="edit_courseOffering" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select course offering" id="edit_courseOffering" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select course offering" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1179,7 +1179,7 @@ export default function SectionsPage() {
                     value={editSection.batchId}
                     onValueChange={(value) => setEditSection({ ...editSection, batchId: value })}
                   >
-                    <SelectTrigger id="edit_batch" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select batch" id="edit_batch" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select batch" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1199,7 +1199,7 @@ export default function SectionsPage() {
                     value={editSection.facultyId}
                     onValueChange={(value) => setEditSection({ ...editSection, facultyId: value })}
                   >
-                    <SelectTrigger id="edit_faculty" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select faculty (optional)" id="edit_faculty" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select faculty (optional)" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1231,7 +1231,7 @@ export default function SectionsPage() {
                   value={editSection.status}
                   onValueChange={(value: 'active' | 'inactive' | 'suspended' | 'deleted') => setEditSection({ ...editSection, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

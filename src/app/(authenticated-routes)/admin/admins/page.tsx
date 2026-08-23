@@ -374,7 +374,7 @@ export default function AdminsPage() {
           </div>
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -536,7 +536,7 @@ export default function AdminsPage() {
                 value={newAdmin.status}
                 onValueChange={(value: 'active' | 'inactive') => setNewAdmin({ ...newAdmin, status: value })}
               >
-                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -586,7 +586,7 @@ export default function AdminsPage() {
             <button
               onClick={handleCreateAdmin}
               disabled={isCreating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -694,7 +694,7 @@ export default function AdminsPage() {
                     handleEditAdmin(admin);
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white btn-accent-flat"
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
                 style={{
                 }}
               >
@@ -773,7 +773,7 @@ export default function AdminsPage() {
                   value={editAdmin.status}
                   onValueChange={(value: 'active' | 'inactive') => setEditAdmin({ ...editAdmin, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -812,7 +812,7 @@ export default function AdminsPage() {
             <button
               onClick={handleUpdateAdmin}
               disabled={isUpdating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -875,7 +875,7 @@ export default function AdminsPage() {
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

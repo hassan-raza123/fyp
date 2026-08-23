@@ -771,7 +771,7 @@ const ResultEvaluationPage = () => {
               onClick={handleEvaluate}
               disabled={evaluating}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               {evaluating ? 'Evaluating...' : 'Mark as Evaluated'}
             </button>
@@ -832,7 +832,7 @@ const ResultEvaluationPage = () => {
               onClick={handleBulkEvaluate}
               disabled={evaluating}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               {evaluating ? 'Processing...' : `Apply to ${selectedResults.size} Result(s)`}
             </button>

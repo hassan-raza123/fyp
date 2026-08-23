@@ -363,7 +363,7 @@ const CLOAttainmentsPage = () => {
                   setSelectedCLO(null);
                 }}
               >
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select a course" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a course" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -614,7 +614,7 @@ const CLOAttainmentsPage = () => {
                                 className={
                                   attainment.isAchieved
                                     ? 'bg-[var(--success-green)] text-good-fg text-[10px]'
-                                    : 'bg-[var(--error)] text-white text-[10px]'
+                                    : 'bg-[var(--error)] text-bad-fg text-[10px]'
                                 }
                               >
                                 {attainment.isAchieved ? 'Achieved' : 'Not achieved'}
@@ -830,7 +830,7 @@ const CLOAttainmentsPage = () => {
                   setSelectedCourseOffering(parseInt(value))
                 }
               >
-                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select course offering" className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course offering" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -878,7 +878,7 @@ const CLOAttainmentsPage = () => {
               onClick={handleCalculate}
               disabled={calculating || !selectedCourseOffering}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               {calculating ? 'Calculating...' : 'Calculate'}
             </button>

@@ -415,7 +415,7 @@ export default function CoursesPage() {
           </div>
         </div>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by type" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -427,7 +427,7 @@ export default function CoursesPage() {
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -622,7 +622,7 @@ export default function CoursesPage() {
                     });
                   }}
                 >
-                  <SelectTrigger id="create_type" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select type" id="create_type" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -639,7 +639,7 @@ export default function CoursesPage() {
                   value={newCourse.status}
                   onValueChange={(value: course_status) => setNewCourse({ ...newCourse, status: value })}
                 >
-                  <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -720,7 +720,7 @@ export default function CoursesPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -850,7 +850,7 @@ export default function CoursesPage() {
             {viewingCourse && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white btn-accent-flat"
+                className="h-8 text-xs btn-accent-flat"
                 style={{
                 }}
                 onClick={() => {
@@ -927,7 +927,7 @@ export default function CoursesPage() {
                       });
                     }}
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select type" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -944,7 +944,7 @@ export default function CoursesPage() {
                     value={editCourse.status}
                     onValueChange={(value: course_status) => setEditCourse({ ...editCourse, status: value })}
                   >
-                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1016,7 +1016,7 @@ export default function CoursesPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -1070,7 +1070,7 @@ export default function CoursesPage() {
               className="h-8 text-xs text-white"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

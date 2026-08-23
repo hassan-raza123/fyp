@@ -714,7 +714,7 @@ export default function StudentDetailsPage() {
                     type='submit'
                     disabled={saving}
                     className='px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50'
-                    style={{ backgroundColor: primaryColor, color: '#fff' }}
+                    style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
                   >
                     {saving ? (
                       <>
@@ -814,7 +814,7 @@ export default function StudentDetailsPage() {
                       <button
                         type="button"
                         className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2"
-                        style={{ backgroundColor: primaryColor, color: '#fff' }}
+                        style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
                       >
                         <Plus className='w-4 h-4' />
                         Add Section
@@ -864,7 +864,7 @@ export default function StudentDetailsPage() {
                           <button
                             type='submit'
                             className='w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50'
-                            style={{ backgroundColor: primaryColor, color: '#fff' }}
+                            style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
                             disabled={addSection.isPending}
                           >
                             {addSection.isPending ? 'Adding...' : 'Add Section'}
@@ -1409,7 +1409,7 @@ export default function StudentDetailsPage() {
               type="button"
               onClick={handleDelete}
               disabled={deleting || student.sections.length > 0}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-white hover:opacity-90"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-bad-fg hover:opacity-90"
             >
               {deleting ? 'Deleting...' : 'Delete'}
             </button>

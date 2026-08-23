@@ -179,7 +179,7 @@ const CLOAttainmentsPage = () => {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     return (
-      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5'}>
         {status === 'attained' ? 'Attained' : 'Not Attained'}
       </Badge>
     );
@@ -223,7 +223,7 @@ const CLOAttainmentsPage = () => {
           value={selectedSection?.toString() || ''}
           onValueChange={(value) => setSelectedSection(parseInt(value))}
         >
-          <SelectTrigger id="section-select" className="w-full max-w-md h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Select a section" id="section-select" className="w-full max-w-md h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Select a section" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -237,7 +237,7 @@ const CLOAttainmentsPage = () => {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
+        <div className="p-3 rounded-lg text-xs text-bad-fg bg-[var(--error)]">{error}</div>
       )}
 
       {loading ? (

@@ -136,13 +136,13 @@ export default function CourseDetailsPage() {
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
+        return <Badge className="bg-[var(--accent)] text-accent-fg text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'PROJECT':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
-        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Thesis</Badge>;
+        return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5">{type}</Badge>;
     }
@@ -155,7 +155,7 @@ export default function CourseDetailsPage() {
       case 'inactive':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'archived':
-        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Archived</Badge>;
+        return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }

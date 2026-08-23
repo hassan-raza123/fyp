@@ -423,7 +423,7 @@ export default function SuperAdminDepartmentsPage() {
           className="text-xs h-8 px-3 text-white"
           style={{
             backgroundColor: primaryColor,
-            color: 'white',
+            color: 'var(--accent-fg)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = primaryColorDark;
@@ -959,7 +959,7 @@ export default function SuperAdminDepartmentsPage() {
                 onValueChange={setSelectedAdminId}
                 disabled={loadingAdmins}
               >
-                <SelectTrigger id="admin" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select an admin user" id="admin" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select an admin user" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

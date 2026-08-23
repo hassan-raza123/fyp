@@ -323,7 +323,7 @@ export default function SettingsPage() {
                 onClick={handleSaveProfile}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Changes'}
@@ -372,7 +372,7 @@ export default function SettingsPage() {
                 onClick={handleChangePassword}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <Lock className="w-3.5 h-3.5" />
                 {saving ? 'Changing...' : 'Change Password'}
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                 onClick={handleSavePreferences}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Preferences'}
@@ -654,7 +654,7 @@ export default function SettingsPage() {
                 onClick={handleSavePreferences}
                 disabled={saving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Teaching Preferences'}

@@ -162,7 +162,7 @@ export function AssessmentItemForm({
                 setFormData({ ...formData, lloId: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Select LLO">
                 <SelectValue placeholder="Select LLO" />
               </SelectTrigger>
               <SelectContent>
@@ -186,7 +186,7 @@ export function AssessmentItemForm({
                 setFormData({ ...formData, cloId: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Select CLO">
                 <SelectValue placeholder="Select CLO" />
               </SelectTrigger>
               <SelectContent>
@@ -211,7 +211,7 @@ export function AssessmentItemForm({
             setFormData({ ...formData, rubricId: value === 'none' ? '' : value })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="No rubric — scored as a single mark">
             <SelectValue placeholder="No rubric — scored as a single mark" />
           </SelectTrigger>
           <SelectContent>
@@ -243,7 +243,7 @@ export function AssessmentItemForm({
             setComplexityErrors([]);
           }}
         >
-          <SelectTrigger id="complexity">
+          <SelectTrigger aria-label="Not a complex problem" id="complexity">
             <SelectValue placeholder="Not a complex problem" />
           </SelectTrigger>
           <SelectContent>

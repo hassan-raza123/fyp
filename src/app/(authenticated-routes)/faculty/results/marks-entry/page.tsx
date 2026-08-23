@@ -634,7 +634,7 @@ const MarksEntryPage = () => {
                   setSelectedAssessment(null);
                 }}
               >
-                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select a section" className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a section" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -656,7 +656,7 @@ const MarksEntryPage = () => {
                 }
                 disabled={!selectedSection}
               >
-                <SelectTrigger className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select an assessment" className="h-8 text-xs mt-1 bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select an assessment" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -780,7 +780,7 @@ const MarksEntryPage = () => {
                 onClick={() => saveMarks(false)}
                 disabled={saving || !marksData || isLocked}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 disabled:opacity-50"
-                style={{ backgroundColor: primaryColor, color: '#fff' }}
+                style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Submit Marks'}
@@ -1109,7 +1109,7 @@ const MarksEntryPage = () => {
               onClick={() => { setShowReview(false); saveMarks(false); }}
               disabled={validationErrors.length > 0}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               Submit Marks
             </button>
@@ -1156,7 +1156,7 @@ const MarksEntryPage = () => {
               onClick={handleBulkUpload}
               disabled={!bulkFile}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               Upload
             </button>

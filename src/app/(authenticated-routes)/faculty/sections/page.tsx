@@ -120,7 +120,7 @@ export default function SectionsPage() {
       case 'suspended':
         return 'bg-warn text-warn-fg';
       case 'deleted':
-        return 'bg-[var(--error)] text-white';
+        return 'bg-[var(--error)] text-bad-fg';
       default:
         return 'bg-[var(--gray-500)] text-white';
     }
@@ -155,7 +155,7 @@ export default function SectionsPage() {
           </div>
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">

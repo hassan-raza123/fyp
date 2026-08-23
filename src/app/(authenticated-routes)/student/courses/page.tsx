@@ -140,15 +140,15 @@ export default function CoursesPage() {
   const getTypeBadge = (type: 'THEORY' | 'LAB' | 'THEORY_LAB' | 'PROJECT' | 'THESIS') => {
     switch (type) {
       case 'THEORY':
-        return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
+        return <Badge className="bg-[var(--accent)] text-accent-fg text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
         return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'THEORY_LAB':
-        return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
+        return <Badge className="bg-[var(--accent)] text-accent-fg text-[10px] px-1.5 py-0.5">Theory + Lab</Badge>;
       case 'PROJECT':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
-        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Thesis</Badge>;
+        return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Thesis</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5">{type}</Badge>;
     }
@@ -161,7 +161,7 @@ export default function CoursesPage() {
       case 'INACTIVE':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'ARCHIVED':
-        return <Badge className="bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5">Archived</Badge>;
+        return <Badge className="bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5">Archived</Badge>;
       default:
         return <Badge className="text-[10px] px-1.5 py-0.5">{status}</Badge>;
     }
@@ -194,7 +194,7 @@ export default function CoursesPage() {
           </div>
         </div>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Course Type" className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Course Type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -207,7 +207,7 @@ export default function CoursesPage() {
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Status" className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -218,7 +218,7 @@ export default function CoursesPage() {
           </SelectContent>
         </Select>
         <Select value={semesterId} onValueChange={setSemesterId}>
-          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Semester" className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Semester" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">

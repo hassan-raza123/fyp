@@ -204,7 +204,7 @@ export default function LLOAttainmentsPage() {
     }
     return (
       <Badge
-        className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--error)] text-white'}`}
+        className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--error)] text-bad-fg'}`}
         variant="secondary"
       >
         {attained ? 'Attained' : 'Not Attained'}
@@ -281,7 +281,7 @@ export default function LLOAttainmentsPage() {
             value={selectedCourseOffering}
             onValueChange={setSelectedCourseOffering}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a course offering" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a course offering" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

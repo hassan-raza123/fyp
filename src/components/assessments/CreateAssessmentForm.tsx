@@ -165,7 +165,7 @@ export function CreateAssessmentForm({
             }
             disabled={loadingOfferings}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select course offering" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select course offering" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -223,7 +223,7 @@ export function CreateAssessmentForm({
           value={formData.type}
           onValueChange={(value) => setFormData({ ...formData, type: value })}
         >
-          <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Select assessment type" className="h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Select assessment type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -379,7 +379,7 @@ export function CreateAssessmentForm({
           type="submit"
           disabled={isLoading}
           className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50"
-          style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
+          style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
           onMouseEnter={(e) => {
             if (!isLoading)
               e.currentTarget.style.backgroundColor = primaryColorDark;

@@ -144,7 +144,7 @@ export default function CourseCLOsPage() {
                             ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5'
                             : clo.status === 'inactive'
                             ? 'bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5'
-                            : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'
+                            : 'bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5'
                         }
                         variant="secondary"
                       >

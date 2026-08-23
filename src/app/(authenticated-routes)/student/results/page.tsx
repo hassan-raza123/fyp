@@ -205,9 +205,9 @@ export default function ResultsPage() {
 
   const getGradeBadgeColor = (grade: string) => {
     if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-good-fg';
-    if (['B+', 'B'].includes(grade)) return 'bg-[var(--accent)] text-white dark:bg-[var(--accent)] dark:text-white';
+    if (['B+', 'B'].includes(grade)) return 'bg-[var(--accent)] text-accent-fg dark:bg-[var(--accent)] dark:text-white';
     if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
-    return 'bg-[var(--error)] text-white';
+    return 'bg-[var(--error)] text-bad-fg';
   };
 
   // Get unique semesters from grades for display
@@ -296,7 +296,7 @@ export default function ResultsPage() {
         <div className="p-4 border-b border-card-border flex items-center justify-between">
           <h2 className="text-sm font-semibold text-primary-text">Course Grades</h2>
           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-            <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Filter by semester" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Filter by semester" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

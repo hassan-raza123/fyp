@@ -283,7 +283,7 @@ export default function CurriculumPage() {
         <div className="w-72">
           <Label className="text-xs text-secondary-text mb-1 block">Select Program</Label>
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Choose a program..." className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Choose a program..." />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -468,7 +468,7 @@ export default function CurriculumPage() {
             <div className="grid gap-1.5">
               <Label className="text-xs text-secondary-text">Course *</Label>
               <Select value={addForm.courseId} onValueChange={(v) => setAddForm((f) => ({ ...f, courseId: v }))}>
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select course..." className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select course..." />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border max-h-60">

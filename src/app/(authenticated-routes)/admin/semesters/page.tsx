@@ -354,7 +354,7 @@ export default function SemestersPage() {
           </div>
         </div>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -566,7 +566,7 @@ export default function SemestersPage() {
                 value={newSemester.status}
                 onValueChange={(value: semester_status) => setNewSemester({ ...newSemester, status: value })}
               >
-                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -601,7 +601,7 @@ export default function SemestersPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -703,7 +703,7 @@ export default function SemestersPage() {
             {viewingSemester && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white btn-accent-flat"
+                className="h-8 text-xs btn-accent-flat"
                 style={{
                 }}
                 onClick={() => {
@@ -780,7 +780,7 @@ export default function SemestersPage() {
                   value={editSemester.status}
                   onValueChange={(value: semester_status) => setEditSemester({ ...editSemester, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -811,7 +811,7 @@ export default function SemestersPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -865,7 +865,7 @@ export default function SemestersPage() {
               className="h-8 text-xs text-white"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

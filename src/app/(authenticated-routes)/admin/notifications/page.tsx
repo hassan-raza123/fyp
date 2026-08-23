@@ -331,7 +331,7 @@ export default function NotificationsPage() {
           </div>
         </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[150px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by type" className="w-[150px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -346,7 +346,7 @@ export default function NotificationsPage() {
           </SelectContent>
         </Select>
         <Select value={readFilter} onValueChange={setReadFilter}>
-          <SelectTrigger className="w-[130px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[130px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -467,7 +467,7 @@ export default function NotificationsPage() {
                   setFormData({ ...formData, userId: value })
                 }
               >
-                <SelectTrigger id="userId" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select user" id="userId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -488,7 +488,7 @@ export default function NotificationsPage() {
                   setFormData({ ...formData, type: value })
                 }
               >
-                <SelectTrigger id="type" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select notification type" id="type" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select notification type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

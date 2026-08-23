@@ -103,7 +103,7 @@ const PLOAttainmentsPage = () => {
             onValueChange={(v) => setSelectedProgram(v ? Number(v) : null)}
             disabled={loading || !programs.length}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a program" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a program" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -126,7 +126,7 @@ const PLOAttainmentsPage = () => {
             onValueChange={(v) => setSelectedSemester(v ? Number(v) : null)}
             disabled={loading || !semesters.length}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a semester" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a semester" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

@@ -393,7 +393,7 @@ export default function SuperAdminsPage() {
           className="text-xs h-8 px-3 text-white"
           style={{
             backgroundColor: primaryColor,
-            color: 'white',
+            color: 'var(--accent-fg)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = primaryColorDark;
@@ -577,7 +577,7 @@ export default function SuperAdminsPage() {
                               setSelectedSuperAdmin(superAdmin);
                               setShowDeleteDialog(true);
                             }}
-                            className="transition-all hover:scale-105 text-xs px-3 h-8 text-white btn-danger"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 btn-danger"
                             style={{
                               color: 'var(--white)',
                               borderColor: 'var(--error)',
@@ -689,7 +689,7 @@ export default function SuperAdminsPage() {
             <Button
               onClick={handleCreateSuperAdmin}
               disabled={isCreating}
-              className="text-white btn-accent-flat"
+              className="btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
                 color: 'var(--white)',
@@ -868,7 +868,7 @@ export default function SuperAdminsPage() {
                     setEditSuperAdmin({ ...editSuperAdmin, status: value })
                   }
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -898,7 +898,7 @@ export default function SuperAdminsPage() {
             <Button
               onClick={handleUpdateAdmin}
               disabled={isUpdating}
-              className="text-white btn-accent-flat"
+              className="btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? 'var(--text-muted)' : primaryColor,
                 color: 'var(--white)',

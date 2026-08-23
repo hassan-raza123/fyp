@@ -400,7 +400,7 @@ export default function CourseOfferingsPage() {
           </div>
         </div>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -571,7 +571,7 @@ export default function CourseOfferingsPage() {
                   value={newOffering.courseId}
                   onValueChange={(value) => setNewOffering({ ...newOffering, courseId: value })}
                 >
-                  <SelectTrigger id="create_course" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select course" id="create_course" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -589,7 +589,7 @@ export default function CourseOfferingsPage() {
                   value={newOffering.semesterId}
                   onValueChange={(value) => setNewOffering({ ...newOffering, semesterId: value })}
                 >
-                  <SelectTrigger id="create_semester" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select semester" id="create_semester" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -608,7 +608,7 @@ export default function CourseOfferingsPage() {
                 value={newOffering.status}
                 onValueChange={(value: course_offering_status) => setNewOffering({ ...newOffering, status: value })}
               >
-                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -752,7 +752,7 @@ export default function CourseOfferingsPage() {
             {selectedOffering && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white btn-accent-flat"
+                className="h-8 text-xs btn-accent-flat"
                 style={{
                 }}
                 onClick={() => {
@@ -798,7 +798,7 @@ export default function CourseOfferingsPage() {
                     value={editOffering.courseId}
                     onValueChange={(value) => setEditOffering({ ...editOffering, courseId: value })}
                   >
-                    <SelectTrigger id="edit_course" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select course" id="edit_course" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select course" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -816,7 +816,7 @@ export default function CourseOfferingsPage() {
                     value={editOffering.semesterId}
                     onValueChange={(value) => setEditOffering({ ...editOffering, semesterId: value })}
                   >
-                    <SelectTrigger id="edit_semester" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select semester" id="edit_semester" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select semester" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -835,7 +835,7 @@ export default function CourseOfferingsPage() {
                   value={editOffering.status}
                   onValueChange={(value: course_offering_status) => setEditOffering({ ...editOffering, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

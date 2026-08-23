@@ -330,7 +330,7 @@ function PEOPLOMappingsPageContent() {
       <div className="flex items-center gap-3">
         <div className="w-[260px]">
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a program" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a program" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -636,7 +636,7 @@ function PEOPLOMappingsPageContent() {
               onClick={handleAddMapping}
               disabled={!selectedPLO || isSubmitting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
               onMouseEnter={(e) => {
                 if (!isSubmitting && selectedPLO) {
                   e.currentTarget.style.backgroundColor = primaryColorDark;
@@ -691,7 +691,7 @@ function PEOPLOMappingsPageContent() {
               onClick={handleDeleteMapping}
               disabled={isDeleting}
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
+              style={{ backgroundColor: 'var(--error)', color: 'var(--bad-fg)' }}
               onMouseEnter={(e) => {
                 if (!isDeleting) e.currentTarget.style.backgroundColor = 'var(--error-dark)';
               }}

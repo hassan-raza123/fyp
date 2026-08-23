@@ -336,7 +336,7 @@ export default function ReportsPage() {
           </div>
         </div>
         <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
-          <SelectTrigger className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by type" className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -349,7 +349,7 @@ export default function ReportsPage() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -463,7 +463,7 @@ export default function ReportsPage() {
                   setFormData({ ...formData, reportType: value })
                 }
               >
-                <SelectTrigger id="reportType" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select report type" id="reportType" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -486,7 +486,7 @@ export default function ReportsPage() {
                     setFormData({ ...formData, programId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger id="programId" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select program (optional)" id="programId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select program (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -507,7 +507,7 @@ export default function ReportsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select semester (optional)" id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select semester (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

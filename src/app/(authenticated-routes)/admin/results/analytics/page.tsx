@@ -146,7 +146,7 @@ const AnalyticsPage = () => {
                 onValueChange={setSelectedSection}
                 disabled={loading}
               >
-                <SelectTrigger id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select a section" id="section" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a section" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -168,7 +168,7 @@ const AnalyticsPage = () => {
                   onValueChange={setSelectedAssessment}
                   disabled={loading || assessments.length === 0}
                 >
-                  <SelectTrigger id="assessment" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select an assessment" id="assessment" className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select an assessment" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

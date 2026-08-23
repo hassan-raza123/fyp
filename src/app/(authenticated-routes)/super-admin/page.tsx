@@ -230,7 +230,7 @@ export default function SuperAdminDashboard() {
             className="text-xs h-7 px-3"
             style={{
               backgroundColor: 'var(--accent)',
-              color: 'white',
+              color: 'var(--accent-fg)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--accent-hover)';

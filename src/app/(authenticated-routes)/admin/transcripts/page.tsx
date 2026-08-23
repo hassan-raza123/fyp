@@ -294,7 +294,7 @@ export default function TranscriptsPage() {
       case 'issued':
         return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Issued</Badge>;
       case 'cancelled':
-        return <Badge className={`bg-[var(--error)] text-white ${baseClass}`} variant="secondary">Cancelled</Badge>;
+        return <Badge className={`bg-[var(--error)] text-bad-fg ${baseClass}`} variant="secondary">Cancelled</Badge>;
       default:
         return <Badge className={baseClass} variant="secondary">{status}</Badge>;
     }
@@ -363,7 +363,7 @@ export default function TranscriptsPage() {
           </div>
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -490,7 +490,7 @@ export default function TranscriptsPage() {
                   setFormData({ ...formData, studentId: value })
                 }
               >
-                <SelectTrigger id="studentId" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select student" id="studentId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -512,7 +512,7 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, transcriptType: value })
                   }
                 >
-                <SelectTrigger id="transcriptType" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select type" id="transcriptType" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -531,7 +531,7 @@ export default function TranscriptsPage() {
                     setFormData({ ...formData, semesterId: value === "none" ? "" : value })
                   }
                 >
-                <SelectTrigger id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select semester (optional)" id="semesterId" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select semester (optional)" />
                 </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

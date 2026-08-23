@@ -315,7 +315,7 @@ export default function PassFailCriteriaPage() {
                 value={createForm.courseOfferingId}
                 onValueChange={(v) => setCreateForm((f) => ({ ...f, courseOfferingId: v }))}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Select course offering...">
                   <SelectValue placeholder="Select course offering..." />
                 </SelectTrigger>
                 <SelectContent>

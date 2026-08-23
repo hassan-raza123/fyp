@@ -840,7 +840,7 @@ export default function DashboardLayout({
             <Button
               variant="destructive"
               onClick={handleLogout}
-              className="text-white btn-danger"
+              className="btn-danger"
               style={{
                 color: 'var(--white)',
                 borderColor: 'var(--error)',

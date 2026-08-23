@@ -217,7 +217,7 @@ const PLOAttainmentsPage = () => {
         ? 'bg-[var(--success-green)] text-good-fg'
         : status === 'not_assessed'
           ? 'bg-[var(--gray-500)] text-white'
-          : 'bg-[var(--error)] text-white';
+          : 'bg-[var(--error)] text-bad-fg';
 
     return (
       <Badge className={`${className} text-[10px] px-1.5 py-0.5`}>
@@ -316,7 +316,7 @@ const PLOAttainmentsPage = () => {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
+        <div className="p-3 rounded-lg text-xs text-bad-fg bg-[var(--error)]">{error}</div>
       )}
 
       {/* Program and Semester Selection */}

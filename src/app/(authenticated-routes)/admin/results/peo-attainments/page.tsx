@@ -185,7 +185,7 @@ function PEOAttainmentsContent() {
         <div className="w-60">
           <p className="text-xs text-secondary-text mb-1">Program *</p>
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select program" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select program" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -200,7 +200,7 @@ function PEOAttainmentsContent() {
         <div className="w-52">
           <p className="text-xs text-secondary-text mb-1">Semester (optional)</p>
           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Latest available" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Latest available" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -217,7 +217,7 @@ function PEOAttainmentsContent() {
           onClick={fetchPEOAttainments}
           disabled={!selectedProgram || loading}
           className="px-4 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-          style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
+          style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
         >
           {loading ? 'Loading...' : 'Calculate'}
         </button>

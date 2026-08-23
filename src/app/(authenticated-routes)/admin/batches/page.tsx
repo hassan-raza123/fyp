@@ -421,7 +421,7 @@ export default function BatchesPage() {
           </div>
         </div>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -555,7 +555,7 @@ export default function BatchesPage() {
                 value={newBatch.programId}
                 onValueChange={(value) => setNewBatch({ ...newBatch, programId: value })}
               >
-                <SelectTrigger id="create_programId" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select a program" id="create_programId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a program" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -608,7 +608,7 @@ export default function BatchesPage() {
                   value={newBatch.status}
                   onValueChange={(value: batches_status) => setNewBatch({ ...newBatch, status: value })}
                 >
-                  <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -658,7 +658,7 @@ export default function BatchesPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -790,7 +790,7 @@ export default function BatchesPage() {
             {viewingBatch && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white btn-accent-flat"
+                className="h-8 text-xs btn-accent-flat"
                 style={{
                 }}
                 onClick={() => {
@@ -856,7 +856,7 @@ export default function BatchesPage() {
                   value={editBatch.programId}
                   onValueChange={(value) => setEditBatch({ ...editBatch, programId: value })}
                 >
-                  <SelectTrigger id="edit_programId" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select a program" id="edit_programId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select a program" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -908,7 +908,7 @@ export default function BatchesPage() {
                     value={editBatch.status}
                     onValueChange={(value: batches_status) => setEditBatch({ ...editBatch, status: value })}
                   >
-                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -949,7 +949,7 @@ export default function BatchesPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -1003,7 +1003,7 @@ export default function BatchesPage() {
               className="h-8 text-xs text-white"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

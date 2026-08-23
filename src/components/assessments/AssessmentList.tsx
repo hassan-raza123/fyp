@@ -242,7 +242,7 @@ export function AssessmentList() {
             value={courseOfferingFilter}
             onValueChange={setCourseOfferingFilter}
           >
-            <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Filter by course" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Filter by course" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -265,7 +265,7 @@ export function AssessmentList() {
           </Select>
         )}
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by type" className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">

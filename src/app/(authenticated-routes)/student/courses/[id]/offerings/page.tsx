@@ -129,9 +129,9 @@ export default function CourseOfferingsPage() {
 
   const getGradeBadgeColor = (grade: string) => {
     if (['A+', 'A'].includes(grade)) return 'bg-[var(--success-green)] text-good-fg';
-    if (['B+', 'B'].includes(grade)) return 'bg-[var(--accent)] text-white dark:bg-[var(--accent)]';
+    if (['B+', 'B'].includes(grade)) return 'bg-[var(--accent)] text-accent-fg dark:bg-[var(--accent)]';
     if (['C+', 'C'].includes(grade)) return 'bg-[var(--warning)] text-white';
-    return 'bg-[var(--error)] text-white';
+    return 'bg-[var(--error)] text-bad-fg';
   };
 
   const formatDate = (dateString: string) => {

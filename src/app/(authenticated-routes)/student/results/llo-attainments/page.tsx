@@ -157,7 +157,7 @@ const StudentLLOAttainmentsPage = () => {
       className={
         status === 'attained'
           ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5'
-          : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'
+          : 'bg-[var(--error)] text-bad-fg text-[10px] px-1.5 py-0.5'
       }
     >
       {status === 'attained' ? 'Attained' : 'Not Attained'}
@@ -215,7 +215,7 @@ const StudentLLOAttainmentsPage = () => {
             value={selectedSection?.toString() || ''}
             onValueChange={(v) => setSelectedSection(parseInt(v))}
           >
-            <SelectTrigger
+            <SelectTrigger aria-label="Select a section"
               id="section-select"
               className="w-full max-w-md h-8 text-xs bg-card border-card-border text-primary-text"
             >
@@ -238,7 +238,7 @@ const StudentLLOAttainmentsPage = () => {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg text-xs text-white bg-[var(--error)]">{error}</div>
+        <div className="p-3 rounded-lg text-xs text-bad-fg bg-[var(--error)]">{error}</div>
       )}
 
       {loading ? (

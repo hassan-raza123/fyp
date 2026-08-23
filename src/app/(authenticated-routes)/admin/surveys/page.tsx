@@ -508,7 +508,7 @@ export default function AdminSurveysPage() {
                   <>
                     <Label className="text-xs text-secondary-text">Course Offering *</Label>
                     <Select value={form.courseOfferingId} onValueChange={(v) => setForm({ ...form, courseOfferingId: v })}>
-                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                      <SelectTrigger aria-label="Select course" className="h-8 text-xs bg-card border-card-border text-primary-text">
                         <SelectValue placeholder="Select course" />
                       </SelectTrigger>
                       <SelectContent className="bg-card border-card-border">
@@ -524,7 +524,7 @@ export default function AdminSurveysPage() {
                   <>
                     <Label className="text-xs text-secondary-text">Program *</Label>
                     <Select value={form.programId} onValueChange={(v) => setForm({ ...form, programId: v })}>
-                      <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                      <SelectTrigger aria-label="Select program" className="h-8 text-xs bg-card border-card-border text-primary-text">
                         <SelectValue placeholder="Select program" />
                       </SelectTrigger>
                       <SelectContent className="bg-card border-card-border">
@@ -585,7 +585,7 @@ export default function AdminSurveysPage() {
                     </SelectContent>
                   </Select>
                   <Select value={newQ.ploId} onValueChange={(v) => setNewQ({ ...newQ, ploId: v })}>
-                    <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Link to PLO (optional)" className="h-8 text-xs bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Link to PLO (optional)" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">

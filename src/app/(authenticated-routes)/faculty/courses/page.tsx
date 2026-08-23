@@ -164,7 +164,7 @@ export default function CoursesPage() {
           </div>
         </div>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Course Type" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Course Type" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -176,7 +176,7 @@ export default function CoursesPage() {
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Status" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">

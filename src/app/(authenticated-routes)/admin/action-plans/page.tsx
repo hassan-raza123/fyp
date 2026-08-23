@@ -406,7 +406,7 @@ export default function ActionPlansPage() {
         <div>
           <Label className="text-xs text-secondary-text mb-1 block">Program</Label>
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="All programs" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="All programs" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -421,7 +421,7 @@ export default function ActionPlansPage() {
         <div>
           <Label className="text-xs text-secondary-text mb-1 block">Semester</Label>
           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="All semesters" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="All semesters" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -654,7 +654,7 @@ export default function ActionPlansPage() {
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">PLO *</Label>
                 <Select value={createForm.ploId} onValueChange={(v) => setCreateForm((f) => ({ ...f, ploId: v }))}>
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select PLO" className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select PLO" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -672,7 +672,7 @@ export default function ActionPlansPage() {
                   value={createForm.courseOfferingId}
                   onValueChange={(v) => setCreateForm((f) => ({ ...f, courseOfferingId: v, cloId: '' }))}
                 >
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select course offering" className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select course offering" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -712,7 +712,7 @@ export default function ActionPlansPage() {
               <div className="grid gap-1.5">
                 <Label className="text-xs text-secondary-text">Semester *</Label>
                 <Select value={createForm.semesterId} onValueChange={(v) => setCreateForm((f) => ({ ...f, semesterId: v }))}>
-                  <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select semester" className="h-8 text-xs bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">

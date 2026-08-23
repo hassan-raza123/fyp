@@ -175,7 +175,7 @@ const ResultSheetPage = () => {
               type="button"
               onClick={handlePrint}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               <Printer className="w-3.5 h-3.5" />
               Print
@@ -189,7 +189,7 @@ const ResultSheetPage = () => {
         <div className="rounded-lg border border-card-border bg-card p-6 max-w-md">
           <h2 className="text-sm font-semibold text-primary-text mb-4">Select Section</h2>
           <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
-            <SelectTrigger className="h-9 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Choose a section..." className="h-9 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Choose a section..." />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

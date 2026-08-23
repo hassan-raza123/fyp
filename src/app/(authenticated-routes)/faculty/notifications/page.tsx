@@ -219,7 +219,7 @@ export default function FacultyNotificationsPage() {
             <div>
               <label className="text-xs text-secondary-text mb-1 block">Type</label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="All types" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -236,7 +236,7 @@ export default function FacultyNotificationsPage() {
             <div>
               <label className="text-xs text-secondary-text mb-1 block">Status</label>
               <Select value={readFilter} onValueChange={setReadFilter}>
-                <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="All statuses" className="h-8 text-xs bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -288,7 +288,7 @@ export default function FacultyNotificationsPage() {
                             {notification.type}
                           </Badge>
                           {!notification.isRead && (
-                            <Badge className="bg-[var(--error)] text-white text-[10px]">New</Badge>
+                            <Badge className="bg-[var(--error)] text-bad-fg text-[10px]">New</Badge>
                           )}
                         </div>
                         <p className="text-xs text-secondary-text mb-2">{notification.message}</p>

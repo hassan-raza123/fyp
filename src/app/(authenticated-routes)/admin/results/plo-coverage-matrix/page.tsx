@@ -350,7 +350,7 @@ function PLOCoverageMatrixContent() {
             onValueChange={setSelectedProgram}
             disabled={programs.length === 0}
           >
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="Select a program" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="Select a program" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

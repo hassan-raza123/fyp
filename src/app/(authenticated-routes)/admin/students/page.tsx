@@ -504,7 +504,7 @@ export default function StudentsPage() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -520,7 +520,7 @@ export default function StudentsPage() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by batch" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by batch" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -754,7 +754,7 @@ export default function StudentsPage() {
                 }}
                 disabled={fetchingPrograms}
               >
-                <SelectTrigger id="create_programId" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select program" id="create_programId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select program" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -779,7 +779,7 @@ export default function StudentsPage() {
                 }}
                 disabled={fetchingBatches || !newStudent.programId}
               >
-                <SelectTrigger id="create_batchId" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select batch" id="create_batchId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select batch" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -797,7 +797,7 @@ export default function StudentsPage() {
                 value={newStudent.status}
                 onValueChange={(value: 'active' | 'inactive') => setNewStudent({ ...newStudent, status: value })}
               >
-                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -844,7 +844,7 @@ export default function StudentsPage() {
             <button
               onClick={handleCreateStudent}
               disabled={isCreating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -986,7 +986,7 @@ export default function StudentsPage() {
                     handleEditStudent(selectedStudent);
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white flex items-center gap-1.5 btn-accent-flat"
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 btn-accent-flat"
                 style={{
                 }}
               >
@@ -1074,7 +1074,7 @@ export default function StudentsPage() {
                     }
                   }}
                 >
-                  <SelectTrigger id="edit_programId" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select program" id="edit_programId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select program" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -1096,7 +1096,7 @@ export default function StudentsPage() {
                   value={editStudent.batchId}
                   onValueChange={(value) => setEditStudent({ ...editStudent, batchId: value })}
                 >
-                  <SelectTrigger id="edit_batchId" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select batch" id="edit_batchId" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select batch" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -1114,7 +1114,7 @@ export default function StudentsPage() {
                   value={editStudent.status}
                   onValueChange={(value: 'active' | 'inactive') => setEditStudent({ ...editStudent, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -1153,7 +1153,7 @@ export default function StudentsPage() {
             <button
               onClick={handleUpdateStudent}
               disabled={isUpdating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -1216,7 +1216,7 @@ export default function StudentsPage() {
               className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

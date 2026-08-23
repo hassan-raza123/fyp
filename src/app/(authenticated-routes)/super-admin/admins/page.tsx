@@ -479,7 +479,7 @@ export default function SuperAdminAdminsPage() {
           className="text-xs h-8 px-3 text-white"
           style={{
             backgroundColor: primaryColor,
-            color: 'white',
+            color: 'var(--accent-fg)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = primaryColorDark;
@@ -548,7 +548,7 @@ export default function SuperAdminAdminsPage() {
                 />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Filter by status" className="w-[180px] bg-card border-card-border text-primary-text">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -686,7 +686,7 @@ export default function SuperAdminAdminsPage() {
                               setSelectedAdmin(admin);
                               setShowDeleteDialog(true);
                             }}
-                            className="transition-all hover:scale-105 text-xs px-3 h-8 text-white btn-danger"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 btn-danger"
                             style={{
                               color: 'var(--white)',
                               borderColor: 'var(--error)',
@@ -786,7 +786,7 @@ export default function SuperAdminAdminsPage() {
                   setNewAdmin({ ...newAdmin, departmentId: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger id="departmentId" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select a department (optional)" id="departmentId" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select a department (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -969,7 +969,7 @@ export default function SuperAdminAdminsPage() {
                     handleEditAdmin(admin);
                   }
                 }}
-                className="text-white btn-accent-flat"
+                className="btn-accent-flat"
                 style={{
                 }}
               >
@@ -1073,7 +1073,7 @@ export default function SuperAdminAdminsPage() {
                       setEditAdmin({ ...editAdmin, departmentId: value === 'none' ? '' : value })
                     }
                   >
-                    <SelectTrigger id="edit_departmentId" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select a department" id="edit_departmentId" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select a department" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1100,7 +1100,7 @@ export default function SuperAdminAdminsPage() {
                       setEditAdmin({ ...editAdmin, status: value })
                     }
                   >
-                    <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                    <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -1131,7 +1131,7 @@ export default function SuperAdminAdminsPage() {
             <Button
               onClick={handleUpdateAdmin}
               disabled={isUpdating}
-              className="text-white btn-accent-flat"
+              className="btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? 'var(--text-muted)' : primaryColor,
                 color: 'var(--white)',

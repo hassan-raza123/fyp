@@ -92,7 +92,7 @@ const AssignmentItem = ({
       case 'submitted':
         return 'bg-[var(--success-green)] text-good-fg';
       case 'overdue':
-        return 'bg-[var(--error)] text-white';
+        return 'bg-[var(--error)] text-bad-fg';
       default:
         return 'bg-[var(--warning)] text-white';
     }

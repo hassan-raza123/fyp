@@ -758,7 +758,7 @@ export default function AdminCLOsPage() {
                   setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger id="bloomLevel" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select Bloom's level (optional)" id="bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -805,7 +805,7 @@ export default function AdminCLOsPage() {
                     }
                     disabled={availablePLOs.length === 0}
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text text-xs h-8">
+                    <SelectTrigger aria-label="Select PLO" className="bg-card border-card-border text-primary-text text-xs h-8">
                       <SelectValue placeholder="Select PLO" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">
@@ -924,7 +924,7 @@ export default function AdminCLOsPage() {
                   setFormData({ ...formData, bloomLevel: value === 'none' ? '' : value })
                 }
               >
-                <SelectTrigger id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select Bloom's level (optional)" id="edit-bloomLevel" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select Bloom's level (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -971,7 +971,7 @@ export default function AdminCLOsPage() {
                     }
                     disabled={availablePLOs.length === 0}
                   >
-                    <SelectTrigger className="bg-card border-card-border text-primary-text text-xs h-8">
+                    <SelectTrigger aria-label="Select PLO" className="bg-card border-card-border text-primary-text text-xs h-8">
                       <SelectValue placeholder="Select PLO" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-card-border">

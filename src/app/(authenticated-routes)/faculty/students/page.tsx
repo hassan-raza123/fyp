@@ -296,7 +296,7 @@ export default function StudentsPage() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -312,7 +312,7 @@ export default function StudentsPage() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by batch" className="w-[200px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by batch" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -518,7 +518,7 @@ export default function StudentsPage() {
               type="button"
               onClick={handleDelete}
               disabled={deleting || (selectedStudent?.currentStudents ?? 0) > 0}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-white hover:opacity-90"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 bg-[var(--error)] text-bad-fg hover:opacity-90"
             >
               {deleting ? 'Deleting...' : 'Delete'}
             </button>
@@ -708,7 +708,7 @@ export default function StudentsPage() {
               }}
               disabled={!bulkGradeFile || uploading}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               {uploading ? 'Uploading...' : 'Upload & Process'}
             </button>
@@ -793,7 +793,7 @@ export default function StudentsPage() {
               }}
               disabled={sending || !notificationSubject || !notificationMessage}
               className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
+              style={{ backgroundColor: primaryColor, color: 'var(--accent-fg)' }}
             >
               {sending ? 'Sending...' : 'Send Notification'}
             </button>

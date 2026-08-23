@@ -390,7 +390,7 @@ export default function ProgramsPage() {
           </div>
         </div>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -569,7 +569,7 @@ export default function ProgramsPage() {
                 value={newProgram.status}
                 onValueChange={(value: programs_status) => setNewProgram({ ...newProgram, status: value })}
               >
-                <SelectTrigger id="create_status" className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select status" id="create_status" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">
@@ -615,7 +615,7 @@ export default function ProgramsPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
               }}
@@ -733,7 +733,7 @@ export default function ProgramsPage() {
             {viewingProgram && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white btn-accent-flat"
+                className="h-8 text-xs btn-accent-flat"
                 style={{
                 }}
                 onClick={() => {
@@ -823,7 +823,7 @@ export default function ProgramsPage() {
                   value={editProgram.status}
                   onValueChange={(value: programs_status) => setEditProgram({ ...editProgram, status: value })}
                 >
-                  <SelectTrigger id="edit_status" className="bg-card border-card-border text-primary-text">
+                  <SelectTrigger aria-label="Select status" id="edit_status" className="bg-card border-card-border text-primary-text">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-card-border">
@@ -863,7 +863,7 @@ export default function ProgramsPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white btn-accent-flat"
+              className="h-8 text-xs btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
               }}
@@ -917,7 +917,7 @@ export default function ProgramsPage() {
               className="h-8 text-xs text-white"
               style={{
                 backgroundColor: 'var(--error)',
-                color: 'var(--white)',
+                color: 'var(--bad-fg)',
                 borderColor: 'var(--error)',
               }}
               onMouseEnter={(e) => {

@@ -252,7 +252,7 @@ export default function GraduationTrackerPage() {
         <div>
           <Label className="text-xs text-secondary-text mb-1 block">Program</Label>
           <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="All programs" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="All programs" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">
@@ -268,7 +268,7 @@ export default function GraduationTrackerPage() {
         <div>
           <Label className="text-xs text-secondary-text mb-1 block">Batch</Label>
           <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-            <SelectTrigger className="h-8 text-xs bg-card border-card-border text-primary-text">
+            <SelectTrigger aria-label="All batches" className="h-8 text-xs bg-card border-card-border text-primary-text">
               <SelectValue placeholder="All batches" />
             </SelectTrigger>
             <SelectContent className="bg-card border-card-border">

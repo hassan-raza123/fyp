@@ -481,7 +481,7 @@ export function LLOPLOMappingList() {
             <div className="grid gap-2">
               <Label className="text-xs text-primary-text">LLO *</Label>
               <Select value={selectedLLO} onValueChange={setSelectedLLO}>
-                <SelectTrigger className="bg-card border-card-border text-primary-text">
+                <SelectTrigger aria-label="Select LLO" className="bg-card border-card-border text-primary-text">
                   <SelectValue placeholder="Select LLO" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-card-border">

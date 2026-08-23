@@ -229,7 +229,7 @@ export default function AcademicRecordsPage() {
         <span className="text-xs font-medium text-secondary-text">Filters:</span>
 
         <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-          <SelectTrigger className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="All Programs" className="w-[180px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="All Programs" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -243,7 +243,7 @@ export default function AcademicRecordsPage() {
         </Select>
 
         <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-          <SelectTrigger className="w-[150px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="All Batches" className="w-[150px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="All Batches" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -257,7 +257,7 @@ export default function AcademicRecordsPage() {
         </Select>
 
         <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-          <SelectTrigger className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
+          <SelectTrigger aria-label="All Semesters" className="w-[160px] h-8 text-xs bg-card border-card-border text-primary-text">
             <SelectValue placeholder="All Semesters" />
           </SelectTrigger>
           <SelectContent className="bg-card border-card-border">
@@ -309,7 +309,7 @@ export default function AcademicRecordsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
             style={
               activeView === view
-                ? { backgroundColor: primaryColor, color: '#fff' }
+                ? { backgroundColor: primaryColor, color: 'var(--accent-fg)' }
                 : { backgroundColor: iconBgColor, color: primaryColor }
             }
           >
