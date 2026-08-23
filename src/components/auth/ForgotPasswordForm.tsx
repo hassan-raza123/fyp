@@ -132,8 +132,8 @@ export default function ForgotPasswordForm() {
           <div className='flex items-center justify-between pt-2'>
             <Link
               href='/login'
-              className='text-sm font-medium inline-flex items-center hover:underline'
-              style={{ color: 'var(--brand-primary)' }}
+              className='text-sm font-medium inline-flex items-center py-1 hover:underline'
+              style={{ color: 'var(--accent)' }}
             >
               <ArrowLeft className='w-4 h-4 mr-1' />
               Back to sign in
@@ -172,8 +172,8 @@ export default function ForgotPasswordForm() {
           </div>
           <Link
             href='/login'
-            className='font-medium transition-colors inline-flex items-center hover:underline'
-            style={{ color: 'var(--brand-primary)' }}
+            className='font-medium transition-colors inline-flex items-center py-1 hover:underline'
+            style={{ color: 'var(--accent)' }}
           >
             <ArrowLeft className='w-4 h-4 mr-1' />
             Back to sign in

@@ -254,7 +254,7 @@ export default function LoginForm() {
             </label>
             <Link
               href='/forgot-password'
-              className='text-sm font-medium hover:underline text-primary'
+              className='inline-flex items-center py-1 text-sm font-medium hover:underline text-primary'
             >
               Forgot password
             </Link>
@@ -277,7 +277,7 @@ export default function LoginForm() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
+              className='absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

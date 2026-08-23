@@ -85,7 +85,7 @@ export default async function LegalPage({
       <div className='max-w-3xl mx-auto px-6 py-16'>
         <Link
           href='/'
-          className='text-sm font-medium text-primary hover:underline'
+          className='inline-flex items-center py-1 text-sm font-medium text-primary hover:underline'
         >
           ← {PRODUCT_NAME}
         </Link>

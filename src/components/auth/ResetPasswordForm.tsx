@@ -242,7 +242,7 @@ function ResetPasswordFormContent() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
+              className='absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -280,7 +280,7 @@ function ResetPasswordFormContent() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-4 top-1/2 -translate-y-1/2 transition-colors text-ink-muted hover:text-ink-2'
+              className='absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-colors text-ink-muted hover:text-ink-2'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

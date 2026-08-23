@@ -129,24 +129,8 @@ export default function Footer() {
                     href={href}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='relative w-12 h-12 rounded-xl backdrop-blur-md flex items-center justify-center text-white transition-all group overflow-hidden'
+                    className='social-tile relative w-12 h-12 rounded-xl backdrop-blur-md flex items-center justify-center text-white overflow-hidden'
                     aria-label={label}
-                    style={{ 
-                      backgroundColor: 'var(--white-opacity-08)',
-                      border: `1px solid var(--white-opacity-15)`
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--brand-secondary)';
-                      e.currentTarget.style.borderColor = 'var(--brand-secondary)';
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = `0 10px 30px var(--brand-secondary-opacity-40)`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--white-opacity-08)';
-                      e.currentTarget.style.borderColor = 'var(--white-opacity-15)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
                   >
                     <Icon className='w-5 h-5 relative z-10' />
                   </a>
@@ -271,11 +255,11 @@ export default function Footer() {
               <p className='font-medium'>&copy; {new Date().getFullYear()} <span className='text-white'>{PRODUCT_NAME}</span> — All rights reserved.</p>
             </div>
             <div className='flex items-center gap-6 text-sm'>
-              <Link href='/legal/privacy' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
+              <Link href='/legal/privacy' className='text-white/70 hover:text-white transition-colors font-medium inline-flex items-center gap-1 py-1 group'>
                 Privacy Policy
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>
-              <Link href='/legal/terms' className='text-white/70 hover:text-white transition-colors font-medium flex items-center gap-1 group'>
+              <Link href='/legal/terms' className='text-white/70 hover:text-white transition-colors font-medium inline-flex items-center gap-1 py-1 group'>
                 Terms of Service
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>

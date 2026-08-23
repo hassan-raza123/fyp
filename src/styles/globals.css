@@ -879,6 +879,24 @@
     background-color: var(--accent-wash);
   }
 
+  /* The footer's social tiles. Their hover was four element.style
+     writes from onMouseEnter/onMouseLeave — the last of that pattern
+     on the public pages, and the only one that survived because the
+     block renders solely when COMPANY_SOCIAL is filled in. */
+  .social-tile {
+    background-color: var(--white-opacity-08);
+    border: 1px solid var(--white-opacity-15);
+    transition: background-color 0.3s ease, border-color 0.3s ease,
+      transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .social-tile:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px var(--brand-primary-opacity-40);
+  }
+
   /* ---- Marketing section grounds ------------------------------
      The dark marketing bands used to paint a *light* surface
      gradient and then cover it with a 40-55% black overlay. Two
