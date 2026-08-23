@@ -308,6 +308,7 @@ export function CLOPLOMappingList() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search mappings"
               placeholder="Search mappings..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -396,16 +397,9 @@ export function CLOPLOMappingList() {
                   <TableCell>
                     <button aria-label="Delete"
                       onClick={() => handleDeleteClick(mapping.id)}
-                      className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                      className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                       style={{
-                        backgroundColor: 'var(--error-opacity-10)',
                         color: 'var(--error)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                       }}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -522,14 +516,8 @@ export function CLOPLOMappingList() {
             </button>
             <button
               onClick={handleCreate}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
-              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
+              style={{ color: 'var(--white)' }}
             >
               Create Mapping
             </button>
@@ -569,14 +557,8 @@ export function CLOPLOMappingList() {
             </button>
             <button
               onClick={handleDelete}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error)';
-              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-danger"
+              style={{ color: 'var(--white)' }}
             >
               Delete
             </button>

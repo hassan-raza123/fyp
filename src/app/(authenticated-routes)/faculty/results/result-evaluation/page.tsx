@@ -471,7 +471,8 @@ const ResultEvaluationPage = () => {
                     <div className="relative mt-1">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-text" />
                       <Input
-                        placeholder="Search by title, course code..."
+                        aria-label="Search by title, course code"
+              placeholder="Search by title, course code..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"

@@ -167,16 +167,8 @@ export default function SuperAdminDashboard() {
         </div>
           <Button
           onClick={() => window.location.href = '/super-admin/departments'}
-          className="text-xs h-8 px-3"
+          className="text-xs h-8 px-3 btn-accent-flat"
             style={{
-              backgroundColor: primaryColor,
-              color: 'white',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColorDark;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColor;
             }}
           >
           Manage Departments

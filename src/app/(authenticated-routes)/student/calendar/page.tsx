@@ -593,10 +593,8 @@ const CalendarPage = () => {
                     >
                       <button
                         type="button"
-                        className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent transition-colors"
+                        className="w-full px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent transition-colors hover-subtle"
                         style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                       >
                         View Assessment Details
                       </button>

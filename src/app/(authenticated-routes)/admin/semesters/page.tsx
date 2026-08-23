@@ -345,6 +345,7 @@ export default function SemestersPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search semesters"
               placeholder="Search semesters..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -444,16 +445,9 @@ export default function SemestersPage() {
                           setSelectedSemester(semester);
                           setShowDeleteDialog(true);
                         }}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                         style={{
-                          backgroundColor: 'var(--error-opacity-10)',
                           color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -587,20 +581,10 @@ export default function SemestersPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+              className="h-8 text-xs border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                if (!isCreating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
               }}
               onClick={() => {
                 setShowCreateModal(false);
@@ -617,20 +601,9 @@ export default function SemestersPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white"
+              className="h-8 text-xs text-white btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
-                color: 'white',
-              }}
-              onMouseEnter={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }
               }}
               onClick={handleCreateSemester}
               disabled={isCreating}
@@ -715,20 +688,10 @@ export default function SemestersPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+              className="h-8 text-xs border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
               }}
               onClick={() => {
                 setShowViewModal(false);
@@ -740,16 +703,8 @@ export default function SemestersPage() {
             {viewingSemester && (
               <Button
                 size="sm"
-                className="h-8 text-xs text-white"
+                className="h-8 text-xs text-white btn-accent-flat"
                 style={{
-                  backgroundColor: primaryColor,
-                  color: 'white',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColor;
                 }}
                 onClick={() => {
                   const semester = semesters.find(s => s.id === viewingSemester.id);
@@ -841,20 +796,10 @@ export default function SemestersPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+              className="h-8 text-xs border-card-border bg-transparent hover-subtle"
               style={{
                 color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
               }}
               onClick={() => {
                 setShowEditModal(false);
@@ -866,20 +811,9 @@ export default function SemestersPage() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs text-white"
+              className="h-8 text-xs text-white btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
-                color: 'white',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }
               }}
               onClick={handleUpdateSemester}
               disabled={isUpdating}
@@ -912,20 +846,10 @@ export default function SemestersPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs border-card-border bg-transparent"
+              className="h-8 text-xs border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
               }}
               onClick={() => {
                 setShowDeleteDialog(false);

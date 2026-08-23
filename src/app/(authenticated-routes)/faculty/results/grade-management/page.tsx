@@ -857,10 +857,8 @@ const GradeManagementPage = () => {
                 <div className="flex gap-2 pt-4">
                   <button
                     onClick={() => handleExport(selectedData, 'pdf')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5"
-                    style={{ backgroundColor: primaryColor, color: '#fff' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 inline-flex items-center gap-1.5 btn-accent-flat"
+                    style={{ color: '#fff' }}
                   >
                     <FileText className="w-3.5 h-3.5" />
                     Generate Full Report (PDF)
@@ -1084,10 +1082,8 @@ const GradeManagementPage = () => {
             <button
               type="button"
               onClick={handleSaveEdit}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8"
-              style={{ backgroundColor: primaryColor, color: '#fff' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 btn-accent-flat"
+              style={{ color: '#fff' }}
             >
               Save Changes
             </button>

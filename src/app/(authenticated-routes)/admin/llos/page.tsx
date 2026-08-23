@@ -324,6 +324,7 @@ export default function AdminLLOsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search LLOs"
               placeholder="Search LLOs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -429,16 +430,9 @@ export default function AdminLLOsPage() {
                       </button>
                       <button aria-label="Delete"
                         onClick={() => handleDeleteClick(llo)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                         style={{
-                          backgroundColor: 'var(--error-opacity-10)',
                           color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -511,16 +505,10 @@ export default function AdminLLOsPage() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsViewDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -627,32 +615,19 @@ export default function AdminLLOsPage() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsCreateDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleCreateLLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
               style={{
-                backgroundColor: primaryColor,
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Create LLO
@@ -739,32 +714,19 @@ export default function AdminLLOsPage() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsEditDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleUpdateLLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
               style={{
-                backgroundColor: primaryColor,
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Update LLO
@@ -786,32 +748,19 @@ export default function AdminLLOsPage() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteLLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-danger"
               style={{
-                backgroundColor: 'var(--error)',
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error)';
               }}
             >
               Delete

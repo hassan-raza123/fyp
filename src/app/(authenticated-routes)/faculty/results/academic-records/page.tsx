@@ -337,7 +337,8 @@ function FacultyDataSheetView({
         <Search className="h-3.5 w-3.5 text-secondary-text flex-shrink-0" />
         <input
           type="text"
-          placeholder="Search by name, roll number..."
+          aria-label="Search by name, roll number"
+              placeholder="Search by name, roll number..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="flex-1 bg-transparent text-xs text-primary-text placeholder:text-muted-text outline-none"

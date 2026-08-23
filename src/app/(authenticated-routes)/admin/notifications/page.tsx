@@ -322,6 +322,7 @@ export default function NotificationsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search notifications"
               placeholder="Search notifications..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -434,10 +435,8 @@ export default function NotificationsPage() {
                       )}
                       <button aria-label="Delete"
                         onClick={() => handleDeleteClick(notification)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
+                        style={{ color: 'var(--error)' }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -580,10 +579,8 @@ export default function NotificationsPage() {
             </button>
             <button
               onClick={handleDelete}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 hover-danger-wash"
+              style={{ color: 'var(--error)' }}
             >
               Delete
             </button>

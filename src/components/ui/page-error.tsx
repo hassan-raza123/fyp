@@ -50,14 +50,8 @@ export function PageError({
         {onRetry && (
           <button
             onClick={onRetry}
-            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-            style={{ backgroundColor: primaryColor, color: 'white' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColorDark;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColor;
-            }}
+            className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
+            style={{ color: 'white' }}
           >
             Try Again
           </button>

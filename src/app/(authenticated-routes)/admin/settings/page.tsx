@@ -209,8 +209,9 @@ export default function SettingsPage() {
           <CardContent className='space-y-4'>
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label>Institution Name</Label>
+                <Label htmlFor="set-institution-name">Institution Name</Label>
                 <Input
+                  id="set-institution-name"
                   placeholder='e.g. Riverside Institute of Technology'
                   value={settings.system.institutionName}
                   onChange={(e) =>
@@ -229,8 +230,9 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className='space-y-2'>
-                <Label>Institution Short Name</Label>
+                <Label htmlFor="set-institution-short-name">Institution Short Name</Label>
                 <Input
+                  id="set-institution-short-name"
                   placeholder='e.g. RIT'
                   value={settings.system.institutionShortName}
                   onChange={(e) =>
@@ -248,8 +250,9 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className='space-y-2'>
-                <Label>IT Support Email</Label>
+                <Label htmlFor="set-it-support-email">IT Support Email</Label>
                 <Input
+                  id="set-it-support-email"
                   type='email'
                   placeholder='e.g. itsupport@your-institution.edu.pk'
                   value={settings.system.supportEmail}
@@ -269,8 +272,9 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className='space-y-2'>
-                <Label>Academic Year</Label>
+                <Label htmlFor="set-academic-year">Academic Year</Label>
                 <Input
+                  id="set-academic-year"
                   value={settings.system.academicYear}
                   onChange={(e) =>
                     setSettings({
@@ -370,8 +374,9 @@ export default function SettingsPage() {
           <CardContent className='space-y-4'>
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label>SMTP Host</Label>
+                <Label htmlFor="set-smtp-host">SMTP Host</Label>
                 <Input
+                  id="set-smtp-host"
                   value={settings.email.smtpHost}
                   onChange={(e) =>
                     setSettings({
@@ -385,8 +390,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label>SMTP Port</Label>
+                <Label htmlFor="set-smtp-port">SMTP Port</Label>
                 <Input
+                  id="set-smtp-port"
                   value={settings.email.smtpPort}
                   onChange={(e) =>
                     setSettings({
@@ -400,8 +406,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label>SMTP Username</Label>
+                <Label htmlFor="set-smtp-username">SMTP Username</Label>
                 <Input
+                  id="set-smtp-username"
                   value={settings.email.smtpUsername}
                   onChange={(e) =>
                     setSettings({
@@ -415,8 +422,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label>SMTP Password</Label>
+                <Label htmlFor="set-smtp-password">SMTP Password</Label>
                 <Input
+                  id="set-smtp-password"
                   type='password'
                   value={settings.email.smtpPassword}
                   onChange={(e) =>
@@ -431,8 +439,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label>From Email</Label>
+                <Label htmlFor="set-from-email">From Email</Label>
                 <Input
+                  id="set-from-email"
                   value={settings.email.fromEmail}
                   onChange={(e) =>
                     setSettings({
@@ -446,8 +455,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label>From Name</Label>
+                <Label htmlFor="set-from-name">From Name</Label>
                 <Input
+                  id="set-from-name"
                   value={settings.email.fromName}
                   onChange={(e) =>
                     setSettings({
@@ -475,6 +485,7 @@ export default function SettingsPage() {
           <CardContent className='space-y-4'>
             <div className='flex items-center space-x-2'>
               <Switch
+                aria-labelledby="set-enable-notifications"
                 checked={settings.notifications.enabled}
                 onCheckedChange={(checked: boolean) =>
                   setSettings({
@@ -486,11 +497,12 @@ export default function SettingsPage() {
                   })
                 }
               />
-              <Label>Enable Notifications</Label>
+              <Label id="set-enable-notifications">Enable Notifications</Label>
             </div>
             <div className='space-y-4'>
               <div className='flex items-center space-x-2'>
                 <Switch
+                aria-labelledby="set-email-notifications"
                   checked={settings.notifications.channels.email}
                   onCheckedChange={(checked: boolean) =>
                     setSettings({
@@ -505,10 +517,11 @@ export default function SettingsPage() {
                     })
                   }
                 />
-                <Label>Email Notifications</Label>
+                <Label id="set-email-notifications">Email Notifications</Label>
               </div>
               <div className='flex items-center space-x-2'>
                 <Switch
+                aria-labelledby="set-push-notifications"
                   checked={settings.notifications.channels.push}
                   onCheckedChange={(checked: boolean) =>
                     setSettings({
@@ -523,10 +536,11 @@ export default function SettingsPage() {
                     })
                   }
                 />
-                <Label>Push Notifications</Label>
+                <Label id="set-push-notifications">Push Notifications</Label>
               </div>
               <div className='flex items-center space-x-2'>
                 <Switch
+                aria-labelledby="set-sms-notifications"
                   checked={settings.notifications.channels.sms}
                   onCheckedChange={(checked: boolean) =>
                     setSettings({
@@ -541,7 +555,7 @@ export default function SettingsPage() {
                     })
                   }
                 />
-                <Label>SMS Notifications</Label>
+                <Label id="set-sms-notifications">SMS Notifications</Label>
               </div>
             </div>
           </CardContent>
@@ -558,8 +572,9 @@ export default function SettingsPage() {
           <CardContent className='space-y-4'>
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label>CLO Attainment Threshold (%)</Label>
+                <Label htmlFor="set-clo-attainment-threshold">CLO Attainment Threshold (%)</Label>
                 <Input
+                  id="set-clo-attainment-threshold"
                   type='number'
                   min='0'
                   max='100'
@@ -579,8 +594,9 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className='space-y-2'>
-                <Label>PLO Attainment Threshold (%)</Label>
+                <Label htmlFor="set-plo-attainment-threshold">PLO Attainment Threshold (%)</Label>
                 <Input
+                  id="set-plo-attainment-threshold"
                   type='number'
                   min='0'
                   max='100'
@@ -624,8 +640,9 @@ export default function SettingsPage() {
                 </Select>
               </div>
               <div className='space-y-2'>
-                <Label>Assessment Weightage Sum (%)</Label>
+                <Label htmlFor="set-assessment-weightage-sum">Assessment Weightage Sum (%)</Label>
                 <Input
+                  id="set-assessment-weightage-sum"
                   type='number'
                   min='0'
                   max='200'
@@ -651,8 +668,9 @@ export default function SettingsPage() {
               </Label>
               <div className='grid grid-cols-3 gap-4'>
                 <div className='space-y-2'>
-                  <Label>High Mapping Weight</Label>
+                  <Label htmlFor="set-high-mapping-weight">High Mapping Weight</Label>
                   <Input
+                  id="set-high-mapping-weight"
                     type='number'
                     step='0.1'
                     min='0'
@@ -673,8 +691,9 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label>Medium Mapping Weight</Label>
+                  <Label htmlFor="set-medium-mapping-weight">Medium Mapping Weight</Label>
                   <Input
+                  id="set-medium-mapping-weight"
                     type='number'
                     step='0.1'
                     min='0'
@@ -695,8 +714,9 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label>Low Mapping Weight</Label>
+                  <Label htmlFor="set-low-mapping-weight">Low Mapping Weight</Label>
                   <Input
+                  id="set-low-mapping-weight"
                     type='number'
                     step='0.1'
                     min='0'

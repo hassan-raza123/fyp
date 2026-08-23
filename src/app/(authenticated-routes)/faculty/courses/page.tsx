@@ -155,6 +155,7 @@ export default function CoursesPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search courses"
               placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}

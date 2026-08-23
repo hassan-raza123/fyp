@@ -486,7 +486,8 @@ export default function BatchStudentsPage() {
                 <div className='relative flex-1'>
                   <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
                   <Input
-                    placeholder='Search students...'
+                    aria-label='Search students'
+              placeholder='Search students...'
                     className='pl-8'
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}

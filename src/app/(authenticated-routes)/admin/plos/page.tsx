@@ -323,6 +323,7 @@ function PLOsPageContent() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search PLOs"
               placeholder="Search PLOs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -426,16 +427,9 @@ function PLOsPageContent() {
                       </button>
                       <button aria-label="Delete"
                         onClick={() => handleDeleteClick(plo)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                         style={{
-                          backgroundColor: 'var(--error-opacity-10)',
                           color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -508,16 +502,10 @@ function PLOsPageContent() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsViewDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -624,32 +612,19 @@ function PLOsPageContent() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsCreateDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleCreatePLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
               style={{
-                backgroundColor: primaryColor,
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Create PLO
@@ -736,32 +711,19 @@ function PLOsPageContent() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsEditDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleUpdatePLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-accent-flat"
               style={{
-                backgroundColor: primaryColor,
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColorDark;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
               Update PLO
@@ -783,32 +745,19 @@ function PLOsPageContent() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleDeletePLO}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-danger"
               style={{
-                backgroundColor: 'var(--error)',
                 color: 'var(--white)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error)';
               }}
             >
               Delete

@@ -327,6 +327,7 @@ export default function ReportsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search reports"
               placeholder="Search reports..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -430,10 +431,8 @@ export default function ReportsPage() {
                       </button>
                       <button aria-label="Delete"
                         onClick={() => handleDeleteClick(report)}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
-                        style={{ backgroundColor: 'var(--error-opacity-10)', color: 'var(--error)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)'; }}
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
+                        style={{ color: 'var(--error)' }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -592,19 +591,15 @@ export default function ReportsPage() {
           <DialogFooter className="mt-4">
             <button
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-dark)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--error)'; }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-danger"
+              style={{ color: 'var(--white)' }}
             >
               Delete
             </button>

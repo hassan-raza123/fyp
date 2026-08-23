@@ -309,16 +309,10 @@ Jane,Smith,jane.smith@example.com,student,STU002,${deptName},${progName},${batch
                 <button
                   type="button"
                   onClick={() => downloadTemplate()}
-                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent"
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 border border-card-border bg-transparent hover-subtle"
                   style={{
                     color: 'var(--text-primary)',
                     borderColor: 'var(--border-color)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
                   <Download className="w-3.5 h-3.5" />

@@ -483,6 +483,7 @@ export default function StudentsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search students"
               placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -621,16 +622,9 @@ export default function StudentsPage() {
                           setShowDeleteDialog(true);
                         }}
                         aria-label={`Delete ${student.user.firstName} ${student.user.lastName}`}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                         style={{
-                          backgroundColor: 'var(--error-opacity-10)',
                           color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -850,20 +844,9 @@ export default function StudentsPage() {
             <button
               onClick={handleCreateStudent}
               disabled={isCreating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--accent)') : primaryColor,
-                color: 'white',
-              }}
-              onMouseEnter={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }
               }}
             >
               {isCreating ? (
@@ -987,16 +970,10 @@ export default function StudentsPage() {
                 setShowViewModal(false);
                 setViewingStudent(null);
               }}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -1009,16 +986,8 @@ export default function StudentsPage() {
                     handleEditStudent(selectedStudent);
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white flex items-center gap-1.5 btn-accent-flat"
                 style={{
-                  backgroundColor: primaryColor,
-                  color: 'white',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColor;
                 }}
               >
                 <Edit className="h-3.5 w-3.5" />
@@ -1184,20 +1153,9 @@ export default function StudentsPage() {
             <button
               onClick={handleUpdateStudent}
               disabled={isUpdating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isUpdating ? ('var(--accent)') : primaryColor,
-                color: 'white',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }
               }}
             >
               {isUpdating ? (

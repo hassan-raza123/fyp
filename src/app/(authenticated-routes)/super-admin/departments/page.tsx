@@ -480,7 +480,8 @@ export default function SuperAdminDepartmentsPage() {
             <div className="relative w-64">
               <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-text`} />
                 <Input
-                  placeholder="Search departments..."
+                  aria-label="Search departments"
+              placeholder="Search departments..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 bg-card border-card-border text-primary-text placeholder:text-secondary-text focus:border-primary dark:focus:border-secondary"
@@ -644,17 +645,10 @@ export default function SuperAdminDepartmentsPage() {
                               setSelectedDepartment(dept);
                               setShowDeleteModal(true);
                             }}
-                            className="transition-all hover:scale-105 text-xs px-3 h-8"
+                            className="transition-all hover:scale-105 text-xs px-3 h-8 btn-danger"
                             style={{
-                              backgroundColor: 'var(--error)',
                               color: 'var(--white)',
                               borderColor: 'var(--error)',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'var(--error)';
                             }}
                           >
                             <Trash2 className="h-3.5 w-3.5 mr-1.5" style={{ color: 'var(--white)' }} />

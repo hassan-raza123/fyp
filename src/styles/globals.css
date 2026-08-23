@@ -892,6 +892,53 @@
     background-color: var(--accent-wash);
   }
 
+  /* ---- Dashboard button hovers --------------------------------
+     The authenticated app painted every button hover from
+     onMouseEnter/onMouseLeave handlers writing element.style —
+     316 of them across 60 files, 626 style writes in total. Two
+     shapes covered nearly all of it, and both are one CSS rule.
+
+     Beyond the duplication, the handlers only ever fired for a
+     mouse: a keyboard user tabbing through a dialog got no hover
+     feedback at all, and the solid variant hardcoded `color:
+     white` over `var(--accent)` — which in dark mode is the light
+     indigo #8B8AF5, so every one of those buttons sat at 2.98:1. */
+
+  /* Ghost/outline button: transparent until hovered. */
+  .hover-subtle:hover:not(:disabled) {
+    background-color: var(--black-opacity-05);
+  }
+
+  /* Solid accent button, without the landing page's drop shadow. */
+  .btn-accent-flat {
+    background-color: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  .btn-accent-flat:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+  }
+
+  /* Destructive button, solid. Was `--error-dark` on hover over
+     `--error`, set from JS on 13 buttons. */
+  .btn-danger {
+    background-color: var(--error);
+    color: var(--white);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background-color: var(--error-dark);
+  }
+
+  /* Destructive ghost — the wash variant, 17 more. */
+  .hover-danger-wash {
+    background-color: var(--error-opacity-10);
+  }
+
+  .hover-danger-wash:hover:not(:disabled) {
+    background-color: var(--error-opacity-20);
+  }
+
   /* The footer's social tiles. Their hover was four element.style
      writes from onMouseEnter/onMouseLeave — the last of that pattern
      on the public pages, and the only one that survived because the

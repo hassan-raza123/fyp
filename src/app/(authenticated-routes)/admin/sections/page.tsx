@@ -634,6 +634,7 @@ export default function SectionsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
               <Input
+              aria-label="Search by section name, course, or faculty"
               placeholder="Search by section name, course, or faculty..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -749,16 +750,9 @@ export default function SectionsPage() {
                           setSelectedSection(section);
                           setShowDeleteDialog(true);
                         }}
-                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7"
+                        className="px-2 py-1 rounded-md transition-colors text-xs font-medium h-7 hover-danger-wash"
                         style={{
-                          backgroundColor: 'var(--error-opacity-10)',
                           color: 'var(--error)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -931,19 +925,9 @@ export default function SectionsPage() {
             <button
               onClick={handleCreateSection}
               disabled={isCreating}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 btn-accent-flat"
               style={{
                 backgroundColor: isCreating ? ('var(--text-muted)') : primaryColor,
-              }}
-              onMouseEnter={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColorDark;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isCreating) {
-                  e.currentTarget.style.backgroundColor = primaryColor;
-                }
               }}
             >
               {isCreating ? (
@@ -1050,16 +1034,9 @@ export default function SectionsPage() {
                             <TableCell className="py-1.5">
                               <button
                                 onClick={() => handleRemoveStudent(student.id)}
-                                className="px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
+                                className="px-2 py-0.5 rounded text-[10px] font-medium transition-colors hover-danger-wash"
                                 style={{
-                                  backgroundColor: 'var(--error-opacity-10)',
                                   color: 'var(--error)',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--error-opacity-20)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--error-opacity-10)';
                                 }}
                               >
                                 Remove
@@ -1081,16 +1058,10 @@ export default function SectionsPage() {
                 setViewingSection(null);
                 setEnrolledStudents([]);
               }}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{
                 color: 'var(--text-primary)',
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               Close
@@ -1139,15 +1110,8 @@ export default function SectionsPage() {
                     fetchFaculty();
                     handleEditSection(selectedSection);
                   }}
-                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 text-white"
+                  className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 flex items-center gap-1.5 text-white btn-accent-flat"
                   style={{
-                    backgroundColor: primaryColor,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = primaryColorDark;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = primaryColor;
                   }}
                 >
                   <Edit className="w-3.5 h-3.5" />
@@ -1282,20 +1246,10 @@ export default function SectionsPage() {
           )}
           <DialogFooter className="mt-4">
             <button
-              className="h-8 text-xs border-card-border bg-transparent px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-8 text-xs border-card-border bg-transparent px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover-subtle"
               style={{
                 color: isUpdating ? ('var(--text-muted)') : ('var(--text-primary)'),
                 borderColor: 'var(--border-color)',
-              }}
-              onMouseEnter={(e) => {
-                if (!isUpdating && !e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
               }}
               onClick={() => {
                 setShowEditModal(false);
@@ -1427,7 +1381,8 @@ export default function SectionsPage() {
                 <div className="relative">
                   <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
                   <Input
-                    placeholder="Search by roll number or name..."
+                    aria-label="Search by roll number or name"
+              placeholder="Search by roll number or name..."
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
                     className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"
@@ -1575,7 +1530,8 @@ export default function SectionsPage() {
                 <div className="relative">
                   <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
                   <Input
-                    placeholder="Search by roll number or name..."
+                    aria-label="Search by roll number or name"
+              placeholder="Search by roll number or name..."
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
                     className="pl-7 h-8 text-xs bg-card border-card-border text-primary-text placeholder:text-secondary-text"

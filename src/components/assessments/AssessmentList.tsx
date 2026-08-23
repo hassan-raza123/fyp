@@ -229,6 +229,7 @@ export function AssessmentList() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search assessments"
               placeholder="Search assessments..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -599,14 +600,8 @@ export function AssessmentList() {
             <button
               onClick={handleDeleteConfirm}
               disabled={!!deletingId}
-              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8"
-              style={{ backgroundColor: 'var(--error)', color: 'var(--white)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error)';
-              }}
+              className="px-3 py-1.5 rounded-lg transition-colors text-xs font-medium h-8 btn-danger"
+              style={{ color: 'var(--white)' }}
             >
               {deletingId ? 'Deleting...' : 'Delete'}
             </button>

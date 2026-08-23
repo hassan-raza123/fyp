@@ -146,6 +146,7 @@ export default function SectionsPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-text" />
             <Input
+              aria-label="Search sections"
               placeholder="Search sections..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

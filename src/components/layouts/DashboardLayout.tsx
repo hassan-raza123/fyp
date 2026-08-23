@@ -840,17 +840,10 @@ export default function DashboardLayout({
             <Button
               variant="destructive"
               onClick={handleLogout}
-              className="text-white"
+              className="text-white btn-danger"
               style={{
-                backgroundColor: 'var(--error)',
                 color: 'var(--white)',
                 borderColor: 'var(--error)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error-dark)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--error)';
               }}
             >
               Logout

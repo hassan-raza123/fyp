@@ -403,20 +403,16 @@ function GraduationCriteriaContent() {
           <DialogFooter className="mt-2">
             <button
               onClick={() => setIsDialogOpen(false)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 border border-card-border bg-transparent hover-subtle"
               style={{ color: 'var(--text-primary)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--black-opacity-05)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50"
-              style={{ backgroundColor: primaryColor, color: 'var(--white)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColorDark; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium h-8 disabled:opacity-50 btn-accent-flat"
+              style={{ color: 'var(--white)' }}
             >
               {saving ? 'Saving...' : selectedRow?.criteria ? 'Update' : 'Save Criteria'}
             </button>
