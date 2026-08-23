@@ -444,11 +444,17 @@ export default function DashboardLayout({
               </div>
             </div>
 
-            {/* App Name */}
+            {/* App Name.
+
+                Was an <h1>. Every dashboard page also titles itself with an
+                <h1>, so all 111 of them shipped two first-level headings —
+                and the first one a screen-reader user met was the product
+                wordmark rather than the name of the page they had opened.
+                A brand mark in the chrome is not a heading. */}
             {isSidebarOpen && (
-              <h1 className={`font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 ${'text-ink'} ${isDarkMode ? 'drop-shadow-[0_2px_4px_var(--brand-primary-opacity-20)]' : ''}`}>
+              <span className={`block font-bold text-lg tracking-tight transition-all duration-300 group-hover:opacity-80 text-ink ${isDarkMode ? 'drop-shadow-[0_2px_4px_var(--brand-primary-opacity-20)]' : ''}`}>
                 {PRODUCT_NAME}
-              </h1>
+              </span>
             )}
           </Link>
         </div>
