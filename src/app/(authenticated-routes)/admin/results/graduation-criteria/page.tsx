@@ -263,7 +263,7 @@ function GraduationCriteriaContent() {
                   <TableCell className="text-xs text-primary-text">
                     {row.criteria ? (
                       <Badge
-                        className={`text-[10px] px-1.5 py-0.5 ${row.criteria.requireAllCourses ? 'bg-[var(--success-green)] text-white' : 'bg-[var(--gray-500)] text-white'}`}
+                        className={`text-[10px] px-1.5 py-0.5 ${row.criteria.requireAllCourses ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--gray-500)] text-white'}`}
                         variant="secondary"
                       >
                         {row.criteria.requireAllCourses ? 'Yes' : 'No'}
@@ -280,7 +280,7 @@ function GraduationCriteriaContent() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className={`text-[10px] px-1.5 py-0.5 ${row.criteria ? 'bg-[var(--success-green)] text-white' : 'bg-warn text-white'}`}
+                      className={`text-[10px] px-1.5 py-0.5 ${row.criteria ? 'bg-[var(--success-green)] text-good-fg' : 'bg-warn text-warn-fg'}`}
                       variant="secondary"
                     >
                       {row.criteria ? 'Configured' : 'Not Configured'}
@@ -323,8 +323,8 @@ function GraduationCriteriaContent() {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label className="text-xs text-primary-text">Min CGPA</Label>
-                <Input
+                <Label className="text-xs text-primary-text" htmlFor="f-min-cgpa">Min CGPA</Label>
+                <Input id="f-min-cgpa"
                   type="number"
                   step="0.1"
                   min="0"
@@ -335,8 +335,8 @@ function GraduationCriteriaContent() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label className="text-xs text-primary-text">Min PLO Attainment (%)</Label>
-                <Input
+                <Label className="text-xs text-primary-text" htmlFor="f-min-plo-attainment">Min PLO Attainment (%)</Label>
+                <Input id="f-min-plo-attainment"
                   type="number"
                   step="1"
                   min="0"

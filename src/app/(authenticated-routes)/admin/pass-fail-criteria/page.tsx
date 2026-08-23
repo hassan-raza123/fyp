@@ -331,8 +331,8 @@ export default function PassFailCriteriaPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label>Minimum Overall Pass Percentage (%)</Label>
-              <Input
+              <Label htmlFor="f-minimum-overall-pass-percentage">Minimum Overall Pass Percentage (%)</Label>
+              <Input id="f-minimum-overall-pass-percentage"
                 type="number"
                 min={0}
                 max={100}
@@ -346,8 +346,8 @@ export default function PassFailCriteriaPage() {
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label>Minimum CLO Attainment % (optional)</Label>
-              <Input
+              <Label htmlFor="f-minimum-clo-attainment-optional">Minimum CLO Attainment % (optional)</Label>
+              <Input id="f-minimum-clo-attainment-optional"
                 type="number"
                 min={0}
                 max={100}
@@ -361,8 +361,8 @@ export default function PassFailCriteriaPage() {
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label>Minimum Attendance % (optional)</Label>
-              <Input
+              <Label htmlFor="f-minimum-attendance-optional">Minimum Attendance % (optional)</Label>
+              <Input id="f-minimum-attendance-optional"
                 type="number"
                 min={0}
                 max={100}
@@ -407,8 +407,8 @@ export default function PassFailCriteriaPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Minimum Overall Pass Percentage (%)</Label>
-                <Input
+                <Label htmlFor="f-minimum-overall-pass-percentage">Minimum Overall Pass Percentage (%)</Label>
+                <Input id="f-minimum-overall-pass-percentage"
                   type="number"
                   min={0}
                   max={100}
@@ -418,8 +418,8 @@ export default function PassFailCriteriaPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Minimum CLO Attainment % (optional)</Label>
-                <Input
+                <Label htmlFor="f-minimum-clo-attainment-optional">Minimum CLO Attainment % (optional)</Label>
+                <Input id="f-minimum-clo-attainment-optional"
                   type="number"
                   min={0}
                   max={100}
@@ -430,8 +430,8 @@ export default function PassFailCriteriaPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Minimum Attendance % (optional)</Label>
-                <Input
+                <Label htmlFor="f-minimum-attendance-optional">Minimum Attendance % (optional)</Label>
+                <Input id="f-minimum-attendance-optional"
                   type="number"
                   min={0}
                   max={100}

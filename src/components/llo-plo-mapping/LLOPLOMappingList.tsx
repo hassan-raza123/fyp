@@ -533,8 +533,8 @@ export function LLOPLOMappingList() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label className="text-xs text-primary-text">Weight (0-1) *</Label>
-              <Input
+              <Label className="text-xs text-primary-text" htmlFor="f-weight-0-1">Weight (0-1) *</Label>
+              <Input id="f-weight-0-1"
                 type="number"
                 min="0"
                 max="1"

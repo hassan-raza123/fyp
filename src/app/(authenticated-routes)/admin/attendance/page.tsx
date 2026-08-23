@@ -276,8 +276,8 @@ export default function AdminAttendancePage() {
               </Select>
             </div>
             <div className='md:col-span-2'>
-              <Label>Search</Label>
-              <Input
+              <Label htmlFor="f-search">Search</Label>
+              <Input id="f-search"
                 value={search}
                 placeholder='Roll number, name or course code'
                 onChange={(event) => setSearch(event.target.value)}

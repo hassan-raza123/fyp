@@ -819,8 +819,8 @@ export default function AssessmentDetailsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs text-secondary-text">New Due Date</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-new-due-date">New Due Date</Label>
+              <Input id="f-new-due-date"
                 type="datetime-local"
                 className="h-8 text-xs bg-card border-card-border text-primary-text mt-1"
                 onChange={(e) => setNewDueDate(new Date(e.target.value))}

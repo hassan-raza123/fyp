@@ -478,7 +478,7 @@ const AnalyticsPage = () => {
                       <p className='text-xs font-semibold text-primary-text'>{clo.cloCode}</p>
                       <p className='text-xs text-secondary-text'>{clo.courseCode}</p>
                     </div>
-                    <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
+                    <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">{clo.studentAttainment.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}
@@ -530,7 +530,7 @@ const AnalyticsPage = () => {
                       <p className='text-xs font-semibold text-primary-text'>{assessment.title}</p>
                       <p className='text-xs text-secondary-text'>{assessment.course} • {assessment.type.replace(/_/g, ' ')}</p>
                     </div>
-                    <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">{assessment.percentage.toFixed(1)}%</Badge>
+                    <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">{assessment.percentage.toFixed(1)}%</Badge>
                   </div>
                 </div>
               ))}

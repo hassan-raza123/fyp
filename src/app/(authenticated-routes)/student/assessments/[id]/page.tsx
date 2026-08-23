@@ -193,7 +193,7 @@ export default function AssessmentDetailsPage() {
     switch (status) {
       case 'published':
       case 'evaluated':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Completed</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Completed</Badge>;
       case 'submitted':
         return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5 dark:bg-[var(--accent)]">Submitted</Badge>;
       case 'not_submitted':

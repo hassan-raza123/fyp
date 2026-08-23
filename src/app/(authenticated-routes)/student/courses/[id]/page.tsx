@@ -138,7 +138,7 @@ export default function CourseDetailsPage() {
       case 'THEORY':
         return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5">Theory</Badge>;
       case 'LAB':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Lab</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Lab</Badge>;
       case 'PROJECT':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Project</Badge>;
       case 'THESIS':
@@ -151,7 +151,7 @@ export default function CourseDetailsPage() {
   const getStatusBadge = (status: 'active' | 'inactive' | 'archived') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Active</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Active</Badge>;
       case 'inactive':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5">Inactive</Badge>;
       case 'archived':

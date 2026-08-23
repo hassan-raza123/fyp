@@ -191,14 +191,14 @@ export default function SuperAdminProfilePage() {
         <TabsList className="bg-card border-card-border">
           <TabsTrigger 
             value="profile" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-white text-primary-text"
+            className="data-[state=active]:bg-primary data-[state=active]:text-accent-fg text-primary-text"
           >
             <User className="w-4 h-4 mr-2" />
             Profile
           </TabsTrigger>
           <TabsTrigger 
             value="password"
-            className="data-[state=active]:bg-primary data-[state=active]:text-white text-primary-text"
+            className="data-[state=active]:bg-primary data-[state=active]:text-accent-fg text-primary-text"
           >
             <Lock className="w-4 h-4 mr-2" />
             Password

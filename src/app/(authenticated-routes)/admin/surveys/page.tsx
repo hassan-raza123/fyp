@@ -457,8 +457,8 @@ export default function AdminSurveysPage() {
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs text-secondary-text">Survey Title *</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              <Label className="text-xs text-secondary-text" htmlFor="f-survey-title">Survey Title *</Label>
+              <Input id="f-survey-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. CS101 Course Exit Survey" className="h-8 text-xs bg-card border-card-border text-primary-text" />
             </div>
             <div className="grid gap-1.5">
@@ -539,8 +539,8 @@ export default function AdminSurveysPage() {
                 )}
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Due Date</Label>
-                <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                <Label className="text-xs text-secondary-text" htmlFor="f-due-date">Due Date</Label>
+                <Input id="f-due-date" type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
                   className="h-8 text-xs bg-card border-card-border text-primary-text" />
               </div>
             </div>

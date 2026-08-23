@@ -263,9 +263,9 @@ export default function ReportsPage() {
   const getStatusBadge = (status: report_status) => {
     switch (status) {
       case 'generated':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Generated</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5" variant="secondary">Generated</Badge>;
       case 'published':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Published</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5" variant="secondary">Published</Badge>;
       case 'archived':
         return <Badge className="bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5" variant="secondary">Archived</Badge>;
       default:

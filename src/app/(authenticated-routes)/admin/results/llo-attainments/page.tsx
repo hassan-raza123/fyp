@@ -204,7 +204,7 @@ export default function LLOAttainmentsPage() {
     }
     return (
       <Badge
-        className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-white' : 'bg-[var(--error)] text-white'}`}
+        className={`text-[10px] px-1.5 py-0.5 ${attained ? 'bg-[var(--success-green)] text-good-fg' : 'bg-[var(--error)] text-white'}`}
         variant="secondary"
       >
         {attained ? 'Attained' : 'Not Attained'}

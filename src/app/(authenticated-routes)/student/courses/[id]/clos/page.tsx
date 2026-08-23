@@ -141,7 +141,7 @@ export default function CourseCLOsPage() {
                       <Badge
                         className={
                           clo.status === 'active'
-                            ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5'
+                            ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5'
                             : clo.status === 'inactive'
                             ? 'bg-[var(--gray-500)] text-white text-[10px] px-1.5 py-0.5'
                             : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'

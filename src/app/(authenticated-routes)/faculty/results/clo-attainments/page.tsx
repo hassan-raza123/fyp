@@ -613,7 +613,7 @@ const CLOAttainmentsPage = () => {
                               <Badge
                                 className={
                                   attainment.isAchieved
-                                    ? 'bg-[var(--success-green)] text-white text-[10px]'
+                                    ? 'bg-[var(--success-green)] text-good-fg text-[10px]'
                                     : 'bg-[var(--error)] text-white text-[10px]'
                                 }
                               >

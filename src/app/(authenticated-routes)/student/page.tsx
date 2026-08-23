@@ -90,7 +90,7 @@ const AssignmentItem = ({
   const getStatusColor = () => {
     switch (status) {
       case 'submitted':
-        return 'bg-[var(--success-green)] text-white';
+        return 'bg-[var(--success-green)] text-good-fg';
       case 'overdue':
         return 'bg-[var(--error)] text-white';
       default:

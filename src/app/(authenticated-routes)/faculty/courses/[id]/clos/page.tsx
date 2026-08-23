@@ -156,7 +156,7 @@ export default function CourseCLOsPage() {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     if (status === 'attained') {
-      return <Badge className="bg-[var(--success-green)] text-white text-[10px]">Attained</Badge>;
+      return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px]">Attained</Badge>;
     }
     return <Badge variant="destructive" className="text-[10px]">Not Attained</Badge>;
   };

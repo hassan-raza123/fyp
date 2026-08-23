@@ -320,8 +320,8 @@ export default function AssessmentItemsPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label className="text-xs text-secondary-text">CSV File</Label>
-                  <Input
+                  <Label className="text-xs text-secondary-text" htmlFor="f-csv-file">CSV File</Label>
+                  <Input id="f-csv-file"
                     type="file"
                     accept=".csv"
                     onChange={(e) => {

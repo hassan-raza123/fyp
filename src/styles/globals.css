@@ -148,6 +148,14 @@
   --warn:      #B45309;   /* partially attained  5.02:1 */
   --warn-wash: #FDF6EB;   /* was #FBF0DF — 4.46:1 with --warn */
   --bad:       #B42318;   /* not attained        6.57:1 */
+
+  /* The label that sits ON a solid attainment fill. Same idea as
+     --accent-fg: the attainment colour is a *text* colour on a page
+     background, and reusing it as a fill needs its own foreground.
+     Light fills are dark, so white reads (5.02 / 5.02 / 6.57). */
+  --good-fg:   var(--white);
+  --warn-fg:   var(--white);
+  --bad-fg:    var(--white);
   --bad-wash:  #FCEBE9;
 
   /* Status aliases used across the codebase. `--success` used to
@@ -414,6 +422,14 @@
   --warn:      #F0B354;
   --warn-wash: #33260F;
   --bad:       #FF8A80;
+
+  /* Ink, not white — the dark-theme fills are bright, and white on
+     them measures 1.74 (good), 1.86 (warn) and 2.28 (bad). Ink gives
+     10.10 / 9.46 / 7.71. Literal, because --gray-900 is inverted in
+     this block. */
+  --good-fg:   #16191F;
+  --warn-fg:   #16191F;
+  --bad-fg:    #16191F;
   --bad-wash:  #351A18;
 
   --success-green-dark:  #35C46B;
@@ -891,6 +907,14 @@
     color: var(--accent);
     background-color: var(--accent-wash);
   }
+
+  /* Foreground for a solid accent fill. */
+  .text-accent-fg { color: var(--accent-fg); }
+
+  /* Foreground for a solid attainment fill. */
+  .text-good-fg { color: var(--good-fg); }
+  .text-warn-fg { color: var(--warn-fg); }
+  .text-bad-fg  { color: var(--bad-fg); }
 
   /* ---- Dashboard button hovers --------------------------------
      The authenticated app painted every button hover from

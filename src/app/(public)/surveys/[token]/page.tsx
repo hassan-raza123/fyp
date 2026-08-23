@@ -333,7 +333,7 @@ export default function PublicSurveyPage() {
                           onClick={() => handleRating(q.id, val)}
                           className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm transition-colors ${
                             chosen
-                              ? 'border-primary bg-primary text-white'
+                              ? 'border-primary bg-primary text-accent-fg'
                               : 'border-subtle text-ink-2 hover:border-primary'
                           }`}
                         >

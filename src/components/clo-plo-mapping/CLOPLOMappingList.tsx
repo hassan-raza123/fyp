@@ -365,7 +365,11 @@ export function CLOPLOMappingList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
+                      {/* An inline editor in a table cell: there is nowhere
+                          to put a visible label, so it names itself and says
+                          which mapping it belongs to. */}
                       <Input
+                        aria-label={`Weight for ${mapping.clo.code} to ${mapping.plo.code}`}
                         type="number"
                         min="0"
                         max="1"
@@ -479,8 +483,8 @@ export function CLOPLOMappingList() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label className="text-xs text-primary-text">Weight (0-1) *</Label>
-              <Input
+              <Label className="text-xs text-primary-text" htmlFor="f-weight-0-1">Weight (0-1) *</Label>
+              <Input id="f-weight-0-1"
                 type="number"
                 min="0"
                 max="1"

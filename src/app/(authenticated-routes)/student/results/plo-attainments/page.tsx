@@ -214,7 +214,7 @@ const PLOAttainmentsPage = () => {
     // A PLO with no marks yet is neither attained nor failed
     const className =
       status === 'attained'
-        ? 'bg-[var(--success-green)] text-white'
+        ? 'bg-[var(--success-green)] text-good-fg'
         : status === 'not_assessed'
           ? 'bg-[var(--gray-500)] text-white'
           : 'bg-[var(--error)] text-white';

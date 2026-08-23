@@ -118,13 +118,13 @@ function statusClasses(status: AttendanceStatus, active: boolean): string {
   if (!active) return 'bg-transparent text-muted-foreground hover:bg-muted';
   switch (status) {
     case 'present':
-      return 'bg-good text-white hover:bg-good';
+      return 'bg-good text-good-fg hover:bg-good';
     case 'absent':
-      return 'bg-bad text-white hover:bg-bad';
+      return 'bg-bad text-bad-fg hover:bg-bad';
     case 'late':
-      return 'bg-warn text-white hover:bg-warn';
+      return 'bg-warn text-warn-fg hover:bg-warn';
     case 'excused':
-      return 'bg-primary text-white hover:bg-primary';
+      return 'bg-primary text-accent-fg hover:bg-primary';
   }
 }
 
@@ -465,8 +465,8 @@ export default function FacultyAttendancePage() {
               </Select>
             </div>
             <div>
-              <Label>Date</Label>
-              <Input
+              <Label htmlFor="f-date">Date</Label>
+              <Input id="f-date"
                 type='date'
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
@@ -489,8 +489,8 @@ export default function FacultyAttendancePage() {
 
           <div className='mt-4 flex flex-col gap-4 md:flex-row md:items-end'>
             <div className='flex-1'>
-              <Label>Topic covered (optional)</Label>
-              <Input
+              <Label htmlFor="f-topic-covered-optional">Topic covered (optional)</Label>
+              <Input id="f-topic-covered-optional"
                 value={topic}
                 placeholder='e.g. Normalization — 3NF and BCNF'
                 onChange={(event) => setTopic(event.target.value)}

@@ -114,11 +114,11 @@ export default function SectionsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-[var(--success-green)] text-white';
+        return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
         return 'bg-[var(--gray-500)] text-white';
       case 'suspended':
-        return 'bg-warn text-white';
+        return 'bg-warn text-warn-fg';
       case 'deleted':
         return 'bg-[var(--error)] text-white';
       default:

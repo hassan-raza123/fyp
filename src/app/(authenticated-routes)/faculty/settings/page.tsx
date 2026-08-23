@@ -496,8 +496,8 @@ export default function SettingsPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs text-secondary-text">Date Format</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-date-format">Date Format</Label>
+                    <Input id="f-date-format"
                       value={preferences.displayPreferences.dateFormat}
                       onChange={(e) =>
                         setPreferences({
@@ -590,8 +590,8 @@ export default function SettingsPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs text-secondary-text">Default Weightage (%)</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-default-weightage">Default Weightage (%)</Label>
+                    <Input id="f-default-weightage"
                       type="number"
                       min={0}
                       max={100}
@@ -609,8 +609,8 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-secondary-text">CLO Calculation Threshold (%)</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-clo-calculation-threshold">CLO Calculation Threshold (%)</Label>
+                    <Input id="f-clo-calculation-threshold"
                       type="number"
                       min={0}
                       max={100}

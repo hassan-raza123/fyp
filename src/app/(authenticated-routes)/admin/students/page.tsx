@@ -414,7 +414,7 @@ export default function StudentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-[var(--success-green)] text-white';
+        return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
         return 'bg-[var(--gray-500)] text-white';
       default:

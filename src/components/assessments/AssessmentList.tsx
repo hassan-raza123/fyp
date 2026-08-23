@@ -187,7 +187,7 @@ export function AssessmentList() {
     switch (status) {
       case 'active':
       case 'published':
-        return 'bg-[var(--success-green)] text-white';
+        return 'bg-[var(--success-green)] text-good-fg';
       case 'completed':
         return 'bg-[var(--gray-500)] text-white';
       default:

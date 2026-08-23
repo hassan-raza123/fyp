@@ -179,7 +179,7 @@ export default function StudentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-[var(--success-green)] text-white';
+        return 'bg-[var(--success-green)] text-good-fg';
       case 'inactive':
         return 'bg-[var(--gray-500)] text-white';
       default:
@@ -730,8 +730,8 @@ export default function StudentsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs text-secondary-text">Subject</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-subject">Subject</Label>
+              <Input id="f-subject"
                 value={notificationSubject}
                 onChange={(e) => setNotificationSubject(e.target.value)}
                 placeholder="Notification subject"

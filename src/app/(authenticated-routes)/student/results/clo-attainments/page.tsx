@@ -179,7 +179,7 @@ const CLOAttainmentsPage = () => {
 
   const getStatusBadge = (status: 'attained' | 'not_attained') => {
     return (
-      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
+      <Badge className={status === 'attained' ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {status === 'attained' ? 'Attained' : 'Not Attained'}
       </Badge>
     );

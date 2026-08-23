@@ -290,7 +290,7 @@ export default function TranscriptsPage() {
     const baseClass = 'text-[10px] px-1.5 py-0.5';
     switch (status) {
       case 'generated':
-        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Generated</Badge>;
+        return <Badge className={`bg-[var(--success-green)] text-good-fg ${baseClass}`} variant="secondary">Generated</Badge>;
       case 'issued':
         return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Issued</Badge>;
       case 'cancelled':

@@ -251,7 +251,7 @@ const ResultEvaluationPage = () => {
     const baseClass = 'text-[10px] px-1.5 py-0.5';
     switch (status) {
       case 'published':
-        return <Badge className={`bg-[var(--success-green)] text-white ${baseClass}`} variant="secondary">Published</Badge>;
+        return <Badge className={`bg-[var(--success-green)] text-good-fg ${baseClass}`} variant="secondary">Published</Badge>;
       case 'evaluated':
         return <Badge className={`bg-[var(--primary-500)] text-white ${baseClass}`} variant="secondary">Evaluated</Badge>;
       case 'pending':

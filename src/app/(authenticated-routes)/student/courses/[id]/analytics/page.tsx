@@ -134,7 +134,7 @@ export default function CourseAnalyticsPage() {
     switch (status) {
       case 'published':
       case 'evaluated':
-        return <Badge className="bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5">Completed</Badge>;
+        return <Badge className="bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5">Completed</Badge>;
       case 'submitted':
         return <Badge className="bg-[var(--accent)] text-white text-[10px] px-1.5 py-0.5 dark:bg-[var(--accent)]">Submitted</Badge>;
       case 'not_submitted':
@@ -147,7 +147,7 @@ export default function CourseAnalyticsPage() {
   const getAttainmentBadge = (attainment: number, threshold: number) => {
     const isAttained = attainment >= threshold;
     return (
-      <Badge className={isAttained ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
+      <Badge className={isAttained ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
         {attainment.toFixed(1)}% {isAttained ? '✓' : '✗'}
       </Badge>
     );
@@ -269,7 +269,7 @@ export default function CourseAnalyticsPage() {
                     <TableCell>{getAttainmentBadge(clo.attainmentPercent, clo.threshold)}</TableCell>
                     <TableCell className="text-xs text-primary-text">{clo.threshold}%</TableCell>
                     <TableCell>
-                      <Badge className={clo.status === 'attained' ? 'bg-[var(--success-green)] text-white text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
+                      <Badge className={clo.status === 'attained' ? 'bg-[var(--success-green)] text-good-fg text-[10px] px-1.5 py-0.5' : 'bg-[var(--error)] text-white text-[10px] px-1.5 py-0.5'}>
                         {clo.status === 'attained' ? 'Attained' : 'Not Attained'}
                       </Badge>
                     </TableCell>

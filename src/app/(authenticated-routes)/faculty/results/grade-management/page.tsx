@@ -479,7 +479,7 @@ const GradeManagementPage = () => {
       );
     } else {
       return (
-        <Badge className="text-[10px] bg-[var(--success-green)] text-white">
+        <Badge className="text-[10px] bg-[var(--success-green)] text-good-fg">
           <CheckCircle className="w-3 h-3 mr-1" />
           Active
         </Badge>

@@ -697,8 +697,8 @@ const AnalyticsPage = () => {
         <div className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label className="text-xs text-secondary-text">Course ID (Optional)</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-course-id-optional">Course ID (Optional)</Label>
+              <Input id="f-course-id-optional"
                 className="mt-1 h-8 text-xs border-card-border"
                 placeholder="Filter by course ID"
                 value={filters.courseId}
@@ -708,8 +708,8 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label className="text-xs text-secondary-text">Section ID (Optional)</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-section-id-optional">Section ID (Optional)</Label>
+              <Input id="f-section-id-optional"
                 className="mt-1 h-8 text-xs border-card-border"
                 placeholder="Filter by section ID"
                 value={filters.sectionId}
@@ -719,8 +719,8 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label className="text-xs text-secondary-text">Start Date (Optional)</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-start-date-optional">Start Date (Optional)</Label>
+              <Input id="f-start-date-optional"
                 type="date"
                 className="mt-1 h-8 text-xs border-card-border"
                 value={filters.startDate}
@@ -730,8 +730,8 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label className="text-xs text-secondary-text">End Date (Optional)</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-end-date-optional">End Date (Optional)</Label>
+              <Input id="f-end-date-optional"
                 type="date"
                 className="mt-1 h-8 text-xs border-card-border"
                 value={filters.endDate}

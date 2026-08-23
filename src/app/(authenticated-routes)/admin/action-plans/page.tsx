@@ -498,7 +498,7 @@ export default function ActionPlansPage() {
                   )}
                   <Button
                     size="sm"
-                    className="h-6 text-[10px] w-full bg-bad hover:bg-bad text-white"
+                    className="h-6 text-[10px] w-full bg-bad hover:bg-bad text-bad-fg"
                     onClick={() => openCreateFromPlo(plo)}
                   >
                     <Plus className="h-2.5 w-2.5 mr-1" /> Create Plan
@@ -723,8 +723,8 @@ export default function ActionPlansPage() {
                 </Select>
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Attainment Value (%)</Label>
-                <Input
+                <Label className="text-xs text-secondary-text" htmlFor="f-attainment-value">Attainment Value (%)</Label>
+                <Input id="f-attainment-value"
                   type="number" min={0} max={100} step={0.1}
                   value={createForm.attainmentValue}
                   onChange={(e) => setCreateForm((f) => ({ ...f, attainmentValue: e.target.value }))}
@@ -733,8 +733,8 @@ export default function ActionPlansPage() {
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs text-secondary-text">Threshold (%)</Label>
-                <Input
+                <Label className="text-xs text-secondary-text" htmlFor="f-threshold">Threshold (%)</Label>
+                <Input id="f-threshold"
                   type="number" min={0} max={100} step={0.5}
                   value={createForm.threshold}
                   onChange={(e) => setCreateForm((f) => ({ ...f, threshold: e.target.value }))}
@@ -743,8 +743,8 @@ export default function ActionPlansPage() {
               </div>
             </div>
             <div className="grid gap-1.5">
-              <Label className="text-xs text-secondary-text">Target Completion Date</Label>
-              <Input
+              <Label className="text-xs text-secondary-text" htmlFor="f-target-completion-date">Target Completion Date</Label>
+              <Input id="f-target-completion-date"
                 type="date"
                 value={createForm.targetDate}
                 onChange={(e) => setCreateForm((f) => ({ ...f, targetDate: e.target.value }))}
@@ -836,8 +836,8 @@ export default function ActionPlansPage() {
                   </Select>
                 </div>
                 <div className="grid gap-1.5">
-                  <Label className="text-xs text-secondary-text">Target Completion Date</Label>
-                  <Input
+                  <Label className="text-xs text-secondary-text" htmlFor="f-target-completion-date">Target Completion Date</Label>
+                  <Input id="f-target-completion-date"
                     type="date"
                     value={editForm.targetDate}
                     onChange={(e) => setEditForm((f) => ({ ...f, targetDate: e.target.value }))}
@@ -899,8 +899,8 @@ export default function ActionPlansPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="grid gap-1.5">
-                    <Label className="text-xs text-secondary-text">Implemented On</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-implemented-on">Implemented On</Label>
+                    <Input id="f-implemented-on"
                       type="date"
                       value={editForm.implementedAt}
                       onChange={(e) => setEditForm((f) => ({ ...f, implementedAt: e.target.value }))}
@@ -908,8 +908,8 @@ export default function ActionPlansPage() {
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label className="text-xs text-secondary-text">Follow-up PLO Attainment (%)</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-follow-up-plo-attainment">Follow-up PLO Attainment (%)</Label>
+                    <Input id="f-follow-up-plo-attainment"
                       type="number" min={0} max={100} step={0.1}
                       value={editForm.followUpAttainmentValue}
                       onChange={(e) => setEditForm((f) => ({ ...f, followUpAttainmentValue: e.target.value }))}
@@ -918,8 +918,8 @@ export default function ActionPlansPage() {
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label className="text-xs text-secondary-text">Next Review Date</Label>
-                    <Input
+                    <Label className="text-xs text-secondary-text" htmlFor="f-next-review-date">Next Review Date</Label>
+                    <Input id="f-next-review-date"
                       type="date"
                       value={editForm.nextReviewDate}
                       onChange={(e) => setEditForm((f) => ({ ...f, nextReviewDate: e.target.value }))}
