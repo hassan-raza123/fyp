@@ -1,39 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { summariseAuditAction } from '@/lib/audit-summary';
 import { NextRequest } from 'next/server';
 import { requireRole } from '@/lib/auth';
 
-function getActivitySummary(activity: any) {
-  // Try to parse details JSON
-  let details: any = {};
-  try {
-    details =
-      typeof activity.details === 'string'
-        ? JSON.parse(activity.details)
-        : activity.details;
-  } catch {
-    details = activity.details;
-  }
-  const entity = details?.entity || details?.changes?.entity || 'entity';
-  const field = details?.field || details?.changes?.field || '';
-  const oldValue = details?.oldValue || details?.changes?.oldValue || '';
-  const newValue = details?.newValue || details?.changes?.newValue || '';
-  const action = activity.action || 'ACTION';
-  const userRole = details?.userRole || '';
-  const entityId = details?.entityId || details?.changes?.entityId || '';
-  // Compose a readable message
-  if (action === 'UPDATE') {
-    return `Updated ${entity} (${field}) from '${oldValue}' to '${newValue}' [ID: ${entityId}]`;
-  } else if (action === 'CREATE') {
-    return `Created ${entity} (${field}) with value '${newValue}' [ID: ${entityId}]`;
-  } else if (action === 'LOGIN') {
-    return `User logged in [ID: ${entityId}]`;
-  } else if (action === 'LOGOUT') {
-    return `User logged out [ID: ${entityId}]`;
-  } else {
-    return `${action} on ${entity} (${field}) [ID: ${entityId}]`;
-  }
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -124,7 +94,7 @@ export async function GET(request: NextRequest) {
       },
       recentActivities: recentActivities.map((activity) => ({
         id: activity.id,
-        summary: getActivitySummary(activity),
+        summary: summariseAuditAction(activity.action, activity.details),
         createdAt: activity.createdAt,
         user: `${activity.user.first_name} ${activity.user.last_name}`,
         userRole: activity.user.userrole?.role.name || 'No Role',
