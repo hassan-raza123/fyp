@@ -170,6 +170,20 @@ const AnalyticsPage = () => {
     endDate: '',
   });
 
+  /*
+    The course and section pickers are built from the first, unfiltered
+    response and then left alone. Reading them from `data` instead would make
+    the list shrink as soon as a filter narrowed the results, so choosing one
+    course would remove every other course from the picker and there would be
+    no way back except reloading.
+  */
+  const [courseOptions, setCourseOptions] = useState<
+    Array<{ id: number; code: string; name: string }>
+  >([]);
+  const [sectionOptions, setSectionOptions] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+
   useEffect(() => {
     fetchAnalytics();
   }, [filters]);
@@ -191,6 +205,32 @@ const AnalyticsPage = () => {
       const result = await response.json();
       if (result.success) {
         setData(result.data);
+
+        const unfiltered =
+          !filters.courseId &&
+          !filters.sectionId &&
+          !filters.startDate &&
+          !filters.endDate;
+
+        if (unfiltered) {
+          setCourseOptions(
+            (result.data.performance?.overall ?? []).map(
+              (c: { courseId: number; courseCode: string; courseName: string }) => ({
+                id: c.courseId,
+                code: c.courseCode,
+                name: c.courseName,
+              })
+            )
+          );
+          setSectionOptions(
+            (result.data.performance?.sectionComparison ?? []).map(
+              (sec: { sectionId: number; sectionName: string }) => ({
+                id: sec.sectionId,
+                name: sec.sectionName,
+              })
+            )
+          );
+        }
       }
     } catch (error) {
       toast.error('Failed to load analytics');
@@ -695,30 +735,57 @@ const AnalyticsPage = () => {
         </div>
         <div className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/*
+              These were free-text boxes labelled "Course ID (Optional)" and
+              "Section ID (Optional)", asking the person to type an internal
+              database id. A lecturer knows their course as "CS101
+              Programming Fundamentals"; nothing in the interface ever shows
+              that it is row 12, so the filter could not be used by the people
+              whose screen this is. Every other filter in the product is a
+              picker, and now so are these.
+            */}
             <div>
-              <Label className="text-xs text-secondary-text" htmlFor="f-course-id-optional">Course ID (Optional)</Label>
-              <Input id="f-course-id-optional"
-                className="mt-1 h-8 text-xs border-card-border"
-                placeholder="Filter by course ID"
+              <Label className="text-xs text-secondary-text" htmlFor="f-course">
+                Course
+              </Label>
+              <select
+                id="f-course"
+                className="mt-1 h-8 w-full rounded-md border border-card-border bg-card px-2 text-xs text-primary-text"
                 value={filters.courseId}
                 onChange={(e) =>
                   setFilters({ ...filters, courseId: e.target.value })
                 }
-              />
+              >
+                <option value=''>All courses</option>
+                {courseOptions.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.code} — {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <Label className="text-xs text-secondary-text" htmlFor="f-section-id-optional">Section ID (Optional)</Label>
-              <Input id="f-section-id-optional"
-                className="mt-1 h-8 text-xs border-card-border"
-                placeholder="Filter by section ID"
+              <Label className="text-xs text-secondary-text" htmlFor="f-section">
+                Section
+              </Label>
+              <select
+                id="f-section"
+                className="mt-1 h-8 w-full rounded-md border border-card-border bg-card px-2 text-xs text-primary-text"
                 value={filters.sectionId}
                 onChange={(e) =>
                   setFilters({ ...filters, sectionId: e.target.value })
                 }
-              />
+              >
+                <option value=''>All sections</option>
+                {sectionOptions.map((sec) => (
+                  <option key={sec.id} value={String(sec.id)}>
+                    {sec.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <Label className="text-xs text-secondary-text" htmlFor="f-start-date-optional">Start Date (Optional)</Label>
+              <Label className="text-xs text-secondary-text" htmlFor="f-start-date-optional">Start date</Label>
               <Input id="f-start-date-optional"
                 type="date"
                 className="mt-1 h-8 text-xs border-card-border"
@@ -729,7 +796,7 @@ const AnalyticsPage = () => {
               />
             </div>
             <div>
-              <Label className="text-xs text-secondary-text" htmlFor="f-end-date-optional">End Date (Optional)</Label>
+              <Label className="text-xs text-secondary-text" htmlFor="f-end-date-optional">End date</Label>
               <Input id="f-end-date-optional"
                 type="date"
                 className="mt-1 h-8 text-xs border-card-border"
