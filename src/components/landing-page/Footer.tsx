@@ -260,7 +260,7 @@ export default function Footer() {
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>
               <Link href='/legal/terms' className='text-white/70 hover:text-white transition-colors font-medium inline-flex items-center gap-1 py-1 group'>
-                Terms of Service
+                Terms of Use
                 <ArrowRight className='w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
               </Link>
             </div>

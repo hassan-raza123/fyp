@@ -4,31 +4,40 @@ import { notFound } from 'next/navigation';
 import { PRODUCT_NAME, COMPANY_CONTACT } from '@/constants/branding';
 
 /**
- * Terms of Service and Privacy Policy.
+ * Terms of Use and Privacy Policy.
  *
  * The footer has linked to both since the marketing pages were written, and
  * neither route existed — both 404'd. A university's legal review reaches
  * these two links early and stops when they are dead.
  *
- * The two documents are at different stages, and the `draft` flag says which
- * is which rather than the reader having to guess:
+ * Both documents are now in force, and both are checkable rather than
+ * lawyerly, because each was deliberately scoped to something this codebase
+ * can actually vouch for:
  *
- *  - **Privacy Policy — in force.** A privacy policy is not a contract; it is
- *    a description of what the software does with personal data, and that is
- *    checkable. Every statement below was written against the Prisma schema
- *    and the code that reads it: the tables named exist, the fields listed are
- *    the fields stored, and the one external processor named is the only
- *    outbound connection the application makes. Where something is a
- *    per-installation decision — hosting location, retention schedule — it
- *    says so instead of inventing an answer.
+ *  - **Privacy Policy.** Not a contract — a description of what the software
+ *    does with personal data. Every statement was written against the Prisma
+ *    schema and the code that reads it: the tables named exist, the fields
+ *    listed are the fields stored, and the one external processor named is
+ *    the only outbound connection the application makes.
  *
- *  - **Terms of Service — still a draft.** These are a contract: fees,
- *    liability, governing law, termination. Writing those without a lawyer
- *    would be worse than publishing nothing, because a customer could rely on
- *    them. The section list stays as a skeleton with the banner on.
+ *  - **Terms of Use.** These describe how people may use the system: how
+ *    accounts are issued, what each role may reach, what happens to academic
+ *    records, and what counts as misuse. Every rule is one the code enforces
+ *    or the institution operates.
  *
- * If the data model changes, this page changes with it. The sections most
- * likely to go stale are "What is collected" and "Who else receives it".
+ * What is deliberately *not* here is the commercial agreement between the
+ * vendor and the institution — fees, service levels, liability, governing
+ * law, termination. That is a contract, it needs a lawyer, and it is
+ * negotiated privately rather than published; the "What this document is
+ * not" section says so on the page. An earlier draft of this file tried to
+ * be that contract and had to carry a "not yet in force" banner as a result.
+ *
+ * The `draft` flag remains on LegalDoc so a future document can be published
+ * as an outline without pretending to be binding.
+ *
+ * If the data model or the access rules change, this page changes with them.
+ * The sections most likely to go stale are "What is collected", "Who else
+ * receives it" and "What you may reach".
  */
 
 interface Section {
@@ -48,19 +57,73 @@ interface LegalDoc {
 
 const DOCS: Record<string, LegalDoc> = {
   terms: {
-    title: 'Terms of Service',
-    intro: `The terms under which institutions and their users access ${PRODUCT_NAME}.`,
-    draft: true,
+    title: 'Terms of Use',
+    intro: `The rules for using ${PRODUCT_NAME}, for everyone your institution gives an account to — and for anyone answering a survey.`,
+    draft: false,
+    updated: 'August 2026',
     sections: [
-      { heading: 'Who these terms bind', body: 'The contracting institution, and every account it creates — administrators, faculty and students.' },
-      { heading: 'The service', body: 'What is provided: outcome-based education management, assessment and attainment records, and accreditation reporting.' },
-      { heading: 'Institution responsibilities', body: 'Accuracy of uploaded records, lawful basis for processing student data, and management of its own user accounts.' },
-      { heading: 'Fees and payment terms', body: 'Subscription basis, billing period, invoicing and the consequences of non-payment.' },
-      { heading: 'Availability and support', body: 'Target availability, planned maintenance, support channels and response expectations.' },
-      { heading: 'Data ownership', body: 'The institution owns its academic records. Export on request, and on termination.' },
-      { heading: 'Termination', body: 'Notice period on either side, and what happens to the data afterwards.' },
-      { heading: 'Liability', body: 'Limits of liability, and the exclusions that apply.' },
-      { heading: 'Governing law', body: 'Jurisdiction and how disputes are resolved.' },
+      {
+        heading: 'Who these terms apply to',
+        body: `Anyone signing in to ${PRODUCT_NAME} with an account their institution issued — students, faculty, department administrators — and anyone completing a survey through an invitation link without an account. Using the system means accepting what is set out here.`,
+      },
+      {
+        heading: 'What this document is not',
+        body: `These are terms of use, not a commercial contract. Whatever agreement exists between ${PRODUCT_NAME} and the institution that runs it — pricing, service levels, liability, notice periods, governing law — is a separate document negotiated between those two parties, and nothing on this page adds to it, limits it or replaces it. If you are evaluating ${PRODUCT_NAME} for an institution, ask us for that agreement; it is not this.`,
+      },
+      {
+        heading: 'Your account',
+        body: 'Accounts are created for you by your institution. There is no public sign-up, and you cannot create one yourself.',
+        items: [
+          'The first time you sign in with a password an administrator issued, you have to replace it before you can reach anything else.',
+          'Signing in also requires a one-time code sent to your institutional email address.',
+          'Your account is yours alone. Do not share your password or let anyone else act under your sign-in — everything done through it is recorded against you.',
+          'Tell your institution promptly if you think someone else has used your account.',
+        ],
+      },
+      {
+        heading: 'What you may reach',
+        body: 'Your role decides what you can see and change, and the system enforces it rather than relying on you to stay in your lane. A student reaches their own record; faculty reach the sections they teach; a department administrator reaches their own department. Attempting to reach another person’s record, another department’s data, or any part of the system your role does not cover is a misuse of your account, whether or not the attempt succeeds.',
+      },
+      {
+        heading: 'Academic records',
+        body: 'The records in this system belong to your institution and are its responsibility.',
+        items: [
+          'Marks are entered by the faculty teaching the course and evaluated under your institution’s own rules.',
+          'A course offering can be locked once results are final. After that its marks cannot be edited without an administrator unlocking it, and both the lock and the unlock are recorded.',
+          'If something in your record is wrong, raise it with your department — corrections are made at source so that grades and attainment recalculate from the corrected figure.',
+          'Attainment percentages, grades and GPA are calculated from the marks held here. They are not entered by hand and cannot be edited directly.',
+        ],
+      },
+      {
+        heading: 'Changes are recorded',
+        body: 'Every creation, change and deletion of a mark, grade, result or attainment figure is written to an audit trail with the account responsible, what changed, when, and the network address the request came from. This exists because accreditation reviews ask who altered a record and when. It is not optional, and it is visible to administrators at your institution.',
+      },
+      {
+        heading: 'Acceptable use',
+        body: 'Beyond staying within your role, do not do any of the following.',
+        items: [
+          'Interfere with the system’s operation, or attempt to bypass its access controls, rate limits or sign-in checks.',
+          'Extract data in bulk beyond what your role provides for, or use automated tools against the system without your institution’s permission.',
+          'Upload files you have no right to share, or anything that would put the institution in breach of its own obligations.',
+          'Publish or pass on another person’s academic record.',
+        ],
+      },
+      {
+        heading: 'Suspension',
+        body: 'An account can be made inactive or suspended by your institution, at which point sign-in stops working. That decision is your institution’s, not ours, and questions about it go to your department. Records already in the system are not deleted when an account is suspended.',
+      },
+      {
+        heading: 'If you are answering a survey',
+        body: 'Survey invitations carry a single-use link. Do not forward it — it is the credential, and anyone holding it can answer in your place. Giving your name and email on the form is optional. What you submit is used to calculate programme-level attainment and is visible to staff at the institution that invited you.',
+      },
+      {
+        heading: 'Availability and support',
+        body: `${PRODUCT_NAME} runs on infrastructure your institution chooses and operates. Availability, maintenance windows and support are therefore matters for your institution in the first instance, and your department or IT support is the right place to start. Any availability commitment made to your institution lives in its agreement with us, not here.`,
+      },
+      {
+        heading: 'Changes to these terms',
+        body: 'If the rules above change, this page changes and the date at the top changes with it. Continuing to use the system after that means accepting the revised terms.',
+      },
     ],
   },
 
